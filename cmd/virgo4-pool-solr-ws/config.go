@@ -90,11 +90,11 @@ func getConfigValues() {
 }
 
 func init() {
-	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "LISTEN_PORT", desc: "listen port"}}
-	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
-	config.solrCore = configStringItem{value: "", configItem: configItem{flag: "c", env: "SOLR_CORE", desc: "Solr core"}}
-	config.solrHandler = configStringItem{value: "", configItem: configItem{flag: "s", env: "SOLR_HANDLER", desc: "Solr search handler"}}
-	config.solrTimeout = configStringItem{value: "", configItem: configItem{flag: "t", env: "SOLR_TIMEOUT", desc: "Solr http client timeout"}}
+	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "VIRGO4_SOLR_POOL_WS_LISTEN_PORT", desc: "listen port"}}
+	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "VIRGO4_SOLR_POOL_WS_SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
+	config.solrCore = configStringItem{value: "", configItem: configItem{flag: "c", env: "VIRGO4_SOLR_POOL_WS_SOLR_CORE", desc: "Solr core"}}
+	config.solrHandler = configStringItem{value: "", configItem: configItem{flag: "s", env: "VIRGO4_SOLR_POOL_WS_SOLR_HANDLER", desc: "Solr search handler"}}
+	config.solrTimeout = configStringItem{value: "", configItem: configItem{flag: "t", env: "VIRGO4_SOLR_POOL_WS_SOLR_TIMEOUT", desc: "Solr http client timeout"}}
 
 	getConfigValues()
 }
