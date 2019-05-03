@@ -6,30 +6,28 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-//	"net/url"
 	"strconv"
-//	"strings"
 	"time"
 )
 
 var solrClient *http.Client
 
 type solrQueryParams struct {
-	q string `json:"q,omitempty"` // query
-	fq []string `json:"fq,omitempty` // filter quer{y,ies}
-	sort string `json:"sort,omitempty` // sort field or function with asc|desc
-	start string `json:"start,omitempty` // number of leading documents to skip
-	rows string `json:"rows,omitempty` // number of documents to return after 'start'
-	fl string `json:"fl,omitempty` // field list, comma separated
-	df string `json:"df,omitempty` // default search field
-	wt string `json:"wt,omitempty` // writer type (response format)
-	defType string `json:"defType,omitempty` // query parser (lucene, dismax, ...)
-	debugQuery string `json:"debugQuery,omitempty` // timing & results ("on" or omit)
-	debug string `json:"debug,omitempty`
-	explainOther string `json:"explainOther,omitempty`
-	timeAllowed string `json:"timeAllowed,omitempty`
-	segmentTerminatedEarly string `json:"segmentTerminatedEarly,omitempty`
-	omitHeader string `json:"omitHeader,omitempty`
+	q                      string   // query
+	fq                     []string // filter quer{y,ies}
+	sort                   string   // sort field or function with asc|desc
+	start                  string   // number of leading documents to skip
+	rows                   string   // number of documents to return after 'start'
+	fl                     string   // field list, comma separated
+	df                     string   // default search field
+	wt                     string   // writer type (response format)
+	defType                string   // query parser (lucene, dismax, ...)
+	debugQuery             string   // timing & results ("on" or omit)
+	debug                  string
+	explainOther           string
+	timeAllowed            string
+	segmentTerminatedEarly string
+	omitHeader             string
 }
 
 type solrParamsMap map[string]string
