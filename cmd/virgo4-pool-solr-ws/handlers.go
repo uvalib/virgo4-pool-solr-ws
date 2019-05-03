@@ -8,30 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-/*
-type solrQueryParameters struct {
-	q string `json:"q,omitempty" binding:"required"` // query
-	fq []string `json:"fq,omitempty` // filter quer{y,ies}
-	sort string `json:"sort,omitempty` // sort field or function with asc|desc
-	start string `json:"start,omitempty` // number of leading documents to skip
-	rows string `json:"rows,omitempty` // number of documents to return after 'start'
-	fl string `json:"fl,omitempty` // field list, comma separated
-	df string `json:"df,omitempty` // default search field
-	wt string `json:"wt,omitempty` // writer type (response format)
-	defType string `json:"defType,omitempty` // query parser (lucene, dismax, ...)
-	debugQuery string `json:"debugQuery,omitempty` // timing & results ("on" or omit)
-	debug string `json:"debug,omitempty`
-	explainOther string `json:"explainOther,omitempty`
-	timeAllowed string `json:"timeAllowed,omitempty`
-	segmentTerminatedEarly string `json:"segmentTerminatedEarly,omitempty`
-	omitHeader string `json:"omitHeader,omitempty`
-	debug string `json:"debug,omitempty`
-}
-*/
-
-//type solrRequest map[string]interface{} // converted to Solr query parameters
-//type solrResponse map[string]interface{} // as-is from Solr
-
 func poolResultsHandler(c *gin.Context) {
 	var req VirgoPoolResultsRequest
 
@@ -41,23 +17,15 @@ func poolResultsHandler(c *gin.Context) {
 		return
 	}
 
-	solrReq, solrReqErr := solrPoolResultsRequest(req)
+	res, resErr := solrPoolResultsHandler(req)
 
-	if solrReqErr != nil {
-		log.Printf("query build error: %s", solrReqErr.Error())
-		c.String(http.StatusInternalServerError, solrReqErr.Error())
+	if resErr != nil {
+		log.Printf("poolResultsHandler: error:  %s", resErr.Error())
+		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
 
-	solrRes, solrResErr := solrQuery(solrReq)
-
-	if solrResErr != nil {
-		log.Printf("query execute error: %s", solrResErr.Error())
-		c.String(http.StatusInternalServerError, solrResErr.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, solrRes.json)
+	c.JSON(http.StatusOK, res)
 }
 
 func poolResultsRecordHandler(c *gin.Context) {
@@ -65,23 +33,15 @@ func poolResultsRecordHandler(c *gin.Context) {
 
 	req.Id = c.Param("id")
 
-	solrReq, solrReqErr := solrPoolResultsRecordRequest(req)
+	res, resErr := solrPoolResultsRecordHandler(req)
 
-	if solrReqErr != nil {
-		log.Printf("query build error: %s", solrReqErr.Error())
-		c.String(http.StatusInternalServerError, solrReqErr.Error())
+	if resErr != nil {
+		log.Printf("poolResultsRecordHandler: error:  %s", resErr.Error())
+		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
 
-	solrRes, solrResErr := solrQuery(solrReq)
-
-	if solrResErr != nil {
-		log.Printf("query execute error: %s", solrResErr.Error())
-		c.String(http.StatusInternalServerError, solrResErr.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, solrRes.json)
+	c.JSON(http.StatusOK, res)
 }
 
 func poolSummaryHandler(c *gin.Context) {
@@ -93,23 +53,15 @@ func poolSummaryHandler(c *gin.Context) {
 		return
 	}
 
-	solrReq, solrReqErr := solrPoolSummaryRequest(req)
+	res, resErr := solrPoolSummaryHandler(req)
 
-	if solrReqErr != nil {
-		log.Printf("query build error: %s", solrReqErr.Error())
-		c.String(http.StatusInternalServerError, solrReqErr.Error())
+	if resErr != nil {
+		log.Printf("poolSummaryHandler: error:  %s", resErr.Error())
+		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
 
-	solrRes, solrResErr := solrQuery(solrReq)
-
-	if solrResErr != nil {
-		log.Printf("query execute error: %s", solrResErr.Error())
-		c.String(http.StatusInternalServerError, solrResErr.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, solrRes.json)
+	c.JSON(http.StatusOK, res)
 }
 
 func ignoreHandler(c *gin.Context) {

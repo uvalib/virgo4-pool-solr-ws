@@ -17,7 +17,7 @@ func main() {
 	log.Printf("===> %s starting up <===", program)
 
 	gin.SetMode(gin.ReleaseMode)
-	gin.DisableConsoleColor()
+	//gin.DisableConsoleColor()
 
 	router := gin.Default()
 
@@ -36,7 +36,7 @@ func main() {
 	api.POST("/pool_summary", poolSummaryHandler)
 
 	portStr := fmt.Sprintf(":%s", config.listenPort.value)
-	log.Printf("Start service on port %s", portStr)
+	log.Printf("Start service on %s", portStr)
 
 	log.Fatal(router.Run(portStr))
 }

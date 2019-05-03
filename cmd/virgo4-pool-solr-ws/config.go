@@ -82,11 +82,11 @@ func getConfigValues() {
 		os.Exit(1)
 	}
 
-	log.Printf("[CONFIG] listenPort                = [%s]", config.listenPort.value)
-	log.Printf("[CONFIG] solrHost                  = [%s]", config.solrHost.value)
-	log.Printf("[CONFIG] solrCore                  = [%s]", config.solrCore.value)
-	log.Printf("[CONFIG] solrHandler               = [%s]", config.solrHandler.value)
-	log.Printf("[CONFIG] solrTimeout               = [%s]", config.solrTimeout.value)
+	log.Printf("[CONFIG] listenPort  = [%s]", config.listenPort.value)
+	log.Printf("[CONFIG] solrHost    = [%s]", config.solrHost.value)
+	log.Printf("[CONFIG] solrCore    = [%s]", config.solrCore.value)
+	log.Printf("[CONFIG] solrHandler = [%s]", config.solrHandler.value)
+	log.Printf("[CONFIG] solrTimeout = [%s]", config.solrTimeout.value)
 }
 
 func init() {

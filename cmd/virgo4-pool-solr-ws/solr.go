@@ -48,30 +48,6 @@ func solrNewRequest() *solrRequest {
 	return &solrReq
 }
 
-func solrPoolResultsRequest(req VirgoPoolResultsRequest) (*solrRequest, error) {
-	solrReq := solrNewRequest()
-
-	solrReq.params["q"] = req.Query
-
-	return solrReq, nil
-}
-
-func solrPoolResultsRecordRequest(req VirgoPoolResultsRecordRequest) (*solrRequest, error) {
-	solrReq := solrNewRequest()
-
-	solrReq.params["q"] = fmt.Sprintf("id:%s", req.Id)
-
-	return solrReq, nil
-}
-
-func solrPoolSummaryRequest(req VirgoPoolSummaryRequest) (*solrRequest, error) {
-	solrReq := solrNewRequest()
-
-	solrReq.params["q"] = req.Query
-
-	return solrReq, nil
-}
-
 func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 	solrUrl := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 
@@ -120,6 +96,131 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 	//log.Printf("Solr response json: %#v", solrRes)
 
 	return &solrRes, nil
+}
+
+func solrPoolResultsRequest(virgoReq VirgoPoolResultsRequest) (*solrRequest, error) {
+	solrReq := solrNewRequest()
+
+	solrReq.params["q"] = virgoReq.Query
+
+	return solrReq, nil
+}
+
+func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResultsResponse, error) {
+	var virgoRes VirgoPoolResultsResponse
+
+	virgoRes.ResultCount = 1 //solrRes.json.response.numFound
+
+	return &virgoRes, nil
+}
+
+func solrPoolResultsHandler(virgoReq VirgoPoolResultsRequest) (*VirgoPoolResultsResponse, error) {
+	solrReq, solrReqErr := solrPoolResultsRequest(virgoReq)
+
+	if solrReqErr != nil {
+		log.Printf("query build error: %s", solrReqErr.Error())
+		return nil, solrReqErr
+	}
+
+	solrRes, solrResErr := solrQuery(solrReq)
+
+	if solrResErr != nil {
+		log.Printf("query execute error: %s", solrResErr.Error())
+		return nil, solrResErr
+	}
+
+	res, resErr := solrPoolResultsResponse(solrRes)
+
+	if resErr != nil {
+		log.Printf("result parsing error: %s", resErr.Error())
+		return nil, resErr
+	}
+
+	return res, nil
+}
+
+func solrPoolResultsRecordRequest(virgoReq VirgoPoolResultsRecordRequest) (*solrRequest, error) {
+	solrReq := solrNewRequest()
+
+	solrReq.params["q"] = fmt.Sprintf("id:%s", virgoReq.Id)
+
+	return solrReq, nil
+}
+
+func solrPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoPoolResultsRecordResponse, error) {
+	var virgoRes VirgoPoolResultsRecordResponse
+
+	virgoRes.ResultCount = 1 //solrRes.json.response.numFound
+
+	return &virgoRes, nil
+}
+
+func solrPoolResultsRecordHandler(virgoReq VirgoPoolResultsRecordRequest) (*VirgoPoolResultsRecordResponse, error) {
+	solrReq, solrReqErr := solrPoolResultsRecordRequest(virgoReq)
+
+	if solrReqErr != nil {
+		log.Printf("query build error: %s", solrReqErr.Error())
+		return nil, solrReqErr
+	}
+
+	solrRes, solrResErr := solrQuery(solrReq)
+
+	if solrResErr != nil {
+		log.Printf("query execute error: %s", solrResErr.Error())
+		return nil, solrResErr
+	}
+
+	res, resErr := solrPoolResultsRecordResponse(solrRes)
+
+	if resErr != nil {
+		log.Printf("result parsing error: %s", resErr.Error())
+		return nil, resErr
+	}
+
+	return res, nil
+}
+
+func solrPoolSummaryRequest(virgoReq VirgoPoolSummaryRequest) (*solrRequest, error) {
+	solrReq := solrNewRequest()
+
+	solrReq.params["q"] = virgoReq.Query
+
+	return solrReq, nil
+}
+
+func solrPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummaryResponse, error) {
+	var virgoRes VirgoPoolSummaryResponse
+
+	virgoRes.Name = "name"
+	virgoRes.Link = "http://blah"
+	virgoRes.Summary = "1 result found"
+
+	return &virgoRes, nil
+}
+
+func solrPoolSummaryHandler(virgoReq VirgoPoolSummaryRequest) (*VirgoPoolSummaryResponse, error) {
+	solrReq, solrReqErr := solrPoolSummaryRequest(virgoReq)
+
+	if solrReqErr != nil {
+		log.Printf("query build error: %s", solrReqErr.Error())
+		return nil, solrReqErr
+	}
+
+	solrRes, solrResErr := solrQuery(solrReq)
+
+	if solrResErr != nil {
+		log.Printf("query execute error: %s", solrResErr.Error())
+		return nil, solrResErr
+	}
+
+	res, resErr := solrPoolSummaryResponse(solrRes)
+
+	if resErr != nil {
+		log.Printf("result parsing error: %s", resErr.Error())
+		return nil, resErr
+	}
+
+	return res, nil
 }
 
 func init() {
