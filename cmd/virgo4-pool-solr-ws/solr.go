@@ -12,46 +12,8 @@ import (
 
 var solrClient *http.Client
 
-type solrQueryParams struct {
-	q                      string   // query
-	fq                     []string // filter quer{y,ies}
-	sort                   string   // sort field or function with asc|desc
-	start                  string   // number of leading documents to skip
-	rows                   string   // number of documents to return after 'start'
-	fl                     string   // field list, comma separated
-	df                     string   // default search field
-	wt                     string   // writer type (response format)
-	defType                string   // query parser (lucene, dismax, ...)
-	debugQuery             string   // timing & results ("on" or omit)
-	debug                  string
-	explainOther           string
-	timeAllowed            string
-	segmentTerminatedEarly string
-	omitHeader             string
-}
-
-type solrParamsMap map[string]string
-
-type solrRequest struct {
-	params solrParamsMap
-}
-
-type solrResponse struct {
-	json map[string]interface{}
-}
-
-func solrNewRequest() *solrRequest {
-	var solrReq solrRequest
-
-	solrReq.params = make(solrParamsMap)
-
-	return &solrReq
-}
-
 func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 	solrUrl := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
-
-	log.Printf("solr query url: [%s]", solrUrl)
 
 	req, reqErr := http.NewRequest("GET", solrUrl, nil)
 	if reqErr != nil {
@@ -72,7 +34,7 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 
 	req.URL.RawQuery = q.Encode()
 
-	log.Printf("solr query raw: [%s]", req.URL.String())
+	log.Printf("solr query: [%s]", req.URL.String())
 
 	res, resErr := solrClient.Do(req)
 	if resErr != nil {
@@ -87,7 +49,7 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 	var solrRes solrResponse
 
 	decoder := json.NewDecoder(res.Body)
-	decErr := decoder.Decode(&solrRes.json)
+	decErr := decoder.Decode(&solrRes)
 	if decErr != nil {
 		log.Printf("Decode() failed: %s", decErr.Error())
 		return nil, errors.New("Failed to decode Solr response")
@@ -95,13 +57,22 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 
 	//log.Printf("Solr response json: %#v", solrRes)
 
+	// quick validation (existence of response header / response)
+	// FIXME
+
 	return &solrRes, nil
 }
 
 func solrPoolResultsRequest(virgoReq VirgoPoolResultsRequest) (*solrRequest, error) {
-	solrReq := solrNewRequest()
+	solrReq := solrRequestNew()
 
 	solrReq.params["q"] = virgoReq.Query
+	solrReq.params["start"] = fmt.Sprintf("%d", virgoReq.Start)
+
+	// uae default if zero
+	if virgoReq.Rows > 0 {
+		solrReq.params["rows"] = fmt.Sprintf("%d", virgoReq.Rows)
+	}
 
 	return solrReq, nil
 }
@@ -109,7 +80,20 @@ func solrPoolResultsRequest(virgoReq VirgoPoolResultsRequest) (*solrRequest, err
 func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResultsResponse, error) {
 	var virgoRes VirgoPoolResultsResponse
 
-	virgoRes.ResultCount = 1 //solrRes.json.response.numFound
+	virgoRes.ResultCount = solrRes.Response.NumFound
+	virgoRes.Pagination.Start = solrRes.Response.Start
+	virgoRes.Pagination.Rows = len(solrRes.Response.Docs)
+	virgoRes.Pagination.Total = solrRes.Response.NumFound
+
+	for _, doc := range solrRes.Response.Docs {
+		var record VirgoRecord
+
+		if len(doc.Title) > 0 {
+			record.Title = doc.Title[0]
+		}
+
+		virgoRes.RecordSet = append(virgoRes.RecordSet, record)
+	}
 
 	return &virgoRes, nil
 }
@@ -129,18 +113,18 @@ func solrPoolResultsHandler(virgoReq VirgoPoolResultsRequest) (*VirgoPoolResults
 		return nil, solrResErr
 	}
 
-	res, resErr := solrPoolResultsResponse(solrRes)
+	virgoRes, virgoResErr := solrPoolResultsResponse(solrRes)
 
-	if resErr != nil {
-		log.Printf("result parsing error: %s", resErr.Error())
-		return nil, resErr
+	if virgoResErr != nil {
+		log.Printf("result parsing error: %s", virgoResErr.Error())
+		return nil, virgoResErr
 	}
 
-	return res, nil
+	return virgoRes, nil
 }
 
 func solrPoolResultsRecordRequest(virgoReq VirgoPoolResultsRecordRequest) (*solrRequest, error) {
-	solrReq := solrNewRequest()
+	solrReq := solrRequestNew()
 
 	solrReq.params["q"] = fmt.Sprintf("id:%s", virgoReq.Id)
 
@@ -150,7 +134,20 @@ func solrPoolResultsRecordRequest(virgoReq VirgoPoolResultsRecordRequest) (*solr
 func solrPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoPoolResultsRecordResponse, error) {
 	var virgoRes VirgoPoolResultsRecordResponse
 
-	virgoRes.ResultCount = 1 //solrRes.json.response.numFound
+	virgoRes.ResultCount = solrRes.Response.NumFound
+	virgoRes.Pagination.Start = solrRes.Response.Start
+	virgoRes.Pagination.Rows = len(solrRes.Response.Docs)
+	virgoRes.Pagination.Total = solrRes.Response.NumFound
+
+	for _, doc := range solrRes.Response.Docs {
+		var record VirgoRecord
+
+		if len(doc.Title) > 0 {
+			record.Title = doc.Title[0]
+		}
+
+		virgoRes.RecordSet = append(virgoRes.RecordSet, record)
+	}
 
 	return &virgoRes, nil
 }
@@ -170,18 +167,18 @@ func solrPoolResultsRecordHandler(virgoReq VirgoPoolResultsRecordRequest) (*Virg
 		return nil, solrResErr
 	}
 
-	res, resErr := solrPoolResultsRecordResponse(solrRes)
+	virgoRes, virgoResErr := solrPoolResultsRecordResponse(solrRes)
 
-	if resErr != nil {
-		log.Printf("result parsing error: %s", resErr.Error())
-		return nil, resErr
+	if virgoResErr != nil {
+		log.Printf("result parsing error: %s", virgoResErr.Error())
+		return nil, virgoResErr
 	}
 
-	return res, nil
+	return virgoRes, nil
 }
 
 func solrPoolSummaryRequest(virgoReq VirgoPoolSummaryRequest) (*solrRequest, error) {
-	solrReq := solrNewRequest()
+	solrReq := solrRequestNew()
 
 	solrReq.params["q"] = virgoReq.Query
 
@@ -191,9 +188,14 @@ func solrPoolSummaryRequest(virgoReq VirgoPoolSummaryRequest) (*solrRequest, err
 func solrPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummaryResponse, error) {
 	var virgoRes VirgoPoolSummaryResponse
 
-	virgoRes.Name = "name"
-	virgoRes.Link = "http://blah"
-	virgoRes.Summary = "1 result found"
+	s := "s"
+	if solrRes.Response.NumFound == 1 {
+		s = ""
+	}
+
+	virgoRes.Name = "Catalog"
+	virgoRes.Link = "https://fixme"
+	virgoRes.Summary = fmt.Sprintf("%d item%s found", solrRes.Response.NumFound, s)
 
 	return &virgoRes, nil
 }
@@ -213,14 +215,14 @@ func solrPoolSummaryHandler(virgoReq VirgoPoolSummaryRequest) (*VirgoPoolSummary
 		return nil, solrResErr
 	}
 
-	res, resErr := solrPoolSummaryResponse(solrRes)
+	virgoRes, virgoResErr := solrPoolSummaryResponse(solrRes)
 
-	if resErr != nil {
-		log.Printf("result parsing error: %s", resErr.Error())
-		return nil, resErr
+	if virgoResErr != nil {
+		log.Printf("result parsing error: %s", virgoResErr.Error())
+		return nil, virgoResErr
 	}
 
-	return res, nil
+	return virgoRes, nil
 }
 
 func init() {

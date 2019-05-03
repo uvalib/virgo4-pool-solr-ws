@@ -3,37 +3,37 @@ package main
 // schemas
 
 type VirgoSearchRequest struct {
-	Query             string                 `json:"query,omitempty" binding:"exists"`
-	CurrentPool       string                 `json:"current_pool,omitempty"`
-	Start             int                    `json:"start,omitempty"`
-	Rows              int                    `json:"rows,omitempty"`
-	SearchPreferences VirgoSearchPreferences `json:"search_preferences,omitempty"`
+	Query             string                 `json:"query" binding:"exists"`
+	CurrentPool       string                 `json:"current_pool"`
+	Start             int                    `json:"start"`
+	Rows              int                    `json:"rows"`
+	SearchPreferences VirgoSearchPreferences `json:"search_preferences"`
 }
 
 type VirgoSearchResponse struct {
-	ActualRequest    VirgoSearchRequest   `json:"actual_request,omitempty"`
-	EffectiveRequest VirgoSearchRequest   `json:"effective_request,omitempty"`
-	Results          VirgoSearchResultSet `json:"results,omitempty"`
-	PoolSummaryList  VirgoPoolSummaryList `json:"pool_summary_list,omitempty"`
+	ActualRequest    VirgoSearchRequest   `json:"actual_request"`
+	EffectiveRequest VirgoSearchRequest   `json:"effective_request"`
+	Results          VirgoSearchResultSet `json:"results"`
+	PoolSummaryList  VirgoPoolSummaryList `json:"pool_summary_list"`
 }
 
 type VirgoSearchResultSet struct {
-	ResultCount int             `json:"result_count,omitempty"`
-	Pagination  VirgoPagination `json:"pagination,omitempty"`
-	Filters     VirgoFilters    `json:"filters,omitempty"`
-	RecordSet   VirgoRecordSet  `json:"record_set,omitempty"`
+	ResultCount int             `json:"result_count"`
+	Pagination  VirgoPagination `json:"pagination"`
+	Filters     VirgoFilters    `json:"filters"`
+	RecordSet   VirgoRecordSet  `json:"record_set"`
 }
 
 type VirgoRecordSet []VirgoRecord
 
 type VirgoRecord struct {
-	Title string `json:"title,omitempty"`
+	Title string `json:"title"`
 }
 
 type VirgoPagination struct {
-	Start int `json:"start,omitempty"`
-	Rows  int `json:"rows,omitempty"`
-	Total int `json:"total,omitempty"`
+	Start int `json:"start"`
+	Rows  int `json:"rows"`
+	Total int `json:"total"`
 }
 
 type VirgoFilters struct {
@@ -42,23 +42,23 @@ type VirgoFilters struct {
 type VirgoPoolSummaryList []VirgoPoolSummary
 
 type VirgoPoolSummary struct {
-	Name    string `json:"name,omitempty"`
-	Link    string `json:"link,omitempty"`
-	Summary string `json:"summary,omitempty"`
+	Name    string `json:"name"`
+	Link    string `json:"link"`
+	Summary string `json:"summary"`
 }
 
 type VirgoUser struct {
-	Preferences VirgoUserPreferences `json:"preferences,omitempty"`
-	Info        VirgoUserInfo        `json:"info,omitempty"`
+	Preferences VirgoUserPreferences `json:"preferences"`
+	Info        VirgoUserInfo        `json:"info"`
 }
 
 type VirgoUserPreferences struct {
 }
 
 type VirgoSearchPreferences struct {
-	DefaultSearchPool string   `json:"default_search_pool,omitempty"`
-	ExcludedPools     []string `json:"excluded_pools,omitempty"`
-	DefaultSort       string   `json:"default_sort,omitempty"`
+	DefaultSearchPool string   `json:"default_search_pool"`
+	ExcludedPools     []string `json:"excluded_pools"`
+	DefaultSort       string   `json:"default_sort"`
 }
 
 type VirgoUserInfo struct {
@@ -76,7 +76,7 @@ type VirgoPoolResultsResponse struct {
 }
 
 type VirgoPoolResultsRecordRequest struct {
-	Id string `json:"id,omitempty" binding:"required"`
+	Id string `json:"id" binding:"required"`
 }
 
 type VirgoPoolResultsRecordResponse struct {

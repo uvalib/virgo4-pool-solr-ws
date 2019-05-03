@@ -17,7 +17,7 @@ func main() {
 	log.Printf("===> %s starting up <===", program)
 
 	gin.SetMode(gin.ReleaseMode)
-	//gin.DisableConsoleColor()
+	gin.DisableConsoleColor()
 
 	router := gin.Default()
 
