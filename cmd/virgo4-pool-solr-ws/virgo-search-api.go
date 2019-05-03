@@ -27,6 +27,7 @@ type VirgoSearchResultSet struct {
 type VirgoRecordSet []VirgoRecord
 
 type VirgoRecord struct {
+	Id    string `json:"id"`
 	Title string `json:"title"`
 }
 

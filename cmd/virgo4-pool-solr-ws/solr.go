@@ -55,10 +55,11 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 		return nil, errors.New("Failed to decode Solr response")
 	}
 
-	//log.Printf("Solr response json: %#v", solrRes)
-
-	// quick validation (existence of response header / response)
-	// FIXME
+	// quick validation
+	if solrRes.ResponseHeader.Status != 0 {
+		log.Printf("Solr error: %d (%d - %s)", solrRes.ResponseHeader.Status, solrRes.Error.Code, solrRes.Error.Msg)
+		return nil, errors.New(fmt.Sprintf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg))
+	}
 
 	return &solrRes, nil
 }
@@ -66,13 +67,26 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 func solrPoolResultsRequest(virgoReq VirgoPoolResultsRequest) (*solrRequest, error) {
 	solrReq := solrRequestNew()
 
-	solrReq.params["q"] = virgoReq.Query
-	solrReq.params["start"] = fmt.Sprintf("%d", virgoReq.Start)
+	// defaults
 
-	// uae default if zero
-	if virgoReq.Rows > 0 {
-		solrReq.params["rows"] = fmt.Sprintf("%d", virgoReq.Rows)
+	start := 0
+	rows := 10
+
+	// use passed values if they make sense
+
+	if virgoReq.Start >= 0 {
+		start = virgoReq.Start
 	}
+
+	if virgoReq.Rows > 0 {
+		rows = virgoReq.Rows
+	}
+
+	// build parameter map
+
+	solrReq.params["q"] = virgoReq.Query
+	solrReq.params["start"] = fmt.Sprintf("%d", start)
+	solrReq.params["rows"] = fmt.Sprintf("%d", rows)
 
 	return solrReq, nil
 }
@@ -87,6 +101,8 @@ func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResultsResponse, 
 
 	for _, doc := range solrRes.Response.Docs {
 		var record VirgoRecord
+
+		record.Id = doc.Id
 
 		if len(doc.Title) > 0 {
 			record.Title = doc.Title[0]

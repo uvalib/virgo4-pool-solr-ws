@@ -65,27 +65,34 @@ https://doc.lucidworks.com/fusion/3.1/REST_API_Reference/Solr-API.html
 */
 
 type solrResponseHeader struct {
-	Status int `json:"status,omitempty"`
-	QTime int `json:"QTime,omitempty"`
+	Status int           `json:"status,omitempty"`
+	QTime  int           `json:"QTime,omitempty"`
 	Params solrParamsMap `json:"params,omitempty"`
 }
 
 //type solrDocument map[string]interface{}
 type solrDocument struct {
-	Id string `json:"id,omitempty"`
+	Id    string   `json:"id,omitempty"`
 	Title []string `json:"title_a,omitempty"`
 	// etc.
 }
 
 type solrResponseBody struct {
-	NumFound int `json:"numFound,omitempty"`
-	Start int `json:"start,omitempty"`
-	Docs []solrDocument `json:"docs,omitempty"`
+	NumFound int            `json:"numFound,omitempty"`
+	Start    int            `json:"start,omitempty"`
+	Docs     []solrDocument `json:"docs,omitempty"`
+}
+
+type solrError struct {
+	Metadata []string `json:"metadata,omitempty"`
+	Msg      string   `json:"msg,omitempty"`
+	Code     int      `json:"code,omitempty"`
 }
 
 type solrResponse struct {
 	ResponseHeader solrResponseHeader `json:"responseHeader,omitempty"`
-	Response solrResponseBody `json:"response,omitempty"`
+	Response       solrResponseBody   `json:"response,omitempty"`
+	Error          solrError          `json:"error,omitempty"`
 }
 
 /*
