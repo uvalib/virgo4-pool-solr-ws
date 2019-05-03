@@ -158,6 +158,8 @@ func solrPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoPoolResultsReco
 	for _, doc := range solrRes.Response.Docs {
 		var record VirgoRecord
 
+		record.Id = doc.Id
+
 		if len(doc.Title) > 0 {
 			record.Title = doc.Title[0]
 		}
