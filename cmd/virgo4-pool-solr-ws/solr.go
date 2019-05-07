@@ -64,6 +64,47 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 	return &solrRes, nil
 }
 
+func solrPopulateVirgoPoolSummary(numFound int) (VirgoPoolSummary) {
+	var summary VirgoPoolSummary
+
+	s := "s"
+	if numFound == 1 {
+		s = ""
+	}
+
+	summary.Name = "Catalog"
+	summary.Link = "https://fixme"
+	summary.Summary = fmt.Sprintf("%d item%s found", numFound, s)
+
+	return summary
+}
+
+func solrPopulateVirgoPagination(start, rows, total int) (VirgoPagination) {
+	var pagination VirgoPagination
+
+	pagination.Start = start
+	pagination.Rows = rows
+	pagination.Total = total
+
+	return pagination
+}
+
+func solrPopulateVirgoRecord(doc solrDocument) (VirgoRecord) {
+	var record VirgoRecord
+
+	record.Id = doc.Id
+
+	if len(doc.Title) > 0 {
+		record.Title = doc.Title[0]
+	}
+
+	if len(doc.Author) > 0 {
+		record.Author = doc.Author[0]
+	}
+
+	return record
+}
+
 func solrPoolResultsRequest(virgoReq VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestNew()
 
@@ -95,31 +136,13 @@ func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
 	var virgoRes VirgoPoolResult
 
 	virgoRes.ResultCount = solrRes.Response.NumFound
-	virgoRes.Pagination.Start = solrRes.Response.Start
-	virgoRes.Pagination.Rows = len(solrRes.Response.Docs)
-	virgoRes.Pagination.Total = solrRes.Response.NumFound
 
-	s := "s"
-	if solrRes.Response.NumFound == 1 {
-		s = ""
-	}
+	virgoRes.Pagination = solrPopulateVirgoPagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
-	virgoRes.Summary.Name = "Catalog"
-	virgoRes.Summary.Link = "https://fixme"
-	virgoRes.Summary.Summary = fmt.Sprintf("%d item%s found", solrRes.Response.NumFound, s)
+	virgoRes.Summary = solrPopulateVirgoPoolSummary(solrRes.Response.NumFound)
 
 	for _, doc := range solrRes.Response.Docs {
-		var record VirgoRecord
-
-		record.Id = doc.Id
-
-		if len(doc.Title) > 0 {
-			record.Title = doc.Title[0]
-		}
-
-		if len(doc.Author) > 0 {
-			record.Author = doc.Author[0]
-		}
+		record := solrPopulateVirgoRecord(doc)
 
 		virgoRes.RecordList = append(virgoRes.RecordList, record)
 	}
@@ -168,17 +191,7 @@ func solrPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoRecord, error) 
 		return nil, errors.New("No results found")
 
 	case 1:
-		doc := solrRes.Response.Docs[0]
-
-		virgoRes.Id = doc.Id
-
-		if len(doc.Title) > 0 {
-			virgoRes.Title = doc.Title[0]
-		}
-
-		if len(doc.Author) > 0 {
-			virgoRes.Author = doc.Author[0]
-		}
+		virgoRes = solrPopulateVirgoRecord(solrRes.Response.Docs[0])
 
 	default:
 		return nil, errors.New("Too many results found")
@@ -215,22 +228,13 @@ func solrPoolResultsRecordHandler(virgoReq VirgoSearchRequest) (*VirgoRecord, er
 func solrPoolSummaryRequest(virgoReq VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestNew()
 
-	solrReq.params["q"] = virgoReq.Query.Keyword // FIXME/
+	solrReq.params["q"] = virgoReq.Query.Keyword // FIXME
 
 	return solrReq, nil
 }
 
 func solrPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummary, error) {
-	var virgoRes VirgoPoolSummary
-
-	s := "s"
-	if solrRes.Response.NumFound == 1 {
-		s = ""
-	}
-
-	virgoRes.Name = "Catalog"
-	virgoRes.Link = "https://fixme"
-	virgoRes.Summary = fmt.Sprintf("%d item%s found", solrRes.Response.NumFound, s)
+	virgoRes := solrPopulateVirgoPoolSummary(solrRes.Response.NumFound)
 
 	return &virgoRes, nil
 }
