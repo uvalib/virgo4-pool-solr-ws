@@ -2,34 +2,50 @@ package main
 
 // schemas
 
+// based on https://app.swaggerhub.com/apis/jlj5aj/VirgoSearchAPI/0.2
+
+type VirgoSearchOptions struct {
+	SearchType string `json:"search_type"` // "basic" or "advanced"
+	Id         string `json:"id"`
+	Keyword    string `json:"keyword"`
+	Author     string `json:"author"`
+	Title      string `json:"title"`
+	Subject    string `json:"subject"`
+	SortField  string `json:"sort_field"`
+	SortOrder  string `json:"sort_order"`
+}
+
 type VirgoSearchRequest struct {
-	Query             string                 `json:"query" binding:"exists"`
+	Query             VirgoSearchOptions     `json:"query" binding:"exists"`
 	CurrentPool       string                 `json:"current_pool"`
-	Start             int                    `json:"start"`
-	Rows              int                    `json:"rows"`
+	Pagination        VirgoPagination        `json:"pagination"`
 	SearchPreferences VirgoSearchPreferences `json:"search_preferences"`
 }
 
 type VirgoSearchResponse struct {
 	ActualRequest    VirgoSearchRequest   `json:"actual_request"`
 	EffectiveRequest VirgoSearchRequest   `json:"effective_request"`
-	Results          VirgoSearchResultSet `json:"results"`
+	PoolResultList   VirgoPoolResultList  `json:"pool_result_list"`
 	PoolSummaryList  VirgoPoolSummaryList `json:"pool_summary_list"`
 }
 
-type VirgoSearchResultSet struct {
-	ResultCount int             `json:"result_count"`
-	Pagination  VirgoPagination `json:"pagination"`
-	Filters     VirgoFilters    `json:"filters"`
-	RecordSet   VirgoRecordSet  `json:"record_set"`
+type VirgoPoolResult struct {
+	ResultCount int              `json:"result_count"`
+	Pagination  VirgoPagination  `json:"pagination"`
+	Filters     VirgoFilters     `json:"filters"`
+	RecordList  VirgoRecordList  `json:"record_list"`
+	Summary     VirgoPoolSummary `json:"summary"`
 }
 
-type VirgoRecordSet []VirgoRecord
+type VirgoPoolResultList []VirgoPoolResult
 
 type VirgoRecord struct {
-	Id    string `json:"id"`
-	Title string `json:"title"`
+	Id     string `json:"id"`
+	Title  string `json:"title"`
+	Author string `json:"author"`
 }
+
+type VirgoRecordList []VirgoRecord
 
 type VirgoPagination struct {
 	Start int `json:"start"`
@@ -40,13 +56,13 @@ type VirgoPagination struct {
 type VirgoFilters struct {
 }
 
-type VirgoPoolSummaryList []VirgoPoolSummary
-
 type VirgoPoolSummary struct {
 	Name    string `json:"name"`
 	Link    string `json:"link"`
 	Summary string `json:"summary"`
 }
+
+type VirgoPoolSummaryList []VirgoPoolSummary
 
 type VirgoUser struct {
 	Preferences VirgoUserPreferences `json:"preferences"`
@@ -65,6 +81,7 @@ type VirgoSearchPreferences struct {
 type VirgoUserInfo struct {
 }
 
+/*
 // requests/responses
 
 // essentially stripped-down version of VirgoSearchRequest
@@ -91,3 +108,4 @@ type VirgoPoolSummaryRequest struct {
 type VirgoPoolSummaryResponse struct {
 	VirgoPoolSummary
 }
+*/

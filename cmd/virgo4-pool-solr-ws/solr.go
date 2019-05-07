@@ -64,7 +64,7 @@ func solrQuery(solrReq *solrRequest) (*solrResponse, error) {
 	return &solrRes, nil
 }
 
-func solrPoolResultsRequest(virgoReq VirgoPoolResultsRequest) (*solrRequest, error) {
+func solrPoolResultsRequest(virgoReq VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestNew()
 
 	// defaults
@@ -74,30 +74,39 @@ func solrPoolResultsRequest(virgoReq VirgoPoolResultsRequest) (*solrRequest, err
 
 	// use passed values if they make sense
 
-	if virgoReq.Start >= 0 {
-		start = virgoReq.Start
+	if virgoReq.Pagination.Start >= 0 {
+		start = virgoReq.Pagination.Start
 	}
 
-	if virgoReq.Rows > 0 {
-		rows = virgoReq.Rows
+	if virgoReq.Pagination.Rows > 0 {
+		rows = virgoReq.Pagination.Rows
 	}
 
 	// build parameter map
 
-	solrReq.params["q"] = virgoReq.Query
+	solrReq.params["q"] = virgoReq.Query.Keyword // FIXME
 	solrReq.params["start"] = fmt.Sprintf("%d", start)
 	solrReq.params["rows"] = fmt.Sprintf("%d", rows)
 
 	return solrReq, nil
 }
 
-func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResultsResponse, error) {
-	var virgoRes VirgoPoolResultsResponse
+func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
+	var virgoRes VirgoPoolResult
 
 	virgoRes.ResultCount = solrRes.Response.NumFound
 	virgoRes.Pagination.Start = solrRes.Response.Start
 	virgoRes.Pagination.Rows = len(solrRes.Response.Docs)
 	virgoRes.Pagination.Total = solrRes.Response.NumFound
+
+	s := "s"
+	if solrRes.Response.NumFound == 1 {
+		s = ""
+	}
+
+	virgoRes.Summary.Name = "Catalog"
+	virgoRes.Summary.Link = "https://fixme"
+	virgoRes.Summary.Summary = fmt.Sprintf("%d item%s found", solrRes.Response.NumFound, s)
 
 	for _, doc := range solrRes.Response.Docs {
 		var record VirgoRecord
@@ -108,13 +117,17 @@ func solrPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResultsResponse, 
 			record.Title = doc.Title[0]
 		}
 
-		virgoRes.RecordSet = append(virgoRes.RecordSet, record)
+		if len(doc.Author) > 0 {
+			record.Author = doc.Author[0]
+		}
+
+		virgoRes.RecordList = append(virgoRes.RecordList, record)
 	}
 
 	return &virgoRes, nil
 }
 
-func solrPoolResultsHandler(virgoReq VirgoPoolResultsRequest) (*VirgoPoolResultsResponse, error) {
+func solrPoolResultsHandler(virgoReq VirgoSearchRequest) (*VirgoPoolResult, error) {
 	solrReq, solrReqErr := solrPoolResultsRequest(virgoReq)
 
 	if solrReqErr != nil {
@@ -139,38 +152,42 @@ func solrPoolResultsHandler(virgoReq VirgoPoolResultsRequest) (*VirgoPoolResults
 	return virgoRes, nil
 }
 
-func solrPoolResultsRecordRequest(virgoReq VirgoPoolResultsRecordRequest) (*solrRequest, error) {
+func solrPoolResultsRecordRequest(virgoReq VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestNew()
 
-	solrReq.params["q"] = fmt.Sprintf("id:%s", virgoReq.Id)
+	solrReq.params["q"] = fmt.Sprintf("id:%s", virgoReq.Query.Id)
 
 	return solrReq, nil
 }
 
-func solrPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoPoolResultsRecordResponse, error) {
-	var virgoRes VirgoPoolResultsRecordResponse
+func solrPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoRecord, error) {
+	var virgoRes VirgoRecord
 
-	virgoRes.ResultCount = solrRes.Response.NumFound
-	virgoRes.Pagination.Start = solrRes.Response.Start
-	virgoRes.Pagination.Rows = len(solrRes.Response.Docs)
-	virgoRes.Pagination.Total = solrRes.Response.NumFound
+	switch len(solrRes.Response.Docs) {
+	case 0:
+		return nil, errors.New("No results found")
 
-	for _, doc := range solrRes.Response.Docs {
-		var record VirgoRecord
+	case 1:
+		doc := solrRes.Response.Docs[0]
 
-		record.Id = doc.Id
+		virgoRes.Id = doc.Id
 
 		if len(doc.Title) > 0 {
-			record.Title = doc.Title[0]
+			virgoRes.Title = doc.Title[0]
 		}
 
-		virgoRes.RecordSet = append(virgoRes.RecordSet, record)
+		if len(doc.Author) > 0 {
+			virgoRes.Author = doc.Author[0]
+		}
+
+	default:
+		return nil, errors.New("Too many results found")
 	}
 
 	return &virgoRes, nil
 }
 
-func solrPoolResultsRecordHandler(virgoReq VirgoPoolResultsRecordRequest) (*VirgoPoolResultsRecordResponse, error) {
+func solrPoolResultsRecordHandler(virgoReq VirgoSearchRequest) (*VirgoRecord, error) {
 	solrReq, solrReqErr := solrPoolResultsRecordRequest(virgoReq)
 
 	if solrReqErr != nil {
@@ -195,16 +212,16 @@ func solrPoolResultsRecordHandler(virgoReq VirgoPoolResultsRecordRequest) (*Virg
 	return virgoRes, nil
 }
 
-func solrPoolSummaryRequest(virgoReq VirgoPoolSummaryRequest) (*solrRequest, error) {
+func solrPoolSummaryRequest(virgoReq VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestNew()
 
-	solrReq.params["q"] = virgoReq.Query
+	solrReq.params["q"] = virgoReq.Query.Keyword // FIXME/
 
 	return solrReq, nil
 }
 
-func solrPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummaryResponse, error) {
-	var virgoRes VirgoPoolSummaryResponse
+func solrPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummary, error) {
+	var virgoRes VirgoPoolSummary
 
 	s := "s"
 	if solrRes.Response.NumFound == 1 {
@@ -218,7 +235,7 @@ func solrPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummaryResponse, 
 	return &virgoRes, nil
 }
 
-func solrPoolSummaryHandler(virgoReq VirgoPoolSummaryRequest) (*VirgoPoolSummaryResponse, error) {
+func solrPoolSummaryHandler(virgoReq VirgoSearchRequest) (*VirgoPoolSummary, error) {
 	solrReq, solrReqErr := solrPoolSummaryRequest(virgoReq)
 
 	if solrReqErr != nil {

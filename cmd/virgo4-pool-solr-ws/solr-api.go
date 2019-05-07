@@ -72,8 +72,9 @@ type solrResponseHeader struct {
 
 //type solrDocument map[string]interface{}
 type solrDocument struct {
-	Id    string   `json:"id,omitempty"`
-	Title []string `json:"title_a,omitempty"`
+	Id     string   `json:"id,omitempty"`
+	Title  []string `json:"title_a,omitempty"`
+	Author []string `json:"author_a,omitempty"`
 	// etc.
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 func poolResultsHandler(c *gin.Context) {
-	var req VirgoPoolResultsRequest
+	var req VirgoSearchRequest
 
 	if err := c.BindJSON(&req); err != nil {
 		log.Printf("Invalid request: %s", err.Error())
@@ -29,9 +29,9 @@ func poolResultsHandler(c *gin.Context) {
 }
 
 func poolResultsRecordHandler(c *gin.Context) {
-	var req VirgoPoolResultsRecordRequest
+	var req VirgoSearchRequest
 
-	req.Id = c.Param("id")
+	req.Query.Id = c.Param("id")
 
 	res, resErr := solrPoolResultsRecordHandler(req)
 
@@ -45,7 +45,7 @@ func poolResultsRecordHandler(c *gin.Context) {
 }
 
 func poolSummaryHandler(c *gin.Context) {
-	var req VirgoPoolSummaryRequest
+	var req VirgoSearchRequest
 
 	if err := c.BindJSON(&req); err != nil {
 		log.Printf("Invalid request: %s", err.Error())
