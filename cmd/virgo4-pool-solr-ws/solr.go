@@ -28,13 +28,13 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 			continue
 		}
 
-		log.Printf("adding field: [%s] = [%s]", key, val)
+		//log.Printf("adding field: [%s] = [%s]", key, val)
 		q.Add(key, val)
 	}
 
 	req.URL.RawQuery = q.Encode()
 
-	log.Printf("solr query: [%s]", req.URL.String())
+	log.Printf("solr req: [%s]", req.URL.String())
 
 	res, resErr := solrClient.Do(req)
 	if resErr != nil {
@@ -55,11 +55,15 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 		return nil, errors.New("Failed to decode Solr response")
 	}
 
+	logHeader := fmt.Sprintf("solr res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
+
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
-		log.Printf("Solr error: %d (%d - %s)", solrRes.ResponseHeader.Status, solrRes.Error.Code, solrRes.Error.Msg)
+		log.Printf("%s, error: { code = %d, msg = %d }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
 		return nil, errors.New(fmt.Sprintf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg))
 	}
+
+	log.Printf("%s, body: { numFound = %d, start = %d, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, len(solrRes.Response.Docs))
 
 	return &solrRes, nil
 }

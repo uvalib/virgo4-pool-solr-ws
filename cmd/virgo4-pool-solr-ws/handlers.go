@@ -12,7 +12,7 @@ func poolResultsHandler(c *gin.Context) {
 	var req VirgoSearchRequest
 
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("Invalid request: %s", err.Error())
+		log.Printf("poolResultsHandler: invalid request: %s", err.Error())
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
@@ -20,7 +20,7 @@ func poolResultsHandler(c *gin.Context) {
 	res, resErr := solrPoolResultsHandler(req)
 
 	if resErr != nil {
-		log.Printf("poolResultsHandler: error:  %s", resErr.Error())
+		log.Printf("poolResultsHandler: error: %s", resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
@@ -36,7 +36,7 @@ func poolResultsRecordHandler(c *gin.Context) {
 	res, resErr := solrPoolResultsRecordHandler(req)
 
 	if resErr != nil {
-		log.Printf("poolResultsRecordHandler: error:  %s", resErr.Error())
+		log.Printf("poolResultsRecordHandler: error: %s", resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
@@ -48,7 +48,7 @@ func poolSummaryHandler(c *gin.Context) {
 	var req VirgoSearchRequest
 
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("Invalid request: %s", err.Error())
+		log.Printf("poolSummaryHandler: invalid request: %s", err.Error())
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
@@ -56,7 +56,7 @@ func poolSummaryHandler(c *gin.Context) {
 	res, resErr := solrPoolSummaryHandler(req)
 
 	if resErr != nil {
-		log.Printf("poolSummaryHandler: error:  %s", resErr.Error())
+		log.Printf("poolSummaryHandler: error: %s", resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
