@@ -59,7 +59,7 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
-		log.Printf("%s, error: { code = %d, msg = %d }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
+		log.Printf("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
 		return nil, errors.New(fmt.Sprintf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg))
 	}
 
