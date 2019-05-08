@@ -7,7 +7,7 @@ import (
 
 // functions that map solr data into virgo data
 
-func virgoPopulatePoolSummary(numFound int) (VirgoPoolSummary) {
+func virgoPopulatePoolSummary(numFound int) VirgoPoolSummary {
 	var summary VirgoPoolSummary
 
 	s := "s"
@@ -22,7 +22,7 @@ func virgoPopulatePoolSummary(numFound int) (VirgoPoolSummary) {
 	return summary
 }
 
-func virgoPopulatePagination(start, rows, total int) (VirgoPagination) {
+func virgoPopulatePagination(start, rows, total int) VirgoPagination {
 	var pagination VirgoPagination
 
 	pagination.Start = start
@@ -32,7 +32,7 @@ func virgoPopulatePagination(start, rows, total int) (VirgoPagination) {
 	return pagination
 }
 
-func virgoPopulateRecord(doc solrDocument) (VirgoRecord) {
+func virgoPopulateRecord(doc solrDocument) VirgoRecord {
 	var record VirgoRecord
 
 	record.Id = doc.Id

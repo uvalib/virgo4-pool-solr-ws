@@ -6,7 +6,7 @@ import (
 
 // functions that map virgo data into solr data
 
-func solrBuildParameterQBasic(v VirgoSearchRequest) (string) {
+func solrBuildParameterQBasic(v VirgoSearchRequest) string {
 	switch {
 	case v.Query.Title != "":
 		return fmt.Sprintf("{!edismax qf=$title_qf pf=$title_pf}(%s)", v.Query.Title)
@@ -22,11 +22,11 @@ func solrBuildParameterQBasic(v VirgoSearchRequest) (string) {
 	}
 }
 
-func solrBuildParameterQAdvanced(v VirgoSearchRequest) (string) {
+func solrBuildParameterQAdvanced(v VirgoSearchRequest) string {
 	return "buildme"
 }
 
-func solrBuildParameterQ(v VirgoSearchRequest) (string) {
+func solrBuildParameterQ(v VirgoSearchRequest) string {
 	// default to basic unless advanced is specified
 	if v.Query.SearchType == "advanced" {
 		return solrBuildParameterQAdvanced(v)
@@ -41,7 +41,7 @@ func solrBuildParameterQ(v VirgoSearchRequest) (string) {
 	return solrBuildParameterQBasic(v)
 }
 
-func solrBuildParameterStart(s int) (string) {
+func solrBuildParameterStart(s int) string {
 	// default, if requested value doesn't make sense
 	start := 0
 
@@ -52,7 +52,7 @@ func solrBuildParameterStart(s int) (string) {
 	return fmt.Sprintf("%d", start)
 }
 
-func solrBuildParameterRows(r int) (string) {
+func solrBuildParameterRows(r int) string {
 	// default, if requested value doesn't make sense
 	rows := 10
 
@@ -63,19 +63,19 @@ func solrBuildParameterRows(r int) (string) {
 	return fmt.Sprintf("%d", rows)
 }
 
-func solrBuildParameterQt() (string) {
+func solrBuildParameterQt() string {
 	return "search"
 }
 
-func solrBuildParameterDefType() (string) {
+func solrBuildParameterDefType() string {
 	return "lucene"
 }
 
-func solrBuildParameterFq() (string) {
+func solrBuildParameterFq() string {
 	return "shadowed_location_f:VISIBLE"
 }
 
-func solrRequestWithDefaults(v VirgoSearchRequest) (solrRequest) {
+func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var solrReq solrRequest
 
 	solrReq.params = make(solrParamsMap)
@@ -91,13 +91,13 @@ func solrRequestWithDefaults(v VirgoSearchRequest) (solrRequest) {
 	return solrReq
 }
 
-func solrPoolResultsRequest(v VirgoSearchRequest) (solrRequest) {
+func solrPoolResultsRequest(v VirgoSearchRequest) solrRequest {
 	solrReq := solrRequestWithDefaults(v)
 
 	return solrReq
 }
 
-func solrPoolResultsRecordRequest(v VirgoSearchRequest) (solrRequest) {
+func solrPoolResultsRecordRequest(v VirgoSearchRequest) solrRequest {
 	solrReq := solrRequestWithDefaults(v)
 
 	// override these values from defaults
@@ -107,7 +107,7 @@ func solrPoolResultsRecordRequest(v VirgoSearchRequest) (solrRequest) {
 	return solrReq
 }
 
-func solrPoolSummaryRequest(v VirgoSearchRequest) (solrRequest) {
+func solrPoolSummaryRequest(v VirgoSearchRequest) solrRequest {
 	solrReq := solrRequestWithDefaults(v)
 
 	// override these values from defaults
