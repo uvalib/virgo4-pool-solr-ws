@@ -73,13 +73,13 @@ func virgoPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoRecord, error)
 
 	switch solrRes.Response.NumFound {
 	case 0:
-		return nil, errors.New("No results found")
+		return nil, errors.New("Item not found")
 
 	case 1:
 		virgoRes = virgoPopulateRecord(solrRes.Response.Docs[0])
 
 	default:
-		return nil, errors.New("Too many results found")
+		return nil, errors.New("Multiple items found")
 	}
 
 	return &virgoRes, nil
