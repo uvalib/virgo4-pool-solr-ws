@@ -21,7 +21,7 @@ phases:
       - echo build Docker image on `date`
       - docker build -f pipeline/Dockerfile -t ${CONTAINER_IMAGE}:latest .
       - docker tag ${CONTAINER_IMAGE}:latest ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE}:latest
-      - docker tag ${CONTAINER_IMAGE}:latest ${CONTAINER_REGISTRY/${CONTAINER_IMAGE}/build-${tag}
+      - docker tag ${CONTAINER_IMAGE}:latest ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE}/build-${tag}
   post_build:
     commands:
       - echo build Docker image complete `date`
