@@ -6,7 +6,7 @@ version: 0.2
 
 env:
   variables:
-    tag: build-999
+    tag: build-$CODEBUILD_START_TIME
 
 phases:
   install:
@@ -14,7 +14,6 @@ phases:
       - echo install step...
   pre_build:
     commands:
-      - printenv
       - echo logging in to AWS ECR...
       - $(aws ecr get-login --no-include-email --region us-east-1)
   build:
