@@ -1,3 +1,15 @@
+#
+# build the target application
+#
+FROM golang:1.12 as builder
+WORKDIR /build
+COPY go.mod go.sum Makefile ./
+COPY cmd ./cmd
+RUN make rebuild-docker
+
+#
+# build the targewt container
+#
 FROM alpine:3.9
 
 # update the packages
@@ -23,12 +35,16 @@ USER webservice
 
 # port and run command
 EXPOSE 8080
-#CMD scripts/entry.sh
+CMD scripts/entry.sh
 
 # Move in necessary assets
-#COPY data/container_bash_profile /home/webservice/.profile
-#COPY scripts/* $APP_HOME/scripts/
-#COPY bin/virgo4-pool-solr-ws $APP_HOME/bin/
+COPY package/data/container_bash_profile /home/webservice/.profile
+COPY package/scripts/* $APP_HOME/scripts/
+COPY --from=builder /build/bin/virgo4-pool-solr-ws $APP_HOME/bin/
 
 # Add the build tag
 #COPY buildtag.* $APP_HOME/
+
+#
+# end of file
+#

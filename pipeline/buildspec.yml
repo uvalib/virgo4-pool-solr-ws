@@ -19,7 +19,7 @@ phases:
   build:
     commands:
       - echo build Docker image on `date`
-      - docker build -f pipeline/Dockerfile -t $CONTAINER_IMAGE:latest .
+      - docker build -f package/Dockerfile -t $CONTAINER_IMAGE:latest .
       - docker tag $CONTAINER_IMAGE:latest $CONTAINER_REGISTRY/$CONTAINER_IMAGE:latest
       - docker tag $CONTAINER_IMAGE:latest $CONTAINER_REGISTRY/$CONTAINER_IMAGE:build-$CODEBUILD_START_TIME
   post_build:
