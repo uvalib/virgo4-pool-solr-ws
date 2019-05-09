@@ -6,7 +6,7 @@ version: 0.2
 
 env:
   variables:
-    tag: $(date +%Y%m%d%H%M%S)
+    tag: build-$(date +%Y%m%d%H%M%S)
 
 phases:
   install:
@@ -14,20 +14,21 @@ phases:
       - echo install step...
   pre_build:
     commands:
+      - echo current tag is $tag
       - echo logging in to AWS ECR...
       - $(aws ecr get-login --no-include-email --region us-east-1)
   build:
     commands:
       - echo build Docker image on `date`
-      - docker build -f pipeline/Dockerfile -t ${CONTAINER_IMAGE}:latest .
-      - docker tag ${CONTAINER_IMAGE}:latest ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE}:latest
-      - docker tag ${CONTAINER_IMAGE}:latest ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE}/build-${tag}
+      - docker build -f pipeline/Dockerfile -t $CONTAINER_IMAGE:latest .
+      - docker tag $CONTAINER_IMAGE:latest $CONTAINER_REGISTRY/$CONTAINER_IMAGE:latest
+      - docker tag $CONTAINER_IMAGE:latest $CONTAINER_REGISTRY/$CONTAINER_IMAGE:$tag
   post_build:
     commands:
       - echo build Docker image complete `date`
       - echo push latest image to ECR...
-      - docker push ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE}:latest
-      - docker push ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE}:build-${tag}
+      - docker push $CONTAINER_REGISTRY/$CONTAINER_IMAGE:latest
+      - docker push $CONTAINER_REGISTRY/$CONTAINER_IMAGE:$tag
 
 #
 # end of file
