@@ -14,7 +14,7 @@ phases:
       - echo install step...
   pre_build:
     commands:
-      - echo current tag is $tag
+      - printenv
       - echo logging in to AWS ECR...
       - $(aws ecr get-login --no-include-email --region us-east-1)
   build:
