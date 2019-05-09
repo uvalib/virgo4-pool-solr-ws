@@ -6,7 +6,7 @@ version: 0.2
 
 env:
   variables:
-    tag: build-$(date +%Y%m%d%H%M%S)
+    tag: build-`date +%Y%m%d%H%M%S`
 
 phases:
   install:
