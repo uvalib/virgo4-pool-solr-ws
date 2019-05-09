@@ -101,11 +101,3 @@ type solrResponse struct {
 	json map[string]interface{}
 }
 */
-
-func solrRequestNew() *solrRequest {
-	var solrReq solrRequest
-
-	solrReq.params = make(solrParamsMap)
-
-	return &solrReq
-}

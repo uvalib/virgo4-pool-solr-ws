@@ -16,7 +16,7 @@ type VirgoSearchOptions struct {
 }
 
 type VirgoSearchRequest struct {
-	Query             VirgoSearchOptions     `json:"query" binding:"exists"`
+	Query             *VirgoSearchOptions    `json:"query" binding:"exists"`
 	CurrentPool       string                 `json:"current_pool"`
 	Pagination        VirgoPagination        `json:"pagination"`
 	SearchPreferences VirgoSearchPreferences `json:"search_preferences"`
