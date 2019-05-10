@@ -27,7 +27,7 @@ ENV APP_HOME /virgo4-pool-solr-ws
 WORKDIR $APP_HOME
 
 # Create necessary directories
-RUN mkdir -p $APP_HOME $APP_HOME/bin
+RUN mkdir -p $APP_HOME $APP_HOME/bin $APP_HOME/scripts
 RUN chown -R webservice $APP_HOME && chgrp -R webservice $APP_HOME
 
 # Specify the user
