@@ -30,20 +30,23 @@ WORKDIR $APP_HOME
 RUN mkdir -p $APP_HOME $APP_HOME/bin $APP_HOME/scripts
 RUN chown -R webservice $APP_HOME && chgrp -R webservice $APP_HOME
 
-# Specify the user
-USER webservice
-
 # port and run command
 EXPOSE 8080
 CMD scripts/entry.sh
 
 # Move in necessary assets
 COPY package/data/container_bash_profile /home/webservice/.profile
-COPY package/scripts/* $APP_HOME/scripts/
-COPY --from=builder /build/bin/virgo4-pool-solr-ws $APP_HOME/bin/
+COPY package/scripts/entry.sh $APP_HOME/scripts/entry.sh
+COPY --from=builder /build/bin/virgo4-pool-solr-ws $APP_HOME/bin/virgo4-pool-solr-ws
+
+# Ensure permissions are correct
+RUN chown webservice:webservice /home/webservice/.profile $APP_HOME/scripts/entry.sh $APP_HOME/bin/virgo4-pool-solr-ws && chmod 755 /home/webservice/.profile $APP_HOME/scripts/entry.sh $APP_HOME/bin/virgo4-pool-solr-ws
 
 # Add the build tag
 #COPY buildtag.* $APP_HOME/
+
+# Specify the user
+USER webservice
 
 #
 # end of file
