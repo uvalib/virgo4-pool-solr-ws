@@ -115,3 +115,8 @@ dep:
 	$(GOGET) -u
 	$(GOMOD) tidy
 	$(GOMOD) verify
+
+test:
+	$(GOCLN) -testcache github.com/uvalib/$(PKGDOCKER)/...
+	$(GOTST) -v github.com/uvalib/$(PKGDOCKER)/cmd/tests $(if $(TEST),-run $(TEST),)
+
