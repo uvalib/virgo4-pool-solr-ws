@@ -1,0 +1,28 @@
+#
+# testspec.yml
+#
+
+version: 0.2
+
+#env:
+#  variables:
+#    tag: build-999
+
+phases:
+  install:
+    commands:
+      - echo install step...
+  pre_build:
+    commands:
+      - echo logging in to AWS ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+  build:
+    commands:
+      - echo test sequence begins at `date`
+  post_build:
+    commands:
+      - echo test sequence complete `date`
+
+#
+# end of file
+#
