@@ -4,21 +4,23 @@
 
 version: 0.2
 
-#env:
-#  variables:
-#    tag: build-999
+env:
+  variables:
+    config_file: cmd/tests/service_test.yml
 
 phases:
   install:
     commands:
-      - echo install step...
-  pre_build:
-    commands:
-      - echo logging in to AWS ECR...
-      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+      - echo ENDPOINT = [$ENDPOINT]
+#  pre_build:
+#    commands:
+#      - echo logging in to AWS ECR
+#      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
   build:
     commands:
       - echo test sequence begins at `date`
+      - echo "endpoint: $ENDPOINT" > $config_file
+      - make test
   post_build:
     commands:
       - echo test sequence complete `date`

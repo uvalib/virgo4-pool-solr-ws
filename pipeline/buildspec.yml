@@ -6,26 +6,27 @@ version: 0.2
 
 #env:
 #  variables:
-#    tag: build-999
+#    name: value
 
 phases:
   install:
     commands:
-      - echo install step...
+      - echo CONTAINER_REGISTRY = [$CONTAINER_REGISTRY]
+      - echo CONTAINER_IMAGE = [$CONTAINER_IMAGE]
   pre_build:
     commands:
-      - echo logging in to AWS ECR...
+      - echo logging in to AWS ECR
       - $(aws ecr get-login --no-include-email --region $AWS_REGION)
   build:
     commands:
-      - echo build Docker image on `date`
+      - echo build image on `date`
       - docker build -f package/Dockerfile -t $CONTAINER_IMAGE:latest --build-arg BUILD_TAG=$CODEBUILD_START_TIME .
       - docker tag $CONTAINER_IMAGE:latest $CONTAINER_REGISTRY/$CONTAINER_IMAGE:latest
       - docker tag $CONTAINER_IMAGE:latest $CONTAINER_REGISTRY/$CONTAINER_IMAGE:build-$CODEBUILD_START_TIME
   post_build:
     commands:
-      - echo build Docker image complete `date`
-      - echo push latest image to ECR...
+      - echo build image complete `date`
+      - echo push latest image to ECR
       - docker push $CONTAINER_REGISTRY/$CONTAINER_IMAGE:latest
       - docker push $CONTAINER_REGISTRY/$CONTAINER_IMAGE:build-$CODEBUILD_START_TIME
       - aws --region=$AWS_REGION ssm put-parameter --name /containers/$CONTAINER_IMAGE/latest --value build-$CODEBUILD_START_TIME --type String --overwrite
