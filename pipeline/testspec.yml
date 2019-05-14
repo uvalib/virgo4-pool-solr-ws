@@ -7,19 +7,21 @@ version: 0.2
 #env:
 #  variables:
 #    config_file: cmd/tests/service_test.yml
-#    GOROOT: 
-#    GOPATH:
 
 phases:
   install:
     commands:
+      - echo CONTAINER_IMAGE = [$CONTAINER_IMAGE]
       - echo TC_ENDPOINT = [$TC_ENDPOINT]
       - rm go.mod go.sum
       - go get github.com/parnurzeal/gorequest
       - go get gopkg.in/yaml.v2
-#  pre_build:
-#    commands:
+  pre_build:
+    commands:
 #      - printenv
+      - expected_build=$(aws --region=$AWS_REGION ssm get-parameter --name /containers/$CONTAINER_IMAGE/latest | grep "Value" | awk -F\" '{print $4}')
+      - echo waiting for build $expected_build
+      - pipeline/wait_for_version.ksh $TC_ENDPOINT $expected_build 60
   build:
     commands:
       - echo test sequence begins at `date`
