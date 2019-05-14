@@ -4,8 +4,8 @@
 
 version: 0.2
 
-env:
-  variables:
+#env:
+#  variables:
 #    config_file: cmd/tests/service_test.yml
 #    GOROOT: 
 #    GOPATH:
