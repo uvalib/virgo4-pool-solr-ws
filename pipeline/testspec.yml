@@ -20,7 +20,7 @@ phases:
     commands:
       - echo test sequence begins at `date`
 #      - echo endpoint: $ENDPOINT > $config_file
-      - make test
+      - GOROOT=''; make test
   post_build:
     commands:
       - echo test sequence complete `date`
