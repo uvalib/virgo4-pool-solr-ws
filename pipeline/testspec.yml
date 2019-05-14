@@ -13,14 +13,13 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo TEST_ENDPOINT = [$TEST_ENDPOINT]
+      - echo TC_ENDPOINT = [$TC_ENDPOINT]
       - rm go.mod go.sum
       - go get github.com/parnurzeal/gorequest
       - go get gopkg.in/yaml.v2
 #  pre_build:
 #    commands:
 #      - printenv
-#      - echo endpoint: $TEST_ENDPOINT > $config_file
   build:
     commands:
       - echo test sequence begins at `date`

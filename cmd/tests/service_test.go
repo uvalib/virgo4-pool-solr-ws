@@ -4,6 +4,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -37,6 +38,11 @@ func loadConfig() testConfig {
 	var c testConfig
 	if err := yaml.Unmarshal(data, &c); err != nil {
 		log.Fatal(err)
+	}
+
+	// allow environment variables to override the configuration file
+	if len( os.Getenv( "TC_ENDPOINT" ) ) != 0 {
+		c.Endpoint = os.Getenv( "TC_ENDPOINT" )
 	}
 
 	log.Printf("endpoint [%s]\n", c.Endpoint)
