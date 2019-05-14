@@ -1,10 +1,9 @@
-package client
+package tests
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/parnurzeal/gorequest"
-	"github.com/uvalib/virgo4-pool-solr-ws/cmd/api"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -59,7 +58,7 @@ func VersionCheck(endpoint string) (int, string) {
 	defer io.Copy(ioutil.Discard, resp.Body)
 	defer resp.Body.Close()
 
-	r := api.VersionResponse{}
+	r := VersionResponse{}
 	err := json.Unmarshal([]byte(body), &r)
 	if err != nil {
 		return http.StatusInternalServerError, ""

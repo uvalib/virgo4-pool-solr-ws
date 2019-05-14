@@ -1,4 +1,4 @@
-package api
+package tests
 
 //
 // VersionResponse -- response to the version request

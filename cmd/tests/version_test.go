@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"github.com/uvalib/virgo4-pool-solr-ws/cmd/client"
 	"net/http"
 	"strings"
 	"testing"
@@ -13,7 +12,7 @@ import (
 
 func TestVersionCheck(t *testing.T) {
 	expected := http.StatusOK
-	status, version := client.VersionCheck(cfg.Endpoint)
+	status, version := VersionCheck(cfg.Endpoint)
 	if status != expected {
 		t.Fatalf("Expected %v, got %v\n", expected, status)
 	}

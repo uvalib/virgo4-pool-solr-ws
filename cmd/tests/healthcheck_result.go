@@ -1,4 +1,4 @@
-package api
+package tests
 
 //
 // HealthCheckResult -- used for a health check result; we can have many of these

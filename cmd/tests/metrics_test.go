@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"github.com/uvalib/virgo4-pool-solr-ws/cmd/client"
 	"net/http"
 	"strings"
 	"testing"
@@ -13,7 +12,7 @@ import (
 
 func TestMetricsCheck(t *testing.T) {
 	expected := http.StatusOK
-	status, metrics := client.MetricsCheck(cfg.Endpoint)
+	status, metrics := MetricsCheck(cfg.Endpoint)
 	if status != expected {
 		t.Fatalf("Expected %v, got %v\n", expected, status)
 	}
