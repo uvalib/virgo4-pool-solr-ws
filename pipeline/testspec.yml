@@ -22,7 +22,7 @@ phases:
   build:
     commands:
       - echo test sequence begins at `date`
-      - GOROOT=''; GOPATH=''; make test
+      - GOROOT=''; GOPATH=''; GO111MODULE=on; make test
   post_build:
     commands:
       - echo test sequence complete `date`
