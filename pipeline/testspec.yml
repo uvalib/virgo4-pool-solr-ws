@@ -20,8 +20,8 @@ phases:
     commands:
 #      - printenv
       - expected_build=$(aws --region=$AWS_REGION ssm get-parameter --name /containers/$CONTAINER_IMAGE/latest | grep "Value" | awk -F\" '{print $4}')
-      - echo waiting for build $expected_build
-      - pipeline/wait_for_version.ksh $TC_ENDPOINT $expected_build 60
+      - echo waiting for build: $expected_build
+      - ./pipeline/wait_for_version.sh $TC_ENDPOINT $expected_build 60
   build:
     commands:
       - echo test sequence begins at `date`
