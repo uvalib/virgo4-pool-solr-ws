@@ -43,7 +43,7 @@ while true; do
    VERSION=$($CURL_TOOL $ENDPOINT/version 2>/dev/null | $AWK_TOOL -F\" '{print $4}')
 
    # did we get the right version
-   if [ "$VERSION" == "$EXPECTED_VERSION" ]; then
+   if [ "$VERSION" = "$EXPECTED_VERSION" ]; then
       echo "Reported version: $VERSION, done waiting"
       exit 0
    fi
