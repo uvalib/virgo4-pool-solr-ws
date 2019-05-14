@@ -117,6 +117,6 @@ dep:
 	$(GOMOD) verify
 
 test:
-	$(GOCLN) -testcache github.com/uvalib/$(PKGDOCKER)/...
-	$(GOTST) -v github.com/uvalib/$(PKGDOCKER)/cmd/tests $(if $(TEST),-run $(TEST),)
+	@ \
+	(cd "$(SRCDIR)/tests" && $(GOTST) -v) ;
 
