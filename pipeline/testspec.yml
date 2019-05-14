@@ -14,17 +14,14 @@ phases:
   install:
     commands:
       - echo TEST_ENDPOINT = [$TEST_ENDPOINT]
-  pre_build:
-    commands:
-      - printenv
-#      - echo logging in to AWS ECR
-#      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+#  pre_build:
+#    commands:
+#      - printenv
+#      - echo endpoint: $TEST_ENDPOINT > $config_file
   build:
     commands:
       - echo test sequence begins at `date`
-      - echo dir `pwd`
-#      - echo endpoint: $ENDPOINT > $config_file
-#      - GOROOT=''; make test
+      - make test
   post_build:
     commands:
       - echo test sequence complete `date`
