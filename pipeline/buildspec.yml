@@ -9,10 +9,10 @@ version: 0.2
 #    name: value
 
 phases:
-  install:
-    commands:
-      - echo CONTAINER_REGISTRY = [$CONTAINER_REGISTRY]
-      - echo CONTAINER_IMAGE = [$CONTAINER_IMAGE]
+#  install:
+#    commands:
+#      - echo CONTAINER_REGISTRY = [$CONTAINER_REGISTRY]
+#      - echo CONTAINER_IMAGE = [$CONTAINER_IMAGE]
   pre_build:
     commands:
       - echo logging in to AWS ECR
