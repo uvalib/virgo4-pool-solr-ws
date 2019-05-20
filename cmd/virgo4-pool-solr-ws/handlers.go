@@ -71,8 +71,8 @@ func versionHandler(c *gin.Context) {
 
 	//c.String(http.StatusOK, "%s version %s", program, version)
 	vMap := make(map[string]string)
-	vMap[ "version" ] = Version()
-	c.JSON( http.StatusOK, vMap)
+	vMap["version"] = Version()
+	c.JSON(http.StatusOK, vMap)
 }
 
 func healthCheckHandler(c *gin.Context) {
