@@ -53,8 +53,6 @@ func virgoPopulateRecord(doc solrDocument) VirgoRecord {
 func virgoPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
 	var virgoRes VirgoPoolResult
 
-	virgoRes.ResultCount = solrRes.Response.NumFound
-
 	virgoRes.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
 	virgoRes.Summary = virgoPopulatePoolSummary(solrRes.Response.NumFound)
