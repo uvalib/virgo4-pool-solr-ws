@@ -2,17 +2,17 @@ package main
 
 // schemas
 
-// based on: https://github.com/uvalib/v4-api/blob/b4778250800c39f5d947c14c022af5aad10c334c/search-api-OAS3.json
+// based on: https://github.com/uvalib/v4-api/blob/c4ec4962d77e91d8a74f9d626b6091574ec0298c/search-api-OAS3.json
 
 type VirgoSearchOptions struct {
-	SearchType string `json:"search_type"` // basic, advanced
+	SearchType string `json:"search_type"` // i.e. basic, advanced
 	Id         string `json:"id"`
 	Keyword    string `json:"keyword"`
 	Author     string `json:"author"`
 	Title      string `json:"title"`
 	Subject    string `json:"subject"`
-	SortField  string `json:"sort_field"` // title, author, subject, ...
-	SortOrder  string `json:"sort_order"` // asc, desc, none
+	SortField  string `json:"sort_field"` // e.g. title, author, subject, ...
+	SortOrder  string `json:"sort_order"` // i.e. asc, desc, none
 }
 
 type VirgoSearchRequest struct {
@@ -23,7 +23,6 @@ type VirgoSearchRequest struct {
 }
 
 type VirgoSearchResponse struct {
-	Confidence       string               `json:"confidence"` // low, medium, high, exact
 	ActualRequest    VirgoSearchRequest   `json:"actual_request"`
 	EffectiveRequest VirgoSearchRequest   `json:"effective_request"`
 	PoolResultList   VirgoPoolResultList  `json:"pool_result_list"`
@@ -57,9 +56,10 @@ type VirgoFilters struct {
 }
 
 type VirgoPoolSummary struct {
-	Name    string `json:"name"`
-	Link    string `json:"link"`
-	Summary string `json:"summary"`
+	Name       string `json:"name"`
+	Link       string `json:"link"`
+	Summary    string `json:"summary"`
+	Confidence string `json:"confidence"` // i.e. low, medium, high, exact
 }
 
 type VirgoPoolSummaryList []VirgoPoolSummary
