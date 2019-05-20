@@ -39,9 +39,9 @@ type VirgoPoolResult struct {
 type VirgoPoolResultList []VirgoPoolResult
 
 type VirgoRecord struct {
-	Id     string `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
+	Id     string `json:"id,omitempty"`
+	Title  string `json:"title,omitempty"`
+	Author string `json:"author,omitempty"`
 }
 
 type VirgoRecordList []VirgoRecord
@@ -56,10 +56,10 @@ type VirgoFilters struct {
 }
 
 type VirgoPoolSummary struct {
-	Name       string `json:"name"`
-	Link       string `json:"link"`
-	Summary    string `json:"summary"`
-	Confidence string `json:"confidence"` // i.e. low, medium, high, exact
+	Name       string `json:"name,omitempty"`
+	Link       string `json:"link,omitempty"`
+	Summary    string `json:"summary,omitempty"`
+	Confidence string `json:"confidence,omitempty"` // i.e. low, medium, high, exact
 }
 
 type VirgoPoolSummaryList []VirgoPoolSummary
@@ -80,32 +80,3 @@ type VirgoSearchPreferences struct {
 
 type VirgoUserInfo struct {
 }
-
-/*
-// requests/responses
-
-// essentially stripped-down version of VirgoSearchRequest
-type VirgoPoolResultsRequest struct {
-	VirgoSearchRequest
-}
-
-type VirgoPoolResultsResponse struct {
-	VirgoSearchResultSet
-}
-
-type VirgoPoolResultsRecordRequest struct {
-	Id string `json:"id" binding:"required"`
-}
-
-type VirgoPoolResultsRecordResponse struct {
-	VirgoSearchResultSet
-}
-
-type VirgoPoolSummaryRequest struct {
-	VirgoSearchRequest
-}
-
-type VirgoPoolSummaryResponse struct {
-	VirgoPoolSummary
-}
-*/
