@@ -2,17 +2,17 @@ package main
 
 // schemas
 
-// based on https://app.swaggerhub.com/apis/jlj5aj/VirgoSearchAPI/0.2
+// based on: https://github.com/uvalib/v4-api/blob/b4778250800c39f5d947c14c022af5aad10c334c/search-api-OAS3.json
 
 type VirgoSearchOptions struct {
-	SearchType string `json:"search_type"` // "basic" or "advanced"
+	SearchType string `json:"search_type"` // basic, advanced
 	Id         string `json:"id"`
 	Keyword    string `json:"keyword"`
 	Author     string `json:"author"`
 	Title      string `json:"title"`
 	Subject    string `json:"subject"`
-	SortField  string `json:"sort_field"`
-	SortOrder  string `json:"sort_order"`
+	SortField  string `json:"sort_field"` // title, author, subject, ...
+	SortOrder  string `json:"sort_order"` // asc, desc, none
 }
 
 type VirgoSearchRequest struct {
@@ -23,6 +23,7 @@ type VirgoSearchRequest struct {
 }
 
 type VirgoSearchResponse struct {
+	Confidence       string               `json:"confidence"` // low, medium, high, exact
 	ActualRequest    VirgoSearchRequest   `json:"actual_request"`
 	EffectiveRequest VirgoSearchRequest   `json:"effective_request"`
 	PoolResultList   VirgoPoolResultList  `json:"pool_result_list"`
@@ -30,11 +31,10 @@ type VirgoSearchResponse struct {
 }
 
 type VirgoPoolResult struct {
-	ResultCount int              `json:"result_count"`
-	Pagination  VirgoPagination  `json:"pagination"`
-	Filters     VirgoFilters     `json:"filters"`
-	RecordList  VirgoRecordList  `json:"record_list"`
-	Summary     VirgoPoolSummary `json:"summary"`
+	Pagination VirgoPagination  `json:"pagination"`
+	Filters    VirgoFilters     `json:"filters"`
+	RecordList VirgoRecordList  `json:"record_list"`
+	Summary    VirgoPoolSummary `json:"summary"`
 }
 
 type VirgoPoolResultList []VirgoPoolResult
