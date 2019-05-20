@@ -30,8 +30,10 @@ func poolResultsHandler(c *gin.Context) {
 
 func poolResultsRecordHandler(c *gin.Context) {
 	var req VirgoSearchRequest
+	var query VirgoSearchOptions
 
-	req.Query.Id = c.Param("id")
+	query.Id = c.Param("id")
+	req.Query = &query
 
 	res, resErr := solrPoolResultsRecordHandler(req)
 
