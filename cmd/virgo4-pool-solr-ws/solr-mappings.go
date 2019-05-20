@@ -75,6 +75,10 @@ func solrBuildParameterFq() string {
 	return "shadowed_location_f:VISIBLE"
 }
 
+func solrBuildParameterFl() string {
+	return "*,score"
+}
+
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var solrReq solrRequest
 
@@ -87,6 +91,7 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	solrReq.params["qt"] = solrBuildParameterQt()
 	solrReq.params["defType"] = solrBuildParameterDefType()
 	solrReq.params["fq"] = solrBuildParameterFq()
+	solrReq.params["fl"] = solrBuildParameterFl()
 
 	return solrReq
 }

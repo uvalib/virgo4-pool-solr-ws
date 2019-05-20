@@ -7,7 +7,7 @@ import (
 
 // functions that map solr data into virgo data
 
-func virgoPopulatePoolSummary(numFound int) VirgoPoolSummary {
+func virgoPopulatePoolSummary(numFound int, maxScore float32) VirgoPoolSummary {
 	var summary VirgoPoolSummary
 
 	s := "s"
@@ -18,6 +18,19 @@ func virgoPopulatePoolSummary(numFound int) VirgoPoolSummary {
 	summary.Name = "Catalog"
 	summary.Link = "https://fixme"
 	summary.Summary = fmt.Sprintf("%d item%s found", numFound, s)
+
+	// FIXME: somehow create a confidence level from the query score
+
+	switch {
+	case maxScore > 100.0:
+		summary.Confidence = "exact"
+	case maxScore > 10.0:
+		summary.Confidence = "high"
+	case maxScore > 1.0:
+		summary.Confidence = "medium"
+	default:
+		summary.Confidence = "low"
+	}
 
 	return summary
 }
@@ -55,7 +68,7 @@ func virgoPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
 
 	virgoRes.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
-	virgoRes.Summary = virgoPopulatePoolSummary(solrRes.Response.NumFound)
+	virgoRes.Summary = virgoPopulatePoolSummary(solrRes.Response.NumFound, solrRes.Response.MaxScore)
 
 	for _, doc := range solrRes.Response.Docs {
 		record := virgoPopulateRecord(doc)
@@ -84,7 +97,7 @@ func virgoPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoRecord, error)
 }
 
 func virgoPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummary, error) {
-	virgoRes := virgoPopulatePoolSummary(solrRes.Response.NumFound)
+	virgoRes := virgoPopulatePoolSummary(solrRes.Response.NumFound, solrRes.Response.MaxScore)
 
 	return &virgoRes, nil
 }

@@ -72,6 +72,7 @@ type solrResponseHeader struct {
 
 //type solrDocument map[string]interface{}
 type solrDocument struct {
+	Score  float32  `json:"score,omitempty"`
 	Id     string   `json:"id,omitempty"`
 	Title  []string `json:"title_a,omitempty"`
 	Author []string `json:"author_a,omitempty"`
@@ -81,6 +82,7 @@ type solrDocument struct {
 type solrResponseBody struct {
 	NumFound int            `json:"numFound,omitempty"`
 	Start    int            `json:"start,omitempty"`
+	MaxScore float32        `json:"maxScore,omitempty"`
 	Docs     []solrDocument `json:"docs,omitempty"`
 }
 
