@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
 )
 
 const program = "Virgo4 Solr Pool Search"
-const version = "0.1"
 
 /**
  * Main entry point for the web service
@@ -22,19 +22,18 @@ func main() {
 	router := gin.Default()
 
 	p := ginprometheus.NewPrometheus("gin")
-	p.Use( router )
+	p.Use(router)
 
 	router.GET("/favicon.ico", ignoreHandler)
 
-	//router.GET("/", versionHandler)
 	router.GET("/version", versionHandler)
 
 	router.GET("/healthcheck", healthCheckHandler)
 
 	api := router.Group("/api")
 
-	api.POST("/pool_results", poolResultsHandler)
-	api.GET("/pool_results/:id", poolResultsRecordHandler)
+	api.POST("/search", searchHandler)
+	api.GET("/search/:id", recordHandler)
 	api.POST("/pool_summary", poolSummaryHandler)
 
 	portStr := fmt.Sprintf(":%s", config.listenPort.value)

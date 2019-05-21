@@ -27,11 +27,6 @@ func solrBuildParameterQAdvanced(v VirgoSearchRequest) string {
 }
 
 func solrBuildParameterQ(v VirgoSearchRequest) string {
-	// default to basic unless advanced is specified
-	if v.Query.SearchType == "advanced" {
-		return solrBuildParameterQAdvanced(v)
-	}
-
 	// check if this is a specific item search
 	if v.Query.Id != "" {
 		return fmt.Sprintf("id:%s", v.Query.Id)
@@ -86,28 +81,31 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 
 	// fill out as much as we can for a generic request
 	solrReq.params["q"] = solrBuildParameterQ(v)
-	solrReq.params["start"] = solrBuildParameterStart(v.Pagination.Start)
-	solrReq.params["rows"] = solrBuildParameterRows(v.Pagination.Rows)
 	solrReq.params["qt"] = solrBuildParameterQt()
 	solrReq.params["defType"] = solrBuildParameterDefType()
 	solrReq.params["fq"] = solrBuildParameterFq()
 	solrReq.params["fl"] = solrBuildParameterFl()
 
+	if v.Pagination != nil {
+		solrReq.params["start"] = solrBuildParameterStart(v.Pagination.Start)
+		solrReq.params["rows"] = solrBuildParameterRows(v.Pagination.Rows)
+	}
+
 	return solrReq
 }
 
-func solrPoolResultsRequest(v VirgoSearchRequest) solrRequest {
+func solrSearchRequest(v VirgoSearchRequest) solrRequest {
 	solrReq := solrRequestWithDefaults(v)
 
 	return solrReq
 }
 
-func solrPoolResultsRecordRequest(v VirgoSearchRequest) solrRequest {
+func solrRecordRequest(v VirgoSearchRequest) solrRequest {
 	solrReq := solrRequestWithDefaults(v)
 
 	// override these values from defaults
 	solrReq.params["start"] = "0"
-	solrReq.params["rows"] = "1"
+	solrReq.params["rows"] = "2"
 
 	return solrReq
 }

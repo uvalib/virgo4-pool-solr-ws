@@ -7,45 +7,71 @@ import (
 
 // functions that map solr data into virgo data
 
-func virgoPopulatePoolSummary(numFound int, maxScore float32) VirgoPoolSummary {
-	var summary VirgoPoolSummary
+func virgoPopulatePoolResultSummary(numFound int, maxScore float32) *VirgoPoolResult {
+	// populates just the minimal amount of info needed for a summary
+	var poolResult VirgoPoolResult
 
 	s := "s"
 	if numFound == 1 {
 		s = ""
 	}
 
-	summary.Name = "Catalog"
-	summary.Link = "https://fixme"
-	summary.Summary = fmt.Sprintf("%d item%s found", numFound, s)
+	poolResult.PoolId = "Catalog"
+	poolResult.ServiceUrl = "https://pool-solr-ws-dev.internal.lib.virginia.edu"
+	poolResult.Summary = fmt.Sprintf("%d item%s found", numFound, s)
 
 	// FIXME: somehow create a confidence level from the query score
 
 	switch {
 	case maxScore > 100.0:
-		summary.Confidence = "exact"
+		poolResult.Confidence = "exact"
 	case maxScore > 10.0:
-		summary.Confidence = "high"
+		poolResult.Confidence = "high"
 	case maxScore > 1.0:
-		summary.Confidence = "medium"
+		poolResult.Confidence = "medium"
 	default:
-		summary.Confidence = "low"
+		poolResult.Confidence = "low"
 	}
 
-	return summary
+	return &poolResult
 }
 
-func virgoPopulatePagination(start, rows, total int) VirgoPagination {
+func virgoPopulatePoolResult(solrRes *solrResponse) *VirgoPoolResult {
+	// populates additional information for a normal pool result
+	poolResult := virgoPopulatePoolResultSummary(solrRes.Response.NumFound, solrRes.Response.MaxScore)
+
+	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
+
+	for _, doc := range solrRes.Response.Docs {
+		record := virgoPopulateRecord(doc)
+
+		poolResult.RecordList = append(poolResult.RecordList, *record)
+	}
+
+	return poolResult
+}
+
+func virgoPopulateSearchResponse(solrRes *solrResponse) *VirgoSearchResponse {
+	var searchResponse VirgoSearchResponse
+
+	poolResult := virgoPopulatePoolResult(solrRes)
+
+	searchResponse.ResultsPools = append(searchResponse.ResultsPools, *poolResult)
+
+	return &searchResponse
+}
+
+func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	var pagination VirgoPagination
 
 	pagination.Start = start
 	pagination.Rows = rows
 	pagination.Total = total
 
-	return pagination
+	return &pagination
 }
 
-func virgoPopulateRecord(doc solrDocument) VirgoRecord {
+func virgoPopulateRecord(doc solrDocument) *VirgoRecord {
 	var record VirgoRecord
 
 	record.Id = doc.Id
@@ -60,27 +86,19 @@ func virgoPopulateRecord(doc solrDocument) VirgoRecord {
 		record.Author = doc.Author[0]
 	}
 
-	return record
+	return &record
 }
 
-func virgoPoolResultsResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
-	var virgoRes VirgoPoolResult
+// the main response functions for each endpoint
 
-	virgoRes.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
+func virgoSearchResponse(solrRes *solrResponse) (*VirgoSearchResponse, error) {
+	virgoRes := virgoPopulateSearchResponse(solrRes)
 
-	virgoRes.Summary = virgoPopulatePoolSummary(solrRes.Response.NumFound, solrRes.Response.MaxScore)
-
-	for _, doc := range solrRes.Response.Docs {
-		record := virgoPopulateRecord(doc)
-
-		virgoRes.RecordList = append(virgoRes.RecordList, record)
-	}
-
-	return &virgoRes, nil
+	return virgoRes, nil
 }
 
-func virgoPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoRecord, error) {
-	var virgoRes VirgoRecord
+func virgoRecordResponse(solrRes *solrResponse) (*VirgoRecord, error) {
+	var virgoRes *VirgoRecord
 
 	switch solrRes.Response.NumFound {
 	case 0:
@@ -93,11 +111,11 @@ func virgoPoolResultsRecordResponse(solrRes *solrResponse) (*VirgoRecord, error)
 		return nil, errors.New("Multiple items found")
 	}
 
-	return &virgoRes, nil
+	return virgoRes, nil
 }
 
-func virgoPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolSummary, error) {
-	virgoRes := virgoPopulatePoolSummary(solrRes.Response.NumFound, solrRes.Response.MaxScore)
+func virgoPoolSummaryResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
+	virgoRes := virgoPopulatePoolResultSummary(solrRes.Response.NumFound, solrRes.Response.MaxScore)
 
-	return &virgoRes, nil
+	return virgoRes, nil
 }

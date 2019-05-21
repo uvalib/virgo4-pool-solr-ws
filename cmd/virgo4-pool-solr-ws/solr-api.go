@@ -48,16 +48,19 @@ https://doc.lucidworks.com/fusion/3.1/REST_API_Reference/Solr-API.html
     "response": {
         "numFound": 52,
         "start": 0,
+        "maxScore": 1.23,
         "docs": [
             {
                 "title": [
                     "Solr and SolrAdmin APIs - Fusion Documentation - Lucidworks"
-                ]
+                ],
+				"score": 1.23
             },
             {
                 "title": [
                     "Search Clusters - Fusion Documentation - Lucidworks"
-                ]
+                ],
+				"score": 0.98
             }
         ]
     }

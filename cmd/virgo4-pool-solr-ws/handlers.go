@@ -7,19 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func poolResultsHandler(c *gin.Context) {
+func searchHandler(c *gin.Context) {
 	var req VirgoSearchRequest
 
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("poolResultsHandler: invalid request: %s", err.Error())
+		log.Printf("searchHandler: invalid request: %s", err.Error())
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
 
-	res, resErr := solrPoolResultsHandler(req)
+	res, resErr := solrSearchHandler(req)
 
 	if resErr != nil {
-		log.Printf("poolResultsHandler: error: %s", resErr.Error())
+		log.Printf("searchHandler: error: %s", resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
@@ -27,17 +27,17 @@ func poolResultsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func poolResultsRecordHandler(c *gin.Context) {
+func recordHandler(c *gin.Context) {
 	var req VirgoSearchRequest
 	var query VirgoSearchOptions
 
 	query.Id = c.Param("id")
 	req.Query = &query
 
-	res, resErr := solrPoolResultsRecordHandler(req)
+	res, resErr := solrRecordHandler(req)
 
 	if resErr != nil {
-		log.Printf("poolResultsRecordHandler: error: %s", resErr.Error())
+		log.Printf("recordHandler: error: %s", resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
@@ -70,9 +70,10 @@ func ignoreHandler(c *gin.Context) {
 
 func versionHandler(c *gin.Context) {
 
-	//c.String(http.StatusOK, "%s version %s", program, version)
 	vMap := make(map[string]string)
+
 	vMap["version"] = Version()
+
 	c.JSON(http.StatusOK, vMap)
 }
 

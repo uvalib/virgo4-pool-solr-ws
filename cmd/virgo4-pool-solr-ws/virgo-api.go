@@ -2,38 +2,39 @@ package main
 
 // schemas
 
-// based on: https://github.com/uvalib/v4-api/blob/c4ec4962d77e91d8a74f9d626b6091574ec0298c/search-api-OAS3.json
+// based loosely on: https://github.com/uvalib/v4-api/blob/master/search-api-OAS3.json
+
+// todo: sort object; id in search options
 
 type VirgoSearchOptions struct {
-	SearchType string `json:"search_type"` // i.e. basic, advanced
-	Id         string `json:"id"`
-	Keyword    string `json:"keyword"`
-	Author     string `json:"author"`
-	Title      string `json:"title"`
-	Subject    string `json:"subject"`
-	SortField  string `json:"sort_field"` // e.g. title, author, subject, ...
-	SortOrder  string `json:"sort_order"` // i.e. asc, desc, none
+	Id      string             // not in API, but used internally for detailed record search
+	Keyword string             `json:"keyword,omitempty"`
+	Author  string             `json:"author,omitempty"`
+	Title   string             `json:"title,omitempty"`
+	Subject string             `json:"subject,omitempty"`
+	Sort    *VirgoSortCriteria `json:"sort,omitempty"`
 }
 
 type VirgoSearchRequest struct {
-	Query             *VirgoSearchOptions    `json:"query" binding:"exists"`
-	CurrentPool       string                 `json:"current_pool"`
-	Pagination        VirgoPagination        `json:"pagination"`
-	SearchPreferences VirgoSearchPreferences `json:"search_preferences"`
+	Query             *VirgoSearchOptions     `json:"query,omitempty" binding:"exists"`
+	Pagination        *VirgoPaginationRequest `json:"pagination,omitempty"`
+	SearchPreferences *VirgoSearchPreferences `json:"search_preferences,omitempty"`
 }
 
 type VirgoSearchResponse struct {
-	ActualRequest    VirgoSearchRequest   `json:"actual_request"`
-	EffectiveRequest VirgoSearchRequest   `json:"effective_request"`
-	PoolResultList   VirgoPoolResultList  `json:"pool_result_list"`
-	PoolSummaryList  VirgoPoolSummaryList `json:"pool_summary_list"`
+	ActualRequest    *VirgoSearchRequest `json:"actual_request,omitempty"`
+	EffectiveRequest *VirgoSearchRequest `json:"effective_request,omitempty"`
+	ResultsPools     VirgoPoolResultList `json:"results_pools,omitempty"`
 }
 
 type VirgoPoolResult struct {
-	Pagination VirgoPagination  `json:"pagination"`
-	Filters    VirgoFilters     `json:"filters"`
-	RecordList VirgoRecordList  `json:"record_list"`
-	Summary    VirgoPoolSummary `json:"summary"`
+	PoolId     string           `json:"pool_id,omitempty"`     // required
+	ServiceUrl string           `json:"service_url,omitempty"` // required
+	Summary    string           `json:"summary,omitempty"`
+	Pagination *VirgoPagination `json:"pagination,omitempty"`
+	RecordList VirgoRecordList  `json:"record_list,omitempty"`
+	Filters    *VirgoFilters    `json:"filters,omitempty"`
+	Confidence string           `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
 }
 
 type VirgoPoolResultList []VirgoPoolResult
@@ -46,37 +47,37 @@ type VirgoRecord struct {
 
 type VirgoRecordList []VirgoRecord
 
-type VirgoPagination struct {
+type VirgoPaginationRequest struct {
 	Start int `json:"start"`
 	Rows  int `json:"rows"`
+}
+
+type VirgoPagination struct {
+	VirgoPaginationRequest
 	Total int `json:"total"`
 }
 
 type VirgoFilters struct {
 }
 
-type VirgoPoolSummary struct {
-	Name       string `json:"name,omitempty"`
-	Link       string `json:"link,omitempty"`
-	Summary    string `json:"summary,omitempty"`
-	Confidence string `json:"confidence,omitempty"` // i.e. low, medium, high, exact
-}
-
-type VirgoPoolSummaryList []VirgoPoolSummary
-
 type VirgoUser struct {
-	Preferences VirgoUserPreferences `json:"preferences"`
-	Info        VirgoUserInfo        `json:"info"`
+	Preferences *VirgoUserPreferences `json:"preferences,omitempty"`
+	Info        *VirgoUserInfo        `json:"info,omitempty"`
 }
 
 type VirgoUserPreferences struct {
 }
 
 type VirgoSearchPreferences struct {
-	DefaultSearchPool string   `json:"default_search_pool"`
-	ExcludedPools     []string `json:"excluded_pools"`
-	DefaultSort       string   `json:"default_sort"`
+	DefaultSearchPool string             `json:"default_search_pool,omitempty"`
+	ExcludedPools     []string           `json:"excluded_pools,omitempty"`
+	DefaultSort       *VirgoSortCriteria `json:"default_sort,omitempty"`
 }
 
 type VirgoUserInfo struct {
+}
+
+type VirgoSortCriteria struct {
+	Field string `json:"field,omitempty"` // e.g. title, author, subject, ...
+	Order string `json:"order,omitempty"` // i.e. asc, desc, none
 }
