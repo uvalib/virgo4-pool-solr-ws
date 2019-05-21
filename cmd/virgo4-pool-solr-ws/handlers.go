@@ -29,8 +29,10 @@ func poolResultsHandler(c *gin.Context) {
 
 func poolResultsRecordHandler(c *gin.Context) {
 	var req VirgoSearchRequest
+	var query VirgoSearchOptions
 
-	req.Query.Id = c.Param("id")
+	query.Id = c.Param("id")
+	req.Query = &query
 
 	res, resErr := solrPoolResultsRecordHandler(req)
 
@@ -70,8 +72,8 @@ func versionHandler(c *gin.Context) {
 
 	//c.String(http.StatusOK, "%s version %s", program, version)
 	vMap := make(map[string]string)
-	vMap[ "version" ] = Version()
-	c.JSON( http.StatusOK, vMap)
+	vMap["version"] = Version()
+	c.JSON(http.StatusOK, vMap)
 }
 
 func healthCheckHandler(c *gin.Context) {

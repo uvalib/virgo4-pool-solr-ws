@@ -63,7 +63,7 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 		return nil, errors.New(fmt.Sprintf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg))
 	}
 
-	log.Printf("%s, body: { numFound = %d, start = %d, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, len(solrRes.Response.Docs))
+	log.Printf("%s, body: { numFound = %d, start = %d, maxScore = %0.2f, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, solrRes.Response.MaxScore, len(solrRes.Response.Docs))
 
 	return &solrRes, nil
 }
