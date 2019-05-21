@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func poolResultsHandler(c *gin.Context) {
@@ -82,8 +81,4 @@ func healthCheckHandler(c *gin.Context) {
 	hcMap["Solr"] = "true"
 
 	c.JSON(http.StatusOK, hcMap)
-}
-
-func metricsHandler(c *gin.Context) {
-	promhttp.Handler().ServeHTTP(c.Writer, c.Request)
 }

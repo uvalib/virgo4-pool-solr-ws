@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-
 	"github.com/gin-gonic/gin"
+	"github.com/zsais/go-gin-prometheus"
 )
 
 const program = "Virgo4 Solr Pool Search"
@@ -21,13 +21,15 @@ func main() {
 
 	router := gin.Default()
 
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use( router )
+
 	router.GET("/favicon.ico", ignoreHandler)
 
-	router.GET("/", versionHandler)
+	//router.GET("/", versionHandler)
 	router.GET("/version", versionHandler)
 
 	router.GET("/healthcheck", healthCheckHandler)
-	router.GET("/metrics", metricsHandler)
 
 	api := router.Group("/api")
 
