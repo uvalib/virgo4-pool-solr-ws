@@ -18,7 +18,7 @@ phases:
       - echo logging in to AWS ECR
       - $(aws ecr get-login --no-include-email --region $AWS_REGION)
       - echo converting build start time to human-readable version number
-      - BUILD_VERSION=$(date --date="@${CODEBUILD_START_TIME:0:10}" +"%Y%m%d%H%M%S")
+      - BUILD_VERSION=$(date --date="@$(echo $CODEBUILD_START_TIME | cut -c1-10)" +"%Y%m%d%H%M%S")
   build:
     commands:
       - echo build image on `date`
