@@ -20,14 +20,14 @@ func registerPool() {
 
 	jsonReq, _ := json.Marshal(req)
 
-	// short delay to allow router to start up (do we need this?)
-	//time.Sleep(1 * time.Second)
+	// short delay to allow router to start up, otherwise master might check health before we're ready
+	time.Sleep(3 * time.Second)
 
 	// loop until registered
 	for {
 		if regErr := attemptPoolRegistration(jsonReq); regErr != nil {
 			log.Printf("Pool registration failed: [%s]", regErr.Error())
-			time.Sleep(10 * time.Second)
+			time.Sleep(15 * time.Second)
 		} else {
 			break
 		}
