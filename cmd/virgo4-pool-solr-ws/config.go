@@ -99,8 +99,8 @@ func getConfigValues() {
 
 func init() {
 	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "VIRGO4_SOLR_POOL_WS_LISTEN_PORT", desc: "listen port"}}
-	config.masterSearchUrl = configStringItem{value: "", configItem: configItem{flag: "m", env: "VIRGO4_SOLR_POOL_MASTER_SEARCH_URL", desc: "master search url"}}
-	config.poolServiceUrl = configStringItem{value: "", configItem: configItem{flag: "p", env: "VIRGO4_SOLR_POOL_SERVICE_URL", desc: "pool service url (registered with master)"}}
+	config.masterSearchUrl = configStringItem{value: "", configItem: configItem{flag: "m", env: "VIRGO4_SOLR_POOL_WS_MASTER_SEARCH_URL", desc: "master search url"}}
+	config.poolServiceUrl = configStringItem{value: "", configItem: configItem{flag: "p", env: "VIRGO4_SOLR_POOL_WS_SERVICE_URL", desc: "pool service url (registered with master)"}}
 	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "VIRGO4_SOLR_POOL_WS_SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
 	config.solrCore = configStringItem{value: "", configItem: configItem{flag: "c", env: "VIRGO4_SOLR_POOL_WS_SOLR_CORE", desc: "Solr core"}}
 	config.solrHandler = configStringItem{value: "", configItem: configItem{flag: "s", env: "VIRGO4_SOLR_POOL_WS_SOLR_HANDLER", desc: "Solr search handler"}}
