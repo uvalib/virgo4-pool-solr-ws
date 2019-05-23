@@ -39,5 +39,7 @@ func main() {
 	portStr := fmt.Sprintf(":%s", config.listenPort.value)
 	log.Printf("Start service on %s", portStr)
 
+	go registerPool()
+
 	log.Fatal(router.Run(portStr))
 }

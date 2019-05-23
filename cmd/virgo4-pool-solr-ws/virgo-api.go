@@ -4,8 +4,6 @@ package main
 
 // based loosely on: https://github.com/uvalib/v4-api/blob/master/search-api-OAS3.json
 
-// todo: sort object; id in search options
-
 type VirgoSearchOptions struct {
 	Id      string             // not in API, but used internally for detailed record search
 	Keyword string             `json:"keyword,omitempty"`
@@ -80,4 +78,9 @@ type VirgoUserInfo struct {
 type VirgoSortCriteria struct {
 	Field string `json:"field,omitempty"` // e.g. title, author, subject, ...
 	Order string `json:"order,omitempty"` // i.e. asc, desc, none
+}
+
+type VirgoPoolRegistration struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }

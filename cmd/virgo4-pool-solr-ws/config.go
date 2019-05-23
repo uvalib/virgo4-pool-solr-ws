@@ -25,6 +25,8 @@ type configBoolItem struct {
 
 type configData struct {
 	listenPort  configStringItem
+	masterSearchUrl   configStringItem
+	poolServiceUrl     configStringItem
 	solrHost    configStringItem
 	solrCore    configStringItem
 	solrHandler configStringItem
@@ -61,6 +63,8 @@ func flagBoolVar(item *configBoolItem) {
 func getConfigValues() {
 	// get values from the command line first, falling back to environment variables
 	flagStringVar(&config.listenPort)
+	flagStringVar(&config.masterSearchUrl)
+	flagStringVar(&config.poolServiceUrl)
 	flagStringVar(&config.solrHost)
 	flagStringVar(&config.solrCore)
 	flagStringVar(&config.solrHandler)
@@ -72,6 +76,8 @@ func getConfigValues() {
 	// die if any of them are not set
 	configOK := true
 	configOK = ensureConfigStringSet(&config.listenPort) && configOK
+	configOK = ensureConfigStringSet(&config.masterSearchUrl) && configOK
+	configOK = ensureConfigStringSet(&config.poolServiceUrl) && configOK
 	configOK = ensureConfigStringSet(&config.solrHost) && configOK
 	configOK = ensureConfigStringSet(&config.solrCore) && configOK
 	configOK = ensureConfigStringSet(&config.solrHandler) && configOK
@@ -82,15 +88,19 @@ func getConfigValues() {
 		os.Exit(1)
 	}
 
-	log.Printf("[CONFIG] listenPort  = [%s]", config.listenPort.value)
-	log.Printf("[CONFIG] solrHost    = [%s]", config.solrHost.value)
-	log.Printf("[CONFIG] solrCore    = [%s]", config.solrCore.value)
-	log.Printf("[CONFIG] solrHandler = [%s]", config.solrHandler.value)
-	log.Printf("[CONFIG] solrTimeout = [%s]", config.solrTimeout.value)
+	log.Printf("[CONFIG] listenPort      = [%s]", config.listenPort.value)
+	log.Printf("[CONFIG] masterSearchUrl = [%s]", config.masterSearchUrl.value)
+	log.Printf("[CONFIG] poolServiceUrl  = [%s]", config.poolServiceUrl.value)
+	log.Printf("[CONFIG] solrHost        = [%s]", config.solrHost.value)
+	log.Printf("[CONFIG] solrCore        = [%s]", config.solrCore.value)
+	log.Printf("[CONFIG] solrHandler     = [%s]", config.solrHandler.value)
+	log.Printf("[CONFIG] solrTimeout     = [%s]", config.solrTimeout.value)
 }
 
 func init() {
 	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "VIRGO4_SOLR_POOL_WS_LISTEN_PORT", desc: "listen port"}}
+	config.masterSearchUrl = configStringItem{value: "", configItem: configItem{flag: "m", env: "VIRGO4_SOLR_POOL_MASTER_SEARCH_URL", desc: "master search url"}}
+	config.poolServiceUrl = configStringItem{value: "", configItem: configItem{flag: "p", env: "VIRGO4_SOLR_POOL_SERVICE_URL", desc: "pool service url (registered with master)"}}
 	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "VIRGO4_SOLR_POOL_WS_SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
 	config.solrCore = configStringItem{value: "", configItem: configItem{flag: "c", env: "VIRGO4_SOLR_POOL_WS_SOLR_CORE", desc: "Solr core"}}
 	config.solrHandler = configStringItem{value: "", configItem: configItem{flag: "s", env: "VIRGO4_SOLR_POOL_WS_SOLR_HANDLER", desc: "Solr search handler"}}
