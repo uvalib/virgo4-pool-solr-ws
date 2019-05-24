@@ -20,7 +20,7 @@ func registerPool() {
 
 	jsonReq, _ := json.Marshal(req)
 
-	// short delay to allow router to start up, otherwise master might check health before we're ready
+	// short delay to allow router to start up, otherwise interpool search might check health before we're ready
 	time.Sleep(3 * time.Second)
 
 	// loop until registered
@@ -37,7 +37,7 @@ func registerPool() {
 }
 
 func attemptPoolRegistration(jsonReq []byte) error {
-	registrationUrl := fmt.Sprintf("%s/api/pools/register", config.masterSearchUrl.value)
+	registrationUrl := fmt.Sprintf("%s/api/pools/register", config.interpoolSearchUrl.value)
 
 	req, reqErr := http.NewRequest("POST", registrationUrl, bytes.NewBuffer(jsonReq))
 	if reqErr != nil {
