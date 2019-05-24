@@ -12,30 +12,6 @@ import (
 	"time"
 )
 
-func registerPool() {
-	req := VirgoPoolRegistration{}
-
-	req.Name = program
-	req.Url = config.poolServiceUrl.value
-
-	jsonReq, _ := json.Marshal(req)
-
-	// short delay to allow router to start up, otherwise interpool search might check health before we're ready
-	time.Sleep(3 * time.Second)
-
-	// loop until registered
-	for {
-		if regErr := attemptPoolRegistration(jsonReq); regErr != nil {
-			log.Printf("Pool registration failed: [%s]", regErr.Error())
-			time.Sleep(15 * time.Second)
-		} else {
-			break
-		}
-	}
-
-	log.Printf("Pool registration succeeded")
-}
-
 func attemptPoolRegistration(jsonReq []byte) error {
 	registrationUrl := fmt.Sprintf("%s/api/pools/register", config.interpoolSearchUrl.value)
 
@@ -72,4 +48,34 @@ func attemptPoolRegistration(jsonReq []byte) error {
 	}
 
 	return nil
+}
+
+func registerPool() {
+	log.Printf("Registering pool...")
+
+	req := VirgoPoolRegistration{}
+
+	req.Url = config.poolServiceUrl.value
+
+	jsonReq, _ := json.Marshal(req)
+
+	// loop until registered
+	for {
+		if regErr := attemptPoolRegistration(jsonReq); regErr != nil {
+			log.Printf("Pool registration failed: [%s]", regErr.Error())
+			time.Sleep(15 * time.Second)
+		} else {
+			break
+		}
+	}
+
+	log.Printf("Pool registration succeeded")
+}
+
+func poolRegistrationLoop() {
+	// short delay to allow router to start up, otherwise interpool search might check health before we're ready
+	time.Sleep(3 * time.Second)
+
+	// it's a very efficient loop...
+	registerPool()
 }

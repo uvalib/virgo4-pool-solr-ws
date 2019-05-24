@@ -68,7 +68,7 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 	return &solrRes, nil
 }
 
-func solrSearchHandler(virgoReq VirgoSearchRequest) (*VirgoSearchResponse, error) {
+func solrSearchHandler(virgoReq VirgoSearchRequest) (*VirgoPoolResult, error) {
 	solrReq := solrSearchRequest(virgoReq)
 
 	solrRes, solrResErr := solrQuery(solrReq)
@@ -88,8 +88,8 @@ func solrSearchHandler(virgoReq VirgoSearchRequest) (*VirgoSearchResponse, error
 	return virgoRes, nil
 }
 
-func solrRecordHandler(virgoReq VirgoSearchRequest) (*VirgoRecord, error) {
-	solrReq := solrRecordRequest(virgoReq)
+func solrRecordHandler(id string) (*VirgoRecord, error) {
+	solrReq := solrRecordRequest(id)
 
 	solrRes, solrResErr := solrQuery(solrReq)
 
@@ -99,26 +99,6 @@ func solrRecordHandler(virgoReq VirgoSearchRequest) (*VirgoRecord, error) {
 	}
 
 	virgoRes, virgoResErr := virgoRecordResponse(solrRes)
-
-	if virgoResErr != nil {
-		log.Printf("result parsing error: %s", virgoResErr.Error())
-		return nil, virgoResErr
-	}
-
-	return virgoRes, nil
-}
-
-func solrPoolSummaryHandler(virgoReq VirgoSearchRequest) (*VirgoPoolResult, error) {
-	solrReq := solrPoolSummaryRequest(virgoReq)
-
-	solrRes, solrResErr := solrQuery(solrReq)
-
-	if solrResErr != nil {
-		log.Printf("query execute error: %s", solrResErr.Error())
-		return nil, solrResErr
-	}
-
-	virgoRes, virgoResErr := virgoPoolSummaryResponse(solrRes)
 
 	if virgoResErr != nil {
 		log.Printf("result parsing error: %s", virgoResErr.Error())

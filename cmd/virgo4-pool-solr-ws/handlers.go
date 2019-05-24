@@ -27,37 +27,13 @@ func searchHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func recordHandler(c *gin.Context) {
-	var req VirgoSearchRequest
-	var query VirgoSearchOptions
+func resourceHandler(c *gin.Context) {
+	id := c.Param("id")
 
-	query.Id = c.Param("id")
-	req.Query = &query
-
-	res, resErr := solrRecordHandler(req)
+	res, resErr := solrRecordHandler(id)
 
 	if resErr != nil {
-		log.Printf("recordHandler: error: %s", resErr.Error())
-		c.String(http.StatusInternalServerError, resErr.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
-}
-
-func poolSummaryHandler(c *gin.Context) {
-	var req VirgoSearchRequest
-
-	if err := c.BindJSON(&req); err != nil {
-		log.Printf("poolSummaryHandler: invalid request: %s", err.Error())
-		c.String(http.StatusBadRequest, "Invalid request")
-		return
-	}
-
-	res, resErr := solrPoolSummaryHandler(req)
-
-	if resErr != nil {
-		log.Printf("poolSummaryHandler: error: %s", resErr.Error())
+		log.Printf("resourceHandler: error: %s", resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
@@ -77,8 +53,19 @@ func versionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, vMap)
 }
 
+func identifyHandler(c *gin.Context) {
+	iMap := make(map[string]string)
+
+	iMap["name"] = "catalog"
+	iMap["description"] = "The UVA libary catalog"
+
+	c.JSON(http.StatusOK, iMap)
+}
+
 func healthCheckHandler(c *gin.Context) {
 	hcMap := make(map[string]string)
+
+	// FIXME
 
 	hcMap[program] = "true"
 	hcMap["Solr"] = "true"

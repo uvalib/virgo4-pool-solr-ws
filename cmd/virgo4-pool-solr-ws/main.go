@@ -27,19 +27,18 @@ func main() {
 	router.GET("/favicon.ico", ignoreHandler)
 
 	router.GET("/version", versionHandler)
-
+	router.GET("/identify", identifyHandler)
 	router.GET("/healthcheck", healthCheckHandler)
 
-	api := router.Group("/api")
-
-	api.POST("/search", searchHandler)
-	api.GET("/search/:id", recordHandler)
-	api.POST("/pool_summary", poolSummaryHandler)
+	if api := router.Group("/api"); api != nil {
+		api.POST("/search", searchHandler)
+		api.GET("/resource/:id", resourceHandler)
+	}
 
 	portStr := fmt.Sprintf(":%s", config.listenPort.value)
 	log.Printf("Start service on %s", portStr)
 
-	go registerPool()
+	go poolRegistrationLoop()
 
 	log.Fatal(router.Run(portStr))
 }

@@ -6,6 +6,7 @@ import (
 
 // functions that map virgo data into solr data
 
+/*
 func solrBuildParameterQBasic(v VirgoSearchRequest) string {
 	switch {
 	case v.Query.Title != "":
@@ -34,6 +35,12 @@ func solrBuildParameterQ(v VirgoSearchRequest) string {
 
 	// fall back to basic search
 	return solrBuildParameterQBasic(v)
+}
+*/
+
+func solrBuildParameterQ(v VirgoSearchRequest) string {
+	// everything is a keword search for now
+	return fmt.Sprintf("{!edismax qf=$qf pf=$pf}(%s)", v.Query)
 }
 
 func solrBuildParameterStart(s int) string {
@@ -100,22 +107,15 @@ func solrSearchRequest(v VirgoSearchRequest) solrRequest {
 	return solrReq
 }
 
-func solrRecordRequest(v VirgoSearchRequest) solrRequest {
+func solrRecordRequest(id string) solrRequest {
+	v := VirgoSearchRequest{}
+
 	solrReq := solrRequestWithDefaults(v)
 
 	// override these values from defaults
+	solrReq.params["q"] = fmt.Sprintf("id:%s", id)
 	solrReq.params["start"] = "0"
 	solrReq.params["rows"] = "2"
-
-	return solrReq
-}
-
-func solrPoolSummaryRequest(v VirgoSearchRequest) solrRequest {
-	solrReq := solrRequestWithDefaults(v)
-
-	// override these values from defaults
-	solrReq.params["start"] = "0"
-	solrReq.params["rows"] = "0"
 
 	return solrReq
 }
