@@ -6,8 +6,8 @@ package main
 // https://github.com/uvalib/v4-api/blob/master/search-api-OAS3.json
 
 type VirgoSearchRequest struct {
-	Query       string            `json:"query,omitempty"`
-	Pagination  *VirgoPagination  `json:"pagination,omitempty"`
+	Query      string           `json:"query,omitempty"`
+	Pagination *VirgoPagination `json:"pagination,omitempty"`
 }
 
 type VirgoPoolResult struct {

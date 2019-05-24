@@ -24,13 +24,13 @@ type configBoolItem struct {
 }
 
 type configData struct {
-	listenPort  configStringItem
-	interpoolSearchUrl   configStringItem
+	listenPort         configStringItem
+	interpoolSearchUrl configStringItem
 	poolServiceUrl     configStringItem
-	solrHost    configStringItem
-	solrCore    configStringItem
-	solrHandler configStringItem
-	solrTimeout configStringItem
+	solrHost           configStringItem
+	solrCore           configStringItem
+	solrHandler        configStringItem
+	solrTimeout        configStringItem
 }
 
 var config configData
