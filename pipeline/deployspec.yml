@@ -25,7 +25,7 @@ phases:
     commands:
       - expected_build=$(aws --region=$AWS_REGION ssm get-parameter --name /containers/$CONTAINER_IMAGE/latest | grep "Value" | awk -F\" '{print $4}')
       - echo waiting for deployment to report build $expected_build
-      - ./pipeline/wait_for_version.sh $TC_ENDPOINT $expected_build 90
+      - sh ./pipeline/wait_for_version.sh $TC_ENDPOINT $expected_build 90
 
 #
 # end of file
