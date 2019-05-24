@@ -32,5 +32,6 @@ type VirgoPagination struct {
 }
 
 type VirgoPoolRegistration struct {
-	Url string `json:"url"`
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }

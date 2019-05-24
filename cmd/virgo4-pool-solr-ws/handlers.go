@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,10 +56,23 @@ func versionHandler(c *gin.Context) {
 }
 
 func identifyHandler(c *gin.Context) {
+	var desc string
+
+	// pool description will vary based on pool type, and will eventually
+	// be localized as well based on browser language settings
+
+	switch config.poolType.value {
+	case "catalog":
+		desc = "The UVA Library Catalog"
+
+	default:
+		desc = fmt.Sprintf("The UVA Library Catalog (%s)", strings.Title(config.poolType.value))
+	}
+
 	iMap := make(map[string]string)
 
-	iMap["name"] = "catalog"
-	iMap["description"] = "The UVA libary catalog"
+	iMap["name"] = config.poolType.value
+	iMap["description"] = desc
 
 	c.JSON(http.StatusOK, iMap)
 }

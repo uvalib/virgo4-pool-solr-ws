@@ -55,6 +55,7 @@ func registerPool() {
 
 	req := VirgoPoolRegistration{}
 
+	req.Name = config.poolType.value
 	req.Url = config.poolServiceUrl.value
 
 	jsonReq, _ := json.Marshal(req)
