@@ -40,45 +40,61 @@ func solrBuildParameterQ(v VirgoSearchRequest) string {
 
 func solrBuildParameterQ(v VirgoSearchRequest) string {
 	// everything is a keword search for now
-	return fmt.Sprintf("{!edismax qf=$qf pf=$pf}(%s)", v.Query)
+	q := fmt.Sprintf("{!edismax qf=$qf pf=$pf}(%s)", v.Query)
+
+	return q
 }
 
 func solrBuildParameterStart(s int) string {
 	// default, if requested value doesn't make sense
-	start := 0
+	startnum := 0
 
 	if s >= 0 {
-		start = s
+		startnum = s
 	}
 
-	return fmt.Sprintf("%d", start)
+	start := fmt.Sprintf("%d", startnum)
+
+	return start
 }
 
 func solrBuildParameterRows(r int) string {
 	// default, if requested value doesn't make sense
-	rows := 10
+	rownum := 10
 
 	if r > 0 {
-		rows = r
+		rownum = r
 	}
 
-	return fmt.Sprintf("%d", rows)
+	rows := fmt.Sprintf("%d", rownum)
+
+	return rows
 }
 
 func solrBuildParameterQt() string {
-	return "search"
+	qt := "search"
+
+	return qt
 }
 
 func solrBuildParameterDefType() string {
-	return "lucene"
+	deftype := "lucene"
+
+	return deftype
 }
 
 func solrBuildParameterFq() string {
-	return "shadowed_location_f:VISIBLE"
+	// leaders must be defined with beginning + or -
+
+	fq := fmt.Sprintf("+shadowed_location_f:VISIBLE %s", pool.leaders)
+
+	return fq
 }
 
 func solrBuildParameterFl() string {
-	return "*,score"
+	score := "*,score"
+
+	return score
 }
 
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {

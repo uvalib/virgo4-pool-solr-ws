@@ -108,7 +108,7 @@ func solrRecordHandler(id string) (*VirgoRecord, error) {
 	return virgoRes, nil
 }
 
-func init() {
+func initSolrClient() {
 	timeout, err := strconv.Atoi(config.solrTimeout.value)
 
 	// fallback for invalid or nonsensical timeout values
@@ -116,8 +116,6 @@ func init() {
 	if err != nil || timeout < 1 {
 		timeout = 30
 	}
-
-	log.Printf("solr client timeout: %d", timeout)
 
 	solrClient = &http.Client{Timeout: time.Duration(timeout) * time.Second}
 }
