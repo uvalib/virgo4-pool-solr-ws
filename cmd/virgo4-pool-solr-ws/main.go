@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
 )
@@ -30,6 +31,8 @@ func main() {
 	gin.DisableConsoleColor()
 
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(router)
