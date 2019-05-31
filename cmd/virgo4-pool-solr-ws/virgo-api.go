@@ -10,17 +10,27 @@ type VirgoSearchRequest struct {
 	Pagination *VirgoPagination `json:"pagination,omitempty"`
 }
 
+type VirgoPoolResultDebug struct {
+	MaxScore float32 `json:"max_score"`
+}
+
 type VirgoPoolResult struct {
-	ServiceUrl string           `json:"service_url,omitempty"` // required
-	Pagination *VirgoPagination `json:"pagination,omitempty"`
-	RecordList VirgoRecordList  `json:"record_list,omitempty"`
-	Confidence string           `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
+	ServiceUrl string                `json:"service_url,omitempty"` // required
+	Pagination *VirgoPagination      `json:"pagination,omitempty"`
+	RecordList VirgoRecordList       `json:"record_list,omitempty"`
+	Confidence string                `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
+	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
+}
+
+type VirgoRecordDebug struct {
+	Score float32 `json:"score"`
 }
 
 type VirgoRecord struct {
-	Id     string `json:"id,omitempty"`
-	Title  string `json:"title,omitempty"`
-	Author string `json:"author,omitempty"`
+	Id     string            `json:"id,omitempty"`
+	Title  string            `json:"title,omitempty"`
+	Author string            `json:"author,omitempty"`
+	Debug  *VirgoRecordDebug `json:"debug,omitempty"`
 }
 
 type VirgoRecordList []VirgoRecord

@@ -6,6 +6,14 @@ import (
 
 // functions that map solr data into virgo data
 
+func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
+	var debug VirgoRecordDebug
+
+	debug.Score = doc.Score
+
+	return &debug
+}
+
 func virgoPopulateRecord(doc solrDocument) *VirgoRecord {
 	var record VirgoRecord
 
@@ -21,6 +29,8 @@ func virgoPopulateRecord(doc solrDocument) *VirgoRecord {
 		record.Author = doc.Author[0]
 	}
 
+	record.Debug = virgoPopulateRecordDebug(doc)
+
 	return &record
 }
 
@@ -34,23 +44,18 @@ func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	return &pagination
 }
 
+func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
+	var debug VirgoPoolResultDebug
+
+	debug.MaxScore = solrRes.Response.MaxScore
+
+	return &debug
+}
+
 func virgoPopulatePoolResult(solrRes *solrResponse) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
 	poolResult.ServiceUrl = config.poolServiceUrl.value
-
-	// FIXME: somehow create a confidence level from the query score
-
-	switch {
-	case solrRes.Response.MaxScore > 100.0:
-		poolResult.Confidence = "exact"
-	case solrRes.Response.MaxScore > 10.0:
-		poolResult.Confidence = "high"
-	case solrRes.Response.MaxScore > 1.0:
-		poolResult.Confidence = "medium"
-	default:
-		poolResult.Confidence = "low"
-	}
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
@@ -59,6 +64,20 @@ func virgoPopulatePoolResult(solrRes *solrResponse) *VirgoPoolResult {
 
 		poolResult.RecordList = append(poolResult.RecordList, *record)
 	}
+
+	// FIXME: somehow create a confidence level from the query score
+	// (exact would mean first result equals the query and/or has a high enough score?)
+
+	switch {
+	case solrRes.Response.MaxScore > 100.0:
+		poolResult.Confidence = "high"
+	case solrRes.Response.MaxScore > 10.0:
+		poolResult.Confidence = "medium"
+	default:
+		poolResult.Confidence = "low"
+	}
+
+	poolResult.Debug = virgoPopulatePoolResultDebug(solrRes)
 
 	return &poolResult
 }
