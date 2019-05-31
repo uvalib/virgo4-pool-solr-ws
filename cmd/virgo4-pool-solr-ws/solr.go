@@ -12,12 +12,12 @@ import (
 
 var solrClient *http.Client
 
-func solrQuery(solrReq solrRequest) (*solrResponse, error) {
+func solrQuery(solrReq solrRequest, client ClientOptions) (*solrResponse, error) {
 	solrUrl := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 
 	req, reqErr := http.NewRequest("GET", solrUrl, nil)
 	if reqErr != nil {
-		log.Printf("NewRequest() failed: %s", reqErr.Error())
+		log.Printf("[%s] NewRequest() failed: %s", client.reqId, reqErr.Error())
 		return nil, errors.New("Failed to create Solr request")
 	}
 
@@ -28,25 +28,25 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 			continue
 		}
 
-		//log.Printf("adding field: [%s] = [%s]", key, val)
+		log.Printf("[%s] [solr] adding field: [%s] = [%s]", client.reqId, key, val)
 		q.Add(key, val)
 	}
 
 	req.URL.RawQuery = q.Encode()
 
-	log.Printf("solr req: [%s]", req.URL.String())
+	log.Printf("[%s] [solr] req: [%s]", client.reqId, req.URL.String())
 
 	start := time.Now()
 
 	res, resErr := solrClient.Do(req)
 	if resErr != nil {
-		log.Printf("client.Do() failed: %s", resErr.Error())
+		log.Printf("[%s] client.Do() failed: %s", client.reqId, resErr.Error())
 		return nil, errors.New("Failed to receive Solr response")
 	}
 
 	elapsed := time.Since(start).Seconds()
 
-	log.Printf("solr query elapsed time: %0.3fs", elapsed)
+	log.Printf("[%s] [solr] query elapsed time: %0.3fs", client.reqId, elapsed)
 
 	defer res.Body.Close()
 
@@ -57,11 +57,11 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 	decoder := json.NewDecoder(res.Body)
 
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
-		log.Printf("Decode() failed: %s", decErr.Error())
+		log.Printf("[%s] Decode() failed: %s", client.reqId, decErr.Error())
 		return nil, errors.New("Failed to decode Solr response")
 	}
 
-	logHeader := fmt.Sprintf("solr res: header: { status = %d, QTime = %d (elapsed: %0.3fs) }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime, elapsed)
+	logHeader := fmt.Sprintf("[%s] [solr] res: header: { status = %d, QTime = %d (elapsed: %0.3fs) }", client.reqId, solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime, elapsed)
 
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
@@ -74,40 +74,40 @@ func solrQuery(solrReq solrRequest) (*solrResponse, error) {
 	return &solrRes, nil
 }
 
-func solrSearchHandler(virgoReq VirgoSearchRequest, opts FormatOptions) (*VirgoPoolResult, error) {
+func solrSearchHandler(virgoReq VirgoSearchRequest, client ClientOptions) (*VirgoPoolResult, error) {
 	solrReq := solrSearchRequest(virgoReq)
 
-	solrRes, solrResErr := solrQuery(solrReq)
+	solrRes, solrResErr := solrQuery(solrReq, client)
 
 	if solrResErr != nil {
-		log.Printf("query execute error: %s", solrResErr.Error())
+		log.Printf("[%s] query execute error: %s", client.reqId, solrResErr.Error())
 		return nil, solrResErr
 	}
 
-	virgoRes, virgoResErr := virgoSearchResponse(solrRes, opts)
+	virgoRes, virgoResErr := virgoSearchResponse(solrRes, client)
 
 	if virgoResErr != nil {
-		log.Printf("result parsing error: %s", virgoResErr.Error())
+		log.Printf("[%s] result parsing error: %s", client.reqId, virgoResErr.Error())
 		return nil, virgoResErr
 	}
 
 	return virgoRes, nil
 }
 
-func solrRecordHandler(id string, opts FormatOptions) (*VirgoRecord, error) {
+func solrRecordHandler(id string, client ClientOptions) (*VirgoRecord, error) {
 	solrReq := solrRecordRequest(id)
 
-	solrRes, solrResErr := solrQuery(solrReq)
+	solrRes, solrResErr := solrQuery(solrReq, client)
 
 	if solrResErr != nil {
-		log.Printf("query execute error: %s", solrResErr.Error())
+		log.Printf("[%s] query execute error: %s", client.reqId, solrResErr.Error())
 		return nil, solrResErr
 	}
 
-	virgoRes, virgoResErr := virgoRecordResponse(solrRes, opts)
+	virgoRes, virgoResErr := virgoRecordResponse(solrRes, client)
 
 	if virgoResErr != nil {
-		log.Printf("result parsing error: %s", virgoResErr.Error())
+		log.Printf("[%s] result parsing error: %s", client.reqId, virgoResErr.Error())
 		return nil, virgoResErr
 	}
 

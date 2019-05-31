@@ -3,49 +3,27 @@ package main
 import (
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-// options set by client
-type FormatOptions struct {
-	debug bool
-}
-
-func parseBoolOption(opt string) bool {
-	val := false
-
-	if b, err := strconv.ParseBool(opt); err == nil && b == true {
-		val = true
-	}
-
-	return val
-}
-
-func getFormatOptions(c *gin.Context) FormatOptions {
-	var options FormatOptions
-
-	options.debug = parseBoolOption(c.Query("debug"))
-
-	return options
-}
-
 func searchHandler(c *gin.Context) {
+	client := getClientOptions(c)
+
 	var req VirgoSearchRequest
 
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("searchHandler: invalid request: %s", err.Error())
+		log.Printf("[%s] searchHandler: invalid request: %s", client.reqId, err.Error())
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
 
-	opts := getFormatOptions(c)
+	log.Printf("[%s] query: [%s]", client.reqId, req.Query)
 
-	res, resErr := solrSearchHandler(req, opts)
+	res, resErr := solrSearchHandler(req, client)
 
 	if resErr != nil {
-		log.Printf("searchHandler: error: %s", resErr.Error())
+		log.Printf("[%s] searchHandler: error: %s", client.reqId, resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}
@@ -56,12 +34,12 @@ func searchHandler(c *gin.Context) {
 func resourceHandler(c *gin.Context) {
 	id := c.Param("id")
 
-	opts := getFormatOptions(c)
+	client := getClientOptions(c)
 
-	res, resErr := solrRecordHandler(id, opts)
+	res, resErr := solrRecordHandler(id, client)
 
 	if resErr != nil {
-		log.Printf("resourceHandler: error: %s", resErr.Error())
+		log.Printf("[%s] resourceHandler: error: %s", client.reqId, resErr.Error())
 		c.String(http.StatusInternalServerError, resErr.Error())
 		return
 	}

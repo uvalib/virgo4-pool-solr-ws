@@ -39,7 +39,7 @@ func solrBuildParameterQ(v VirgoSearchRequest) string {
 */
 
 func solrBuildParameterQ(v VirgoSearchRequest) string {
-	// everything is a keword search for now
+	// everything is a keyword search for now
 	q := fmt.Sprintf("{!edismax qf=$qf pf=$pf}(%s)", v.Query)
 
 	return q
