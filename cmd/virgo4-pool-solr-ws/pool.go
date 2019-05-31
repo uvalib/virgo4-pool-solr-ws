@@ -74,6 +74,11 @@ func registerPool() {
 }
 
 func poolRegistrationLoop() {
+	if strings.Contains(config.interpoolSearchUrl.value, "http") == false {
+		log.Printf("Pool registration skipped")
+		return
+	}
+
 	// short delay to allow router to start up, otherwise interpool search might check health before we're ready
 	time.Sleep(3 * time.Second)
 
