@@ -17,7 +17,7 @@ require (
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.1 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
-	github.com/smartystreets/assertions v0.0.0-20190401211740-f487f9de1cd3 // indirect
+	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/zsais/go-gin-prometheus v0.0.0-20181030200533-58963fb32f54
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092 // indirect
