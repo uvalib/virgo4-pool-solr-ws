@@ -14,7 +14,7 @@ func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
 	return &debug
 }
 
-func virgoPopulateRecord(doc solrDocument) *VirgoRecord {
+func virgoPopulateRecord(doc solrDocument, opts FormatOptions) *VirgoRecord {
 	var record VirgoRecord
 
 	record.Id = doc.Id
@@ -29,7 +29,9 @@ func virgoPopulateRecord(doc solrDocument) *VirgoRecord {
 		record.Author = doc.Author[0]
 	}
 
-	record.Debug = virgoPopulateRecordDebug(doc)
+	if opts.debug == true {
+		record.Debug = virgoPopulateRecordDebug(doc)
+	}
 
 	return &record
 }
@@ -52,7 +54,7 @@ func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
 	return &debug
 }
 
-func virgoPopulatePoolResult(solrRes *solrResponse) *VirgoPoolResult {
+func virgoPopulatePoolResult(solrRes *solrResponse, opts FormatOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
 	poolResult.ServiceUrl = config.poolServiceUrl.value
@@ -60,7 +62,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse) *VirgoPoolResult {
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
 	for _, doc := range solrRes.Response.Docs {
-		record := virgoPopulateRecord(doc)
+		record := virgoPopulateRecord(doc, opts)
 
 		poolResult.RecordList = append(poolResult.RecordList, *record)
 	}
@@ -77,20 +79,22 @@ func virgoPopulatePoolResult(solrRes *solrResponse) *VirgoPoolResult {
 		poolResult.Confidence = "low"
 	}
 
-	poolResult.Debug = virgoPopulatePoolResultDebug(solrRes)
+	if opts.debug == true {
+		poolResult.Debug = virgoPopulatePoolResultDebug(solrRes)
+	}
 
 	return &poolResult
 }
 
 // the main response functions for each endpoint
 
-func virgoSearchResponse(solrRes *solrResponse) (*VirgoPoolResult, error) {
-	virgoRes := virgoPopulatePoolResult(solrRes)
+func virgoSearchResponse(solrRes *solrResponse, opts FormatOptions) (*VirgoPoolResult, error) {
+	virgoRes := virgoPopulatePoolResult(solrRes, opts)
 
 	return virgoRes, nil
 }
 
-func virgoRecordResponse(solrRes *solrResponse) (*VirgoRecord, error) {
+func virgoRecordResponse(solrRes *solrResponse, opts FormatOptions) (*VirgoRecord, error) {
 	var virgoRes *VirgoRecord
 
 	switch solrRes.Response.NumFound {
@@ -98,7 +102,7 @@ func virgoRecordResponse(solrRes *solrResponse) (*VirgoRecord, error) {
 		return nil, errors.New("Item not found")
 
 	case 1:
-		virgoRes = virgoPopulateRecord(solrRes.Response.Docs[0])
+		virgoRes = virgoPopulateRecord(solrRes.Response.Docs[0], opts)
 
 	default:
 		return nil, errors.New("Multiple items found")

@@ -3,9 +3,33 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+
+// options set by client
+type FormatOptions struct {
+	debug bool
+}
+
+func parseBoolOption(opt string) bool {
+	val := false
+
+	if b, err := strconv.ParseBool(opt); err == nil && b == true {
+		val = true
+	}
+
+	return val
+}
+
+func getFormatOptions(c *gin.Context) FormatOptions {
+	var options FormatOptions
+
+	options.debug = parseBoolOption(c.Query("debug"))
+
+	return options
+}
 
 func searchHandler(c *gin.Context) {
 	var req VirgoSearchRequest
@@ -16,7 +40,9 @@ func searchHandler(c *gin.Context) {
 		return
 	}
 
-	res, resErr := solrSearchHandler(req)
+	opts := getFormatOptions(c)
+
+	res, resErr := solrSearchHandler(req, opts)
 
 	if resErr != nil {
 		log.Printf("searchHandler: error: %s", resErr.Error())
@@ -30,7 +56,9 @@ func searchHandler(c *gin.Context) {
 func resourceHandler(c *gin.Context) {
 	id := c.Param("id")
 
-	res, resErr := solrRecordHandler(id)
+	opts := getFormatOptions(c)
+
+	res, resErr := solrRecordHandler(id, opts)
 
 	if resErr != nil {
 		log.Printf("resourceHandler: error: %s", resErr.Error())

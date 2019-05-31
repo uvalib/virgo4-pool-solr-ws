@@ -12,8 +12,8 @@ import (
 type poolInfo struct {
 	name    string // pool type
 	desc    string // localized
-	url     string
-	leaders string // addiotnal filter query for this type of pool
+	url     string // service url
+	leaders string // additional leader-based filter query for this type of pool
 }
 
 // identifying info about the specific type of Solr pool we are
