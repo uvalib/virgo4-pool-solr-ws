@@ -94,7 +94,7 @@ func configurePool() {
 
 	case "archival":
 		pool.desc = "The UVA Library Archival Catalog"
-		pool.leaders = "+leader67_f:(pc OR tc)"
+		pool.leaders = "+leader67_f:(pc OR tc OR ac)"
 
 	default:
 		log.Fatalf("Unhandled pool type: [%s]", pool.name)
