@@ -61,10 +61,16 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client ClientOptions) *Virgo
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
-	for _, doc := range solrRes.Response.Docs {
-		record := virgoPopulateRecord(doc, client)
+	if len(solrRes.Response.Docs) > 0 {
+		var recordList VirgoRecordList
 
-		poolResult.RecordList = append(poolResult.RecordList, *record)
+		for _, doc := range solrRes.Response.Docs {
+			record := virgoPopulateRecord(doc, client)
+
+			recordList = append(recordList, *record)
+		}
+
+		poolResult.RecordList = &recordList
 	}
 
 	// FIXME: somehow create a confidence level from the query score

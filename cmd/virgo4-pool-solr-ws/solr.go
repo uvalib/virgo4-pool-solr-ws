@@ -12,7 +12,7 @@ import (
 
 var solrClient *http.Client
 
-func solrQuery(solrReq solrRequest, client ClientOptions) (*solrResponse, error) {
+func solrQuery(solrReq *solrRequest, client ClientOptions) (*solrResponse, error) {
 	solrUrl := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 
 	req, reqErr := http.NewRequest("GET", solrUrl, nil)
@@ -75,12 +75,17 @@ func solrQuery(solrReq solrRequest, client ClientOptions) (*solrResponse, error)
 }
 
 func solrSearchHandler(virgoReq VirgoSearchRequest, client ClientOptions) (*VirgoPoolResult, error) {
-	solrReq := solrSearchRequest(virgoReq)
+	solrReq, solrReqErr := solrSearchRequest(virgoReq)
+
+	if solrReqErr != nil {
+		log.Printf("[%s] query creation error: %s", client.reqId, solrReqErr.Error())
+		return nil, solrReqErr
+	}
 
 	solrRes, solrResErr := solrQuery(solrReq, client)
 
 	if solrResErr != nil {
-		log.Printf("[%s] query execute error: %s", client.reqId, solrResErr.Error())
+		log.Printf("[%s] query execution error: %s", client.reqId, solrResErr.Error())
 		return nil, solrResErr
 	}
 
@@ -95,7 +100,12 @@ func solrSearchHandler(virgoReq VirgoSearchRequest, client ClientOptions) (*Virg
 }
 
 func solrRecordHandler(id string, client ClientOptions) (*VirgoRecord, error) {
-	solrReq := solrRecordRequest(id)
+	solrReq, solrReqErr := solrRecordRequest(id)
+
+	if solrReqErr != nil {
+		log.Printf("[%s] query creation error: %s", client.reqId, solrReqErr.Error())
+		return nil, solrReqErr
+	}
 
 	solrRes, solrResErr := solrQuery(solrReq, client)
 

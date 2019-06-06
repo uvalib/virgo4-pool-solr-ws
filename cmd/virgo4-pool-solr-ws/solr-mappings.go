@@ -1,46 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
 // functions that map virgo data into solr data
 
-/*
-func solrBuildParameterQBasic(v VirgoSearchRequest) string {
-	switch {
-	case v.Query.Title != "":
-		return fmt.Sprintf("{!edismax qf=$title_qf pf=$title_pf}(%s)", v.Query.Title)
-
-	case v.Query.Author != "":
-		return fmt.Sprintf("{!edismax qf=$author_qf pf=$author_pf}(%s)", v.Query.Author)
-
-	case v.Query.Subject != "":
-		return fmt.Sprintf("{!edismax qf=$subject_qf pf=$subject_pf}(%s)", v.Query.Subject)
-
-	default:
-		return fmt.Sprintf("{!edismax qf=$qf pf=$pf}(%s)", v.Query.Keyword)
-	}
-}
-
-func solrBuildParameterQAdvanced(v VirgoSearchRequest) string {
-	return "buildme"
-}
-
 func solrBuildParameterQ(v VirgoSearchRequest) string {
-	// check if this is a specific item search
-	if v.Query.Id != "" {
-		return fmt.Sprintf("id:%s", v.Query.Id)
-	}
-
-	// fall back to basic search
-	return solrBuildParameterQBasic(v)
-}
-*/
-
-func solrBuildParameterQ(v VirgoSearchRequest) string {
-	// everything is a keyword search for now
-	q := fmt.Sprintf("{!edismax qf=$qf pf=$pf}(%s)", v.Query)
+	q := v.SolrQuery
 
 	return q
 }
@@ -117,21 +85,28 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	return solrReq
 }
 
-func solrSearchRequest(v VirgoSearchRequest) solrRequest {
+func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
+	var err error
+
+	if v.SolrQuery, err = virgoQueryConvertToSolr(v.Query); err != nil {
+		return nil, errors.New(fmt.Sprintf("Virgo query to Solr conversion error: %s", err.Error()))
+	}
+
 	solrReq := solrRequestWithDefaults(v)
 
-	return solrReq
+	return &solrReq, nil
 }
 
-func solrRecordRequest(id string) solrRequest {
+func solrRecordRequest(id string) (*solrRequest, error) {
 	v := VirgoSearchRequest{}
+
+	v.SolrQuery = fmt.Sprintf("id:%s", id)
 
 	solrReq := solrRequestWithDefaults(v)
 
 	// override these values from defaults
-	solrReq.params["q"] = fmt.Sprintf("id:%s", id)
 	solrReq.params["start"] = "0"
 	solrReq.params["rows"] = "2"
 
-	return solrReq
+	return &solrReq, nil
 }

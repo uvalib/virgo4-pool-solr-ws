@@ -7,6 +7,7 @@ package main
 
 type VirgoSearchRequest struct {
 	Query      string           `json:"query,omitempty"`
+	SolrQuery  string           // used internally only
 	Pagination *VirgoPagination `json:"pagination,omitempty"`
 }
 
@@ -14,12 +15,15 @@ type VirgoPoolResultDebug struct {
 	MaxScore float32 `json:"max_score"`
 }
 
+type VirgoPoolResultWarn []string
+
 type VirgoPoolResult struct {
 	ServiceUrl string                `json:"service_url,omitempty"` // required
 	Pagination *VirgoPagination      `json:"pagination,omitempty"`
-	RecordList VirgoRecordList       `json:"record_list,omitempty"`
+	RecordList *VirgoRecordList      `json:"record_list,omitempty"`
 	Confidence string                `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
 	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
+	Warn       *VirgoPoolResultWarn  `json:"warn,omitempty"`
 }
 
 type VirgoRecordDebug struct {
