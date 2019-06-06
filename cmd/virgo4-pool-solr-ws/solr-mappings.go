@@ -40,13 +40,13 @@ func solrBuildParameterRows(r int) string {
 }
 
 func solrBuildParameterQt() string {
-	qt := "search"
+	qt := config.solrParameterQt.value
 
 	return qt
 }
 
 func solrBuildParameterDefType() string {
-	deftype := "lucene"
+	deftype := config.solrParameterDefType.value
 
 	return deftype
 }
@@ -54,15 +54,15 @@ func solrBuildParameterDefType() string {
 func solrBuildParameterFq() string {
 	// leaders must be defined with beginning + or -
 
-	fq := fmt.Sprintf("+shadowed_location_f:VISIBLE %s", pool.leaders)
+	fq := fmt.Sprintf("%s %s", config.solrParameterFq.value, pool.leaders)
 
 	return fq
 }
 
 func solrBuildParameterFl() string {
-	score := "*,score"
+	fl := config.solrParameterFl.value
 
-	return score
+	return fl
 }
 
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {

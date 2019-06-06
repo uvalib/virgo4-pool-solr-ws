@@ -24,14 +24,18 @@ type configBoolItem struct {
 }
 
 type configData struct {
-	listenPort         configStringItem
-	interpoolSearchUrl configStringItem
-	poolType           configStringItem
-	poolServiceUrl     configStringItem
-	solrHost           configStringItem
-	solrCore           configStringItem
-	solrHandler        configStringItem
-	solrTimeout        configStringItem
+	listenPort           configStringItem
+	interpoolSearchUrl   configStringItem
+	poolType             configStringItem
+	poolServiceUrl       configStringItem
+	solrHost             configStringItem
+	solrCore             configStringItem
+	solrHandler          configStringItem
+	solrTimeout          configStringItem
+	solrParameterQt      configStringItem
+	solrParameterDefType configStringItem
+	solrParameterFq      configStringItem
+	solrParameterFl      configStringItem
 }
 
 var config configData
@@ -54,7 +58,9 @@ func ensureConfigStringSet(item *configStringItem) bool {
 }
 
 func flagStringVar(item *configStringItem) {
-	flag.StringVar(&item.value, item.flag, os.Getenv(item.env), item.desc)
+	if val, set := os.LookupEnv(item.env); set == true {
+		flag.StringVar(&item.value, item.flag, val, item.desc)
+	}
 }
 
 func flagBoolVar(item *configBoolItem) {
@@ -71,6 +77,10 @@ func getConfigValues() {
 	flagStringVar(&config.solrCore)
 	flagStringVar(&config.solrHandler)
 	flagStringVar(&config.solrTimeout)
+	flagStringVar(&config.solrParameterQt)
+	flagStringVar(&config.solrParameterDefType)
+	flagStringVar(&config.solrParameterFq)
+	flagStringVar(&config.solrParameterFl)
 
 	flag.Parse()
 
@@ -85,20 +95,28 @@ func getConfigValues() {
 	configOK = ensureConfigStringSet(&config.solrCore) && configOK
 	configOK = ensureConfigStringSet(&config.solrHandler) && configOK
 	configOK = ensureConfigStringSet(&config.solrTimeout) && configOK
+	configOK = ensureConfigStringSet(&config.solrParameterQt) && configOK
+	configOK = ensureConfigStringSet(&config.solrParameterDefType) && configOK
+	configOK = ensureConfigStringSet(&config.solrParameterFq) && configOK
+	configOK = ensureConfigStringSet(&config.solrParameterFl) && configOK
 
 	if configOK == false {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	log.Printf("[CONFIG] listenPort         = [%s]", config.listenPort.value)
-	log.Printf("[CONFIG] interpoolSearchUrl = [%s]", config.interpoolSearchUrl.value)
-	log.Printf("[CONFIG] poolType           = [%s]", config.poolType.value)
-	log.Printf("[CONFIG] poolServiceUrl     = [%s]", config.poolServiceUrl.value)
-	log.Printf("[CONFIG] solrHost           = [%s]", config.solrHost.value)
-	log.Printf("[CONFIG] solrCore           = [%s]", config.solrCore.value)
-	log.Printf("[CONFIG] solrHandler        = [%s]", config.solrHandler.value)
-	log.Printf("[CONFIG] solrTimeout        = [%s]", config.solrTimeout.value)
+	log.Printf("[CONFIG] listenPort           = [%s]", config.listenPort.value)
+	log.Printf("[CONFIG] interpoolSearchUrl   = [%s]", config.interpoolSearchUrl.value)
+	log.Printf("[CONFIG] poolType             = [%s]", config.poolType.value)
+	log.Printf("[CONFIG] poolServiceUrl       = [%s]", config.poolServiceUrl.value)
+	log.Printf("[CONFIG] solrHost             = [%s]", config.solrHost.value)
+	log.Printf("[CONFIG] solrCore             = [%s]", config.solrCore.value)
+	log.Printf("[CONFIG] solrHandler          = [%s]", config.solrHandler.value)
+	log.Printf("[CONFIG] solrTimeout          = [%s]", config.solrTimeout.value)
+	log.Printf("[CONFIG] solrParameterQt      = [%s]", config.solrParameterQt.value)
+	log.Printf("[CONFIG] solrParameterDefType = [%s]", config.solrParameterDefType.value)
+	log.Printf("[CONFIG] solrParameterFq      = [%s]", config.solrParameterFq.value)
+	log.Printf("[CONFIG] solrParameterFl      = [%s]", config.solrParameterFl.value)
 }
 
 func init() {
@@ -110,6 +128,10 @@ func init() {
 	config.solrCore = configStringItem{value: "", configItem: configItem{flag: "c", env: "VIRGO4_SOLR_POOL_WS_SOLR_CORE", desc: "Solr core"}}
 	config.solrHandler = configStringItem{value: "", configItem: configItem{flag: "s", env: "VIRGO4_SOLR_POOL_WS_SOLR_HANDLER", desc: "Solr search handler"}}
 	config.solrTimeout = configStringItem{value: "", configItem: configItem{flag: "t", env: "VIRGO4_SOLR_POOL_WS_SOLR_TIMEOUT", desc: "Solr http client timeout"}}
+	config.solrParameterQt = configStringItem{value: "search", configItem: configItem{flag: "w", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_QT", desc: "Solr qt parameter value"}}
+	config.solrParameterDefType = configStringItem{value: "lucene", configItem: configItem{flag: "x", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_DEFTYPE", desc: "Solr defType parameter value"}}
+	config.solrParameterFq = configStringItem{value: "+shadowed_location_f:VISIBLE", configItem: configItem{flag: "y", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FQ", desc: "Solr fq parameter initial value"}}
+	config.solrParameterFl = configStringItem{value: "*,score", configItem: configItem{flag: "z", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL", desc: "Solr fl parameter value"}}
 
 	getConfigValues()
 }
