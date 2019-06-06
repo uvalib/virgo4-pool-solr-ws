@@ -60,11 +60,11 @@ func registerPool() {
 
 	jsonReq, _ := json.Marshal(req)
 
-	// loop until registered
+	// re-attempt registration every 5 seconds until successful
 	for {
 		if regErr := attemptPoolRegistration(jsonReq); regErr != nil {
 			log.Printf("Pool registration failed: [%s]", regErr.Error())
-			time.Sleep(15 * time.Second)
+			time.Sleep(5 * time.Second)
 		} else {
 			break
 		}
@@ -82,6 +82,9 @@ func poolRegistrationLoop() {
 	// short delay to allow router to start up, otherwise interpool search might check health before we're ready
 	time.Sleep(3 * time.Second)
 
-	// it's a very efficient loop...
-	registerPool()
+	for {
+		// re-register 5 minutes after every successful registration
+		registerPool()
+		time.Sleep(5 * time.Minute)
+	}
 }
