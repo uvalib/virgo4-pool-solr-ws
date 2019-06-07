@@ -96,14 +96,14 @@ func getConfigValues() {
 	configOK = ensureConfigStringSet(&config.poolType) && configOK
 	configOK = ensureConfigStringSet(&config.poolDescription) && configOK
 	configOK = ensureConfigStringSet(&config.poolServiceUrl) && configOK
-	configOK = ensureConfigStringSet(&config.poolLeaders) && configOK
+	//configOK = ensureConfigStringSet(&config.poolLeaders) && configOK
 	configOK = ensureConfigStringSet(&config.solrHost) && configOK
 	configOK = ensureConfigStringSet(&config.solrCore) && configOK
 	configOK = ensureConfigStringSet(&config.solrHandler) && configOK
 	configOK = ensureConfigStringSet(&config.solrTimeout) && configOK
-	configOK = ensureConfigStringSet(&config.solrParameterQt) && configOK
+	//configOK = ensureConfigStringSet(&config.solrParameterQt) && configOK
 	configOK = ensureConfigStringSet(&config.solrParameterDefType) && configOK
-	configOK = ensureConfigStringSet(&config.solrParameterFq) && configOK
+	//configOK = ensureConfigStringSet(&config.solrParameterFq) && configOK
 	configOK = ensureConfigStringSet(&config.solrParameterFl) && configOK
 
 	if configOK == false {
