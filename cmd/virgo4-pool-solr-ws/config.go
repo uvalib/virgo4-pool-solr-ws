@@ -131,7 +131,7 @@ func init() {
 	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "VIRGO4_SOLR_POOL_WS_LISTEN_PORT", desc: "listen port"}}
 	config.interpoolSearchUrl = configStringItem{value: "", configItem: configItem{flag: "i", env: "VIRGO4_SOLR_POOL_WS_INTERPOOL_SEARCH_URL", desc: "interpool search url"}}
 	config.poolType = configStringItem{value: "", configItem: configItem{flag: "p", env: "VIRGO4_SOLR_POOL_WS_POOL_TYPE", desc: `pool type (e.g. "catalog")`}}
-	config.poolDescription = configStringItem{value: "", configItem: configItem{flag: "d", env: "VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION", desc: `pool description (e.g. "The UVA Library Catalog")`}}
+	config.poolDescription = configStringItem{value: "FIXME", configItem: configItem{flag: "d", env: "VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION", desc: `pool description (e.g. "The UVA Library Catalog")`}}
 	config.poolServiceUrl = configStringItem{value: "", configItem: configItem{flag: "u", env: "VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL", desc: "pool service url (registered with interpool search)"}}
 	config.poolLeaders = configStringItem{value: "", configItem: configItem{flag: "e", env: "VIRGO4_SOLR_POOL_WS_POOL_LEADERS", desc: `pool leaders (appended to Solr fq parameter)`}}
 	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "VIRGO4_SOLR_POOL_WS_SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
