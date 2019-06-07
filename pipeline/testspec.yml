@@ -15,12 +15,13 @@ phases:
 #    commands:
 #      - printenv
 
-#  pre_build:
-#    commands:
+  pre_build:
+    commands:
+      - git clone https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uvalib/standard-ws-tester
 
   build:
     commands:
-      - unset GOPATH; unset GOROOT; make test
+      - cd standard-ws-tester; unset GOPATH; unset GOROOT; make test
 
 #  post_build:
 #    commands:
