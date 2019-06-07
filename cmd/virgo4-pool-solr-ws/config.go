@@ -27,7 +27,9 @@ type configData struct {
 	listenPort           configStringItem
 	interpoolSearchUrl   configStringItem
 	poolType             configStringItem
+	poolDescription      configStringItem
 	poolServiceUrl       configStringItem
+	poolLeaders          configStringItem
 	solrHost             configStringItem
 	solrCore             configStringItem
 	solrHandler          configStringItem
@@ -72,7 +74,9 @@ func getConfigValues() {
 	flagStringVar(&config.listenPort)
 	flagStringVar(&config.interpoolSearchUrl)
 	flagStringVar(&config.poolType)
+	flagStringVar(&config.poolDescription)
 	flagStringVar(&config.poolServiceUrl)
+	flagStringVar(&config.poolLeaders)
 	flagStringVar(&config.solrHost)
 	flagStringVar(&config.solrCore)
 	flagStringVar(&config.solrHandler)
@@ -90,7 +94,9 @@ func getConfigValues() {
 	configOK = ensureConfigStringSet(&config.listenPort) && configOK
 	configOK = ensureConfigStringSet(&config.interpoolSearchUrl) && configOK
 	configOK = ensureConfigStringSet(&config.poolType) && configOK
+	configOK = ensureConfigStringSet(&config.poolDescription) && configOK
 	configOK = ensureConfigStringSet(&config.poolServiceUrl) && configOK
+	configOK = ensureConfigStringSet(&config.poolLeaders) && configOK
 	configOK = ensureConfigStringSet(&config.solrHost) && configOK
 	configOK = ensureConfigStringSet(&config.solrCore) && configOK
 	configOK = ensureConfigStringSet(&config.solrHandler) && configOK
@@ -108,7 +114,9 @@ func getConfigValues() {
 	log.Printf("[CONFIG] listenPort           = [%s]", config.listenPort.value)
 	log.Printf("[CONFIG] interpoolSearchUrl   = [%s]", config.interpoolSearchUrl.value)
 	log.Printf("[CONFIG] poolType             = [%s]", config.poolType.value)
+	log.Printf("[CONFIG] poolDescription      = [%s]", config.poolDescription.value)
 	log.Printf("[CONFIG] poolServiceUrl       = [%s]", config.poolServiceUrl.value)
+	log.Printf("[CONFIG] poolLeaders          = [%s]", config.poolLeaders.value)
 	log.Printf("[CONFIG] solrHost             = [%s]", config.solrHost.value)
 	log.Printf("[CONFIG] solrCore             = [%s]", config.solrCore.value)
 	log.Printf("[CONFIG] solrHandler          = [%s]", config.solrHandler.value)
@@ -123,7 +131,9 @@ func init() {
 	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "VIRGO4_SOLR_POOL_WS_LISTEN_PORT", desc: "listen port"}}
 	config.interpoolSearchUrl = configStringItem{value: "", configItem: configItem{flag: "i", env: "VIRGO4_SOLR_POOL_WS_INTERPOOL_SEARCH_URL", desc: "interpool search url"}}
 	config.poolType = configStringItem{value: "", configItem: configItem{flag: "p", env: "VIRGO4_SOLR_POOL_WS_POOL_TYPE", desc: `pool type (e.g. "catalog")`}}
+	config.poolDescription = configStringItem{value: "", configItem: configItem{flag: "d", env: "VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION", desc: `pool description (e.g. "The UVA Library Catalog")`}}
 	config.poolServiceUrl = configStringItem{value: "", configItem: configItem{flag: "u", env: "VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL", desc: "pool service url (registered with interpool search)"}}
+	config.poolLeaders = configStringItem{value: "", configItem: configItem{flag: "e", env: "VIRGO4_SOLR_POOL_WS_POOL_LEADERS", desc: `pool leaders (appended to Solr fq parameter)`}}
 	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "VIRGO4_SOLR_POOL_WS_SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
 	config.solrCore = configStringItem{value: "", configItem: configItem{flag: "c", env: "VIRGO4_SOLR_POOL_WS_SOLR_CORE", desc: "Solr core"}}
 	config.solrHandler = configStringItem{value: "", configItem: configItem{flag: "s", env: "VIRGO4_SOLR_POOL_WS_SOLR_HANDLER", desc: "Solr search handler"}}

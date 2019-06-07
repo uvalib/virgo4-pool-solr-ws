@@ -54,7 +54,7 @@ func solrBuildParameterDefType() string {
 func solrBuildParameterFq() string {
 	// leaders must be defined with beginning + or -
 
-	fq := fmt.Sprintf("%s %s", config.solrParameterFq.value, pool.leaders)
+	fq := fmt.Sprintf("%s %s", config.solrParameterFq.value, config.poolLeaders.value)
 
 	return fq
 }
