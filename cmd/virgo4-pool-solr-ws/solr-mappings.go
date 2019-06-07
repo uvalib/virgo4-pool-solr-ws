@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // functions that map virgo data into solr data
@@ -54,7 +55,16 @@ func solrBuildParameterDefType() string {
 func solrBuildParameterFq() string {
 	// leaders must be defined with beginning + or -
 
-	fq := fmt.Sprintf("%s %s", config.solrParameterFq.value, config.poolLeaders.value)
+	fqall := []string{config.solrParameterFq.value, config.poolLeaders.value}
+	fqs := []string{}
+
+	for _, s := range fqall {
+		if s != "" {
+			fqs = append(fqs, s)
+		}
+	}
+
+	fq := strings.Join(fqs, " ")
 
 	return fq
 }
