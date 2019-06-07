@@ -115,8 +115,3 @@ dep:
 	$(GOGET) -u
 	$(GOMOD) tidy
 	$(GOMOD) verify
-
-test:
-	@ \
-	(cd "$(SRCDIR)/tests" && $(GOTST) -v) ;
-
