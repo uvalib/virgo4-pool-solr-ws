@@ -25,6 +25,10 @@ func virgoPopulateRecord(doc solrDocument, client ClientOptions) *VirgoRecord {
 		record.Title = doc.Title[0]
 	}
 
+	if len(doc.Subtitle) > 0 {
+		record.Subtitle = doc.Subtitle[0]
+	}
+
 	if len(doc.Author) > 0 {
 		record.Author = doc.Author[0]
 	}

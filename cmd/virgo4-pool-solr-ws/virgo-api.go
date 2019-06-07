@@ -31,10 +31,11 @@ type VirgoRecordDebug struct {
 }
 
 type VirgoRecord struct {
-	Id     string            `json:"id,omitempty"`
-	Title  string            `json:"title,omitempty"`
-	Author string            `json:"author,omitempty"`
-	Debug  *VirgoRecordDebug `json:"debug,omitempty"`
+	Id       string            `json:"id,omitempty"`
+	Title    string            `json:"title,omitempty"`
+	Subtitle string            `json:"subtitle,omitempty"`
+	Author   string            `json:"author,omitempty"`
+	Debug    *VirgoRecordDebug `json:"debug,omitempty"`
 }
 
 type VirgoRecordList []VirgoRecord
