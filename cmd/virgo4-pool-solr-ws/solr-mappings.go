@@ -120,3 +120,17 @@ func solrRecordRequest(id string) (*solrRequest, error) {
 
 	return &solrReq, nil
 }
+
+func solrPingRequest() (*solrRequest, error) {
+	v := VirgoSearchRequest{}
+
+	v.SolrQuery = "id:pingtest"
+
+	solrReq := solrRequestWithDefaults(v)
+
+	// override these values from defaults
+	solrReq.params["start"] = "0"
+	solrReq.params["rows"] = "0"
+
+	return &solrReq, nil
+}

@@ -69,12 +69,20 @@ func identifyHandler(c *gin.Context) {
 }
 
 func healthCheckHandler(c *gin.Context) {
-	hcMap := make(map[string]string)
+	client := getClientOptions(c)
 
-	// FIXME
+	type hcResp struct {
+		Healthy bool   `json:"healthy"`
+		Message string `json:"message,omitempty"`
+	}
 
-	hcMap["self"] = "true"
-	hcMap["Solr"] = "true"
+	hcMap := make(map[string]hcResp)
+
+	if err := solrPingHandler(client); err != nil {
+		hcMap["solr"] = hcResp{Healthy: false, Message: err.Error()}
+	} else {
+		hcMap["solr"] = hcResp{Healthy: true}
+	}
 
 	c.JSON(http.StatusOK, hcMap)
 }

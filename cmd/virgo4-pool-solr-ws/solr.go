@@ -124,6 +124,24 @@ func solrRecordHandler(id string, client ClientOptions) (*VirgoRecord, error) {
 	return virgoRes, nil
 }
 
+func solrPingHandler(client ClientOptions) error {
+	solrReq, solrReqErr := solrPingRequest()
+
+	if solrReqErr != nil {
+		log.Printf("[%s] query creation error: %s", client.reqId, solrReqErr.Error())
+		return solrReqErr
+	}
+
+	_, solrResErr := solrQuery(solrReq, client)
+
+	if solrResErr != nil {
+		log.Printf("[%s] query execute error: %s", client.reqId, solrResErr.Error())
+		return solrResErr
+	}
+
+	return nil
+}
+
 func initSolrClient() {
 	timeout, err := strconv.Atoi(config.solrTimeout.value)
 
