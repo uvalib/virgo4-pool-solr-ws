@@ -54,7 +54,7 @@ func versionHandler(c *gin.Context) {
 
 	vMap := make(map[string]string)
 
-	vMap["version"] = Version()
+	vMap["build"] = Version()
 
 	c.JSON(http.StatusOK, vMap)
 }
