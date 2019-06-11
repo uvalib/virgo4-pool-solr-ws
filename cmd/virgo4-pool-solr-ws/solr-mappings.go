@@ -9,7 +9,7 @@ import (
 // functions that map virgo data into solr data
 
 func solrBuildParameterQ(v VirgoSearchRequest) string {
-	q := v.SolrQuery
+	q := v.solrQuery
 
 	return q
 }
@@ -98,39 +98,27 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	var err error
 
-	if v.SolrQuery, err = virgoQueryConvertToSolr(v.Query); err != nil {
+	var p *solrParserInfo
+
+	if p, err = virgoQueryConvertToSolr(v.Query); err != nil {
 		return nil, errors.New(fmt.Sprintf("Virgo query to Solr conversion error: %s", err.Error()))
 	}
 
+	v.solrQuery = p.query
+
 	solrReq := solrRequestWithDefaults(v)
+
+	solrReq.parserInfo = p
 
 	return &solrReq, nil
 }
 
-func solrRecordRequest(id string) (*solrRequest, error) {
-	v := VirgoSearchRequest{}
-
-	v.SolrQuery = fmt.Sprintf("id:%s", id)
-
+func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestWithDefaults(v)
 
 	// override these values from defaults
 	solrReq.params["start"] = "0"
 	solrReq.params["rows"] = "2"
-
-	return &solrReq, nil
-}
-
-func solrPingRequest() (*solrRequest, error) {
-	v := VirgoSearchRequest{}
-
-	v.SolrQuery = "id:pingtest"
-
-	solrReq := solrRequestWithDefaults(v)
-
-	// override these values from defaults
-	solrReq.params["start"] = "0"
-	solrReq.params["rows"] = "0"
 
 	return &solrReq, nil
 }

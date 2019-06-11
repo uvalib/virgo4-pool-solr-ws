@@ -7,7 +7,7 @@ package main
 
 type VirgoSearchRequest struct {
 	Query      string           `json:"query,omitempty"`
-	SolrQuery  string           // used internally only
+	solrQuery  string           // used internally
 	Pagination *VirgoPagination `json:"pagination,omitempty"`
 }
 

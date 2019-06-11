@@ -1,71 +1,20 @@
 package main
 
-// http query parameters
+import (
+	"github.com/uvalib/virgo4-parser/v4parser"
+)
 
-/*
-for reference:
-
-type solrQueryParams struct {
-	q                      string   // query
-	fq                     []string // filter quer{y,ies}
-	sort                   string   // sort field or function with asc|desc
-	start                  string   // number of leading documents to skip
-	rows                   string   // number of documents to return after 'start'
-	fl                     string   // field list, comma separated
-	df                     string   // default search field
-	wt                     string   // writer type (response format)
-	defType                string   // query parser (lucene, dismax, ...)
-	debugQuery             string   // timing & results ("on" or omit)
-	debug                  string
-	explainOther           string
-	timeAllowed            string
-	segmentTerminatedEarly string
-	omitHeader             string
+type solrParserInfo struct {
+	query string
+	parser v4parser.SolrParser
 }
-*/
 
 type solrParamsMap map[string]string
 
 type solrRequest struct {
+	parserInfo *solrParserInfo
 	params solrParamsMap
 }
-
-// json response
-
-/*
-https://doc.lucidworks.com/fusion/3.1/REST_API_Reference/Solr-API.html
-{
-    "responseHeader": {
-        "status": 0,
-        "QTime": 2,
-        "params": {
-            "fl": "title",
-            "q": "solr",
-            "wt": "json",
-            "rows": "2"
-        }
-    },
-    "response": {
-        "numFound": 52,
-        "start": 0,
-        "maxScore": 1.23,
-        "docs": [
-            {
-                "title": [
-                    "Solr and SolrAdmin APIs - Fusion Documentation - Lucidworks"
-                ],
-				"score": 1.23
-            },
-            {
-                "title": [
-                    "Search Clusters - Fusion Documentation - Lucidworks"
-                ],
-				"score": 0.98
-            }
-        ]
-    }
-}
-*/
 
 type solrResponseHeader struct {
 	Status int           `json:"status,omitempty"`
@@ -73,7 +22,6 @@ type solrResponseHeader struct {
 	Params solrParamsMap `json:"params,omitempty"`
 }
 
-//type solrDocument map[string]interface{}
 type solrDocument struct {
 	Score    float32  `json:"score,omitempty"`
 	Id       string   `json:"id,omitempty"`
@@ -101,9 +49,3 @@ type solrResponse struct {
 	Response       solrResponseBody   `json:"response,omitempty"`
 	Error          solrError          `json:"error,omitempty"`
 }
-
-/*
-type solrResponse struct {
-	json map[string]interface{}
-}
-*/

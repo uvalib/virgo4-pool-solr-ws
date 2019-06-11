@@ -13,7 +13,7 @@ import (
 var randpool *rand.Rand
 
 // options set by or per client
-type ClientOptions struct {
+type clientOptions struct {
 	reqId string
 	debug bool
 }
@@ -28,8 +28,8 @@ func parseBoolOption(opt string) bool {
 	return val
 }
 
-func getClientOptions(c *gin.Context) ClientOptions {
-	var client ClientOptions
+func getClientOptions(c *gin.Context) clientOptions {
+	var client clientOptions
 
 	client.reqId = randomId()
 	client.debug = parseBoolOption(c.Query("debug"))
@@ -39,9 +39,14 @@ func getClientOptions(c *gin.Context) ClientOptions {
 		query = fmt.Sprintf("?%s", c.Request.URL.RawQuery)
 	}
 
-	log.Printf("[%s] %s %s%s", client.reqId, c.Request.Method, c.Request.URL.Path, query)
+	client.log("%s %s%s", c.Request.Method, c.Request.URL.Path, query)
 
 	return client
+}
+
+func (c *clientOptions) log(format string, args ...interface{}) {
+	str := fmt.Sprintf(format, args...)
+	log.Printf("[%s] %s", c.reqId, str)
 }
 
 func randomId() string {

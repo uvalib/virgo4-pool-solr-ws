@@ -14,7 +14,7 @@ func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
 	return &debug
 }
 
-func virgoPopulateRecord(doc solrDocument, client ClientOptions) *VirgoRecord {
+func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	var record VirgoRecord
 
 	record.Id = doc.Id
@@ -58,14 +58,18 @@ func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
 	return &debug
 }
 
-func virgoPopulatePoolResult(solrRes *solrResponse, client ClientOptions) *VirgoPoolResult {
+func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
 	poolResult.ServiceUrl = config.poolServiceUrl.value
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
+	firstTitle := ""
+
 	if len(solrRes.Response.Docs) > 0 {
+		firstTitle = solrRes.Response.Docs[0].Title[0]
+
 		var recordList VirgoRecordList
 
 		for _, doc := range solrRes.Response.Docs {
@@ -81,6 +85,8 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client ClientOptions) *Virgo
 	// (exact would mean first result equals the query and/or has a high enough score?)
 
 	switch {
+	case firstTitle == "FIXME: matches (one of?) searched title(s?)":
+		poolResult.Confidence = "exact"
 	case solrRes.Response.MaxScore > 100.0:
 		poolResult.Confidence = "high"
 	case solrRes.Response.MaxScore > 10.0:
@@ -98,13 +104,13 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client ClientOptions) *Virgo
 
 // the main response functions for each endpoint
 
-func virgoSearchResponse(solrRes *solrResponse, client ClientOptions) (*VirgoPoolResult, error) {
+func virgoSearchResponse(solrRes *solrResponse, client clientOptions) (*VirgoPoolResult, error) {
 	virgoRes := virgoPopulatePoolResult(solrRes, client)
 
 	return virgoRes, nil
 }
 
-func virgoRecordResponse(solrRes *solrResponse, client ClientOptions) (*VirgoRecord, error) {
+func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRecord, error) {
 	var virgoRes *VirgoRecord
 
 	switch solrRes.Response.NumFound {
