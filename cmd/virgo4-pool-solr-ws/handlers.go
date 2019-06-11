@@ -79,7 +79,7 @@ func healthCheckHandler(c *gin.Context) {
 
 	hcRes := hcResp{}
 
-	if _, err := s.handleRecordRequest(); err != nil {
+	if err := s.handlePingRequest(); err != nil {
 		hcRes = hcResp{Healthy: false, Message: err.Error()}
 	} else {
 		hcRes = hcResp{Healthy: true}

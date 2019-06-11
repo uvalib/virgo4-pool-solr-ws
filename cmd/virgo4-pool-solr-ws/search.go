@@ -73,3 +73,21 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 
 	return virgoRes, nil
 }
+
+func (s *searchContext) handlePingRequest() error {
+	var err error
+
+	if s.solrReq, err = solrRecordRequest(s.virgoReq); err != nil {
+		s.log("query creation error: %s", err.Error())
+		return err
+	}
+
+	if s.solrRes, err = solrQuery(s.solrReq, s.client); err != nil {
+		s.log("query execution error: %s", err.Error())
+		return err
+	}
+
+	// we don't care if there are no results, this is just a connectivity test
+
+	return nil
+}
