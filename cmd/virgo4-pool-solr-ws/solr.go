@@ -27,7 +27,10 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 			continue
 		}
 
-		c.log("[solr] adding field: [%s] = [%s]", key, val)
+		if key == "q" || key == "start" || key == "rows" {
+			c.log("[solr] adding field: [%s] = [%s]", key, val)
+		}
+
 		q.Add(key, val)
 	}
 
@@ -44,8 +47,6 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	}
 
 	elapsed := time.Since(start).Seconds()
-
-	c.log("[solr] query elapsed time: %0.3fs", elapsed)
 
 	defer res.Body.Close()
 

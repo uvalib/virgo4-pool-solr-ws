@@ -26,7 +26,7 @@ func main() {
 	log.Printf("===> virgo4-pool-solr-ws (%s) starting up <===", pool.name)
 
 	gin.SetMode(gin.ReleaseMode)
-	gin.DisableConsoleColor()
+	//gin.DisableConsoleColor()
 
 	router := gin.Default()
 

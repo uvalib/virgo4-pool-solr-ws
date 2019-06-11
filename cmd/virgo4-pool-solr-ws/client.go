@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +15,9 @@ var randpool *rand.Rand
 
 // options set by or per client
 type clientOptions struct {
-	reqId string
-	debug bool
+	reqId string // internally generated
+	nolog bool   // internally set
+	debug bool   // client requested
 }
 
 func parseBoolOption(opt string) bool {
@@ -44,9 +46,26 @@ func getClientOptions(c *gin.Context) clientOptions {
 	return client
 }
 
-func (c *clientOptions) log(format string, args ...interface{}) {
+func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
 	str := fmt.Sprintf(format, args...)
+
+	if prefix != "" {
+		str = strings.Join([]string{prefix, str}, " ")
+	}
+
 	log.Printf("[%s] %s", c.reqId, str)
+}
+
+func (c *clientOptions) log(format string, args ...interface{}) {
+	if c.nolog {
+		return
+	}
+
+	c.printf("", format, args...)
+}
+
+func (c *clientOptions) err(format string, args ...interface{}) {
+	c.printf("ERROR:", format, args...)
 }
 
 func randomId() string {

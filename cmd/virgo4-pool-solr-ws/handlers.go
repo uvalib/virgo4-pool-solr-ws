@@ -11,7 +11,7 @@ func searchHandler(c *gin.Context) {
 	s := newSearchContext(c)
 
 	if err := c.BindJSON(&s.virgoReq); err != nil {
-		s.log("searchHandler: invalid request: %s", err.Error())
+		s.err("searchHandler: invalid request: %s", err.Error())
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
@@ -21,7 +21,7 @@ func searchHandler(c *gin.Context) {
 	virgoRes, err := s.handleSearchRequest()
 
 	if err != nil {
-		s.log("searchHandler: error: %s", err.Error())
+		s.err("searchHandler: error: %s", err.Error())
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -37,7 +37,7 @@ func resourceHandler(c *gin.Context) {
 	virgoRes, err := s.handleRecordRequest()
 
 	if err != nil {
-		s.log("resourceHandler: error: %s", err.Error())
+		s.err("resourceHandler: error: %s", err.Error())
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -67,6 +67,8 @@ func identifyHandler(c *gin.Context) {
 
 func healthCheckHandler(c *gin.Context) {
 	s := newSearchContext(c)
+
+	s.client.nolog = true
 
 	s.virgoReq.Query = "id:pingtest"
 
