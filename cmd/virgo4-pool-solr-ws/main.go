@@ -61,43 +61,4 @@ func configurePool() {
 
 	pool.name = config.poolType.value
 	pool.desc = config.poolDescription.value
-
-	// FIXME: reinstated until terraform handles new pool-specific env vars
-	// (when removing this, also remove default description in config.go)
-	switch pool.name {
-	case "catalog":
-		pool.desc = "The UVA Library Catalog"
-		config.poolLeaders.value = "+leader67_f:(am OR tm)"
-
-	case "catalog_broad":
-		pool.desc = "The UVA Library Broad Catalog"
-		config.poolLeaders.value = "+leader67_f:(am OR tm OR aa OR mm OR ai OR em)"
-
-	case "serials":
-		pool.desc = "The UVA Library Serials Catalog"
-		config.poolLeaders.value = "+leader67_f:(as)"
-
-	case "music_recordings":
-		pool.desc = "The UVA Library Music Recordings Catalog"
-		config.poolLeaders.value = "+leader67_f:(jm)"
-
-	case "sound_recordings":
-		pool.desc = "The UVA Library Sound Recordings Catalog"
-		config.poolLeaders.value = "+leader67_f:(im)"
-
-	case "video":
-		pool.desc = "The UVA Library Video Catalog"
-		config.poolLeaders.value = "+leader67_f:(gm)"
-
-	case "musical_scores":
-		pool.desc = "The UVA Library Musical Scores Catalog"
-		config.poolLeaders.value = "+leader67_f:(cm OR dm)"
-
-	case "archival":
-		pool.desc = "The UVA Library Archival Catalog"
-		config.poolLeaders.value = "+leader67_f:(pc OR tc OR ac)"
-
-	default:
-		log.Fatalf("Unhandled pool type: [%s]", pool.name)
-	}
 }
