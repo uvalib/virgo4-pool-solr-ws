@@ -31,12 +31,16 @@ func (s *searchContext) copySearchContext() (*searchContext) {
 	sc := &searchContext{}
 
 	c := *s.client
-	v := s.virgoReq
-	p := *s.virgoReq.Pagination
-
 	sc.client = &c
+
+	v := s.virgoReq
 	sc.virgoReq = v
-	sc.virgoReq.Pagination = &p
+
+	if s.virgoReq.Pagination != nil {
+		p := *s.virgoReq.Pagination
+		sc.virgoReq.Pagination = &p
+	}
+
 	sc.virgoRes = nil
 	sc.solrReq = nil
 	sc.solrRes = nil
@@ -93,16 +97,19 @@ func confidenceIndex(confidence string) int {
 	return 0
 }
 
-func (s *searchContext) intuitIntendedSearch() (*searchContext) {
+func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
 	var err error
 
 	// get top result for original search
 	o := s.copySearchContext()
+	if o.virgoReq.Pagination == nil {
+		o.virgoReq.Pagination = &VirgoPagination{}
+	}
 	o.virgoReq.Pagination.Start = 0
 	o.virgoReq.Pagination.Rows = 1
 	if err = o.performSearch(); err != nil {
 		// just return original search context (which will also likely fail)
-		return s
+		return nil, err
 	}
 
 	// if original was a keyword search, see if title or author top result is better
@@ -154,22 +161,33 @@ func (s *searchContext) intuitIntendedSearch() (*searchContext) {
 		}
 	}
 
-	return best
+	return best, nil
 }
 
 func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
-	sc := s.intuitIntendedSearch()
+	var sc *searchContext
+	var err error
+
+	if sc, err = s.intuitIntendedSearch(); err != nil {
+		return nil, err
+	}
 
 	// copy specific values from intuited search
 	s.virgoReq.Query = sc.virgoReq.Query
-	confidence := sc.virgoRes.Confidence
+
+	confidence := ""
+	if sc.virgoRes != nil {
+		confidence = sc.virgoRes.Confidence
+	}
 
 	if err := s.performSearch(); err != nil {
 		return nil, err
 	}
 
 	// copy certain intuited values back to results
-	s.virgoRes.Confidence = confidence
+	if confidence != "" {
+		s.virgoRes.Confidence = confidence
+	}
 
 	return s.virgoRes, nil
 }
