@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -74,14 +76,34 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	return &solrRes, nil
 }
 
-func initSolrClient() {
-	timeout, err := strconv.Atoi(config.solrTimeout.value)
+func timeoutWithMinimum(str string, min int) int {
+	val, err := strconv.Atoi(str)
 
 	// fallback for invalid or nonsensical timeout values
-
-	if err != nil || timeout < 1 {
-		timeout = 30
+	if err != nil || val < min {
+		val = min
 	}
 
-	solrClient = &http.Client{Timeout: time.Duration(timeout) * time.Second}
+	log.Printf("converted timeout: (%s, min: %d) => %d", str, min, val)
+
+	return val
+}
+
+func initSolrClient() {
+	connTimeout := timeoutWithMinimum(config.solrConnTimeout.value, 5)
+	readTimeout := timeoutWithMinimum(config.solrReadTimeout.value, 5)
+
+	log.Printf("Solr: conn timeout: %ds, read timeout: %ds", connTimeout, readTimeout)
+
+	solrTransport := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: time.Duration(connTimeout) * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: time.Duration(connTimeout) * time.Second,
+	}
+
+	solrClient = &http.Client{
+		Timeout: time.Duration(readTimeout) * time.Second,
+		Transport: solrTransport,
+	}
 }
