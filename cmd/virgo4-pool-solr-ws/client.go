@@ -30,8 +30,8 @@ func parseBoolOption(opt string) bool {
 	return val
 }
 
-func getClientOptions(c *gin.Context) clientOptions {
-	var client clientOptions
+func getClientOptions(c *gin.Context) *clientOptions {
+	client := clientOptions{}
 
 	client.reqId = randomId()
 	client.debug = parseBoolOption(c.Query("debug"))
@@ -43,7 +43,7 @@ func getClientOptions(c *gin.Context) clientOptions {
 
 	client.log("%s %s%s", c.Request.Method, c.Request.URL.Path, query)
 
-	return client
+	return &client
 }
 
 func (c *clientOptions) printf(prefix, format string, args ...interface{}) {

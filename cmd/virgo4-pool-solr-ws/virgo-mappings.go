@@ -60,8 +60,19 @@ func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
 	return &debug
 }
 
-func trimmedStringsAreEqual(a, b string) bool {
-	return strings.EqualFold(strings.Trim(a, " "), strings.Trim(b, " "))
+func titlesAreEqual(t1, t2 string) bool {
+	// case-insensitive match.  titles must be nonempty
+	var s1, s2 string
+
+	if s1 = strings.Trim(t1, " "); s1 == "" {
+		return false
+	}
+
+	if s2 = strings.Trim(t2, " "); s2 == "" {
+		return false
+	}
+
+	return strings.EqualFold(s1, s2)
 }
 
 func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
@@ -71,10 +82,11 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
-	firstTitle := ""
+	firstTitleResults := ""
+	firstTitleQueried := firstElementOf(solrRes.parserInfo.parser.Titles)
 
 	if len(solrRes.Response.Docs) > 0 {
-		firstTitle = solrRes.Response.Docs[0].Title[0]
+		firstTitleResults = firstElementOf(solrRes.Response.Docs[0].Title)
 
 		var recordList VirgoRecordList
 
@@ -87,13 +99,13 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		poolResult.RecordList = &recordList
 	}
 
-	// FIXME: somehow create a confidence level from the query score
+	// FIXME: somehow create h/m/l confidence levels from the query score
 	switch {
-	case solrRes.Response.Start == 0 && solrRes.parserInfo.isTitleSearch && trimmedStringsAreEqual(firstTitle, solrRes.parserInfo.parser.Titles[0]):
+	case solrRes.Response.Start == 0 && solrRes.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
 		poolResult.Confidence = "exact"
-	case solrRes.Response.MaxScore > 100.0:
+	case solrRes.Response.MaxScore > 200.0:
 		poolResult.Confidence = "high"
-	case solrRes.Response.MaxScore > 10.0:
+	case solrRes.Response.MaxScore > 100.0:
 		poolResult.Confidence = "medium"
 	default:
 		poolResult.Confidence = "low"
