@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,8 +39,10 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 		return nil, err
 	}
 
-	s.log("handleSearchRequest(): keywords: %d, titles: %d, authors: %d, subjects: %d",
-		s.solrReq.parserInfo.parser.Keywords, s.solrReq.parserInfo.parser.Titles, s.solrReq.parserInfo.parser.Authors, s.solrReq.parserInfo.parser.Subjects)
+	s.log("Titles   : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
+	s.log("Authors  : [%s]", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
+	s.log("Subjects : [%s]", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
+	s.log("Keywords : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
 
 	if s.solrRes, err = solrQuery(s.solrReq, s.client); err != nil {
 		s.err("query execution error: %s", err.Error())

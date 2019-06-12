@@ -73,6 +73,8 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	c.log("%s, body: { numFound = %d, start = %d, maxScore = %0.2f, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, solrRes.Response.MaxScore, len(solrRes.Response.Docs))
 
+	solrRes.parserInfo = solrReq.parserInfo
+
 	return &solrRes, nil
 }
 

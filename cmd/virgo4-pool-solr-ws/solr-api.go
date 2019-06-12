@@ -7,6 +7,9 @@ import (
 type solrParserInfo struct {
 	query string
 	parser v4parser.SolrParser
+	// convenience flags based on parser results
+	isTitleSearch bool
+	isKeywordSearch bool
 }
 
 type solrParamsMap map[string]string
@@ -48,4 +51,5 @@ type solrResponse struct {
 	ResponseHeader solrResponseHeader `json:"responseHeader,omitempty"`
 	Response       solrResponseBody   `json:"response,omitempty"`
 	Error          solrError          `json:"error,omitempty"`
+	parserInfo     *solrParserInfo    // used internally; pointer to one in solrRequest
 }

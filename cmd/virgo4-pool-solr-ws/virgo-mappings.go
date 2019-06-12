@@ -2,9 +2,21 @@ package main
 
 import (
 	"errors"
+	"strings"
 )
 
 // functions that map solr data into virgo data
+
+func firstElementOf(s []string) string {
+	// return first element of slice, or blank string if empty
+	val := ""
+
+	if len(s) > 0 {
+		val = s[0]
+	}
+
+	return val
+}
 
 func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
 	var debug VirgoRecordDebug
@@ -19,19 +31,9 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 
 	record.Id = doc.Id
 
-	// just grab the first entry in each array
-
-	if len(doc.Title) > 0 {
-		record.Title = doc.Title[0]
-	}
-
-	if len(doc.Subtitle) > 0 {
-		record.Subtitle = doc.Subtitle[0]
-	}
-
-	if len(doc.Author) > 0 {
-		record.Author = doc.Author[0]
-	}
+	record.Title = firstElementOf(doc.Title)
+	record.Subtitle = firstElementOf(doc.Subtitle)
+	record.Author = firstElementOf(doc.Author)
 
 	if client.debug == true {
 		record.Debug = virgoPopulateRecordDebug(doc)
@@ -58,6 +60,10 @@ func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
 	return &debug
 }
 
+func trimmedStringsAreEqual(a, b string) bool {
+	return strings.EqualFold(strings.Trim(a, " "), strings.Trim(b, " "))
+}
+
 func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
@@ -82,10 +88,8 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	}
 
 	// FIXME: somehow create a confidence level from the query score
-	// (exact would mean first result equals the query and/or has a high enough score?)
-
 	switch {
-	case firstTitle == "FIXME: matches (one of?) searched title(s?)":
+	case solrRes.Response.Start == 0 && solrRes.parserInfo.isTitleSearch && trimmedStringsAreEqual(firstTitle, solrRes.parserInfo.parser.Titles[0]):
 		poolResult.Confidence = "exact"
 	case solrRes.Response.MaxScore > 100.0:
 		poolResult.Confidence = "high"
