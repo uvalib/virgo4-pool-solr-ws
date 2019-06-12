@@ -72,8 +72,8 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/ugorji/go v1.1.4 h1:j4s+tAvLfL3bZyefP2SEWmhBzmuIlH/eqNuPdFPgngw=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
-github.com/uvalib/virgo4-parser v0.0.0-20190611174418-448403acb6ed h1:OKLW0uRqZLvXiXNB9ouJgGGj7TI6w4xoKrgP2Fdj0U8=
-github.com/uvalib/virgo4-parser v0.0.0-20190611174418-448403acb6ed/go.mod h1:UmhrUS3OTnaoFocxxvdp++mrTVoq1A9VdtyeTUjIkxc=
+github.com/uvalib/virgo4-parser v0.0.0-20190611235942-0facc6ac252f h1:AXaWkb7GxlHCnompL5MRAIhRinLq1FR+1cxP2VRmqPk=
+github.com/uvalib/virgo4-parser v0.0.0-20190611235942-0facc6ac252f/go.mod h1:UmhrUS3OTnaoFocxxvdp++mrTVoq1A9VdtyeTUjIkxc=
 github.com/zsais/go-gin-prometheus v0.0.0-20181030200533-58963fb32f54 h1:pnZSRJZsHRBoamnhJn8/mXK+H6NnHoA2sD+7xw1vi3w=
 github.com/zsais/go-gin-prometheus v0.0.0-20181030200533-58963fb32f54/go.mod h1:Slirjzuz8uM8Cw0jmPNqbneoqcUtY2GGjn2bEd4NRLY=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
