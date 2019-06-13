@@ -180,8 +180,20 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	// use query syntax from best search
 	s.virgoReq.Query = best.virgoReq.Query
 
+	// hold on to confidence level of best search (it depends on top result, which we may not be returning below)
+	confidence := ""
+	if best.virgoRes != nil {
+		confidence = best.virgoRes.Confidence
+	}
+
 	if err := s.performSearch(); err != nil {
 		return nil, err
+	}
+
+	// restore actual confidence
+	if confidence != "" {
+		s.log("overriding confidence [%s] with [%s]", s.virgoRes.Confidence, confidence)
+		s.virgoRes.Confidence = confidence
 	}
 
 	return s.virgoRes, nil
