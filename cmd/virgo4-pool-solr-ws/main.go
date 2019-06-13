@@ -9,14 +9,6 @@ import (
 	"github.com/zsais/go-gin-prometheus"
 )
 
-type poolInfo struct {
-	name string // pool type
-	desc string // localized description
-}
-
-// identifying info about the specific type of Solr pool we are
-var pool poolInfo
-
 /**
  * Main entry point for the web service
  */
@@ -54,11 +46,4 @@ func main() {
 	go poolRegistrationLoop()
 
 	log.Fatal(router.Run(portStr))
-}
-
-func configurePool() {
-	// determine what kind of pool we are
-
-	pool.name = config.poolType.value
-	pool.desc = config.poolDescription.value
 }

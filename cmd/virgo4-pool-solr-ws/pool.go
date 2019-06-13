@@ -12,6 +12,19 @@ import (
 	"time"
 )
 
+type poolInfo struct {
+	name string // pool type
+	desc string // localized description
+}
+
+// identifying info about the specific type of Solr pool we are
+var pool poolInfo
+
+func configurePool() {
+	pool.name = config.poolType.value
+	pool.desc = config.poolDescription.value
+}
+
 func attemptPoolRegistration(jsonReq []byte) error {
 	registrationUrl := fmt.Sprintf("%s/api/pools/register", config.interpoolSearchUrl.value)
 
