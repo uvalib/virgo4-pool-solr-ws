@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -94,75 +95,80 @@ func (s *searchContext) getTopResult(query string) (*searchContext, error) {
 	return top, nil
 }
 
-func (s *searchContext) intuitBestSearch() (*searchContext, error) {
-	var err error
-	var orig, author, title *searchContext
+type byConfidence struct {
+	results []*searchContext
+}
 
-	// get top result for original search
-	if orig, err = s.getTopResult(s.virgoReq.Query); err != nil {
+func (b *byConfidence) Len() int {
+	return len(b.results)
+}
+
+func (b *byConfidence) Swap(i, j int) {
+	b.results[i], b.results[j] = b.results[j], b.results[i]
+}
+
+func (b *byConfidence) Less(i, j int) bool {
+	// sort by confidence index
+	if confidenceIndex[b.results[i].virgoRes.Confidence] < confidenceIndex[b.results[j].virgoRes.Confidence] {
+		return false
+	}
+	if confidenceIndex[b.results[i].virgoRes.Confidence] > confidenceIndex[b.results[j].virgoRes.Confidence] {
+		return true
+	}
+	// confidence is equal; sort by score
+	return b.results[i].solrRes.Response.MaxScore > b.results[j].solrRes.Response.MaxScore
+}
+
+func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
+	var err error
+	var parsedQuery *solrParserInfo
+	var keyword, author, title *searchContext
+	var searchResults []*searchContext
+
+	// parse original query to determine query type
+	if parsedQuery, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
 		return nil, err
 	}
 
-	// if original is not a keyword search, we are done
-	if orig.solrReq.parserInfo.isKeywordSearch == false {
-		return orig, nil
+	// if the query is not a keyword search, we are done
+	if parsedQuery.isKeywordSearch == false {
+		return s, nil
 	}
 
-	// see if title or author top result is better
+	// keyword search: get top result for the supplied search term as a keyword, author, and title
 
-	best := orig
+	searchTerm := firstElementOf(parsedQuery.parser.Keywords)
 
-	keyword := firstElementOf(orig.solrReq.parserInfo.parser.Keywords)
-	var thisIndex, bestIndex int
+	s.log("checking if keyword search term [%s] might be a title or author search...", searchTerm)
 
-	s.log("checking if keyword [%s] might be a title or author search...", keyword)
+	if keyword, err = s.getTopResult(s.virgoReq.Query); err != nil {
+		return nil, err
+	}
 
-	s.log("orig: confidence = [%s]  maxScore = [%0.2f]", orig.virgoRes.Confidence, orig.solrRes.Response.MaxScore)
+	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoRes.Confidence, keyword.solrRes.Response.MaxScore)
+	searchResults = append(searchResults, keyword)
 
-	// check title
-
-	if title, err = orig.getTopResult(fmt.Sprintf("title:{%s}", keyword)); err == nil {
+	if title, err = keyword.getTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
 		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoRes.Confidence, title.solrRes.Response.MaxScore)
-
-		thisIndex = confidenceIndex[title.virgoRes.Confidence]
-		bestIndex = confidenceIndex[best.virgoRes.Confidence]
-
-		switch {
-		case thisIndex > bestIndex:
-			s.log("title: wins on confidence")
-			best = title
-		case thisIndex == bestIndex && (title.solrRes.Response.MaxScore > best.solrRes.Response.MaxScore):
-			s.log("title: wins on score")
-			best = title
-		}
+		searchResults = append(searchResults, title)
 	}
 
-	// check author
-
-	if author, err = orig.getTopResult(fmt.Sprintf("author:{%s}", keyword)); err == nil {
+	if author, err = keyword.getTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
 		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoRes.Confidence, author.solrRes.Response.MaxScore)
-
-		thisIndex = confidenceIndex[author.virgoRes.Confidence]
-		bestIndex = confidenceIndex[best.virgoRes.Confidence]
-
-		switch {
-		case thisIndex > bestIndex:
-			s.log("author: wins on confidence")
-			best = author
-		case thisIndex == bestIndex && (author.solrRes.Response.MaxScore > best.solrRes.Response.MaxScore):
-			s.log("author: wins on score")
-			best = author
-		}
+		searchResults = append(searchResults, author)
 	}
 
-	return best, nil
+	confidenceSort := byConfidence{results: searchResults}
+	sort.Sort(&confidenceSort)
+
+	return confidenceSort.results[0], nil
 }
 
 func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	var best *searchContext
 	var err error
 
-	if best, err = s.intuitBestSearch(); err != nil {
+	if best, err = s.intuitIntendedSearch(); err != nil {
 		return nil, err
 	}
 
