@@ -125,6 +125,11 @@ func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
 	var keyword, author, title *searchContext
 	var searchResults []*searchContext
 
+	// if client requests no intuition, we are done
+	if s.client.intuit == false {
+		return s, nil
+	}
+
 	// parse original query to determine query type
 	if parsedQuery, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
 		return nil, err
@@ -172,21 +177,11 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 		return nil, err
 	}
 
-	// copy specific values from intuited search
+	// use query syntax from best search
 	s.virgoReq.Query = best.virgoReq.Query
-
-	confidence := ""
-	if best.virgoRes != nil {
-		confidence = best.virgoRes.Confidence
-	}
 
 	if err := s.performSearch(); err != nil {
 		return nil, err
-	}
-
-	// copy certain intuited values back to results
-	if confidence != "" {
-		s.virgoRes.Confidence = confidence
 	}
 
 	return s.virgoRes, nil

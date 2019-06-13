@@ -15,16 +15,18 @@ var randpool *rand.Rand
 
 // options set by or per client
 type clientOptions struct {
-	reqId string // internally generated
-	nolog bool   // internally set
-	debug bool   // client requested
+	reqId  string // internally generated
+	nolog  bool   // internally set
+	debug  bool   // client requested
+	intuit bool   // client requested
 }
 
-func parseBoolOption(opt string) bool {
-	val := false
+func parseBoolOption(opt string, fallback bool) bool {
+	var err error
+	var val bool
 
-	if b, err := strconv.ParseBool(opt); err == nil && b == true {
-		val = true
+	if val, err = strconv.ParseBool(opt); err != nil {
+		val = fallback
 	}
 
 	return val
@@ -34,7 +36,8 @@ func getClientOptions(c *gin.Context) *clientOptions {
 	client := clientOptions{}
 
 	client.reqId = randomId()
-	client.debug = parseBoolOption(c.Query("debug"))
+	client.debug = parseBoolOption(c.Query("debug"), false)
+	client.intuit = parseBoolOption(c.Query("intuit"), true)
 
 	query := ""
 	if c.Request.URL.RawQuery != "" {
