@@ -7,12 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var confidenceIndex map[string]int
+
 type searchContext struct {
-	client *clientOptions
+	client   *clientOptions
 	virgoReq VirgoSearchRequest
 	virgoRes *VirgoPoolResult
-	solrReq *solrRequest
-	solrRes *solrResponse
+	solrReq  *solrRequest
+	solrRes  *solrResponse
 }
 
 func newSearchContext(c *gin.Context) *searchContext {
@@ -23,7 +25,7 @@ func newSearchContext(c *gin.Context) *searchContext {
 	return &s
 }
 
-func (s *searchContext) copySearchContext() (*searchContext) {
+func (s *searchContext) copySearchContext() *searchContext {
 	// performs a copy somewhere between shallow and deep
 	// (just enough to let this context be used for another search
 	// without clobbering the original context)
@@ -41,10 +43,6 @@ func (s *searchContext) copySearchContext() (*searchContext) {
 		sc.virgoReq.Pagination = &p
 	}
 
-	sc.virgoRes = nil
-	sc.solrReq = nil
-	sc.solrRes = nil
-
 	return sc
 }
 
@@ -57,10 +55,6 @@ func (s *searchContext) err(format string, args ...interface{}) {
 }
 
 func (s *searchContext) performSearch() error {
-	sc := searchContext{}
-
-	sc.client = s.client
-
 	var err error
 
 	if s.solrReq, err = solrSearchRequest(s.virgoReq); err != nil {
@@ -86,78 +80,78 @@ func (s *searchContext) performSearch() error {
 	return nil
 }
 
-func confidenceIndex(confidence string) int {
-	conf := []string{"low", "medium", "high", "exact"}
-	for idx, val := range conf {
-		if val == confidence {
-			return idx
-		}
-	}
-	// No confidence match. Assume worst value
-	return 0
-}
+func (s *searchContext) getTopResult(query string) (*searchContext, error) {
+	// returns a new search context with the top result of the supplied query
+	top := s.copySearchContext()
 
-func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
-	var err error
+	top.virgoReq.Query = query
+	top.virgoReq.Pagination = &VirgoPagination{Start: 0, Rows: 1}
 
-	// get top result for original search
-	o := s.copySearchContext()
-	if o.virgoReq.Pagination == nil {
-		o.virgoReq.Pagination = &VirgoPagination{}
-	}
-	o.virgoReq.Pagination.Start = 0
-	o.virgoReq.Pagination.Rows = 1
-	if err = o.performSearch(); err != nil {
-		// just return original search context (which will also likely fail)
+	if err := top.performSearch(); err != nil {
 		return nil, err
 	}
 
-	// if original was a keyword search, see if title or author top result is better
+	return top, nil
+}
 
-	s.log("o: confidence = [%s]  maxScore = [%0.2f]", o.virgoRes.Confidence, o.solrRes.Response.MaxScore)
+func (s *searchContext) intuitBestSearch() (*searchContext, error) {
+	var err error
+	var orig, author, title *searchContext
 
-	best := o
+	// get top result for original search
+	if orig, err = s.getTopResult(s.virgoReq.Query); err != nil {
+		return nil, err
+	}
 
-	if o.solrReq.parserInfo.isKeywordSearch {
-		keyword := firstElementOf(o.solrReq.parserInfo.parser.Keywords)
-		var bidx int
+	// if original is not a keyword search, we are done
+	if orig.solrReq.parserInfo.isKeywordSearch == false {
+		return orig, nil
+	}
 
-		s.log("is a keyword search for: [%s]", keyword)
+	// see if title or author top result is better
 
-		t := o.copySearchContext()
-		t.virgoReq.Query = fmt.Sprintf("title:{%s}", keyword)
-		if err = t.performSearch(); err == nil {
-			s.log("t: confidence = [%s]  maxScore = [%0.2f]", t.virgoRes.Confidence, t.solrRes.Response.MaxScore)
-			tidx := confidenceIndex(t.virgoRes.Confidence)
-			bidx = confidenceIndex(best.virgoRes.Confidence)
-			switch {
-			case tidx > bidx:
-				s.log("t: wins on confidence")
-				best = t
-			case tidx == bidx:
-				if (t.solrRes.Response.MaxScore > best.solrRes.Response.MaxScore) {
-					s.log("t: wins on score")
-					best = t
-				}
-			}
+	best := orig
+
+	keyword := firstElementOf(orig.solrReq.parserInfo.parser.Keywords)
+	var thisIndex, bestIndex int
+
+	s.log("checking if keyword [%s] might be a title or author search...", keyword)
+
+	s.log("orig: confidence = [%s]  maxScore = [%0.2f]", orig.virgoRes.Confidence, orig.solrRes.Response.MaxScore)
+
+	// check title
+
+	if title, err = orig.getTopResult(fmt.Sprintf("title:{%s}", keyword)); err == nil {
+		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoRes.Confidence, title.solrRes.Response.MaxScore)
+
+		thisIndex = confidenceIndex[title.virgoRes.Confidence]
+		bestIndex = confidenceIndex[best.virgoRes.Confidence]
+
+		switch {
+		case thisIndex > bestIndex:
+			s.log("title: wins on confidence")
+			best = title
+		case thisIndex == bestIndex && (title.solrRes.Response.MaxScore > best.solrRes.Response.MaxScore):
+			s.log("title: wins on score")
+			best = title
 		}
+	}
 
-		a := o.copySearchContext()
-		a.virgoReq.Query = fmt.Sprintf("author:{%s}", keyword)
-		if err = a.performSearch(); err == nil {
-			s.log("a: confidence = [%s]  maxScore = [%0.2f]", a.virgoRes.Confidence, a.solrRes.Response.MaxScore)
-			aidx := confidenceIndex(a.virgoRes.Confidence)
-			bidx = confidenceIndex(best.virgoRes.Confidence)
-			switch {
-			case aidx > bidx:
-				s.log("a: wins on confidence")
-				best = a
-			case aidx == bidx:
-				if (a.solrRes.Response.MaxScore > best.solrRes.Response.MaxScore) {
-					s.log("a: wins on score")
-					best = a
-				}
-			}
+	// check author
+
+	if author, err = orig.getTopResult(fmt.Sprintf("author:{%s}", keyword)); err == nil {
+		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoRes.Confidence, author.solrRes.Response.MaxScore)
+
+		thisIndex = confidenceIndex[author.virgoRes.Confidence]
+		bestIndex = confidenceIndex[best.virgoRes.Confidence]
+
+		switch {
+		case thisIndex > bestIndex:
+			s.log("author: wins on confidence")
+			best = author
+		case thisIndex == bestIndex && (author.solrRes.Response.MaxScore > best.solrRes.Response.MaxScore):
+			s.log("author: wins on score")
+			best = author
 		}
 	}
 
@@ -165,19 +159,19 @@ func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
 }
 
 func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
-	var sc *searchContext
+	var best *searchContext
 	var err error
 
-	if sc, err = s.intuitIntendedSearch(); err != nil {
+	if best, err = s.intuitBestSearch(); err != nil {
 		return nil, err
 	}
 
 	// copy specific values from intuited search
-	s.virgoReq.Query = sc.virgoReq.Query
+	s.virgoReq.Query = best.virgoReq.Query
 
 	confidence := ""
-	if sc.virgoRes != nil {
-		confidence = sc.virgoRes.Confidence
+	if best.virgoRes != nil {
+		confidence = best.virgoRes.Confidence
 	}
 
 	if err := s.performSearch(); err != nil {
@@ -231,4 +225,14 @@ func (s *searchContext) handlePingRequest() error {
 	// we don't care if there are no results, this is just a connectivity test
 
 	return nil
+}
+
+func init() {
+	// invalid values will be 0 (less than "low")
+	confidenceIndex = map[string]int{
+		"low":    1,
+		"medium": 2,
+		"high":   3,
+		"exact":  4,
+	}
 }

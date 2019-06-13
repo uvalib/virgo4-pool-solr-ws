@@ -105,7 +105,7 @@ func initSolrClient() {
 	}
 
 	solrClient = &http.Client{
-		Timeout: time.Duration(readTimeout) * time.Second,
+		Timeout:   time.Duration(readTimeout) * time.Second,
 		Transport: solrTransport,
 	}
 }

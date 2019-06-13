@@ -5,10 +5,10 @@ import (
 )
 
 type solrParserInfo struct {
-	query string
+	query  string
 	parser v4parser.SolrParser
 	// convenience flags based on parser results
-	isTitleSearch bool
+	isTitleSearch   bool
 	isKeywordSearch bool
 }
 
@@ -16,7 +16,7 @@ type solrParamsMap map[string]string
 
 type solrRequest struct {
 	parserInfo *solrParserInfo
-	params solrParamsMap
+	params     solrParamsMap
 }
 
 type solrResponseHeader struct {
