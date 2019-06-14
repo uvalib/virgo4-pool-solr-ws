@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,11 +10,12 @@ import (
 var confidenceIndex map[string]int
 
 type searchContext struct {
-	client   *clientOptions
-	virgoReq VirgoSearchRequest
-	virgoRes *VirgoPoolResult
-	solrReq  *solrRequest
-	solrRes  *solrResponse
+	client     *clientOptions
+	virgoReq   VirgoSearchRequest
+	virgoRes   *VirgoPoolResult
+	solrReq    *solrRequest
+	solrRes    *solrResponse
+	confidence string
 }
 
 func newSearchContext(c *gin.Context) *searchContext {
@@ -63,10 +63,10 @@ func (s *searchContext) performSearch() error {
 		return err
 	}
 
-	s.log("Titles   : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
-	s.log("Authors  : [%s]", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
-	s.log("Subjects : [%s]", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
-	s.log("Keywords : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
+	//s.log("Titles   : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
+	//s.log("Authors  : [%s]", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
+	//s.log("Subjects : [%s]", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
+	//s.log("Keywords : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
 
 	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
 		s.err("query execution error: %s", err.Error())
@@ -78,10 +78,12 @@ func (s *searchContext) performSearch() error {
 		return err
 	}
 
+	s.confidence = s.virgoRes.Confidence
+
 	return nil
 }
 
-func (s *searchContext) getTopResult(query string) (*searchContext, error) {
+func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, error) {
 	// returns a new search context with the top result of the supplied query
 	top := s.copySearchContext()
 
@@ -119,46 +121,46 @@ func (b *byConfidence) Less(i, j int) bool {
 	return b.results[i].solrRes.Response.MaxScore > b.results[j].solrRes.Response.MaxScore
 }
 
-func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
+func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) {
+	// if the query is not for the first page, return the top result for correct
+	// confidence level; otherwise, let the original query determine it
+
+	s.log("TITLE SEARCH: determining true confidence level")
+
+	if s.virgoReq.Pagination != nil && s.virgoReq.Pagination.Start != 0 {
+		return s.newSearchWithTopResult(s.virgoReq.Query)
+	}
+
+	return s, nil
+}
+
+func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*searchContext, error) {
 	var err error
-	var parsedQuery *solrParserInfo
-	var keyword, author, title *searchContext
+	var title, author, keyword *searchContext
 	var searchResults []*searchContext
 
-	// if client requests no intuition, we are done
-	if s.client.intuit == false {
+	// if the client specified no intuition, just return original query
+	if s.client.intuit != true {
 		return s, nil
 	}
 
-	// parse original query to determine query type
-	if parsedQuery, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
-		return nil, err
-	}
-
-	// if the query is not a keyword search, we are done
-	if parsedQuery.isKeywordSearch == false {
-		return s, nil
-	}
-
-	// keyword search: get top result for the supplied search term as a keyword, author, and title
-
-	searchTerm := firstElementOf(parsedQuery.parser.Keywords)
+	s.log("KEYWORD SEARCH: intuiting best search for [%s]", searchTerm)
 
 	s.log("checking if keyword search term [%s] might be a title or author search...", searchTerm)
 
-	if keyword, err = s.getTopResult(s.virgoReq.Query); err != nil {
+	if keyword, err = s.newSearchWithTopResult(s.virgoReq.Query); err != nil {
 		return nil, err
 	}
 
 	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoRes.Confidence, keyword.solrRes.Response.MaxScore)
 	searchResults = append(searchResults, keyword)
 
-	if title, err = keyword.getTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
+	if title, err = keyword.newSearchWithTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
 		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoRes.Confidence, title.solrRes.Response.MaxScore)
 		searchResults = append(searchResults, title)
 	}
 
-	if author, err = keyword.getTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
+	if author, err = keyword.newSearchWithTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
 		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoRes.Confidence, author.solrRes.Response.MaxScore)
 		searchResults = append(searchResults, author)
 	}
@@ -169,31 +171,52 @@ func (s *searchContext) intuitIntendedSearch() (*searchContext, error) {
 	return confidenceSort.results[0], nil
 }
 
-func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
-	var best *searchContext
+func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	var err error
+	var parsedQuery *solrParserInfo
 
-	if best, err = s.intuitIntendedSearch(); err != nil {
+	// parse original query to determine query type
+
+	if parsedQuery, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
 		return nil, err
 	}
 
-	// use query syntax from best search
-	s.virgoReq.Query = best.virgoReq.Query
+	// single-term title-only search special handling
 
-	// hold on to confidence level of best search (it depends on top result, which we may not be returning below)
-	confidence := ""
-	if best.virgoRes != nil {
-		confidence = best.virgoRes.Confidence
+	if parsedQuery.isTitleSearch {
+		return s.performSpeculativeTitleSearch()
 	}
+
+	// single-term keyword search special handling
+
+	if parsedQuery.isKeywordSearch {
+		return s.performSpeculativeKeywordSearch(firstElementOf(parsedQuery.parser.Keywords))
+	}
+
+	// fallthrough: just return original query
+
+	return s, nil
+}
+
+func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
+	var err error
+	var top *searchContext
+
+	if top, err = s.performSpeculativeSearches(); err != nil {
+		return nil, err
+	}
+
+	// use query syntax from chosen search
+	s.virgoReq.Query = top.virgoReq.Query
 
 	if err := s.performSearch(); err != nil {
 		return nil, err
 	}
 
 	// restore actual confidence
-	if confidence != "" {
-		s.log("overriding confidence [%s] with [%s]", s.virgoRes.Confidence, confidence)
-		s.virgoRes.Confidence = confidence
+	if top.confidence != "" {
+		s.log("overriding confidence [%s] with [%s]", s.virgoRes.Confidence, top.confidence)
+		s.virgoRes.Confidence = top.confidence
 	}
 
 	return s.virgoRes, nil

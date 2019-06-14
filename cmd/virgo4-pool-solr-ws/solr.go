@@ -29,7 +29,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 			continue
 		}
 
-		if key == "q" || key == "start" || key == "rows" {
+		if key == "q" {
 			c.log("[solr] adding field: [%s] = [%s]", key, val)
 		}
 
