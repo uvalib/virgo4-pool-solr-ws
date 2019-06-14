@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -63,10 +64,11 @@ func (s *searchContext) performSearch() error {
 		return err
 	}
 
-	//s.log("Titles   : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
-	//s.log("Authors  : [%s]", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
-	//s.log("Subjects : [%s]", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
-	//s.log("Keywords : [%s] (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
+	s.log("Titles      : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
+	s.log("Authors     : { %v }", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
+	s.log("Subjects    : { %v }", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
+	s.log("Keywords    : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
+	s.log("Identifiers : { %v }", strings.Join(s.solrReq.parserInfo.parser.Identifiers, "; "))
 
 	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
 		s.err("query execution error: %s", err.Error())
@@ -111,13 +113,17 @@ func (b *byConfidence) Swap(i, j int) {
 
 func (b *byConfidence) Less(i, j int) bool {
 	// sort by confidence index
+
 	if confidenceIndex[b.results[i].virgoRes.Confidence] < confidenceIndex[b.results[j].virgoRes.Confidence] {
 		return false
 	}
+
 	if confidenceIndex[b.results[i].virgoRes.Confidence] > confidenceIndex[b.results[j].virgoRes.Confidence] {
 		return true
 	}
+
 	// confidence is equal; sort by score
+
 	return b.results[i].solrRes.Response.MaxScore > b.results[j].solrRes.Response.MaxScore
 }
 
