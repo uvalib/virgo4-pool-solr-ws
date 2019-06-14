@@ -10,8 +10,8 @@ require (
 	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/prometheus/client_golang v0.9.4 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
-	github.com/uvalib/virgo4-parser v0.0.0-20190611235942-0facc6ac252f
+	github.com/uvalib/virgo4-parser v0.0.0-20190614155816-20889b6debd7
 	github.com/zsais/go-gin-prometheus v0.0.0-20181030200533-58963fb32f54
-	golang.org/x/net v0.0.0-20190611141213-3f473d35a33a // indirect
-	golang.org/x/sys v0.0.0-20190610200419-93c9922d18ae // indirect
+	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
+	golang.org/x/sys v0.0.0-20190614084037-d442b75600c5 // indirect
 )
