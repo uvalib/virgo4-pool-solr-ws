@@ -3,12 +3,12 @@
 This is a web service to search a Solr pool for Virgo 4.
 It supports the following endpoints:
 
-* GET / or GET /version : returns version information
+* GET /version : returns build version
+* GET /identify : returns pool information
 * GET /healthcheck : returns health check information
 * GET /metrics : returns Prometheus metrics
-* POST /api/pool_results : returns search results for a Solr pool
-* GET /api/pool_results/{id} : returns detailed information for a single Solr record
-* POST /api/pool_summary/ : returns a summary of the search results for a Solr pool
+* POST /api/search : returns search results for a Solr pool
+* GET /api/resource/{id} : returns detailed information for a single Solr record
 
 ### System Requirements
 
