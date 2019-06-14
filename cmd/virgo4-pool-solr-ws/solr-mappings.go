@@ -100,11 +100,14 @@ func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
 
 	var p *solrParserInfo
 
-	if p, err = virgoQueryConvertToSolr(v.Query); err != nil {
-		return nil, errors.New(fmt.Sprintf("Virgo query to Solr conversion error: %s", err.Error()))
-	}
+	// caller might have already supplied a Solr query
+	if v.solrQuery == "" {
+		if p, err = virgoQueryConvertToSolr(v.Query); err != nil {
+			return nil, errors.New(fmt.Sprintf("Virgo query to Solr conversion error: %s", err.Error()))
+		}
 
-	v.solrQuery = p.query
+		v.solrQuery = p.query
+	}
 
 	solrReq := solrRequestWithDefaults(v)
 

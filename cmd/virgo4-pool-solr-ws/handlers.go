@@ -32,7 +32,8 @@ func searchHandler(c *gin.Context) {
 func resourceHandler(c *gin.Context) {
 	s := newSearchContext(c)
 
-	s.virgoReq.Query = fmt.Sprintf("id:%s", c.Param("id"))
+	// fill out Solr query directly, bypassing query syntax parser
+	s.virgoReq.solrQuery = fmt.Sprintf("id:%s", c.Param("id"))
 
 	virgoRes, err := s.handleRecordRequest()
 

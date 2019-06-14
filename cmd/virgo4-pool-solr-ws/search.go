@@ -11,12 +11,13 @@ import (
 var confidenceIndex map[string]int
 
 type searchContext struct {
-	client     *clientOptions
-	virgoReq   VirgoSearchRequest
-	virgoRes   *VirgoPoolResult
-	solrReq    *solrRequest
-	solrRes    *solrResponse
-	confidence string
+	client         *clientOptions
+	virgoReq       VirgoSearchRequest
+	virgoPoolRes   *VirgoPoolResult
+	virgoRecordRes *VirgoRecord
+	solrReq        *solrRequest
+	solrRes        *solrResponse
+	confidence     string
 }
 
 func newSearchContext(c *gin.Context) *searchContext {
@@ -56,7 +57,7 @@ func (s *searchContext) err(format string, args ...interface{}) {
 	s.client.err(format, args...)
 }
 
-func (s *searchContext) performSearch() error {
+func (s *searchContext) performQuery() error {
 	var err error
 
 	if s.solrReq, err = solrSearchRequest(s.virgoReq); err != nil {
@@ -64,23 +65,50 @@ func (s *searchContext) performSearch() error {
 		return err
 	}
 
-	s.log("Titles      : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
-	s.log("Authors     : { %v }", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
-	s.log("Subjects    : { %v }", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
-	s.log("Keywords    : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
-	s.log("Identifiers : { %v }", strings.Join(s.solrReq.parserInfo.parser.Identifiers, "; "))
+	if s.solrReq.parserInfo != nil {
+		s.log("Titles      : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
+		s.log("Authors     : { %v }", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
+		s.log("Subjects    : { %v }", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
+		s.log("Keywords    : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
+		s.log("Identifiers : { %v }", strings.Join(s.solrReq.parserInfo.parser.Identifiers, "; "))
+	}
 
 	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
 		s.err("query execution error: %s", err.Error())
 		return err
 	}
 
-	if s.virgoRes, err = virgoSearchResponse(s.solrRes, *s.client); err != nil {
+	return nil
+}
+
+func (s *searchContext) getPoolQueryResults() error {
+	var err error
+
+	if err = s.performQuery(); err != nil {
+		return err
+	}
+
+	if s.virgoPoolRes, err = virgoSearchResponse(s.solrRes, *s.client); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return err
 	}
 
-	s.confidence = s.virgoRes.Confidence
+	s.confidence = s.virgoPoolRes.Confidence
+
+	return nil
+}
+
+func (s *searchContext) getRecordQueryResults() error {
+	var err error
+
+	if err = s.performQuery(); err != nil {
+		return err
+	}
+
+	if s.virgoRecordRes, err = virgoRecordResponse(s.solrRes, *s.client); err != nil {
+		s.err("result parsing error: %s", err.Error())
+		return err
+	}
 
 	return nil
 }
@@ -92,7 +120,7 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	top.virgoReq.Query = query
 	top.virgoReq.Pagination = &VirgoPagination{Start: 0, Rows: 1}
 
-	if err := top.performSearch(); err != nil {
+	if err := top.getPoolQueryResults(); err != nil {
 		return nil, err
 	}
 
@@ -114,11 +142,11 @@ func (b *byConfidence) Swap(i, j int) {
 func (b *byConfidence) Less(i, j int) bool {
 	// sort by confidence index
 
-	if confidenceIndex[b.results[i].virgoRes.Confidence] < confidenceIndex[b.results[j].virgoRes.Confidence] {
+	if confidenceIndex[b.results[i].virgoPoolRes.Confidence] < confidenceIndex[b.results[j].virgoPoolRes.Confidence] {
 		return false
 	}
 
-	if confidenceIndex[b.results[i].virgoRes.Confidence] > confidenceIndex[b.results[j].virgoRes.Confidence] {
+	if confidenceIndex[b.results[i].virgoPoolRes.Confidence] > confidenceIndex[b.results[j].virgoPoolRes.Confidence] {
 		return true
 	}
 
@@ -158,16 +186,16 @@ func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*sea
 		return nil, err
 	}
 
-	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoRes.Confidence, keyword.solrRes.Response.MaxScore)
+	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoPoolRes.Confidence, keyword.solrRes.Response.MaxScore)
 	searchResults = append(searchResults, keyword)
 
 	if title, err = keyword.newSearchWithTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
-		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoRes.Confidence, title.solrRes.Response.MaxScore)
+		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoPoolRes.Confidence, title.solrRes.Response.MaxScore)
 		searchResults = append(searchResults, title)
 	}
 
 	if author, err = keyword.newSearchWithTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
-		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoRes.Confidence, author.solrRes.Response.MaxScore)
+		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoPoolRes.Confidence, author.solrRes.Response.MaxScore)
 		searchResults = append(searchResults, author)
 	}
 
@@ -215,40 +243,27 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	// use query syntax from chosen search
 	s.virgoReq.Query = top.virgoReq.Query
 
-	if err := s.performSearch(); err != nil {
+	if err = s.getPoolQueryResults(); err != nil {
 		return nil, err
 	}
 
 	// restore actual confidence
 	if top.confidence != "" {
-		s.log("overriding confidence [%s] with [%s]", s.virgoRes.Confidence, top.confidence)
-		s.virgoRes.Confidence = top.confidence
+		s.log("overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
+		s.virgoPoolRes.Confidence = top.confidence
 	}
 
-	return s.virgoRes, nil
+	return s.virgoPoolRes, nil
 }
 
 func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 	var err error
 
-	if s.solrReq, err = solrRecordRequest(s.virgoReq); err != nil {
-		s.err("query creation error: %s", err.Error())
+	if err = s.getRecordQueryResults(); err != nil {
 		return nil, err
 	}
 
-	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
-		s.err("query execution error: %s", err.Error())
-		return nil, err
-	}
-
-	var virgoRes *VirgoRecord
-
-	if virgoRes, err = virgoRecordResponse(s.solrRes, *s.client); err != nil {
-		s.err("result parsing error: %s", err.Error())
-		return nil, err
-	}
-
-	return virgoRes, nil
+	return s.virgoRecordRes, nil
 }
 
 func (s *searchContext) handlePingRequest() error {
