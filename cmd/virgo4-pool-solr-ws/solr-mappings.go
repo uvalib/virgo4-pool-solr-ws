@@ -103,7 +103,7 @@ func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	// caller might have already supplied a Solr query
 	if v.solrQuery == "" {
 		if p, err = virgoQueryConvertToSolr(v.Query); err != nil {
-			return nil, errors.New(fmt.Sprintf("Virgo query to Solr conversion error: %s", err.Error()))
+			return nil, fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())
 		}
 
 		v.solrQuery = p.query

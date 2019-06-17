@@ -14,9 +14,9 @@ import (
 var solrClient *http.Client
 
 func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
-	solrUrl := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
+	solrURL := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 
-	req, reqErr := http.NewRequest("GET", solrUrl, nil)
+	req, reqErr := http.NewRequest("GET", solrURL, nil)
 	if reqErr != nil {
 		c.log("NewRequest() failed: %s", reqErr.Error())
 		return nil, errors.New("Failed to create Solr request")
@@ -68,7 +68,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
 		c.log("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
-		return nil, errors.New(fmt.Sprintf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg))
+		return nil, fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
 	c.log("%s, body: { numFound = %d, start = %d, maxScore = %0.2f, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, solrRes.Response.MaxScore, len(solrRes.Response.Docs))

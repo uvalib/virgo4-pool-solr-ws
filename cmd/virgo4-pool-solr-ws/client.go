@@ -15,7 +15,7 @@ var randpool *rand.Rand
 
 // options set by or per client
 type clientOptions struct {
-	reqId  string // internally generated
+	reqID  string // internally generated
 	nolog  bool   // internally set
 	debug  bool   // client requested
 	intuit bool   // client requested
@@ -35,7 +35,7 @@ func parseBoolOption(opt string, fallback bool) bool {
 func getClientOptions(c *gin.Context) *clientOptions {
 	client := clientOptions{}
 
-	client.reqId = randomId()
+	client.reqID = randomID()
 	client.debug = parseBoolOption(c.Query("debug"), false)
 	client.intuit = parseBoolOption(c.Query("intuit"), true)
 
@@ -56,7 +56,7 @@ func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
 		str = strings.Join([]string{prefix, str}, " ")
 	}
 
-	log.Printf("[%s] %s", c.reqId, str)
+	log.Printf("[%s] %s", c.reqID, str)
 }
 
 func (c *clientOptions) log(format string, args ...interface{}) {
@@ -71,7 +71,7 @@ func (c *clientOptions) err(format string, args ...interface{}) {
 	c.printf("ERROR:", format, args...)
 }
 
-func randomId() string {
+func randomID() string {
 	return fmt.Sprintf("%0x", randpool.Uint64())
 }
 

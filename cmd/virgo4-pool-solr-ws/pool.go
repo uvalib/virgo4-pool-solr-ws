@@ -26,9 +26,9 @@ func configurePool() {
 }
 
 func attemptPoolRegistration(jsonReq []byte) error {
-	registrationUrl := fmt.Sprintf("%s/api/pools/register", config.interpoolSearchUrl.value)
+	registrationURL := fmt.Sprintf("%s/api/pools/register", config.interpoolSearchURL.value)
 
-	req, reqErr := http.NewRequest("POST", registrationUrl, bytes.NewBuffer(jsonReq))
+	req, reqErr := http.NewRequest("POST", registrationURL, bytes.NewBuffer(jsonReq))
 	if reqErr != nil {
 		log.Printf("NewRequest() failed: %s", reqErr.Error())
 		return errors.New("Failed to create pool registration post request")
@@ -69,7 +69,7 @@ func registerPool() {
 	req := VirgoPoolRegistration{}
 
 	req.Name = config.poolType.value
-	req.Url = config.poolServiceUrl.value
+	req.URL = config.poolServiceURL.value
 
 	jsonReq, _ := json.Marshal(req)
 
@@ -87,7 +87,7 @@ func registerPool() {
 }
 
 func poolRegistrationLoop() {
-	if strings.Contains(config.interpoolSearchUrl.value, "http") == false {
+	if strings.Contains(config.interpoolSearchURL.value, "http") == false {
 		log.Printf("Pool registration skipped")
 		return
 	}

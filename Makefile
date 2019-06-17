@@ -14,6 +14,7 @@ GOFMT = $(GOCMD) fmt
 GOGET = $(GOCMD) get
 GOMOD = $(GOCMD) mod
 GOVER = $(GOCMD) version
+GOLNT = golint
 
 # default build target is host machine architecture
 MACHINE = $(shell uname -s | tr '[A-Z]' '[a-z]')
@@ -109,6 +110,13 @@ clean:
 	for pkg in $(PACKAGES) ; do \
 		echo "clean: $${pkg}" ; \
 		(cd "$(SRCDIR)/$${pkg}" && $(GOCLN)) ; \
+	done
+
+lint:
+	@ \
+	for pkg in $(PACKAGES) ; do \
+		echo "lint: $${pkg}" ; \
+		(cd "$(SRCDIR)/$${pkg}" && $(GOLNT)) ; \
 	done
 
 dep:
