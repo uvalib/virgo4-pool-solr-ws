@@ -29,7 +29,7 @@ func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
 func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	var record VirgoRecord
 
-	record.Id = doc.Id
+	record.ID = doc.ID
 
 	record.Title = firstElementOf(doc.Title)
 	record.Subtitle = firstElementOf(doc.Subtitle)
@@ -78,7 +78,7 @@ func titlesAreEqual(t1, t2 string) bool {
 func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
-	poolResult.ServiceUrl = config.poolServiceUrl.value
+	poolResult.ServiceURL = config.poolServiceURL.value
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
