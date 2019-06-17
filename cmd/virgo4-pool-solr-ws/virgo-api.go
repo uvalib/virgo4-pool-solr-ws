@@ -3,7 +3,7 @@ package main
 // schemas
 
 // based loosely on internal discussions, will solidify here:
-// https://github.com/uvalib/v4-api/blob/master/search-api-OAS3.json
+// https://github.com/uvalib/v4-api/blob/master/pool-search-api-OAS3.json
 
 // VirgoSearchRequest holds the contents of a search request as parsed
 // from JSON defined in the Virgo API.
