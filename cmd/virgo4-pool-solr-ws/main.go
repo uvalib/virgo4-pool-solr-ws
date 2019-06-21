@@ -22,7 +22,11 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(cors.Default())
+	corsCfg := cors.DefaultConfig()
+	corsCfg.AllowAllOrigins = true
+	corsCfg.AllowCredentials = true
+	corsCfg.AddAllowHeaders("Authorization")
+	router.Use(cors.New(corsCfg))
 
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(router)
