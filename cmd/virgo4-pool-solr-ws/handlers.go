@@ -3,7 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -95,10 +98,37 @@ func healthCheckHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, hcMap)
 }
 
-func authenticateHandler(c *gin.Context) {
-	authorization := c.Request.Header.Get("Authorization")
-
+func getBearerToken(authorization string) (string, error) {
+	// shortcut to avoid unnecessary regex
 	if authorization == "" {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized"))
+		return "", errors.New("Missing/empty Authorization header")
 	}
+
+	// clean up extraneous spaces in header value before splitting
+	ends := regexp.MustCompile(`^[\s\p{Zs}]+|[\s\p{Zs}]+$`)
+	middle := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
+	cleaned := middle.ReplaceAllString(ends.ReplaceAllString(authorization, ""), " ")
+
+	pieces := strings.Split(cleaned, " ")
+
+	// must have two components, the first of which is "Bearer", and the second a non-empty token
+	if len(pieces) != 2 || pieces[0] != "Bearer" || pieces[1] == "" {
+		return "", fmt.Errorf("Invalid Authorization header: [%s]", authorization)
+	}
+
+	return pieces[1], nil
+}
+
+func authenticateHandler(c *gin.Context) {
+	token, err := getBearerToken(c.Request.Header.Get("Authorization"))
+
+	if err != nil {
+		log.Printf("authentication failed: [%s]", err.Error())
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	// do something with token
+
+	log.Printf("got bearer token: [%s]", token)
 }
