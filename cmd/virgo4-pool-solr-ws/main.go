@@ -38,8 +38,8 @@ func main() {
 	router.GET("/healthcheck", healthCheckHandler)
 
 	if api := router.Group("/api"); api != nil {
-		api.POST("/search", searchHandler)
-		api.GET("/resource/:id", resourceHandler)
+		api.POST("/search", authenticateHandler, searchHandler)
+		api.GET("/resource/:id", authenticateHandler, resourceHandler)
 	}
 
 	portStr := fmt.Sprintf(":%s", config.listenPort.value)

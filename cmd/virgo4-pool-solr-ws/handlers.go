@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -91,4 +92,12 @@ func healthCheckHandler(c *gin.Context) {
 	hcMap["solr"] = hcRes
 
 	c.JSON(http.StatusOK, hcMap)
+}
+
+func authenticateHandler(c *gin.Context) {
+	authorization := c.Request.Header.Get("Authorization")
+
+	if authorization == "" {
+		c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized"))
+	}
 }
