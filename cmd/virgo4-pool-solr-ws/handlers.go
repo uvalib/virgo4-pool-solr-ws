@@ -63,6 +63,7 @@ func identifyHandler(c *gin.Context) {
 
 	iMap["name"] = pool.name
 	iMap["description"] = pool.desc
+	iMap["public_url"] = pool.url
 
 	c.JSON(http.StatusOK, iMap)
 }

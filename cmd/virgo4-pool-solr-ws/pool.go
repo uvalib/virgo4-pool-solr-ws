@@ -15,6 +15,7 @@ import (
 type poolInfo struct {
 	name string // pool type
 	desc string // localized description
+	url  string // public (service) url
 }
 
 // identifying info about the specific type of Solr pool we are
@@ -23,6 +24,7 @@ var pool poolInfo
 func configurePool() {
 	pool.name = config.poolType.value
 	pool.desc = config.poolDescription.value
+	pool.url = config.poolServiceURL.value
 }
 
 func attemptPoolRegistration(jsonReq []byte) error {
