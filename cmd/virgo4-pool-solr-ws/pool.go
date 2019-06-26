@@ -100,6 +100,6 @@ func poolRegistrationLoop() {
 	for {
 		// re-register 5 minutes after every successful registration
 		registerPool()
-		time.Sleep(5 * time.Minute)
+		time.Sleep(30 * time.Second)
 	}
 }
