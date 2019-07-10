@@ -52,11 +52,7 @@ func ignoreHandler(c *gin.Context) {
 }
 
 func versionHandler(c *gin.Context) {
-	vMap := make(map[string]string)
-
-	vMap["build"] = Version()
-
-	c.JSON(http.StatusOK, vMap)
+	c.JSON(http.StatusOK, versions)
 }
 
 func identifyHandler(c *gin.Context) {

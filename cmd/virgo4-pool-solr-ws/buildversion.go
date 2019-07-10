@@ -1,14 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
-//
-// Version -- get the version information
-//
-func Version() string {
+// git commit used for this build; supplied at compile time
+var gitCommit string
+
+type versionInfo struct {
+	BuildVersion string `json:"build,omitempty"`
+	GoVersion    string `json:"go_version,omitempty"`
+	GitCommit    string `json:"git_commit,omitempty"`
+}
+
+var versions *versionInfo
+
+func buildVersion() string {
 	files, _ := filepath.Glob("buildtag.*")
 	if len(files) == 1 {
 		return strings.Replace(files[0], "buildtag.", "", 1)
@@ -17,6 +27,10 @@ func Version() string {
 	return "unknown"
 }
 
-//
-// end of file
-//
+func init() {
+	versions = &versionInfo{
+		BuildVersion: buildVersion(),
+		GoVersion:    fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		GitCommit:    gitCommit,
+	}
+}

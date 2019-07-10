@@ -8,3 +8,11 @@ type poolInfo struct {
 
 // identifying info about the specific type of Solr pool we are
 var pool *poolInfo
+
+func init() {
+	pool = &poolInfo{
+		name: config.poolType.value,
+		desc: config.poolDescription.value,
+		url:  config.poolServiceURL.value,
+	}
+}

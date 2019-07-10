@@ -9,19 +9,10 @@ import (
 	"github.com/zsais/go-gin-prometheus"
 )
 
-// commit this was built from; supplied at compile time
-var gitCommit string
-
 /**
  * Main entry point for the web service
  */
 func main() {
-	pool = &poolInfo{
-		name: config.poolType.value,
-		desc: config.poolDescription.value,
-		url:  config.poolServiceURL.value,
-	}
-
 	log.Printf("===> virgo4-pool-solr-ws (%s) starting up <===", pool.name)
 
 	gin.SetMode(gin.ReleaseMode)

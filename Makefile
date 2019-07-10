@@ -20,6 +20,9 @@ GOLNT = golint
 MACHINE = $(shell uname -s | tr '[A-Z]' '[a-z]')
 TARGET = $(MACHINE)
 
+# git commit used for this build
+GIT_COMMIT = $(shell git rev-list -1 HEAD)
+
 # darwin-specific definitions
 GOENV_darwin = 
 GOFLAGS_darwin = 
@@ -30,7 +33,7 @@ GOFLAGS_linux =
 
 # extra flags
 GOENV_EXTRA = GOARCH=amd64
-GOFLAGS_EXTRA = 
+GOFLAGS_EXTRA = -ldflags '-X main.gitCommit=$(GIT_COMMIT)'
 
 # default target:
 
