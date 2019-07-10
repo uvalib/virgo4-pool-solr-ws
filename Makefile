@@ -28,14 +28,17 @@ endif
 # darwin-specific definitions
 GOENV_darwin = 
 GOFLAGS_darwin = 
+GOLINK_darwin = 
 
 # linux-specific definitions
 GOENV_linux = 
 GOFLAGS_linux = 
+GOLINK_linux = 
 
 # extra flags
 GOENV_EXTRA = GOARCH=amd64
-GOFLAGS_EXTRA = -ldflags '-X main.gitCommit=$(GIT_COMMIT)'
+GOFLAGS_EXTRA =
+GOLINK_EXTRA = -X main.gitCommit=$(GIT_COMMIT)
 
 # default target:
 
@@ -44,6 +47,7 @@ build: go-vars compile symlink
 go-vars:
 	$(eval GOENV = GOOS=$(TARGET) $(GOENV_$(TARGET)) $(GOENV_EXTRA))
 	$(eval GOFLAGS = $(GOFLAGS_$(TARGET)) $(GOFLAGS_EXTRA))
+	$(eval GOLINK = -ldflags '$(GOLINK_$(TARGET)) $(GOLINK_EXTRA)')
 
 compile:
 	@ \
@@ -52,8 +56,8 @@ compile:
 	$(GOVER) ; \
 	echo ; \
 	for pkg in $(PACKAGES) ; do \
-		printf "compile: %-6s  env: [%s]  flags: [%s]\n" "$${pkg}" "$(GOENV)" "$(GOFLAGS)" ; \
-		$(GOENV) $(GOBLD) $(GOFLAGS) -o "$(BINDIR)/$${pkg}.$(TARGET)" "$(SRCDIR)/$${pkg}"/*.go || exit 1 ; \
+		printf "compile: %-6s  env: [%s]  flags: [%s]  link: [%s]\n" "$${pkg}" "$(GOENV)" "$(GOFLAGS)" "$(GOLINK)" ; \
+		$(GOENV) $(GOBLD) $(GOFLAGS) $(GOLINK) -o "$(BINDIR)/$${pkg}.$(TARGET)" "$(SRCDIR)/$${pkg}"/*.go || exit 1 ; \
 	done
 
 symlink:
@@ -87,7 +91,7 @@ rebuild-linux: target-linux rebuild
 docker-vars:
 	$(eval PACKAGES = $(PKGDOCKER))
 	$(eval GOENV_EXTRA += CGO_ENABLED=0)
-	$(eval GOFLAGS_EXTRA += --ldflags '-extldflags "-static"')
+	$(eval GOLINK_EXTRA += -extldflags "-static")
 
 docker: docker-vars linux
 
