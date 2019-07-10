@@ -2,9 +2,9 @@
 # build the target application
 #
 FROM golang:1.12 as builder
-RUN apk update && apk upgrade && apk add git && rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get install -y git
 WORKDIR /build
-COPY go.mod go.sum Makefile ./
+COPY .git go.mod go.sum Makefile ./
 COPY cmd ./cmd
 RUN make rebuild-docker
 
