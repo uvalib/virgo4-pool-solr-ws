@@ -20,8 +20,10 @@ GOLNT = golint
 MACHINE = $(shell uname -s | tr '[A-Z]' '[a-z]')
 TARGET = $(MACHINE)
 
-# git commit used for this build
-GIT_COMMIT = $(shell git rev-list -1 HEAD)
+# git commit used for this build, either passed to make via Dockerfile or determined from local directory
+ifeq ($(GIT_COMMIT),)
+	GIT_COMMIT = $(shell git rev-list -1 HEAD)
+endif
 
 # darwin-specific definitions
 GOENV_darwin = 

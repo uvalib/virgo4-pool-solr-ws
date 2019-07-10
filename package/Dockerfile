@@ -2,11 +2,11 @@
 # build the target application
 #
 FROM golang:1.12 as builder
-RUN apt-get update && apt-get install -y git
 WORKDIR /build
-COPY .git go.mod go.sum Makefile ./
+COPY go.mod go.sum Makefile ./
 COPY cmd ./cmd
-RUN make rebuild-docker
+ARG GIT_COMMIT
+RUN make rebuild-docker GIT_COMMIT="$GIT_COMMIT"
 
 #
 # build the target container
