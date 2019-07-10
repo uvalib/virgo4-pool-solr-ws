@@ -25,10 +25,8 @@ type configBoolItem struct {
 
 type configData struct {
 	listenPort           configStringItem
-	interpoolSearchURL   configStringItem
 	poolType             configStringItem
 	poolDescription      configStringItem
-	poolPrivateURL       configStringItem
 	poolServiceURL       configStringItem
 	poolLeaders          configStringItem
 	solrHost             configStringItem
@@ -74,10 +72,8 @@ func flagBoolVar(item *configBoolItem) {
 func getConfigValues() {
 	// get values from the command line first, falling back to environment variables
 	flagStringVar(&config.listenPort)
-	flagStringVar(&config.interpoolSearchURL)
 	flagStringVar(&config.poolType)
 	flagStringVar(&config.poolDescription)
-	flagStringVar(&config.poolPrivateURL)
 	flagStringVar(&config.poolServiceURL)
 	flagStringVar(&config.poolLeaders)
 	flagStringVar(&config.solrHost)
@@ -96,10 +92,8 @@ func getConfigValues() {
 	// die if any of them are not set
 	configOK := true
 	configOK = ensureConfigStringSet(&config.listenPort) && configOK
-	configOK = ensureConfigStringSet(&config.interpoolSearchURL) && configOK
 	configOK = ensureConfigStringSet(&config.poolType) && configOK
 	configOK = ensureConfigStringSet(&config.poolDescription) && configOK
-	configOK = ensureConfigStringSet(&config.poolPrivateURL) && configOK
 	configOK = ensureConfigStringSet(&config.poolServiceURL) && configOK
 	//configOK = ensureConfigStringSet(&config.poolLeaders) && configOK
 	configOK = ensureConfigStringSet(&config.solrHost) && configOK
@@ -118,10 +112,8 @@ func getConfigValues() {
 	}
 
 	log.Printf("[CONFIG] listenPort           = [%s]", config.listenPort.value)
-	log.Printf("[CONFIG] interpoolSearchURL   = [%s]", config.interpoolSearchURL.value)
 	log.Printf("[CONFIG] poolType             = [%s]", config.poolType.value)
 	log.Printf("[CONFIG] poolDescription      = [%s]", config.poolDescription.value)
-	log.Printf("[CONFIG] poolPrivateURL       = [%s]", config.poolPrivateURL.value)
 	log.Printf("[CONFIG] poolServiceURL       = [%s]", config.poolServiceURL.value)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", config.poolLeaders.value)
 	log.Printf("[CONFIG] solrHost             = [%s]", config.solrHost.value)
@@ -137,10 +129,8 @@ func getConfigValues() {
 
 func init() {
 	config.listenPort = configStringItem{value: "", configItem: configItem{flag: "l", env: "VIRGO4_SOLR_POOL_WS_LISTEN_PORT", desc: "listen port"}}
-	config.interpoolSearchURL = configStringItem{value: "", configItem: configItem{flag: "i", env: "VIRGO4_SOLR_POOL_WS_INTERPOOL_SEARCH_URL", desc: "interpool search url"}}
 	config.poolType = configStringItem{value: "", configItem: configItem{flag: "p", env: "VIRGO4_SOLR_POOL_WS_POOL_TYPE", desc: `pool type (e.g. "catalog")`}}
 	config.poolDescription = configStringItem{value: "", configItem: configItem{flag: "d", env: "VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION", desc: `pool description (e.g. "The UVA Library Catalog")`}}
-	config.poolPrivateURL = configStringItem{value: "", configItem: configItem{flag: "v", env: "VIRGO4_SOLR_POOL_WS_POOL_PRIVATE_URL", desc: "pool private url (registered with interpool search)"}}
 	config.poolServiceURL = configStringItem{value: "", configItem: configItem{flag: "u", env: "VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL", desc: "pool service url (reported to client)"}}
 	config.poolLeaders = configStringItem{value: "", configItem: configItem{flag: "e", env: "VIRGO4_SOLR_POOL_WS_POOL_LEADERS", desc: `pool leaders (appended to Solr fq parameter)`}}
 	config.solrHost = configStringItem{value: "", configItem: configItem{flag: "h", env: "VIRGO4_SOLR_POOL_WS_SOLR_HOST", desc: `Solr host (e.g. "https://solr.host.lib.virginia.edu:1234/solr")`}}
