@@ -13,7 +13,7 @@ RUN make rebuild-docker
 FROM alpine:3.10
 
 # update the packages
-RUN apk update && apk upgrade && apk add bash tzdata ca-certificates && rm -rf /var/cache/apk/*
+RUN apk update && apk upgrade && apk add bash tzdata ca-certificates git && rm -rf /var/cache/apk/*
 
 # Create the run user and group
 RUN addgroup webservice && adduser webservice -G webservice -D
