@@ -13,28 +13,37 @@ func solrBuildParameterQ(v VirgoSearchRequest) string {
 	return q
 }
 
-func solrBuildParameterStart(s int) string {
-	// default, if requested value doesn't make sense
-	startnum := 0
+func restrictValue(val int, min int, fallback int) int {
+	// default, if requested value isn't large enough
+	res := fallback
 
-	if s >= 0 {
-		startnum = s
+	if val >= min {
+		res = val
 	}
 
-	start := fmt.Sprintf("%d", startnum)
+	return res
+}
+
+func nonemptyValues(val []string) []string {
+	res := []string{}
+
+	for _, s := range val {
+		if s != "" {
+			res = append(res, s)
+		}
+	}
+
+	return res
+}
+
+func solrBuildParameterStart(s int) int {
+	start := restrictValue(s, 0, 0)
 
 	return start
 }
 
-func solrBuildParameterRows(r int) string {
-	// default, if requested value doesn't make sense
-	rownum := 10
-
-	if r > 0 {
-		rownum = r
-	}
-
-	rows := fmt.Sprintf("%d", rownum)
+func solrBuildParameterRows(r int) int {
+	rows := restrictValue(r, 1, 10)
 
 	return rows
 }
@@ -51,25 +60,20 @@ func solrBuildParameterDefType() string {
 	return deftype
 }
 
-func solrBuildParameterFq() string {
+func solrBuildParameterFq() []string {
 	// leaders must be defined with beginning + or -
 
 	fqall := []string{config.solrParameterFq.value, config.poolLeaders.value}
-	fqs := []string{}
 
-	for _, s := range fqall {
-		if s != "" {
-			fqs = append(fqs, s)
-		}
-	}
-
-	fq := strings.Join(fqs, " ")
+	fq := nonemptyValues(fqall)
 
 	return fq
 }
 
-func solrBuildParameterFl() string {
-	fl := config.solrParameterFl.value
+func solrBuildParameterFl() []string {
+	flall := strings.Split(config.solrParameterFl.value, ",")
+
+	fl := nonemptyValues(flall)
 
 	return fl
 }
@@ -77,18 +81,16 @@ func solrBuildParameterFl() string {
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var solrReq solrRequest
 
-	solrReq.params = make(solrParamsMap)
-
 	// fill out as much as we can for a generic request
-	solrReq.params["q"] = solrBuildParameterQ(v)
-	solrReq.params["qt"] = solrBuildParameterQt()
-	solrReq.params["defType"] = solrBuildParameterDefType()
-	solrReq.params["fq"] = solrBuildParameterFq()
-	solrReq.params["fl"] = solrBuildParameterFl()
+	solrReq.json.Params.Q = solrBuildParameterQ(v)
+	solrReq.json.Params.Qt = solrBuildParameterQt()
+	solrReq.json.Params.DefType = solrBuildParameterDefType()
+	solrReq.json.Params.appendFq(solrBuildParameterFq())
+	solrReq.json.Params.appendFl(solrBuildParameterFl())
 
 	if v.Pagination != nil {
-		solrReq.params["start"] = solrBuildParameterStart(v.Pagination.Start)
-		solrReq.params["rows"] = solrBuildParameterRows(v.Pagination.Rows)
+		solrReq.json.Params.Start = solrBuildParameterStart(v.Pagination.Start)
+		solrReq.json.Params.Rows = solrBuildParameterRows(v.Pagination.Rows)
 	}
 
 	return solrReq
@@ -118,9 +120,10 @@ func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
 func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	solrReq := solrRequestWithDefaults(v)
 
-	// override these values from defaults
-	solrReq.params["start"] = "0"
-	solrReq.params["rows"] = "2"
+	// override these values from defaults.  specify two rows to catch
+	// the (impossible?) scenario of multiple records with the same id
+	solrReq.json.Params.Start = 0
+	solrReq.json.Params.Rows = 2
 
 	return &solrReq, nil
 }

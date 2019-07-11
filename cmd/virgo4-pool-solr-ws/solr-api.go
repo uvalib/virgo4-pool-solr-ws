@@ -12,17 +12,50 @@ type solrParserInfo struct {
 	isKeywordSearch bool
 }
 
-type solrParamsMap map[string]string
+/*
+Query parameters 	JSON field equivalent
+q					query
+fq					filter
+offset				start
+limit				rows
+sort				sort
+json.facet			facet
+json.<param_name>	<param_name>
+
+Unmapped parameters (or original query parameters above) can be passed in "params" block
+*/
+
+func (s *solrRequestParams) appendFl(fls []string) {
+	s.Fl = append(s.Fl, fls...)
+}
+
+func (s *solrRequestParams) appendFq(fqs []string) {
+	s.Fq = append(s.Fq, fqs...)
+}
+
+type solrRequestParams struct {
+	Debug   bool     `json:"debug,omitempty"`
+	DefType string   `json:"defType,omitempty"`
+	Qt      string   `json:"qt,omitempty"`
+	Start   int      `json:"start"`
+	Rows    int      `json:"rows"`
+	Fl      []string `json:"fl,omitempty"`
+	Fq      []string `json:"fq,omitempty"`
+	Q       string   `json:"q,omitempty"`
+}
+
+type solrRequestJSON struct {
+	Params solrRequestParams `json:"params"`
+}
 
 type solrRequest struct {
 	parserInfo *solrParserInfo
-	params     solrParamsMap
+	json       solrRequestJSON
 }
 
 type solrResponseHeader struct {
-	Status int           `json:"status,omitempty"`
-	QTime  int           `json:"QTime,omitempty"`
-	Params solrParamsMap `json:"params,omitempty"`
+	Status int `json:"status,omitempty"`
+	QTime  int `json:"QTime,omitempty"`
 }
 
 type solrDocument struct {

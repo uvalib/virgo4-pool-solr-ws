@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,29 +17,21 @@ var solrClient *http.Client
 func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	solrURL := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 
-	req, reqErr := http.NewRequest("GET", solrURL, nil)
+	jsonBytes, jsonErr := json.Marshal(solrReq.json)
+	if jsonErr != nil {
+		c.log("Marshal() failed: %s", jsonErr.Error())
+		return nil, errors.New("Failed to marshal Solr JSON")
+	}
+
+	req, reqErr := http.NewRequest("GET", solrURL, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
 		c.log("NewRequest() failed: %s", reqErr.Error())
 		return nil, errors.New("Failed to create Solr request")
 	}
 
-	q := req.URL.Query()
+	req.Header.Set("Content-Type", "application/json")
 
-	for key, val := range solrReq.params {
-		if val == "" {
-			continue
-		}
-
-		if key == "q" {
-			c.log("[solr] adding field: [%s] = [%s]", key, val)
-		}
-
-		q.Add(key, val)
-	}
-
-	req.URL.RawQuery = q.Encode()
-
-	c.log("[solr] req: [%s]", req.URL.String())
+	c.log("[solr] req: [%s]", string(jsonBytes))
 
 	start := time.Now()
 

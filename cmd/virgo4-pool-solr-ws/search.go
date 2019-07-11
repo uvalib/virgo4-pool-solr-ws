@@ -31,7 +31,8 @@ func newSearchContext(c *gin.Context) *searchContext {
 func (s *searchContext) copySearchContext() *searchContext {
 	// performs a copy somewhere between shallow and deep
 	// (just enough to let this context be used for another search
-	// without clobbering the original context)
+	// without potentially clobbering the original context by leaving
+	// pointers into the original context)
 
 	sc := &searchContext{}
 
@@ -156,12 +157,14 @@ func (b *byConfidence) Less(i, j int) bool {
 }
 
 func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) {
-	// if the query is not for the first page, return the top result for correct
-	// confidence level; otherwise, let the original query determine it
-
-	s.log("TITLE SEARCH: determining true confidence level")
+	// if the original query will include the top result, no need to check it here,
+	// as the original query will determine the correct confidence level when it runs.
+	// otherwise, query the top result so that we can use its potentially better/more
+	// accurate confidence level in the original query's results.
 
 	if s.virgoReq.Pagination != nil && s.virgoReq.Pagination.Start != 0 {
+		s.log("TITLE SEARCH: determining true confidence level")
+
 		return s.newSearchWithTopResult(s.virgoReq.Query)
 	}
 
