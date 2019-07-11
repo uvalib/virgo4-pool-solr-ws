@@ -112,6 +112,15 @@ vet:
 		(cd "$(SRCDIR)/$${pkg}" && $(GOVET)) ; \
 	done
 
+lint:
+	@ \
+	for pkg in $(PACKAGES) ; do \
+		echo "lint: $${pkg}" ; \
+		(cd "$(SRCDIR)/$${pkg}" && $(GOLNT)) ; \
+	done
+
+check: fmt vet lint
+
 clean:
 	@ \
 	echo "purge: $(BINDIR)/" ; \
@@ -119,13 +128,6 @@ clean:
 	for pkg in $(PACKAGES) ; do \
 		echo "clean: $${pkg}" ; \
 		(cd "$(SRCDIR)/$${pkg}" && $(GOCLN)) ; \
-	done
-
-lint:
-	@ \
-	for pkg in $(PACKAGES) ; do \
-		echo "lint: $${pkg}" ; \
-		(cd "$(SRCDIR)/$${pkg}" && $(GOLNT)) ; \
 	done
 
 dep:
