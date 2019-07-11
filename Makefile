@@ -22,7 +22,7 @@ TARGET = $(MACHINE)
 
 # git commit used for this build, either passed to make via Dockerfile or determined from local directory
 ifeq ($(GIT_COMMIT),)
-	GIT_COMMIT = $(shell git rev-list -1 HEAD)
+	GIT_COMMIT = $(shell commit="$$(git rev-list -1 HEAD)" ; postfix="" ; git diff --quiet || postfix="-modified" ; echo "$${commit}$${postfix}")
 endif
 
 # darwin-specific definitions
