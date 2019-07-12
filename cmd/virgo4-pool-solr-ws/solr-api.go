@@ -44,8 +44,19 @@ type solrRequestParams struct {
 	Q       string   `json:"q,omitempty"`
 }
 
+type solrRequestFacets map[string]solrRequestFacet
+
+type solrRequestFacet struct {
+	Type   string `json:"type"`
+	Field  string `json:"field"`
+	Sort   string `json:"sort,omitempty"`
+	Offset int    `json:"offset,omitempty"`
+	Limit  int    `json:"limit,omitempty"`
+}
+
 type solrRequestJSON struct {
 	Params solrRequestParams `json:"params"`
+	Facets solrRequestFacets `json:"facet,omitempty"`
 }
 
 type solrRequest struct {
@@ -67,6 +78,17 @@ type solrDocument struct {
 	// etc.
 }
 
+type solrBucket struct {
+	Val   string `json:"val"`
+	Count int    `json:"count"`
+}
+
+type solrResponseFacet struct {
+	Buckets []solrBucket `json:"buckets,omitempty"`
+}
+
+type solrResponseFacets map[string]solrResponseFacet
+
 type solrResponseBody struct {
 	NumFound int            `json:"numFound,omitempty"`
 	Start    int            `json:"start,omitempty"`
@@ -81,8 +103,10 @@ type solrError struct {
 }
 
 type solrResponse struct {
-	ResponseHeader solrResponseHeader `json:"responseHeader,omitempty"`
-	Response       solrResponseBody   `json:"response,omitempty"`
-	Error          solrError          `json:"error,omitempty"`
-	parserInfo     *solrParserInfo    // used internally; pointer to one in solrRequest
+	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
+	Response       solrResponseBody       `json:"response,omitempty"`
+	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
+	Facets         solrResponseFacets     // will be parsed from FacetsRaw
+	Error          solrError              `json:"error,omitempty"`
+	parserInfo     *solrParserInfo        // used internally; pointer to one in solrRequest
 }

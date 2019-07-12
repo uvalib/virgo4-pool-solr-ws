@@ -42,6 +42,33 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	return &record
 }
 
+func virgoPopulateFacetBucket(value solrBucket, client clientOptions) *VirgoFacetBucket {
+	var bucket VirgoFacetBucket
+
+	bucket.Val = value.Val
+	bucket.Count = value.Count
+
+	return &bucket
+}
+
+func virgoPopulateFacet(name string, value solrResponseFacet, client clientOptions) *VirgoFacet {
+	var facet VirgoFacet
+
+	facet.Name = name
+
+	var buckets []VirgoFacetBucket
+
+	for _, b := range value.Buckets {
+		bucket := virgoPopulateFacetBucket(b, client)
+
+		buckets = append(buckets, *bucket)
+	}
+
+	facet.Buckets = buckets
+
+	return &facet
+}
+
 func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	var pagination VirgoPagination
 
@@ -97,6 +124,25 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		}
 
 		poolResult.RecordList = &recordList
+	}
+
+	if len(solrRes.Facets) > 0 {
+		var facetList VirgoFacetList
+		gotFacet := false
+
+		for key, val := range solrRes.Facets {
+			if len(val.Buckets) > 0 {
+				gotFacet = true
+
+				facet := virgoPopulateFacet(key, val, client)
+
+				facetList = append(facetList, *facet)
+			}
+		}
+
+		if gotFacet {
+			poolResult.FacetList = &facetList
+		}
 	}
 
 	// FIXME: somehow create h/m/l confidence levels from the query score

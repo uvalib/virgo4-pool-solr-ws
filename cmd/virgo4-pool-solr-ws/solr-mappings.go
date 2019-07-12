@@ -78,6 +78,19 @@ func solrBuildParameterFl() []string {
 	return fl
 }
 
+func solrBuildFacets() map[string]solrRequestFacet {
+	facets := make(map[string]solrRequestFacet)
+
+	facets["authors"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
+	facets["subjects"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
+	facets["languages"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
+	facets["libraries"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
+	facets["call_numbers_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
+	facets["call_numbers_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
+
+	return facets
+}
+
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var solrReq solrRequest
 
@@ -92,6 +105,8 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 		solrReq.json.Params.Start = solrBuildParameterStart(v.Pagination.Start)
 		solrReq.json.Params.Rows = solrBuildParameterRows(v.Pagination.Rows)
 	}
+
+	solrReq.json.Facets = solrBuildFacets()
 
 	return solrReq
 }

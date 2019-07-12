@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 var solrClient *http.Client
@@ -49,12 +52,66 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	var solrRes solrResponse
 
-	decoder := json.NewDecoder(res.Body)
+	/*
+		// from stream:
 
-	if decErr := decoder.Decode(&solrRes); decErr != nil {
-		c.log("Decode() failed: %s", decErr.Error())
-		return nil, errors.New("Failed to decode Solr response")
+		decoder := json.NewDecoder(res.Body)
+
+		if decErr := decoder.Decode(&solrRes); decErr != nil {
+			c.log("Decode() failed: %s", decErr.Error())
+			return nil, errors.New("Failed to decode Solr response")
+		}
+	*/
+
+	// from buffer:
+
+	buf, _ := ioutil.ReadAll(res.Body)
+
+	c.log("raw json: [%s]", buf)
+
+	if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
+		c.log("Unmarshal() failed: %s", jErr.Error())
+		return nil, errors.New("Failed to unmarshal Solr response")
 	}
+
+	// convert Solr "facets" block to internal structures.
+	// due to its structure block, we cannot read it directly into arbitrary structs
+	// (it contains both named facet blocks along with a "count" field that is not such a block).
+	//
+	// e.g. '{ "count": 23, "facet1": { ... }, "facet2": { ... }, ..., "facetN": { ... } }'
+	//
+	// so we read it in as map[string]interface{}, strip out the keys that are not this type
+	// (e.g. "count", which will be float64), and then decode the resulting map into
+	// a map[string]solrResponseFacet type.
+	//
+	// NOTE: maybe this can be avoided by setting an appropriate "json.nl" Solr value... investigating!
+
+	facets := make(map[string]interface{})
+
+	for key, val := range solrRes.FacetsRaw {
+		switch val.(type) {
+		case map[string]interface{}:
+			facets[key] = val
+		}
+	}
+
+	cfg := &mapstructure.DecoderConfig{
+		Metadata:   nil,
+		Result:     &solrRes.Facets,
+		TagName:    "json",
+		ZeroFields: true,
+	}
+
+	dec, _ := mapstructure.NewDecoder(cfg)
+
+	if mapDecErr := dec.Decode(facets); mapDecErr != nil {
+		c.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
+		return nil, errors.New("Failed to decode Solr facet map")
+	}
+
+	//c.log("dec json: %#v", solrRes)
+
+	// log abbreviated results
 
 	logHeader := fmt.Sprintf("[solr] res: header: { status = %d, QTime = %d (elapsed: %0.3fs) }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime, elapsed)
 

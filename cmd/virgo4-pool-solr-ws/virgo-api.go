@@ -29,6 +29,7 @@ type VirgoPoolResult struct {
 	ServiceURL string                `json:"service_url,omitempty"` // required
 	Pagination *VirgoPagination      `json:"pagination,omitempty"`
 	RecordList *VirgoRecordList      `json:"record_list,omitempty"`
+	FacetList  *VirgoFacetList       `json:"facet_list,omitempty"`
 	Confidence string                `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
 	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
 	Warn       *VirgoPoolResultWarn  `json:"warn,omitempty"`
@@ -52,6 +53,25 @@ type VirgoRecord struct {
 
 // VirgoRecordList is a list of records generated from a search (the "search result set").
 type VirgoRecordList []VirgoRecord
+
+// VirgoFacetBucket contains the fields for an individual bucket for a facet.
+type VirgoFacetBucket struct {
+	Val   string `json:"val"`
+	Count int    `json:"count"`
+}
+
+// VirgoFacet contains the fields for a single facet.
+type VirgoFacet struct {
+	Name    string             `json:"name"`
+	Type    string             `json:"type,omitempty"`
+	Sort    string             `json:"sort,omitempty"`
+	Limit   int                `json:"limit,omitempty"`
+	Offset  int                `json:"offset,omitempty"`
+	Buckets []VirgoFacetBucket `json:"buckets,omitempty"`
+}
+
+// VirgoFacetList is a list of facets either requested by the client or returned from a search.
+type VirgoFacetList []VirgoFacet
 
 // VirgoPagination defines a page (contiguous subset) of records for a given search.
 type VirgoPagination struct {
