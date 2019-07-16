@@ -79,17 +79,19 @@ func healthCheckHandler(c *gin.Context) {
 
 	hcMap := make(map[string]hcResp)
 
-	hcRes := hcResp{}
+	hcSolr := hcResp{}
+
+	status := http.StatusOK
+	hcSolr = hcResp{Healthy: true}
 
 	if err := s.handlePingRequest(); err != nil {
-		hcRes = hcResp{Healthy: false, Message: err.Error()}
-	} else {
-		hcRes = hcResp{Healthy: true}
+		status = http.StatusInternalServerError
+		hcSolr = hcResp{Healthy: false, Message: err.Error()}
 	}
 
-	hcMap["solr"] = hcRes
+	hcMap["solr"] = hcSolr
 
-	c.JSON(http.StatusOK, hcMap)
+	c.JSON(status, hcMap)
 }
 
 func getBearerToken(authorization string) (string, error) {
