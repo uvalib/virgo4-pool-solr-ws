@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var availableFacets map[string]solrRequestFacet
+var solrAvailableFacets map[string]solrRequestFacet
 
 // functions that map virgo data into solr data
 
@@ -89,7 +89,7 @@ func solrBuildFacets(facets *VirgoFacetList) map[string]solrRequestFacet {
 	solrFacets := make(map[string]solrRequestFacet)
 
 	for _, facet := range *facets {
-		solrFacet, ok := availableFacets[facet.Name]
+		solrFacet, ok := solrAvailableFacets[facet.Name]
 
 		if ok == false {
 			continue
@@ -167,12 +167,12 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 }
 
 func init() {
-	availableFacets = make(map[string]solrRequestFacet)
+	solrAvailableFacets = make(map[string]solrRequestFacet)
 
-	availableFacets["authors"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
-	availableFacets["subjects"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
-	availableFacets["languages"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
-	availableFacets["libraries"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
-	availableFacets["call_numbers_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
-	availableFacets["call_numbers_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
+	solrAvailableFacets["authors"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
+	solrAvailableFacets["subjects"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
+	solrAvailableFacets["languages"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
+	solrAvailableFacets["libraries"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
+	solrAvailableFacets["call_numbers_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
+	solrAvailableFacets["call_numbers_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
 }

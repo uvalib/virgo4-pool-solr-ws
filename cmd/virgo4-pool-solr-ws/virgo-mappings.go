@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+var virgoAvailableFacets VirgoFacetList
+
 // functions that map solr data into virgo data
 
 func firstElementOf(s []string) string {
@@ -145,6 +147,9 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		}
 	}
 
+	// always return available facets?
+	poolResult.Facets = &virgoAvailableFacets
+
 	// FIXME: somehow create h/m/l confidence levels from the query score
 	switch {
 	case solrRes.Response.Start == 0 && solrRes.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
@@ -187,4 +192,11 @@ func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRec
 	}
 
 	return virgoRes, nil
+}
+
+func init() {
+	for key, val := range solrAvailableFacets {
+		facet := VirgoFacet{Name: key, Type: val.Type, Sort: val.Sort}
+		virgoAvailableFacets = append(virgoAvailableFacets, facet)
+	}
 }
