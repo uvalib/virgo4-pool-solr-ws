@@ -47,7 +47,7 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 func virgoPopulateFacetBucket(value solrBucket, client clientOptions) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
-	bucket.Val = value.Val
+	bucket.Value = value.Val
 	bucket.Count = value.Count
 
 	return &bucket
@@ -148,7 +148,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	}
 
 	// always return available facets?
-	poolResult.Facets = &virgoAvailableFacets
+	poolResult.AvailableFacets = &virgoAvailableFacets
 
 	// FIXME: somehow create h/m/l confidence levels from the query score
 	switch {

@@ -28,14 +28,14 @@ type VirgoPoolResultWarn []string
 
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
-	ServiceURL string                `json:"service_url,omitempty"` // required
-	Pagination *VirgoPagination      `json:"pagination,omitempty"`
-	RecordList *VirgoRecordList      `json:"record_list,omitempty"`
-	Facets     *VirgoFacetList       `json:"facets,omitempty"`  // available facets advertised to the client
-	FacetList  *VirgoFacetList       `json:"facet_list,omitempty"` // facet values for client-requested facets
-	Confidence string                `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
-	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
-	Warn       *VirgoPoolResultWarn  `json:"warn,omitempty"`
+	ServiceURL      string                `json:"service_url,omitempty"` // required
+	Pagination      *VirgoPagination      `json:"pagination,omitempty"`
+	RecordList      *VirgoRecordList      `json:"record_list,omitempty"`
+	AvailableFacets *VirgoFacetList       `json:"available_facets,omitempty"` // available facets advertised to the client
+	FacetList       *VirgoFacetList       `json:"facet_list,omitempty"`       // facet values for client-requested facets
+	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
+	Debug           *VirgoPoolResultDebug `json:"debug,omitempty"`
+	Warn            *VirgoPoolResultWarn  `json:"warn,omitempty"`
 }
 
 // VirgoRecordDebug is an arbitrary set of key-value pairs of debugging
@@ -59,18 +59,18 @@ type VirgoRecordList []VirgoRecord
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
-	Val   string `json:"val"`
+	Value string `json:"val"`
 	Count int    `json:"count"`
 }
 
 // VirgoFacet contains the fields for a single facet.
 type VirgoFacet struct {
 	Name    string             `json:"name"`
-	Type    string             `json:"type,omitempty"` // when advertised as part of a non-faceted/non-filtered search response
-	Value   string             `json:"value,omitempty"` // when used as a filter in a search request
-	Sort    string             `json:"sort,omitempty"` // when used as a facet or filter in a search request
-	Offset  int                `json:"offset,omitempty"` // when used as a facet or filter in a search request
-	Limit   int                `json:"limit,omitempty"` // when used as a facet or filter in a search request
+	Type    string             `json:"type,omitempty"`    // when advertised as part of a non-faceted/non-filtered search response
+	Value   string             `json:"value,omitempty"`   // when used as a filter in a search request
+	Sort    string             `json:"sort,omitempty"`    // when used as a facet or filter in a search request
+	Offset  int                `json:"offset,omitempty"`  // when used as a facet or filter in a search request
+	Limit   int                `json:"limit,omitempty"`   // when used as a facet or filter in a search request
 	Buckets []VirgoFacetBucket `json:"buckets,omitempty"` // when returned as part of a facted search response
 }
 
