@@ -3,7 +3,7 @@ module github.com/uvalib/virgo4-pool-solr-ws
 go 1.12
 
 require (
-	github.com/antlr/antlr4 v0.0.0-20190712173757-bda96a0081c0 // indirect
+	github.com/antlr/antlr4 v0.0.0-20190714172556-b627fffdd1e8 // indirect
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
