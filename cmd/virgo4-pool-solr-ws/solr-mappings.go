@@ -114,6 +114,30 @@ func solrBuildFacets(facets *VirgoFacetList) map[string]solrRequestFacet {
 	return solrFacets
 }
 
+func solrBuildFilters(filters *VirgoFacetList) []string {
+	solrFilters := []string{}
+
+	if filters == nil {
+		return solrFilters
+	}
+
+	for _, filter := range *filters {
+		solrFacet, ok := solrAvailableFacets[filter.Name]
+
+		if ok == false {
+			continue
+		}
+
+		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
+
+		solrFilters = append(solrFilters, solrFilter)
+	}
+
+	log.Printf("solrFilters: %v", solrFilters)
+
+	return solrFilters
+}
+
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var solrReq solrRequest
 
@@ -130,6 +154,8 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	}
 
 	solrReq.json.Facets = solrBuildFacets(v.Facets)
+
+	solrReq.json.Params.appendFq(solrBuildFilters(v.Filters))
 
 	return solrReq
 }
