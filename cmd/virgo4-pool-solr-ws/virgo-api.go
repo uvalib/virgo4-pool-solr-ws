@@ -11,6 +11,8 @@ type VirgoSearchRequest struct {
 	Query      string           `json:"query,omitempty"`
 	solrQuery  string           // used internally
 	Pagination *VirgoPagination `json:"pagination,omitempty"`
+	Facets     *VirgoFacetList  `json:"facets,omitempty"`
+	Filters    *VirgoFacetList  `json:"filters,omitempty"`
 }
 
 // VirgoPoolResultDebug is an arbitrary set of key-value pairs of debugging
@@ -29,7 +31,8 @@ type VirgoPoolResult struct {
 	ServiceURL string                `json:"service_url,omitempty"` // required
 	Pagination *VirgoPagination      `json:"pagination,omitempty"`
 	RecordList *VirgoRecordList      `json:"record_list,omitempty"`
-	FacetList  *VirgoFacetList       `json:"facet_list,omitempty"`
+	Facets     *VirgoFacetList       `json:"facets,omitempty"`  // available facets advertised to the client
+	FacetList  *VirgoFacetList       `json:"facet_list,omitempty"` // facet values for client-requested facets
 	Confidence string                `json:"confidence,omitempty"` // required; i.e. low, medium, high, exact
 	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
 	Warn       *VirgoPoolResultWarn  `json:"warn,omitempty"`
@@ -63,14 +66,15 @@ type VirgoFacetBucket struct {
 // VirgoFacet contains the fields for a single facet.
 type VirgoFacet struct {
 	Name    string             `json:"name"`
-	Type    string             `json:"type,omitempty"`
-	Sort    string             `json:"sort,omitempty"`
-	Limit   int                `json:"limit,omitempty"`
-	Offset  int                `json:"offset,omitempty"`
-	Buckets []VirgoFacetBucket `json:"buckets,omitempty"`
+	Type    string             `json:"type,omitempty"` // when advertised as part of a non-faceted/non-filtered search response
+	Value   string             `json:"value,omitempty"` // when used as a filter in a search request
+	Sort    string             `json:"sort,omitempty"` // when used as a facet or filter in a search request
+	Offset  int                `json:"offset,omitempty"` // when used as a facet or filter in a search request
+	Limit   int                `json:"limit,omitempty"` // when used as a facet or filter in a search request
+	Buckets []VirgoFacetBucket `json:"buckets,omitempty"` // when returned as part of a facted search response
 }
 
-// VirgoFacetList is a list of facets either requested by the client or returned from a search.
+// VirgoFacetList is a list of facets or filters either requested by the client or returned from a search.
 type VirgoFacetList []VirgoFacet
 
 // VirgoPagination defines a page (contiguous subset) of records for a given search.
@@ -78,11 +82,4 @@ type VirgoPagination struct {
 	Start int `json:"start"`
 	Rows  int `json:"rows"`
 	Total int `json:"total"`
-}
-
-// VirgoPoolRegistration contains the information reported when registrering
-// with the interpool web service.
-type VirgoPoolRegistration struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
 }

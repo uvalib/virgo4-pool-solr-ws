@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
+
+var availableFacets map[string]solrRequestFacet
 
 // functions that map virgo data into solr data
 
@@ -78,17 +81,37 @@ func solrBuildParameterFl() []string {
 	return fl
 }
 
-func solrBuildFacets() map[string]solrRequestFacet {
-	facets := make(map[string]solrRequestFacet)
+func solrBuildFacets(facets *VirgoFacetList) map[string]solrRequestFacet {
+	if facets == nil {
+		return nil
+	}
 
-	facets["authors"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
-	facets["subjects"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
-	facets["languages"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
-	facets["libraries"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
-	facets["call_numbers_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
-	facets["call_numbers_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
+	solrFacets := make(map[string]solrRequestFacet)
 
-	return facets
+	for _, facet := range *facets {
+		solrFacet, ok := availableFacets[facet.Name]
+
+		if ok == false {
+			continue
+		}
+
+		// update with provided values, if any
+
+		// safe to just overwrite, as they will only be non-zero if client specifies it
+		solrFacet.Offset = facet.Offset
+		solrFacet.Limit = facet.Limit
+
+		// need to check before overwriting
+		if facet.Sort != "" {
+			solrFacet.Sort = facet.Sort
+		}
+
+		solrFacets[facet.Name] = solrFacet
+	}
+
+	log.Printf("solrFacets: %v", solrFacets)
+
+	return solrFacets
 }
 
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
@@ -106,7 +129,7 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 		solrReq.json.Params.Rows = solrBuildParameterRows(v.Pagination.Rows)
 	}
 
-	solrReq.json.Facets = solrBuildFacets()
+	solrReq.json.Facets = solrBuildFacets(v.Facets)
 
 	return solrReq
 }
@@ -141,4 +164,15 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	solrReq.json.Params.Rows = 2
 
 	return &solrReq, nil
+}
+
+func init() {
+	availableFacets = make(map[string]solrRequestFacet)
+
+	availableFacets["authors"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
+	availableFacets["subjects"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
+	availableFacets["languages"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
+	availableFacets["libraries"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
+	availableFacets["call_numbers_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
+	availableFacets["call_numbers_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
 }
