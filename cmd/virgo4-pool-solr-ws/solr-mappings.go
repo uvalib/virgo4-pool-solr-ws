@@ -76,10 +76,27 @@ func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
 		return
 	}
 
-	// special case "all" returns all supported facets with default offset/limit/sort
-	if len(*facets) == 1 && (*facets)[0].Name == "all" {
-		s.json.Facets = solrAvailableFacets
-		return
+	// special case "all" returns all supported facets with default sort and client-specified offset/limit values
+	if len(*facets) == 1 {
+		onlyFacet := (*facets)[0]
+
+		// might add more later, e.g. "none" or "list"
+		switch onlyFacet.Name {
+		case "all":
+			s.json.Facets = make(map[string]solrRequestFacet)
+
+			for key, value := range solrAvailableFacets {
+				solrFacet := value
+
+				// safe to just overwrite, as they will only be non-zero if client specifies it
+				solrFacet.Offset = onlyFacet.Offset
+				solrFacet.Limit = onlyFacet.Limit
+
+				s.json.Facets[key] = solrFacet
+			}
+
+			return
+		}
 	}
 
 	// otherwise, ensure client is requesting valid fields, and use its desired offset/limit/sort values
@@ -195,10 +212,11 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 func init() {
 	solrAvailableFacets = make(map[string]solrRequestFacet)
 
-	solrAvailableFacets["authors"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
-	solrAvailableFacets["subjects"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
-	solrAvailableFacets["languages"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
-	solrAvailableFacets["libraries"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
-	solrAvailableFacets["call_numbers_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
-	solrAvailableFacets["call_numbers_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
+	solrAvailableFacets["author"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
+	solrAvailableFacets["subject"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
+	solrAvailableFacets["language"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
+	solrAvailableFacets["format"] = solrRequestFacet{Type: "terms", Field: "format_f", Sort: "count"}
+	solrAvailableFacets["library"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
+	solrAvailableFacets["call_number_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
+	solrAvailableFacets["call_number_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
 }
