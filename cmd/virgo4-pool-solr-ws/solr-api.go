@@ -25,14 +25,6 @@ json.<param_name>	<param_name>
 Unmapped parameters (or original query parameters above) can be passed in "params" block
 */
 
-func (s *solrRequestParams) appendFl(fls []string) {
-	s.Fl = append(s.Fl, fls...)
-}
-
-func (s *solrRequestParams) appendFq(fqs []string) {
-	s.Fq = append(s.Fq, fqs...)
-}
-
 type solrRequestParams struct {
 	Debug   bool     `json:"debug,omitempty"`
 	DefType string   `json:"defType,omitempty"`
@@ -62,6 +54,7 @@ type solrRequestJSON struct {
 type solrRequest struct {
 	parserInfo *solrParserInfo
 	json       solrRequestJSON
+	warnings   []string
 }
 
 type solrResponseHeader struct {
@@ -108,5 +101,5 @@ type solrResponse struct {
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`
-	parserInfo     *solrParserInfo        // used internally; pointer to one in solrRequest
+	solrReq        *solrRequest           // used internally to reference fields in original request
 }

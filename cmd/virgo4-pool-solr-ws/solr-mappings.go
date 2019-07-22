@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -10,18 +9,15 @@ var solrAvailableFacets map[string]solrRequestFacet
 
 // functions that map virgo data into solr data
 
-func solrBuildParameterQ(v VirgoSearchRequest) string {
-	q := v.solrQuery
-
-	return q
-}
-
-func restrictValue(val int, min int, fallback int) int {
+func (s *solrRequest) restrictValue(field string, val int, min int, fallback int) int {
 	// default, if requested value isn't large enough
 	res := fallback
 
 	if val >= min {
 		res = val
+	} else {
+		warning := fmt.Sprintf(`value for "%s" is less than the minimum allowed value %d; defaulting to %d`, field, min, fallback)
+		s.warnings = append(s.warnings, warning)
 	}
 
 	return res
@@ -39,59 +35,60 @@ func nonemptyValues(val []string) []string {
 	return res
 }
 
-func solrBuildParameterStart(s int) int {
-	start := restrictValue(s, 0, 0)
-
-	return start
+func (s *solrRequest) buildParameterQ(query string) {
+	s.json.Params.Q = query
 }
 
-func solrBuildParameterRows(r int) int {
-	rows := restrictValue(r, 1, 10)
-
-	return rows
+func (s *solrRequest) buildParameterStart(n int) {
+	s.json.Params.Start = s.restrictValue("start", n, 0, 0)
 }
 
-func solrBuildParameterQt() string {
-	qt := config.solrParameterQt.value
-
-	return qt
+func (s *solrRequest) buildParameterRows(n int) {
+	s.json.Params.Rows = s.restrictValue("rows", n, 1, 10)
 }
 
-func solrBuildParameterDefType() string {
-	deftype := config.solrParameterDefType.value
-
-	return deftype
+func (s *solrRequest) buildParameterQt() {
+	s.json.Params.Qt = config.solrParameterQt.value
 }
 
-func solrBuildParameterFq() []string {
+func (s *solrRequest) buildParameterDefType() {
+	s.json.Params.DefType = config.solrParameterDefType.value
+}
+
+func (s *solrRequest) buildParameterFq() {
 	// leaders must be defined with beginning + or -
 
 	fqall := []string{config.solrParameterFq.value, config.poolLeaders.value}
 
-	fq := nonemptyValues(fqall)
-
-	return fq
+	s.json.Params.Fq = nonemptyValues(fqall)
 }
 
-func solrBuildParameterFl() []string {
+func (s *solrRequest) buildParameterFl() {
 	flall := strings.Split(config.solrParameterFl.value, ",")
 
-	fl := nonemptyValues(flall)
-
-	return fl
+	s.json.Params.Fl = nonemptyValues(flall)
 }
 
-func solrBuildFacets(facets *VirgoFacetList) map[string]solrRequestFacet {
+func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
 	if facets == nil {
-		return nil
+		return
 	}
 
-	solrFacets := make(map[string]solrRequestFacet)
+	// special case "all" returns all supported facets with default offset/limit/sort
+	if len(*facets) == 1 && (*facets)[0].Name == "all" {
+		s.json.Facets = solrAvailableFacets
+		return
+	}
+
+	// otherwise, ensure client is requesting valid fields, and use its desired offset/limit/sort values
+	s.json.Facets = make(map[string]solrRequestFacet)
 
 	for _, facet := range *facets {
 		solrFacet, ok := solrAvailableFacets[facet.Name]
 
 		if ok == false {
+			warning := fmt.Sprintf("ignored unrecognized facet field: [%s]", facet.Name)
+			s.warnings = append(s.warnings, warning)
 			continue
 		}
 
@@ -106,61 +103,54 @@ func solrBuildFacets(facets *VirgoFacetList) map[string]solrRequestFacet {
 			solrFacet.Sort = facet.Sort
 		}
 
-		solrFacets[facet.Name] = solrFacet
+		s.json.Facets[facet.Name] = solrFacet
 	}
-
-	log.Printf("solrFacets: %v", solrFacets)
-
-	return solrFacets
 }
 
-func solrBuildFilters(filters *VirgoFacetList) []string {
-	solrFilters := []string{}
+func (s *solrRequest) buildFilters(filters *VirgoFacetList) {
+	s.json.Params.Fq = []string{}
 
 	if filters == nil {
-		return solrFilters
+		return
 	}
 
 	for _, filter := range *filters {
 		solrFacet, ok := solrAvailableFacets[filter.Name]
 
 		if ok == false {
+			warning := fmt.Sprintf("ignored unrecognized filter field: [%s]", filter.Name)
+			s.warnings = append(s.warnings, warning)
 			continue
 		}
 
 		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
 
-		solrFilters = append(solrFilters, solrFilter)
+		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
 	}
-
-	log.Printf("solrFilters: %v", solrFilters)
-
-	return solrFilters
 }
 
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
-	var solrReq solrRequest
+	var s solrRequest
 
 	// fill out as much as we can for a generic request
-	solrReq.json.Params.Q = solrBuildParameterQ(v)
-	solrReq.json.Params.Qt = solrBuildParameterQt()
-	solrReq.json.Params.DefType = solrBuildParameterDefType()
-	solrReq.json.Params.appendFq(solrBuildParameterFq())
-	solrReq.json.Params.appendFl(solrBuildParameterFl())
+	s.buildParameterQ(v.solrQuery)
+	s.buildParameterQt()
+	s.buildParameterDefType()
+	s.buildParameterFq()
+	s.buildParameterFl()
 
 	if v.Pagination != nil {
-		solrReq.json.Params.Start = solrBuildParameterStart(v.Pagination.Start)
-		solrReq.json.Params.Rows = solrBuildParameterRows(v.Pagination.Rows)
+		s.buildParameterStart(v.Pagination.Start)
+		s.buildParameterRows(v.Pagination.Rows)
 	}
 
-	solrReq.json.Facets = solrBuildFacets(v.Facets)
+	s.buildFacets(v.Facets)
+	s.buildFilters(v.Filters)
 
-	solrReq.json.Params.appendFq(solrBuildFilters(v.Filters))
-
-	return solrReq
+	return s
 }
 
-func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
+func solrSearchRequest(v VirgoSearchRequest, c *clientOptions) (*solrRequest, error) {
 	var err error
 
 	var p *solrParserInfo

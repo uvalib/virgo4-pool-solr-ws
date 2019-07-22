@@ -61,7 +61,7 @@ func (s *searchContext) err(format string, args ...interface{}) {
 func (s *searchContext) performQuery() error {
 	var err error
 
-	if s.solrReq, err = solrSearchRequest(s.virgoReq); err != nil {
+	if s.solrReq, err = solrSearchRequest(s.virgoReq, s.client); err != nil {
 		s.err("query creation error: %s", err.Error())
 		return err
 	}

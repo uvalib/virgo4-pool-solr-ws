@@ -22,10 +22,6 @@ type VirgoPoolResultDebug struct {
 	MaxScore float32 `json:"max_score"`
 }
 
-// VirgoPoolResultWarn is an arbitrary list of strings containing any non-fatal
-// warnings that should be reported back to the client.
-type VirgoPoolResultWarn []string
-
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
 	ServiceURL      string                `json:"service_url,omitempty"` // required
@@ -35,7 +31,7 @@ type VirgoPoolResult struct {
 	FacetList       *VirgoFacetList       `json:"facet_list,omitempty"`       // facet values for client-requested facets
 	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
 	Debug           *VirgoPoolResultDebug `json:"debug,omitempty"`
-	Warn            *VirgoPoolResultWarn  `json:"warn,omitempty"`
+	Warn            *[]string             `json:"warn,omitempty"`
 }
 
 // VirgoRecordDebug is an arbitrary set of key-value pairs of debugging
