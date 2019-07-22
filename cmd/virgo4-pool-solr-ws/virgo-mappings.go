@@ -112,7 +112,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 
 	firstTitleResults := ""
-	firstTitleQueried := firstElementOf(solrRes.solrReq.parserInfo.parser.Titles)
+	firstTitleQueried := firstElementOf(solrRes.solrReq.meta.parserInfo.parser.Titles)
 
 	if len(solrRes.Response.Docs) > 0 {
 		firstTitleResults = firstElementOf(solrRes.Response.Docs[0].Title)
@@ -152,7 +152,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 
 	// FIXME: somehow create h/m/l confidence levels from the query score
 	switch {
-	case solrRes.Response.Start == 0 && solrRes.solrReq.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
+	case solrRes.Response.Start == 0 && solrRes.solrReq.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
 		poolResult.Confidence = "exact"
 	case solrRes.Response.MaxScore > 200.0:
 		poolResult.Confidence = "high"
@@ -162,8 +162,8 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		poolResult.Confidence = "low"
 	}
 
-	if len(solrRes.solrReq.warnings) > 0 {
-		poolResult.Warn = &solrRes.solrReq.warnings
+	if len(solrRes.solrReq.meta.warnings) > 0 {
+		poolResult.Warn = &solrRes.solrReq.meta.warnings
 	}
 
 	if client.debug == true {

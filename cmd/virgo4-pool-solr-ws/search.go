@@ -24,6 +24,7 @@ func newSearchContext(c *gin.Context) *searchContext {
 	s := searchContext{}
 
 	s.client = getClientOptions(c)
+	s.virgoReq.meta.client = s.client
 
 	return &s
 }
@@ -61,17 +62,17 @@ func (s *searchContext) err(format string, args ...interface{}) {
 func (s *searchContext) performQuery() error {
 	var err error
 
-	if s.solrReq, err = solrSearchRequest(s.virgoReq, s.client); err != nil {
+	if s.solrReq, err = solrSearchRequest(s.virgoReq); err != nil {
 		s.err("query creation error: %s", err.Error())
 		return err
 	}
 
-	if s.solrReq.parserInfo != nil {
-		s.log("Titles      : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Titles, "; "), s.solrReq.parserInfo.isTitleSearch)
-		s.log("Authors     : { %v }", strings.Join(s.solrReq.parserInfo.parser.Authors, "; "))
-		s.log("Subjects    : { %v }", strings.Join(s.solrReq.parserInfo.parser.Subjects, "; "))
-		s.log("Keywords    : { %v } (%v)", strings.Join(s.solrReq.parserInfo.parser.Keywords, "; "), s.solrReq.parserInfo.isKeywordSearch)
-		s.log("Identifiers : { %v }", strings.Join(s.solrReq.parserInfo.parser.Identifiers, "; "))
+	if s.solrReq.meta.parserInfo != nil {
+		s.log("Titles      : { %v } (%v)", strings.Join(s.solrReq.meta.parserInfo.parser.Titles, "; "), s.solrReq.meta.parserInfo.isTitleSearch)
+		s.log("Authors     : { %v }", strings.Join(s.solrReq.meta.parserInfo.parser.Authors, "; "))
+		s.log("Subjects    : { %v }", strings.Join(s.solrReq.meta.parserInfo.parser.Subjects, "; "))
+		s.log("Keywords    : { %v } (%v)", strings.Join(s.solrReq.meta.parserInfo.parser.Keywords, "; "), s.solrReq.meta.parserInfo.isKeywordSearch)
+		s.log("Identifiers : { %v }", strings.Join(s.solrReq.meta.parserInfo.parser.Identifiers, "; "))
 	}
 
 	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
@@ -245,6 +246,9 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 
 	// use query syntax from chosen search
 	s.virgoReq.Query = top.virgoReq.Query
+
+	// indicate this is the actual search, so we can request extras such as facets
+	s.virgoReq.meta.actualSearch = true
 
 	if err = s.getPoolQueryResults(); err != nil {
 		return nil, err

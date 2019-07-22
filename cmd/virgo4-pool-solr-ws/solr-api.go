@@ -51,10 +51,15 @@ type solrRequestJSON struct {
 	Facets solrRequestFacets `json:"facet,omitempty"`
 }
 
-type solrRequest struct {
+type solrRequestMeta struct {
+	client     *clientOptions
 	parserInfo *solrParserInfo
-	json       solrRequestJSON
 	warnings   []string
+}
+
+type solrRequest struct {
+	json solrRequestJSON
+	meta solrRequestMeta
 }
 
 type solrResponseHeader struct {

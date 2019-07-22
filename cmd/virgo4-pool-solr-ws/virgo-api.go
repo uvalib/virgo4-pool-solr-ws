@@ -5,14 +5,20 @@ package main
 // based loosely on internal discussions, will solidify here:
 // https://github.com/uvalib/v4-api/blob/master/pool-search-api-OAS3.json
 
+type virgoSearchRequestMeta struct {
+	client       *clientOptions
+	solrQuery    string         // holds the parsed solr query
+	actualSearch bool           // set to true for non-speculative searches
+}
+
 // VirgoSearchRequest holds the contents of a search request as parsed
 // from JSON defined in the Virgo API.
 type VirgoSearchRequest struct {
-	Query      string           `json:"query,omitempty"`
-	solrQuery  string           // used internally
-	Pagination *VirgoPagination `json:"pagination,omitempty"`
-	Facets     *VirgoFacetList  `json:"facets,omitempty"`
-	Filters    *VirgoFacetList  `json:"filters,omitempty"`
+	Query      string                 `json:"query,omitempty"`
+	Pagination *VirgoPagination       `json:"pagination,omitempty"`
+	Facets     *VirgoFacetList        `json:"facets,omitempty"`
+	Filters    *VirgoFacetList        `json:"filters,omitempty"`
+	meta       virgoSearchRequestMeta // used internally
 }
 
 // VirgoPoolResultDebug is an arbitrary set of key-value pairs of debugging

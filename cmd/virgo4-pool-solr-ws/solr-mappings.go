@@ -17,7 +17,8 @@ func (s *solrRequest) restrictValue(field string, val int, min int, fallback int
 		res = val
 	} else {
 		warning := fmt.Sprintf(`value for "%s" is less than the minimum allowed value %d; defaulting to %d`, field, min, fallback)
-		s.warnings = append(s.warnings, warning)
+		s.meta.client.log(warning)
+		s.meta.warnings = append(s.meta.warnings, warning)
 	}
 
 	return res
@@ -87,8 +88,9 @@ func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
 		solrFacet, ok := solrAvailableFacets[facet.Name]
 
 		if ok == false {
-			warning := fmt.Sprintf("ignored unrecognized facet field: [%s]", facet.Name)
-			s.warnings = append(s.warnings, warning)
+			warning := fmt.Sprintf("ignoring unrecognized facet field: [%s]", facet.Name)
+			s.meta.client.log(warning)
+			s.meta.warnings = append(s.meta.warnings, warning)
 			continue
 		}
 
@@ -118,8 +120,9 @@ func (s *solrRequest) buildFilters(filters *VirgoFacetList) {
 		solrFacet, ok := solrAvailableFacets[filter.Name]
 
 		if ok == false {
-			warning := fmt.Sprintf("ignored unrecognized filter field: [%s]", filter.Name)
-			s.warnings = append(s.warnings, warning)
+			warning := fmt.Sprintf("ignoring unrecognized filter field: [%s]", filter.Name)
+			s.meta.client.log(warning)
+			s.meta.warnings = append(s.meta.warnings, warning)
 			continue
 		}
 
@@ -132,8 +135,10 @@ func (s *solrRequest) buildFilters(filters *VirgoFacetList) {
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var s solrRequest
 
+	s.meta.client = v.meta.client
+
 	// fill out as much as we can for a generic request
-	s.buildParameterQ(v.solrQuery)
+	s.buildParameterQ(v.meta.solrQuery)
 	s.buildParameterQt()
 	s.buildParameterDefType()
 	s.buildParameterFq()
@@ -144,29 +149,32 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 		s.buildParameterRows(v.Pagination.Rows)
 	}
 
-	s.buildFacets(v.Facets)
+	if v.meta.actualSearch == true {
+		s.buildFacets(v.Facets)
+	}
+
 	s.buildFilters(v.Filters)
 
 	return s
 }
 
-func solrSearchRequest(v VirgoSearchRequest, c *clientOptions) (*solrRequest, error) {
+func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	var err error
 
 	var p *solrParserInfo
 
 	// caller might have already supplied a Solr query
-	if v.solrQuery == "" {
+	if v.meta.solrQuery == "" {
 		if p, err = virgoQueryConvertToSolr(v.Query); err != nil {
 			return nil, fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())
 		}
 
-		v.solrQuery = p.query
+		v.meta.solrQuery = p.query
 	}
 
 	solrReq := solrRequestWithDefaults(v)
 
-	solrReq.parserInfo = p
+	solrReq.meta.parserInfo = p
 
 	return &solrReq, nil
 }
