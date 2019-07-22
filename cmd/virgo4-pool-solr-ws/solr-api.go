@@ -52,9 +52,10 @@ type solrRequestJSON struct {
 }
 
 type solrRequestMeta struct {
-	client     *clientOptions
-	parserInfo *solrParserInfo
-	warnings   []string
+	client          *clientOptions
+	parserInfo      *solrParserInfo
+	warnings        []string
+	advertiseFacets bool
 }
 
 type solrRequest struct {

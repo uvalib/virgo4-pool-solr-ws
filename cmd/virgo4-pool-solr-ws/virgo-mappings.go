@@ -147,8 +147,10 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		}
 	}
 
-	// always return available facets?
-	poolResult.AvailableFacets = &virgoAvailableFacets
+	// advertise facets?
+	if solrRes.solrReq.meta.advertiseFacets == true {
+		poolResult.AvailableFacets = &virgoAvailableFacets
+	}
 
 	// FIXME: somehow create h/m/l confidence levels from the query score
 	switch {

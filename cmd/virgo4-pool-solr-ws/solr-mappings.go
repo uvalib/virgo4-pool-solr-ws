@@ -72,6 +72,7 @@ func (s *solrRequest) buildParameterFl() {
 
 func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
 	if facets == nil {
+		s.meta.advertiseFacets = true
 		return
 	}
 
@@ -91,6 +92,7 @@ func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
 			warning := fmt.Sprintf("ignoring unrecognized facet field: [%s]", facet.Name)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
+			s.meta.advertiseFacets = true
 			continue
 		}
 
