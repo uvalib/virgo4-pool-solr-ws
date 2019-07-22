@@ -41,11 +41,11 @@ func (s *solrRequest) buildParameterQ(query string) {
 }
 
 func (s *solrRequest) buildParameterStart(n int) {
-	s.json.Params.Start = s.restrictValue("start", n, 0, 0)
+	s.json.Params.Start = s.restrictValue("start", n, minimumStart, defaultStart)
 }
 
 func (s *solrRequest) buildParameterRows(n int) {
-	s.json.Params.Rows = s.restrictValue("rows", n, 1, 10)
+	s.json.Params.Rows = s.restrictValue("rows", n, minimumRows, defaultRows)
 }
 
 func (s *solrRequest) buildParameterQt() {
@@ -163,10 +163,8 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	s.buildParameterFq()
 	s.buildParameterFl()
 
-	if v.Pagination != nil {
-		s.buildParameterStart(v.Pagination.Start)
-		s.buildParameterRows(v.Pagination.Rows)
-	}
+	s.buildParameterStart(v.Pagination.Start)
+	s.buildParameterRows(v.Pagination.Rows)
 
 	if v.meta.actualSearch == true {
 		s.buildFacets(v.Facets)

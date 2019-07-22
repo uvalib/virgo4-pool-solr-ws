@@ -15,7 +15,7 @@ type virgoSearchRequestMeta struct {
 // from JSON defined in the Virgo API.
 type VirgoSearchRequest struct {
 	Query      string                 `json:"query,omitempty"`
-	Pagination *VirgoPagination       `json:"pagination,omitempty"`
+	Pagination VirgoPagination        `json:"pagination,omitempty"`
 	Facets     *VirgoFacetList        `json:"facets,omitempty"`
 	Filters    *VirgoFacetList        `json:"filters,omitempty"`
 	meta       virgoSearchRequestMeta // used internally

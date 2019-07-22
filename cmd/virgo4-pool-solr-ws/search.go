@@ -10,6 +10,12 @@ import (
 
 var confidenceIndex map[string]int
 
+const defaultStart = 0
+const minimumStart = 0
+
+const defaultRows = 10
+const minimumRows = 1
+
 type searchContext struct {
 	client         *clientOptions
 	virgoReq       VirgoSearchRequest
@@ -25,6 +31,8 @@ func newSearchContext(c *gin.Context) *searchContext {
 
 	s.client = getClientOptions(c)
 	s.virgoReq.meta.client = s.client
+	s.virgoReq.Pagination.Start = defaultStart
+	s.virgoReq.Pagination.Rows = defaultRows
 
 	return &s
 }
@@ -42,11 +50,6 @@ func (s *searchContext) copySearchContext() *searchContext {
 
 	v := s.virgoReq
 	sc.virgoReq = v
-
-	if s.virgoReq.Pagination != nil {
-		p := *s.virgoReq.Pagination
-		sc.virgoReq.Pagination = &p
-	}
 
 	return sc
 }
@@ -120,7 +123,7 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	top := s.copySearchContext()
 
 	top.virgoReq.Query = query
-	top.virgoReq.Pagination = &VirgoPagination{Start: 0, Rows: 1}
+	top.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 1}
 
 	if err := top.getPoolQueryResults(); err != nil {
 		return nil, err
@@ -163,7 +166,7 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 	// otherwise, query the top result so that we can use its potentially better/more
 	// accurate confidence level in the original query's results.
 
-	if s.virgoReq.Pagination != nil && s.virgoReq.Pagination.Start != 0 {
+	if s.virgoReq.Pagination.Start != 0 {
 		s.log("TITLE SEARCH: determining true confidence level")
 
 		return s.newSearchWithTopResult(s.virgoReq.Query)
