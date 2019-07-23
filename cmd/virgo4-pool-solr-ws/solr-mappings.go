@@ -210,7 +210,7 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 func init() {
 	solrAvailableFacets = make(map[string]solrRequestFacet)
 
-	solrAvailableFacets["author"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "index"}
+	solrAvailableFacets["author"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "count"}
 	solrAvailableFacets["subject"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
 	solrAvailableFacets["language"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
 	solrAvailableFacets["format"] = solrRequestFacet{Type: "terms", Field: "format_f", Sort: "count"}
