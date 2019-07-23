@@ -61,7 +61,7 @@ type VirgoRecordList []VirgoRecord
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
-	Value string `json:"val"`
+	Value string `json:"value"`
 	Count int    `json:"count"`
 }
 
