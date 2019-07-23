@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var virgoAvailableFacets VirgoFacetList
+var virgoAvailableFacets []string
 
 // functions that map solr data into virgo data
 
@@ -201,8 +201,7 @@ func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRec
 }
 
 func init() {
-	for key, val := range solrAvailableFacets {
-		facet := VirgoFacet{Name: key, Type: val.Type, Sort: val.Sort}
-		virgoAvailableFacets = append(virgoAvailableFacets, facet)
+	for key, _ := range solrAvailableFacets {
+		virgoAvailableFacets = append(virgoAvailableFacets, key)
 	}
 }

@@ -33,7 +33,7 @@ type VirgoPoolResult struct {
 	ServiceURL      string                `json:"service_url,omitempty"` // required
 	Pagination      *VirgoPagination      `json:"pagination,omitempty"`
 	RecordList      *VirgoRecordList      `json:"record_list,omitempty"`
-	AvailableFacets *VirgoFacetList       `json:"available_facets,omitempty"` // available facets advertised to the client
+	AvailableFacets *[]string             `json:"available_facets,omitempty"` // available facets advertised to the client
 	FacetList       *VirgoFacetList       `json:"facet_list,omitempty"`       // facet values for client-requested facets
 	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
 	Debug           *VirgoPoolResultDebug `json:"debug,omitempty"`
