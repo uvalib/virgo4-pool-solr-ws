@@ -33,6 +33,13 @@ func (r *VirgoRecord) addField(v VirgoNuancedField) {
 		return
 	}
 
+	switch v.Value.(type) {
+	case string:
+		if v.Value == "" {
+			return
+		}
+	}
+
 	r.Fields = append(r.Fields, v)
 }
 
