@@ -73,7 +73,7 @@ type solrDocument struct {
 	ID       string   `json:"id,omitempty"`
 	Title    []string `json:"title_a,omitempty"`
 	Subtitle []string `json:"title_sub_a,omitempty"`
-	Author   []string `json:"author_a,omitempty"`
+	Author   []string `json:"author_facet_a,omitempty"`
 	// etc.
 }
 

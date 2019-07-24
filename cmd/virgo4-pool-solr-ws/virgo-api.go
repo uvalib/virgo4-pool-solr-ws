@@ -52,7 +52,7 @@ type VirgoNuancedField struct {
 	Name       string      `json:"name"`
 	Type       string      `json:"type,omitempty"` // assume simple string if not provided
 	Label      string      `json:"label,omitempty"`
-	Value      interface{} `json:"value,omitempty"` // could be any type
+	Value      interface{} `json:"value,omitempty"`      // could be any type
 	Visibility string      `json:"visibility,omitempty"` // e.g. "basic" (or empty) as opposed to "detailed"
 }
 
