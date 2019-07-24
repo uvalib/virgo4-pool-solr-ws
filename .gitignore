@@ -10,3 +10,4 @@ bin
 /config.yml
 dist/
 .idea
+environment.dev
