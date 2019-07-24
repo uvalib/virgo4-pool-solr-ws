@@ -47,13 +47,23 @@ type VirgoRecordDebug struct {
 	Score float32 `json:"score"`
 }
 
+// VirgoNuancedField contains metadata for a single field in a record.
+type VirgoNuancedField struct {
+	Name       string      `json:"name"`
+	Type       string      `json:"type,omitempty"` // assume simple string if not provided
+	Label      string      `json:"label,omitempty"`
+	Value      interface{} `json:"value,omitempty"` // could be any type
+	Visibility string      `json:"visibility,omitempty"` // e.g. "basic" (or empty) as opposed to "detailed"
+}
+
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	ID       string            `json:"id,omitempty"`
-	Title    string            `json:"title,omitempty"`
-	Subtitle string            `json:"subtitle,omitempty"`
-	Author   string            `json:"author,omitempty"`
-	Debug    *VirgoRecordDebug `json:"debug,omitempty"`
+	ID       string              `json:"id,omitempty"`
+	Title    string              `json:"title,omitempty"`
+	Subtitle string              `json:"subtitle,omitempty"`
+	Author   string              `json:"author,omitempty"`
+	Debug    *VirgoRecordDebug   `json:"debug,omitempty"`
+	Fields   []VirgoNuancedField `json:"fields,omitempty"`
 }
 
 // VirgoRecordList is a list of records generated from a search (the "search result set").

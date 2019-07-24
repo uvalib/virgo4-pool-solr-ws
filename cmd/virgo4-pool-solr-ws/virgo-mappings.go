@@ -28,14 +28,66 @@ func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
 	return &debug
 }
 
+func (r *VirgoRecord) addField(v VirgoNuancedField) {
+	if v.Name == "" {
+		return
+	}
+
+	r.Fields = append(r.Fields, v)
+}
+
+func (f *VirgoNuancedField) SetName(s string) *VirgoNuancedField {
+	f.Name = s
+	return f
+}
+
+func (f *VirgoNuancedField) SetType(s string) *VirgoNuancedField {
+	f.Type = s
+	return f
+}
+
+func (f *VirgoNuancedField) SetLabel(s string) *VirgoNuancedField {
+	f.Label = s
+	return f
+}
+
+func (f *VirgoNuancedField) SetValue(s interface{}) *VirgoNuancedField {
+	f.Value = s
+	return f
+}
+
+func (f *VirgoNuancedField) SetVisibility(s string) *VirgoNuancedField {
+	f.Visibility = s
+	return f
+}
+
 func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	var record VirgoRecord
 
+	// old style records
 	record.ID = doc.ID
-
 	record.Title = firstElementOf(doc.Title)
 	record.Subtitle = firstElementOf(doc.Subtitle)
 	record.Author = firstElementOf(doc.Author)
+
+	// new style records
+
+	// blank Type implies "string"
+	// blank Visibility implies "basic"
+
+	record.addField(*(&VirgoNuancedField{}).SetName("id").SetType("identifier").SetLabel("Identifier").SetValue(doc.ID))
+	record.addField(*(&VirgoNuancedField{}).SetName("title").SetType("title").SetLabel("Title").SetValue(firstElementOf(doc.Title)))
+	record.addField(*(&VirgoNuancedField{}).SetName("subtitle").SetType("title").SetLabel("Subtitle").SetValue(firstElementOf(doc.Subtitle)))
+
+	for _, author := range doc.Author {
+		record.addField(*(&VirgoNuancedField{}).SetName("author").SetType("author").SetLabel("Author").SetValue(author))
+	}
+
+	// mocked up fields that we do not actually pass yet
+	record.addField(*(&VirgoNuancedField{}).SetName("available").SetLabel("Available").SetValue(false).SetVisibility("detailed"))
+	record.addField(*(&VirgoNuancedField{}).SetName("availability_status").SetLabel("Availability Status").SetValue("unavailable").SetVisibility("detailed"))
+	record.addField(*(&VirgoNuancedField{}).SetName("availability_note").SetLabel("Availability Note").SetValue("Lost in the cloud").SetVisibility("detailed"))
+	record.addField(*(&VirgoNuancedField{}).SetName("preview_url").SetType("url").SetLabel("Preview Image").SetValue("https://www.library.virginia.edu/images/icon-32.png").SetVisibility("detailed"))
 
 	if client.debug == true {
 		record.Debug = virgoPopulateRecordDebug(doc)
@@ -201,7 +253,7 @@ func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRec
 }
 
 func init() {
-	for key, _ := range solrAvailableFacets {
+	for key := range solrAvailableFacets {
 		virgoAvailableFacets = append(virgoAvailableFacets, key)
 	}
 }
