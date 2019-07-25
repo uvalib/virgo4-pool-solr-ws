@@ -38,6 +38,7 @@ type configData struct {
 	solrParameterDefType configStringItem
 	solrParameterFq      configStringItem
 	solrParameterFl      configStringItem
+	solrAvailableFacets  configStringItem
 }
 
 var config configData
@@ -85,6 +86,7 @@ func getConfigValues() {
 	flagStringVar(&config.solrParameterDefType)
 	flagStringVar(&config.solrParameterFq)
 	flagStringVar(&config.solrParameterFl)
+	flagStringVar(&config.solrAvailableFacets)
 
 	flag.Parse()
 
@@ -105,6 +107,7 @@ func getConfigValues() {
 	configOK = ensureConfigStringSet(&config.solrParameterDefType) && configOK
 	//configOK = ensureConfigStringSet(&config.solrParameterFq) && configOK
 	configOK = ensureConfigStringSet(&config.solrParameterFl) && configOK
+	configOK = ensureConfigStringSet(&config.solrAvailableFacets) && configOK
 
 	if configOK == false {
 		flag.Usage()
@@ -125,6 +128,7 @@ func getConfigValues() {
 	log.Printf("[CONFIG] solrParameterDefType = [%s]", config.solrParameterDefType.value)
 	log.Printf("[CONFIG] solrParameterFq      = [%s]", config.solrParameterFq.value)
 	log.Printf("[CONFIG] solrParameterFl      = [%s]", config.solrParameterFl.value)
+	log.Printf("[CONFIG] solrAvailableFacets  = [%s]", config.solrAvailableFacets.value)
 }
 
 func init() {
@@ -142,6 +146,7 @@ func init() {
 	config.solrParameterDefType = configStringItem{value: "", configItem: configItem{flag: "x", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_DEFTYPE", desc: "Solr defType parameter value"}}
 	config.solrParameterFq = configStringItem{value: "", configItem: configItem{flag: "y", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FQ", desc: "Solr fq parameter initial value"}}
 	config.solrParameterFl = configStringItem{value: "", configItem: configItem{flag: "z", env: "VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL", desc: "Solr fl parameter value"}}
+	config.solrAvailableFacets = configStringItem{value: "", configItem: configItem{flag: "f", env: "VIRGO4_SOLR_POOL_WS_SOLR_AVAILABLE_FACETS", desc: "facets exposed to the client"}}
 
 	getConfigValues()
 }

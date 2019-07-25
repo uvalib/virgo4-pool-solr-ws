@@ -212,24 +212,14 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 }
 
 func init() {
-	facetJSON := `{ "facets": [
-		{ "name": "author", "type": "terms", "field": "author_facet_f", "sort": "count" },
-		{ "name": "subject", "type": "terms", "field": "subject_f", "sort": "count" },
-		{ "name": "language", "type": "terms", "field": "language_f", "sort": "count" },
-		{ "name": "format", "type": "terms", "field": "format_f", "sort": "count" },
-		{ "name": "library", "type": "terms", "field": "library_f", "sort": "count" },
-		{ "name": "call_number_broad", "type": "terms", "field": "call_number_broad_f", "sort": "index" },
-		{ "name": "call_number_narrow", "type": "terms", "field": "call_number_narrow_f", "sort": "index" }
-		] }`
-
 	type facetInfo struct {
 		Facets []solrRequestFacet `json:"facets"`
 	}
 
 	var facets facetInfo
 
-	if err := json.Unmarshal([]byte(facetJSON), &facets); err != nil {
-        log.Printf("facet JSON Unmarshal() failed: %s", err.Error())
+	if err := json.Unmarshal([]byte(config.solrAvailableFacets.value), &facets); err != nil {
+        log.Printf("error parsing available facets json: %s", err.Error())
 		os.Exit(1)
     }
 

@@ -39,7 +39,7 @@ type solrRequestParams struct {
 type solrRequestFacets map[string]solrRequestFacet
 
 type solrRequestFacet struct {
-	Name   string `json:"name"`
+	Name   string `json:"name"` // used internally when initializing available facets
 	Type   string `json:"type"`
 	Field  string `json:"field"`
 	Sort   string `json:"sort,omitempty"`
