@@ -1,11 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 )
 
 var solrAvailableFacets map[string]solrRequestFacet
+var virgoAvailableFacets []string
 
 // functions that map virgo data into solr data
 
@@ -208,13 +212,31 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 }
 
 func init() {
+	facetJSON := `{ "facets": [
+		{ "name": "author", "type": "terms", "field": "author_facet_f", "sort": "count" },
+		{ "name": "subject", "type": "terms", "field": "subject_f", "sort": "count" },
+		{ "name": "language", "type": "terms", "field": "language_f", "sort": "count" },
+		{ "name": "format", "type": "terms", "field": "format_f", "sort": "count" },
+		{ "name": "library", "type": "terms", "field": "library_f", "sort": "count" },
+		{ "name": "call_number_broad", "type": "terms", "field": "call_number_broad_f", "sort": "index" },
+		{ "name": "call_number_narrow", "type": "terms", "field": "call_number_narrow_f", "sort": "index" }
+		] }`
+
+	type facetInfo struct {
+		Facets []solrRequestFacet `json:"facets"`
+	}
+
+	var facets facetInfo
+
+	if err := json.Unmarshal([]byte(facetJSON), &facets); err != nil {
+        log.Printf("facet JSON Unmarshal() failed: %s", err.Error())
+		os.Exit(1)
+    }
+
 	solrAvailableFacets = make(map[string]solrRequestFacet)
 
-	solrAvailableFacets["author"] = solrRequestFacet{Type: "terms", Field: "author_facet_f", Sort: "count"}
-	solrAvailableFacets["subject"] = solrRequestFacet{Type: "terms", Field: "subject_f", Sort: "count"}
-	solrAvailableFacets["language"] = solrRequestFacet{Type: "terms", Field: "language_f", Sort: "count"}
-	solrAvailableFacets["format"] = solrRequestFacet{Type: "terms", Field: "format_f", Sort: "count"}
-	solrAvailableFacets["library"] = solrRequestFacet{Type: "terms", Field: "library_f", Sort: "count"}
-	solrAvailableFacets["call_number_broad"] = solrRequestFacet{Type: "terms", Field: "call_number_broad_f", Sort: "index"}
-	solrAvailableFacets["call_number_narrow"] = solrRequestFacet{Type: "terms", Field: "call_number_narrow_f", Sort: "index"}
+	for _, facet := range facets.Facets {
+		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
+		solrAvailableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort}
+	}
 }

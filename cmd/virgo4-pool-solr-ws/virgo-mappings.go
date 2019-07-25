@@ -2,10 +2,9 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
-
-var virgoAvailableFacets []string
 
 // functions that map solr data into virgo data
 
@@ -96,6 +95,10 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	record.addField(*(&VirgoNuancedField{}).setName("availability_note").setLabel("Availability Note").setValue("Lost in the cloud").setVisibility("detailed"))
 	record.addField(*(&VirgoNuancedField{}).setName("preview_url").setType("url").setLabel("Preview Image").setValue("https://www.library.virginia.edu/images/icon-32.png").setVisibility("detailed"))
 
+	classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
+	record.addField(*(&VirgoNuancedField{}).setName("classic_url").setType("url").setLabel("Access in Virgo Classic").setValue(classicURL).setVisibility("detailed"))
+
+	// add debug info?
 	if client.debug == true {
 		record.Debug = virgoPopulateRecordDebug(doc)
 	}
@@ -257,10 +260,4 @@ func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRec
 	}
 
 	return virgoRes, nil
-}
-
-func init() {
-	for key := range solrAvailableFacets {
-		virgoAvailableFacets = append(virgoAvailableFacets, key)
-	}
 }
