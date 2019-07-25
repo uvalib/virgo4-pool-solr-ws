@@ -219,9 +219,9 @@ func init() {
 	var facets facetInfo
 
 	if err := json.Unmarshal([]byte(config.solrAvailableFacets.value), &facets); err != nil {
-        log.Printf("error parsing available facets json: %s", err.Error())
+		log.Printf("error parsing available facets json: %s", err.Error())
 		os.Exit(1)
-    }
+	}
 
 	solrAvailableFacets = make(map[string]solrRequestFacet)
 

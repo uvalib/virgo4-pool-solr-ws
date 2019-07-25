@@ -39,12 +39,16 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	start := time.Now()
 
 	res, resErr := solrClient.Do(req)
+
+	elapsedNanoSec := time.Since(start)
+	elapsedMS := int64(elapsedNanoSec / time.Millisecond)
+
 	if resErr != nil {
 		c.log("client.Do() failed: %s", resErr.Error())
 		return nil, errors.New("Failed to receive Solr response")
 	}
 
-	elapsed := time.Since(start).Seconds()
+	log.Printf("Successful Solr response from %s. Elapsed Time: %dms", solrURL, elapsedMS)
 
 	defer res.Body.Close()
 
@@ -113,7 +117,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	// log abbreviated results
 
-	logHeader := fmt.Sprintf("[solr] res: header: { status = %d, QTime = %d (elapsed: %0.3fs) }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime, elapsed)
+	logHeader := fmt.Sprintf("[solr] res: header: { status = %d, QTime = %d (elapsed: %0.3fs) }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime, elapsedNanoSec.Seconds())
 
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
