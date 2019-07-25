@@ -133,8 +133,6 @@ func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
 }
 
 func (s *solrRequest) buildFilters(filters *VirgoFacetList) {
-	s.json.Params.Fq = []string{}
-
 	if filters == nil {
 		return
 	}
