@@ -46,7 +46,7 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 func newField(name, label, value string) *VirgoNuancedField {
 	field := VirgoNuancedField{
 		Name:       name,
-		Type:       "string",
+		Type:       "text",
 		Label:      label,
 		Value:      value,
 		Visibility: "basic",
