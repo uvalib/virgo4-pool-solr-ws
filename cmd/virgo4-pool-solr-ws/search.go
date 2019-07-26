@@ -250,15 +250,15 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	// use query syntax from chosen search
 	s.virgoReq.Query = top.virgoReq.Query
 
-	// indicate this is the actual search, so we can request extras such as facets
-	s.virgoReq.meta.actualSearch = true
+	// set variables for the actual search
+	s.virgoReq.meta.requestFacets = true
 
 	if err = s.getPoolQueryResults(); err != nil {
 		return nil, err
 	}
 
 	// restore actual confidence
-	if top.confidence != "" {
+	if confidenceIndex[top.confidence] > confidenceIndex[s.virgoPoolRes.Confidence] {
 		s.log("overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
 		s.virgoPoolRes.Confidence = top.confidence
 	}

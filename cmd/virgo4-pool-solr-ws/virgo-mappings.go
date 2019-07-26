@@ -27,19 +27,32 @@ func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
 	return &debug
 }
 
-func (r *VirgoRecord) addField(v VirgoNuancedField) {
-	if v.Name == "" {
+func (r *VirgoRecord) addField(f *VirgoNuancedField) {
+	if f.Name == "" {
 		return
 	}
 
-	switch v.Value.(type) {
-	case string:
-		if v.Value == "" {
-			return
-		}
+	r.Fields = append(r.Fields, *f)
+}
+
+func (r *VirgoRecord) addBasicField(f *VirgoNuancedField) {
+	r.addField(f.setVisibility("basic"))
+}
+
+func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
+	r.addField(f.setVisibility("detailed"))
+}
+
+func newField(name, label, value string) *VirgoNuancedField {
+	field := VirgoNuancedField{
+		Name: name,
+		Type: "string",
+		Label: label,
+		Value: value,
+		Visibility: "basic",
 	}
 
-	r.Fields = append(r.Fields, v)
+	return &field
 }
 
 func (f *VirgoNuancedField) setName(s string) *VirgoNuancedField {
@@ -57,7 +70,7 @@ func (f *VirgoNuancedField) setLabel(s string) *VirgoNuancedField {
 	return f
 }
 
-func (f *VirgoNuancedField) setValue(s interface{}) *VirgoNuancedField {
+func (f *VirgoNuancedField) setValue(s string) *VirgoNuancedField {
 	f.Value = s
 	return f
 }
@@ -68,42 +81,68 @@ func (f *VirgoNuancedField) setVisibility(s string) *VirgoNuancedField {
 }
 
 func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
-	var record VirgoRecord
+	var r VirgoRecord
 
 	// old style records
-	record.ID = doc.ID
-	record.Title = firstElementOf(doc.Title)
-	record.Subtitle = firstElementOf(doc.Subtitle)
-	record.Author = firstElementOf(doc.Author)
+	r.ID = doc.ID
+	r.Title = firstElementOf(doc.Title)
+	r.Subtitle = firstElementOf(doc.Subtitle)
+	r.Author = firstElementOf(doc.Author)
 
-	// new style records
+	// new style records -- order is important!
 
-	// blank Type implies "string"
-	// blank Visibility implies "basic"
+	r.addBasicField(newField("id", "Identifier", doc.ID))
+	r.addBasicField(newField("title", "Title", firstElementOf(doc.Title)))
+	r.addBasicField(newField("subtitle", "Subtitle", firstElementOf(doc.Subtitle)))
 
-	record.addField(*(&VirgoNuancedField{}).setName("id").setType("identifier").setLabel("Identifier").setValue(doc.ID))
-	record.addField(*(&VirgoNuancedField{}).setName("title").setType("title").setLabel("Title").setValue(firstElementOf(doc.Title)))
-	record.addField(*(&VirgoNuancedField{}).setName("subtitle").setType("title").setLabel("Subtitle").setValue(firstElementOf(doc.Subtitle)))
-
-	for _, author := range doc.Author {
-		record.addField(*(&VirgoNuancedField{}).setName("author").setType("author").setLabel("Author").setValue(author))
+	for _, s := range doc.Author {
+		r.addBasicField(newField("author", "Author", s))
 	}
 
-	// mocked up fields that we do not actually pass yet
-	record.addField(*(&VirgoNuancedField{}).setName("available").setLabel("Available").setValue(false).setVisibility("detailed"))
-	record.addField(*(&VirgoNuancedField{}).setName("availability_status").setLabel("Availability Status").setValue("unavailable").setVisibility("detailed"))
-	record.addField(*(&VirgoNuancedField{}).setName("availability_note").setLabel("Availability Note").setValue("Lost in the cloud").setVisibility("detailed"))
-	record.addField(*(&VirgoNuancedField{}).setName("preview_url").setType("url").setLabel("Preview Image").setValue("https://www.library.virginia.edu/images/icon-32.png").setVisibility("detailed"))
+	for _, s := range doc.Subject {
+		r.addDetailedField(newField("subject", "Subject", s))
+	}
 
-	classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
-	record.addField(*(&VirgoNuancedField{}).setName("classic_url").setType("url").setLabel("Access in Virgo Classic").setValue(classicURL).setVisibility("detailed"))
+	for _, s := range doc.Language {
+		r.addDetailedField(newField("language", "Language", s))
+	}
+
+	for _, s := range doc.Format {
+		r.addDetailedField(newField("format", "Format", s))
+	}
+
+	for _, s := range doc.Library {
+		r.addDetailedField(newField("library", "Library", s))
+	}
+
+	for _, s := range doc.CallNumber {
+		r.addDetailedField(newField("call_number", "Call Number", s))
+	}
+
+	for _, s := range doc.CallNumberBroad {
+		r.addDetailedField(newField("call_number_broad", "Call Number (Broad)", s))
+	}
+
+	for _, s := range doc.CallNumberNarrow {
+		r.addDetailedField(newField("call_number_narrow", "Call Number (Narrow)", s))
+	}
+
+
+	// mocked up fields that we do not actually pass yet
+	previewURL := "https://www.library.virginia.edu/images/icon-32.png"
+	r.addDetailedField(newField("preview_url", "Preview Image", previewURL).setType("url"))
+
+	if doc.ID[0] == 'u' {
+		classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
+		r.addDetailedField(newField("classic_url", "Access in Virgo Classic", classicURL).setType("url"))
+	}
 
 	// add debug info?
 	if client.debug == true {
-		record.Debug = virgoPopulateRecordDebug(doc)
+		r.Debug = virgoPopulateRecordDebug(doc)
 	}
 
-	return &record
+	return &r
 }
 
 func virgoPopulateFacetBucket(value solrBucket, client clientOptions) *VirgoFacetBucket {
@@ -179,7 +218,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	if len(solrRes.Response.Docs) > 0 {
 		firstTitleResults = firstElementOf(solrRes.Response.Docs[0].Title)
 
-		var recordList VirgoRecordList
+		var recordList []VirgoRecord
 
 		for _, doc := range solrRes.Response.Docs {
 			record := virgoPopulateRecord(doc, client)
@@ -191,7 +230,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	}
 
 	if len(solrRes.Facets) > 0 {
-		var facetList VirgoFacetList
+		var facetList []VirgoFacet
 		gotFacet := false
 
 		for key, val := range solrRes.Facets {

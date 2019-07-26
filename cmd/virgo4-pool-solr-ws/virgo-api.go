@@ -5,20 +5,20 @@ package main
 // based loosely on internal discussions, will solidify here:
 // https://github.com/uvalib/v4-api/blob/master/pool-search-api-OAS3.json
 
-type virgoSearchRequestMeta struct {
-	client       *clientOptions
-	solrQuery    string // holds the parsed solr query
-	actualSearch bool   // set to true for non-speculative searches
+type virgoSearchMeta struct {
+	client        *clientOptions
+	solrQuery     string // holds the parsed solr query
+	requestFacets bool   // set to true for non-speculative searches
 }
 
 // VirgoSearchRequest holds the contents of a search request as parsed
 // from JSON defined in the Virgo API.
 type VirgoSearchRequest struct {
-	Query      string                 `json:"query,omitempty"`
-	Pagination VirgoPagination        `json:"pagination,omitempty"`
-	Facets     *VirgoFacetList        `json:"facets,omitempty"`
-	Filters    *VirgoFacetList        `json:"filters,omitempty"`
-	meta       virgoSearchRequestMeta // used internally
+	Query      string          `json:"query"`
+	Pagination VirgoPagination `json:"pagination"`
+	Facet      string          `json:"facet"`
+	Filters    *[]VirgoFilter  `json:"filters,omitempty"`
+	meta       virgoSearchMeta // used internally
 }
 
 // VirgoPoolResultDebug is an arbitrary set of key-value pairs of debugging
@@ -32,9 +32,9 @@ type VirgoPoolResultDebug struct {
 type VirgoPoolResult struct {
 	ServiceURL      string                `json:"service_url,omitempty"` // required
 	Pagination      *VirgoPagination      `json:"pagination,omitempty"`
-	RecordList      *VirgoRecordList      `json:"record_list,omitempty"`
+	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`
 	AvailableFacets *[]string             `json:"available_facets,omitempty"` // available facets advertised to the client
-	FacetList       *VirgoFacetList       `json:"facet_list,omitempty"`       // facet values for client-requested facets
+	FacetList       *[]VirgoFacet         `json:"facet_list,omitempty"`       // facet values for client-requested facets
 	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
 	Debug           *VirgoPoolResultDebug `json:"debug,omitempty"`
 	Warn            *[]string             `json:"warn,omitempty"`
@@ -49,11 +49,11 @@ type VirgoRecordDebug struct {
 
 // VirgoNuancedField contains metadata for a single field in a record.
 type VirgoNuancedField struct {
-	Name       string      `json:"name"`
-	Type       string      `json:"type,omitempty"` // assume simple string if not provided
-	Label      string      `json:"label,omitempty"`
-	Value      interface{} `json:"value,omitempty"`      // could be any type
-	Visibility string      `json:"visibility,omitempty"` // e.g. "basic" (or empty) as opposed to "detailed"
+	Name       string `json:"name"`
+	Type       string `json:"type"` // assume simple string if not provided
+	Label      string `json:"label"`
+	Value      string `json:"value"`      // could be any type
+	Visibility string `json:"visibility"` // e.g. "basic" (or empty) as opposed to "detailed"
 }
 
 // VirgoRecord contains the fields for a single record in a search result set.
@@ -66,13 +66,16 @@ type VirgoRecord struct {
 	Fields   []VirgoNuancedField `json:"fields,omitempty"`
 }
 
-// VirgoRecordList is a list of records generated from a search (the "search result set").
-type VirgoRecordList []VirgoRecord
-
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
 	Value string `json:"value"`
 	Count int    `json:"count"`
+}
+
+// VirgoFilter contains the fields for a single filter.
+type VirgoFilter struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // VirgoFacet contains the fields for a single facet.
@@ -85,9 +88,6 @@ type VirgoFacet struct {
 	Limit   int                `json:"limit,omitempty"`   // when used as a facet or filter in a search request
 	Buckets []VirgoFacetBucket `json:"buckets,omitempty"` // when returned as part of a facted search response
 }
-
-// VirgoFacetList is a list of facets or filters either requested by the client or returned from a search.
-type VirgoFacetList []VirgoFacet
 
 // VirgoPagination defines a page (contiguous subset) of records for a given search.
 type VirgoPagination struct {

@@ -74,65 +74,36 @@ func (s *solrRequest) buildParameterFl() {
 	s.json.Params.Fl = nonemptyValues(flall)
 }
 
-func (s *solrRequest) buildFacets(facets *VirgoFacetList) {
-	if facets == nil {
+func (s *solrRequest) buildFacets(facet string) {
+	if facet == "" {
 		s.meta.advertiseFacets = true
 		return
 	}
 
-	// special case "all" returns all supported facets with default sort and client-specified offset/limit values
-	if len(*facets) == 1 {
-		onlyFacet := (*facets)[0]
+	facets := make(map[string]solrRequestFacet)
 
-		// might add more later, e.g. "none" or "list"
-		switch onlyFacet.Name {
-		case "all":
-			s.json.Facets = make(map[string]solrRequestFacet)
-
-			for key, value := range solrAvailableFacets {
-				solrFacet := value
-
-				// safe to just overwrite, as they will only be non-zero if client specifies it
-				solrFacet.Offset = onlyFacet.Offset
-				solrFacet.Limit = onlyFacet.Limit
-
-				s.json.Facets[key] = solrFacet
-			}
-
-			return
-		}
-	}
-
-	// otherwise, ensure client is requesting valid fields, and use its desired offset/limit/sort values
-	s.json.Facets = make(map[string]solrRequestFacet)
-
-	for _, facet := range *facets {
-		solrFacet, ok := solrAvailableFacets[facet.Name]
+	switch facet {
+	case "all":
+		facets = solrAvailableFacets
+	default:
+		solrFacet, ok := solrAvailableFacets[facet]
 
 		if ok == false {
-			warning := fmt.Sprintf("ignoring unrecognized facet field: [%s]", facet.Name)
+			warning := fmt.Sprintf("ignoring unrecognized facet: [%s]", facet)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
 			s.meta.advertiseFacets = true
-			continue
+		} else {
+			facets[facet] = solrFacet
 		}
+	}
 
-		// update with provided values, if any
-
-		// safe to just overwrite, as they will only be non-zero if client specifies it
-		solrFacet.Offset = facet.Offset
-		solrFacet.Limit = facet.Limit
-
-		// need to check before overwriting
-		if facet.Sort != "" {
-			solrFacet.Sort = facet.Sort
-		}
-
-		s.json.Facets[facet.Name] = solrFacet
+	if len(facets) > 0 {
+		s.json.Facets = facets
 	}
 }
 
-func (s *solrRequest) buildFilters(filters *VirgoFacetList) {
+func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
 	if filters == nil {
 		return
 	}
@@ -141,7 +112,7 @@ func (s *solrRequest) buildFilters(filters *VirgoFacetList) {
 		solrFacet, ok := solrAvailableFacets[filter.Name]
 
 		if ok == false {
-			warning := fmt.Sprintf("ignoring unrecognized filter field: [%s]", filter.Name)
+			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.Name)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
 			continue
@@ -168,8 +139,8 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	s.buildParameterStart(v.Pagination.Start)
 	s.buildParameterRows(v.Pagination.Rows)
 
-	if v.meta.actualSearch == true {
-		s.buildFacets(v.Facets)
+	if v.meta.requestFacets == true {
+		s.buildFacets(v.Facet)
 	}
 
 	s.buildFilters(v.Filters)
@@ -222,6 +193,7 @@ func init() {
 	}
 
 	solrAvailableFacets = make(map[string]solrRequestFacet)
+	virgoAvailableFacets = append(virgoAvailableFacets, "all")
 
 	for _, facet := range facets.Facets {
 		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
