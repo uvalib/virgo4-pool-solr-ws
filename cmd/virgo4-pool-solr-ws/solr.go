@@ -48,7 +48,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		return nil, errors.New("Failed to receive Solr response")
 	}
 
-	log.Printf("Successful Solr response from %s. Elapsed Time: %dms", solrURL, elapsedMS)
+	log.Printf("Successful Solr response from %s. Elapsed Time: %d (ms)", solrURL, elapsedMS)
 
 	defer res.Body.Close()
 
