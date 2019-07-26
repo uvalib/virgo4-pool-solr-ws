@@ -45,10 +45,10 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 
 func newField(name, label, value string) *VirgoNuancedField {
 	field := VirgoNuancedField{
-		Name: name,
-		Type: "string",
-		Label: label,
-		Value: value,
+		Name:       name,
+		Type:       "string",
+		Label:      label,
+		Value:      value,
 		Visibility: "basic",
 	}
 
@@ -126,7 +126,6 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	for _, s := range doc.CallNumberNarrow {
 		r.addDetailedField(newField("call_number_narrow", "Call Number (Narrow)", s))
 	}
-
 
 	// mocked up fields that we do not actually pass yet
 	previewURL := "https://www.library.virginia.edu/images/icon-32.png"

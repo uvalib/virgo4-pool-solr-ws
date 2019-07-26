@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -68,14 +67,6 @@ func (s *searchContext) performQuery() error {
 	if s.solrReq, err = solrSearchRequest(s.virgoReq); err != nil {
 		s.err("query creation error: %s", err.Error())
 		return err
-	}
-
-	if s.solrReq.meta.parserInfo != nil {
-		s.log("Titles      : { %v } (%v)", strings.Join(s.solrReq.meta.parserInfo.parser.Titles, "; "), s.solrReq.meta.parserInfo.isTitleSearch)
-		s.log("Authors     : { %v }", strings.Join(s.solrReq.meta.parserInfo.parser.Authors, "; "))
-		s.log("Subjects    : { %v }", strings.Join(s.solrReq.meta.parserInfo.parser.Subjects, "; "))
-		s.log("Keywords    : { %v } (%v)", strings.Join(s.solrReq.meta.parserInfo.parser.Keywords, "; "), s.solrReq.meta.parserInfo.isKeywordSearch)
-		s.log("Identifiers : { %v }", strings.Join(s.solrReq.meta.parserInfo.parser.Identifiers, "; "))
 	}
 
 	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {

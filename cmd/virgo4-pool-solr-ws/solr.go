@@ -16,10 +16,9 @@ import (
 )
 
 var solrClient *http.Client
+var solrURL string
 
 func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
-	solrURL := fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
-
 	jsonBytes, jsonErr := json.Marshal(solrReq.json)
 	if jsonErr != nil {
 		c.log("Marshal() failed: %s", jsonErr.Error())
@@ -34,7 +33,11 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	c.log("[solr] req: [%s]", string(jsonBytes))
+	if c.verbose == true {
+		c.log("[solr] req: [%s]", string(jsonBytes))
+	} else {
+		c.log("[solr] req: [%s]", solrReq.json.Params.Q)
+	}
 
 	start := time.Now()
 
@@ -48,7 +51,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		return nil, errors.New("Failed to receive Solr response")
 	}
 
-	log.Printf("Successful Solr response from %s. Elapsed Time: %d (ms)", solrURL, elapsedMS)
+	c.log("Successful Solr response from %s. Elapsed Time: %d (ms)", solrURL, elapsedMS)
 
 	defer res.Body.Close()
 
@@ -71,7 +74,9 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	buf, _ := ioutil.ReadAll(res.Body)
 
-	c.log("raw json: [%s]", buf)
+	if c.verbose == true {
+		c.log("[solr] raw: [%s]", buf)
+	}
 
 	if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
 		c.log("Unmarshal() failed: %s", jErr.Error())
@@ -162,4 +167,8 @@ func initSolrClient() {
 		Timeout:   time.Duration(readTimeout) * time.Second,
 		Transport: solrTransport,
 	}
+}
+
+func init() {
+	solrURL = fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 }
