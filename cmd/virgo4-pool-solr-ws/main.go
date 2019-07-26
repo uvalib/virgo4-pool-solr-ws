@@ -43,7 +43,5 @@ func main() {
 	portStr := fmt.Sprintf(":%s", config.listenPort.value)
 	log.Printf("Start service on %s", portStr)
 
-	initSolrClient()
-
 	log.Fatal(router.Run(portStr))
 }

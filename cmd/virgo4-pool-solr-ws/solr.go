@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -145,16 +144,14 @@ func timeoutWithMinimum(str string, min int) int {
 		val = min
 	}
 
-	log.Printf("converted timeout: (%s, min: %d) => %d", str, min, val)
-
 	return val
 }
 
-func initSolrClient() {
+func init() {
+	solrURL = fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
+
 	connTimeout := timeoutWithMinimum(config.solrConnTimeout.value, 5)
 	readTimeout := timeoutWithMinimum(config.solrReadTimeout.value, 5)
-
-	log.Printf("Solr: conn timeout: %ds, read timeout: %ds", connTimeout, readTimeout)
 
 	solrTransport := &http.Transport{
 		Dial: (&net.Dialer{
@@ -167,8 +164,4 @@ func initSolrClient() {
 		Timeout:   time.Duration(readTimeout) * time.Second,
 		Transport: solrTransport,
 	}
-}
-
-func init() {
-	solrURL = fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
 }
