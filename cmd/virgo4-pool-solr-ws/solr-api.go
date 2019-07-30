@@ -34,9 +34,9 @@ type solrRequestParams struct {
 	Fl           []string `json:"fl,omitempty"`
 	Fq           []string `json:"fq,omitempty"`
 	Q            string   `json:"q,omitempty"`
-	GroupField   string   `json:"group.field,omitempty"`
-	GroupLimit   int      `json:"group.limit,omitempty"`
-	GroupNGroups bool     `json:"group.ngroups,omitempty"`
+	GroupField   string   `json:"group.field"`
+	GroupLimit   int      `json:"group.limit"`
+//	GroupNGroups bool     `json:"group.ngroups"`
 	GroupMain    bool     `json:"group.main"`
 	Group        bool     `json:"group"`
 }

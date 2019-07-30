@@ -129,6 +129,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		return nil, fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
+	solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
 //	FIXME
 //	c.log("%s, body: { numFound = %d, start = %d, maxScore = %0.2f, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, solrRes.Response.MaxScore, len(solrRes.Response.Docs))
 	c.log("%s, body: { ngroups = %d, len(groups) = %d }", logHeader, solrRes.Grouped.WorkTitle2KeySort.NGroups, len(solrRes.Grouped.WorkTitle2KeySort.Groups))
