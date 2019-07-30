@@ -83,12 +83,6 @@ func (f *VirgoNuancedField) setVisibility(s string) *VirgoNuancedField {
 func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	var r VirgoRecord
 
-	// old style records
-	r.ID = doc.ID
-	r.Title = firstElementOf(doc.Title)
-	r.Subtitle = firstElementOf(doc.Subtitle)
-	r.Author = firstElementOf(doc.Author)
-
 	// new style records -- order is important!
 
 	r.addBasicField(newField("id", "Identifier", doc.ID))
