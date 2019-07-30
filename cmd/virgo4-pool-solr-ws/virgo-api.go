@@ -32,7 +32,7 @@ type VirgoPoolResultDebug struct {
 type VirgoPoolResult struct {
 	ServiceURL      string                `json:"service_url,omitempty"` // required
 	Pagination      *VirgoPagination      `json:"pagination,omitempty"`
-	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`
+	GroupList       *[]VirgoGroup         `json:"group_list,omitempty"`
 	AvailableFacets *[]string             `json:"available_facets,omitempty"` // available facets advertised to the client
 	FacetList       *[]VirgoFacet         `json:"facet_list,omitempty"`       // facet values for client-requested facets
 	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
@@ -64,6 +64,13 @@ type VirgoRecord struct {
 	Author   string              `json:"author,omitempty"`
 	Debug    *VirgoRecordDebug   `json:"debug,omitempty"`
 	Fields   []VirgoNuancedField `json:"fields,omitempty"`
+}
+
+// VirgoGroup contains the records for a single group in a search result set.
+type VirgoGroup struct {
+	Value      string        `json:"value,omitempty"`
+	Count      int           `json:"count,omitempty"`
+	RecordList []VirgoRecord `json:"record_list,omitempty"`
 }
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.

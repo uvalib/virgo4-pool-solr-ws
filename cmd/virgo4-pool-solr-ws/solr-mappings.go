@@ -124,6 +124,14 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
 	}
 }
 
+func (s *solrRequest) buildGrouping() {
+	s.json.Params.GroupField = "work_title2_key_sort"
+	s.json.Params.GroupLimit = 10000
+	s.json.Params.GroupMain = false
+	s.json.Params.GroupNGroups = true
+	s.json.Params.Group = true
+}
+
 func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	var s solrRequest
 
@@ -144,6 +152,8 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	}
 
 	s.buildFilters(v.Filters)
+
+	s.buildGrouping()
 
 	return s
 }

@@ -148,7 +148,7 @@ func (b *byConfidence) Less(i, j int) bool {
 
 	// confidence is equal; sort by score
 
-	return b.results[i].solrRes.Response.MaxScore > b.results[j].solrRes.Response.MaxScore
+	return b.results[i].solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore > b.results[j].solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore
 }
 
 func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) {
@@ -184,16 +184,16 @@ func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*sea
 		return nil, err
 	}
 
-	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoPoolRes.Confidence, keyword.solrRes.Response.MaxScore)
+	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoPoolRes.Confidence, keyword.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore)
 	searchResults = append(searchResults, keyword)
 
 	if title, err = keyword.newSearchWithTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
-		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoPoolRes.Confidence, title.solrRes.Response.MaxScore)
+		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoPoolRes.Confidence, title.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore)
 		searchResults = append(searchResults, title)
 	}
 
 	if author, err = keyword.newSearchWithTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
-		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoPoolRes.Confidence, author.solrRes.Response.MaxScore)
+		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoPoolRes.Confidence, author.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore)
 		searchResults = append(searchResults, author)
 	}
 

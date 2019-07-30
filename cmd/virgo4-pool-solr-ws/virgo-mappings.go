@@ -184,7 +184,7 @@ func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
 	var debug VirgoPoolResultDebug
 
-	debug.MaxScore = solrRes.Response.MaxScore
+	debug.MaxScore = solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore
 
 	return &debug
 }
@@ -204,28 +204,42 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
+func virgoPopulateGroup(solrGroup *solrResponseGroup, client clientOptions) *VirgoGroup {
+	var group VirgoGroup
+
+	group.Value = solrGroup.GroupValue
+	group.Count = len(solrGroup.DocList.Docs)
+
+	for _, doc := range solrGroup.DocList.Docs {
+		record := virgoPopulateRecord(doc, client)
+
+		group.RecordList = append(group.RecordList, *record)
+	}
+
+	return &group
+}
+
 func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
 	poolResult.ServiceURL = config.poolServiceURL.value
 
-	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
+	poolResult.Pagination = virgoPopulatePagination(solrRes.solrReq.json.Params.Start, len(solrRes.Grouped.WorkTitle2KeySort.Groups), solrRes.Grouped.WorkTitle2KeySort.NGroups)
 
 	firstTitleResults := ""
 	firstTitleQueried := firstElementOf(solrRes.solrReq.meta.parserInfo.parser.Titles)
 
-	if len(solrRes.Response.Docs) > 0 {
-		firstTitleResults = firstElementOf(solrRes.Response.Docs[0].Title)
+	if len(solrRes.Grouped.WorkTitle2KeySort.Groups) > 0 {
+		firstTitleResults = firstElementOf(solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.Docs[0].Title)
 
-		var recordList []VirgoRecord
+		var groupList []VirgoGroup
+		for _, g := range solrRes.Grouped.WorkTitle2KeySort.Groups {
+			group := virgoPopulateGroup(&g, client)
 
-		for _, doc := range solrRes.Response.Docs {
-			record := virgoPopulateRecord(doc, client)
-
-			recordList = append(recordList, *record)
+			groupList = append(groupList, *group)
 		}
 
-		poolResult.RecordList = &recordList
+		poolResult.GroupList = &groupList
 	}
 
 	if len(solrRes.Facets) > 0 {
@@ -245,6 +259,22 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		if gotFacet {
 			poolResult.FacetList = &facetList
 		}
+
+		// FIXME: somehow create h/m/l confidence levels from the query score
+		switch {
+		case solrRes.solrReq.json.Params.Start == 0 && solrRes.solrReq.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
+			poolResult.Confidence = "exact"
+		case solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore > 200.0:
+			poolResult.Confidence = "high"
+		case solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore > 100.0:
+			poolResult.Confidence = "medium"
+		default:
+			poolResult.Confidence = "low"
+		}
+
+		if client.debug == true {
+			poolResult.Debug = virgoPopulatePoolResultDebug(solrRes)
+		}
 	}
 
 	// advertise facets?
@@ -252,24 +282,8 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		poolResult.AvailableFacets = &virgoAvailableFacets
 	}
 
-	// FIXME: somehow create h/m/l confidence levels from the query score
-	switch {
-	case solrRes.Response.Start == 0 && solrRes.solrReq.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
-		poolResult.Confidence = "exact"
-	case solrRes.Response.MaxScore > 200.0:
-		poolResult.Confidence = "high"
-	case solrRes.Response.MaxScore > 100.0:
-		poolResult.Confidence = "medium"
-	default:
-		poolResult.Confidence = "low"
-	}
-
 	if len(solrRes.solrReq.meta.warnings) > 0 {
 		poolResult.Warn = &solrRes.solrReq.meta.warnings
-	}
-
-	if client.debug == true {
-		poolResult.Debug = virgoPopulatePoolResultDebug(solrRes)
 	}
 
 	return &poolResult
@@ -286,12 +300,12 @@ func virgoSearchResponse(solrRes *solrResponse, client clientOptions) (*VirgoPoo
 func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRecord, error) {
 	var virgoRes *VirgoRecord
 
-	switch solrRes.Response.NumFound {
-	case 0:
+	switch {
+	case len(solrRes.Grouped.WorkTitle2KeySort.Groups) == 0:
 		return nil, errors.New("Item not found")
 
-	case 1:
-		virgoRes = virgoPopulateRecord(solrRes.Response.Docs[0], client)
+	case solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.NumFound == 1:
+		virgoRes = virgoPopulateRecord(solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.Docs[0], client)
 
 	default:
 		return nil, errors.New("Multiple items found")

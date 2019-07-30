@@ -26,20 +26,25 @@ Unmapped parameters (or original query parameters above) can be passed in "param
 */
 
 type solrRequestParams struct {
-	Debug   bool     `json:"debug,omitempty"`
-	DefType string   `json:"defType,omitempty"`
-	Qt      string   `json:"qt,omitempty"`
-	Start   int      `json:"start"`
-	Rows    int      `json:"rows"`
-	Fl      []string `json:"fl,omitempty"`
-	Fq      []string `json:"fq,omitempty"`
-	Q       string   `json:"q,omitempty"`
+	Debug        bool     `json:"debug,omitempty"`
+	DefType      string   `json:"defType,omitempty"`
+	Qt           string   `json:"qt,omitempty"`
+	Start        int      `json:"start"`
+	Rows         int      `json:"rows"`
+	Fl           []string `json:"fl,omitempty"`
+	Fq           []string `json:"fq,omitempty"`
+	Q            string   `json:"q,omitempty"`
+	GroupField   string   `json:"group.field,omitempty"`
+	GroupLimit   int      `json:"group.limit,omitempty"`
+	GroupNGroups bool     `json:"group.ngroups,omitempty"`
+	GroupMain    bool     `json:"group.main"`
+	Group        bool     `json:"group"`
 }
 
 type solrRequestFacets map[string]solrRequestFacet
 
 type solrRequestFacet struct {
-	Name   string `json:"name"` // used internally when initializing available facets
+	Name   string `json:"name,omitempty"` // used internally when initializing available facets
 	Type   string `json:"type"`
 	Field  string `json:"field"`
 	Sort   string `json:"sort,omitempty"`
@@ -96,11 +101,26 @@ type solrResponseFacet struct {
 
 type solrResponseFacets map[string]solrResponseFacet
 
-type solrResponseBody struct {
+type solrResponseDocuments struct {
 	NumFound int            `json:"numFound,omitempty"`
 	Start    int            `json:"start,omitempty"`
 	MaxScore float32        `json:"maxScore,omitempty"`
 	Docs     []solrDocument `json:"docs,omitempty"`
+}
+
+type solrResponseGroup struct {
+	GroupValue string                `json:"groupValue,omitempty"`
+	DocList    solrResponseDocuments `json:"doclist,omitempty"`
+}
+
+type solrResponseGrouping struct {
+	Matches int                 `json:"matches,omitempty"`
+	NGroups int                 `json:"ngroups,omitempty"`
+	Groups  []solrResponseGroup `json:"groups,omitempty"`
+}
+
+type solrResponseGrouped struct {
+	WorkTitle2KeySort solrResponseGrouping `json:"work_title2_key_sort,omitempty"`
 }
 
 type solrError struct {
@@ -111,7 +131,7 @@ type solrError struct {
 
 type solrResponse struct {
 	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
-	Response       solrResponseBody       `json:"response,omitempty"`
+	Grouped        solrResponseGrouped    `json:"grouped,omitempty"`
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`
