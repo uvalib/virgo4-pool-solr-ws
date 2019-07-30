@@ -193,7 +193,6 @@ func init() {
 	}
 
 	solrAvailableFacets = make(map[string]solrRequestFacet)
-	virgoAvailableFacets = append(virgoAvailableFacets, "all")
 
 	for _, facet := range facets.Facets {
 		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
