@@ -58,10 +58,6 @@ type VirgoNuancedField struct {
 
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	ID       string              `json:"id,omitempty"`
-	Title    string              `json:"title,omitempty"`
-	Subtitle string              `json:"subtitle,omitempty"`
-	Author   string              `json:"author,omitempty"`
 	Debug    *VirgoRecordDebug   `json:"debug,omitempty"`
 	Fields   []VirgoNuancedField `json:"fields,omitempty"`
 }
