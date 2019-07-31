@@ -206,6 +206,6 @@ func init() {
 
 	for _, facet := range facets.Facets {
 		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
-		solrAvailableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort}
+		solrAvailableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
 	}
 }
