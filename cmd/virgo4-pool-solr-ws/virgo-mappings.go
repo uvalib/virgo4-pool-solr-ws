@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // functions that map solr data into virgo data
@@ -221,6 +222,8 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	poolResult.ServiceURL = config.poolServiceURL.value
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.solrReq.json.Params.Start, len(solrRes.Grouped.WorkTitle2KeySort.Groups), solrRes.Grouped.WorkTitle2KeySort.NGroups)
+
+	poolResult.ElapsedMS = int64(time.Since(client.start) / time.Millisecond)
 
 	firstTitleResults := ""
 	firstTitleQueried := firstElementOf(solrRes.solrReq.meta.parserInfo.parser.Titles)
