@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // functions that map solr data into virgo data
@@ -202,6 +203,8 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	var poolResult VirgoPoolResult
 
 	poolResult.ServiceURL = config.poolServiceURL.value
+
+	poolResult.ElapsedMS = int64(time.Since(client.start) / time.Millisecond)
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.Response.Start, len(solrRes.Response.Docs), solrRes.Response.NumFound)
 

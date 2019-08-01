@@ -31,6 +31,7 @@ type VirgoPoolResultDebug struct {
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
 	ServiceURL      string                `json:"service_url,omitempty"` // required
+	ElapsedMS       int64                 `json:"elapsed_ms,omitempty"`
 	Pagination      *VirgoPagination      `json:"pagination,omitempty"`
 	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`
 	AvailableFacets *[]string             `json:"available_facets,omitempty"` // available facets advertised to the client
@@ -58,8 +59,8 @@ type VirgoNuancedField struct {
 
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	Debug    *VirgoRecordDebug   `json:"debug,omitempty"`
-	Fields   []VirgoNuancedField `json:"fields,omitempty"`
+	Debug  *VirgoRecordDebug   `json:"debug,omitempty"`
+	Fields []VirgoNuancedField `json:"fields,omitempty"`
 }
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.

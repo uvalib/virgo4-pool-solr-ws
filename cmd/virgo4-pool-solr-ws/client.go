@@ -15,11 +15,12 @@ var randpool *rand.Rand
 
 // options set by or per client
 type clientOptions struct {
-	reqID   string // internally generated
-	nolog   bool   // internally set
-	debug   bool   // client requested -- controls whether debug info is added to pool results
-	intuit  bool   // client requested -- controls whether intuited (speculative) searches are performed
-	verbose bool   // client requested -- controls whether verbose Solr requests/responses are logged
+	start   time.Time // internally set
+	reqID   string    // internally generated
+	nolog   bool      // internally set
+	debug   bool      // client requested -- controls whether debug info is added to pool results
+	intuit  bool      // client requested -- controls whether intuited (speculative) searches are performed
+	verbose bool      // client requested -- controls whether verbose Solr requests/responses are logged
 }
 
 func parseBoolOption(opt string, fallback bool) bool {
@@ -36,6 +37,7 @@ func parseBoolOption(opt string, fallback bool) bool {
 func getClientOptions(c *gin.Context) *clientOptions {
 	client := clientOptions{}
 
+	client.start = time.Now()
 	client.reqID = randomID()
 	client.debug = parseBoolOption(c.Query("debug"), false)
 	client.intuit = parseBoolOption(c.Query("intuit"), true)
