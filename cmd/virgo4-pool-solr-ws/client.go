@@ -66,7 +66,7 @@ func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
 }
 
 func (c *clientOptions) log(format string, args ...interface{}) {
-	if c.nolog {
+	if c.nolog == true {
 		return
 	}
 

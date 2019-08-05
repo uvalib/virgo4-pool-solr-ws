@@ -215,13 +215,13 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 
 	// single-term title-only search special handling
 
-	if parsedQuery.isTitleSearch {
+	if parsedQuery.isTitleSearch == true {
 		return s.performSpeculativeTitleSearch()
 	}
 
 	// single-term keyword search special handling
 
-	if parsedQuery.isKeywordSearch {
+	if parsedQuery.isKeywordSearch == true {
 		return s.performSpeculativeKeywordSearch(firstElementOf(parsedQuery.parser.Keywords))
 	}
 

@@ -56,13 +56,7 @@ func versionHandler(c *gin.Context) {
 }
 
 func identifyHandler(c *gin.Context) {
-	iMap := make(map[string]string)
-
-	iMap["name"] = pool.name
-	iMap["description"] = pool.desc
-	iMap["public_url"] = pool.url
-
-	c.JSON(http.StatusOK, iMap)
+	c.JSON(http.StatusOK, pool.id)
 }
 
 func healthCheckHandler(c *gin.Context) {

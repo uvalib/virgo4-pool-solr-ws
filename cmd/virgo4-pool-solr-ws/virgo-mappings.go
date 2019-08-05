@@ -239,6 +239,27 @@ func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client client
 	return &recordList
 }
 
+func virgoPopulateFacetList(solrFacets solrResponseFacets, client clientOptions) *[]VirgoFacet {
+	var facetList []VirgoFacet
+	gotFacet := false
+
+	for key, val := range solrFacets {
+		if len(val.Buckets) > 0 {
+			gotFacet = true
+
+			facet := virgoPopulateFacet(key, val, client)
+
+			facetList = append(facetList, *facet)
+		}
+	}
+
+	if gotFacet == true {
+		return &facetList
+	}
+
+	return nil
+}
+
 func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
@@ -275,22 +296,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	}
 
 	if len(solrRes.Facets) > 0 {
-		var facetList []VirgoFacet
-		gotFacet := false
-
-		for key, val := range solrRes.Facets {
-			if len(val.Buckets) > 0 {
-				gotFacet = true
-
-				facet := virgoPopulateFacet(key, val, client)
-
-				facetList = append(facetList, *facet)
-			}
-		}
-
-		if gotFacet {
-			poolResult.FacetList = &facetList
-		}
+		poolResult.FacetList = virgoPopulateFacetList(solrRes.Facets, client)
 	}
 
 	// advertise facets?
