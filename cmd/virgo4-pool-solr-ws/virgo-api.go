@@ -25,7 +25,8 @@ type VirgoSearchRequest struct {
 // info for the overall pool result (the response to a search request).
 // The client can request this via the "debug" query parameter.
 type VirgoPoolResultDebug struct {
-	MaxScore float32 `json:"max_score"`
+	RequestID string  `json:"request_id"`
+	MaxScore  float32 `json:"max_score"`
 }
 
 // VirgoPoolResult contains the full response to a search request

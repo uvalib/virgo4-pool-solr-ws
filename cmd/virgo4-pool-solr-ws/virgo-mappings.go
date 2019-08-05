@@ -176,9 +176,10 @@ func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	return &pagination
 }
 
-func virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
+func virgoPopulatePoolResultDebug(solrRes *solrResponse, client clientOptions) *VirgoPoolResultDebug {
 	var debug VirgoPoolResultDebug
 
+	debug.RequestID = client.reqID
 	debug.MaxScore = solrRes.Response.MaxScore
 
 	return &debug
@@ -266,7 +267,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 	}
 
 	if client.debug == true {
-		poolResult.Debug = virgoPopulatePoolResultDebug(solrRes)
+		poolResult.Debug = virgoPopulatePoolResultDebug(solrRes, client)
 	}
 
 	return &poolResult
