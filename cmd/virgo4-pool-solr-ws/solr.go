@@ -129,12 +129,53 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		return nil, fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
-	solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
-//	FIXME
-//	c.log("%s, body: { numFound = %d, start = %d, maxScore = %0.2f, len(docs) = %d }", logHeader, solrRes.Response.NumFound, solrRes.Response.Start, solrRes.Response.MaxScore, len(solrRes.Response.Docs))
-	c.log("%s, body: { ngroups = %d, len(groups) = %d }", logHeader, solrRes.Grouped.WorkTitle2KeySort.NGroups, len(solrRes.Grouped.WorkTitle2KeySort.Groups))
+	// fill out meta fields for easier use later
 
-	solrRes.solrReq = solrReq
+	solrRes.meta = &solrReq.meta
+
+	solrRes.meta.start = solrReq.json.Params.Start
+
+	if c.grouped == true {
+		solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
+
+		// calculate number of groups in this response, and total available
+		solrRes.meta.numGroups = len(solrRes.Grouped.WorkTitle2KeySort.Groups)
+		solrRes.meta.totalGroups = -1
+
+		// find max score and first document
+		if solrRes.meta.numGroups > 0 {
+			solrRes.meta.maxScore = solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore
+			solrRes.meta.firstDoc = &solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.Docs[0]
+		}
+
+		// calculate number of records in this response
+		solrRes.meta.numRecords = 0
+		solrRes.meta.totalRecords = -1
+
+		for _, g := range solrRes.Grouped.WorkTitle2KeySort.Groups {
+			solrRes.meta.numRecords += len(g.DocList.Docs)
+		}
+
+		// set generic "rows" fields for client pagination
+		solrRes.meta.numRows = solrRes.meta.numGroups
+		solrRes.meta.totalRows = solrRes.meta.totalGroups
+	} else {
+		// calculate number of records in this response, and total available
+		solrRes.meta.numRecords = len(solrRes.Response.Docs)
+		solrRes.meta.totalRecords = solrRes.Response.NumFound
+
+		// find max score and first document
+		if solrRes.meta.numRecords > 0 {
+			solrRes.meta.maxScore = solrRes.Response.MaxScore
+			solrRes.meta.firstDoc = &solrRes.Response.Docs[0]
+		}
+
+		// set generic "rows" fields for client pagination
+		solrRes.meta.numRows = solrRes.meta.numRecords
+		solrRes.meta.totalRows = solrRes.meta.totalRecords
+	}
+
+	c.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
 
 	return &solrRes, nil
 }

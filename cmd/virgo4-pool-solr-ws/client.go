@@ -21,6 +21,7 @@ type clientOptions struct {
 	debug   bool      // client requested -- controls whether debug info is added to pool results
 	intuit  bool      // client requested -- controls whether intuited (speculative) searches are performed
 	verbose bool      // client requested -- controls whether verbose Solr requests/responses are logged
+	grouped bool      // client requested -- controls whether Solr results are grouped
 }
 
 func parseBoolOption(opt string, fallback bool) bool {
@@ -42,6 +43,7 @@ func getClientOptions(c *gin.Context) *clientOptions {
 	client.debug = parseBoolOption(c.Query("debug"), false)
 	client.intuit = parseBoolOption(c.Query("intuit"), true)
 	client.verbose = parseBoolOption(c.Query("verbose"), false)
+	client.grouped = parseBoolOption(c.Query("grouped"), false)
 
 	query := ""
 	if c.Request.URL.RawQuery != "" {

@@ -36,7 +36,7 @@ type solrRequestParams struct {
 	Q            string   `json:"q,omitempty"`
 	GroupField   string   `json:"group.field"`
 	GroupLimit   int      `json:"group.limit"`
-//	GroupNGroups bool     `json:"group.ngroups"`
+	GroupNGroups bool     `json:"group.ngroups"`
 	GroupMain    bool     `json:"group.main"`
 	Group        bool     `json:"group"`
 }
@@ -57,16 +57,25 @@ type solrRequestJSON struct {
 	Facets solrRequestFacets `json:"facet,omitempty"`
 }
 
-type solrRequestMeta struct {
+type solrMeta struct {
 	client          *clientOptions
 	parserInfo      *solrParserInfo
 	warnings        []string
 	advertiseFacets bool
+	maxScore        float32
+	firstDoc        *solrDocument
+	start           int
+	numGroups       int // for grouped records
+	totalGroups     int // for grouped records
+	numRecords      int // for grouped or ungrouped records
+	totalRecords    int // for grouped or ungrouped records
+	numRows         int // for client pagination -- numGroups or numRecords
+	totalRows       int // for client pagination -- totalGroups or totalRecords
 }
 
 type solrRequest struct {
 	json solrRequestJSON
-	meta solrRequestMeta
+	meta solrMeta
 }
 
 type solrResponseHeader struct {
@@ -131,9 +140,10 @@ type solrError struct {
 
 type solrResponse struct {
 	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
-	Grouped        solrResponseGrouped    `json:"grouped,omitempty"`
+	Response       solrResponseDocuments  `json:"response,omitempty"` // ungrouped records
+	Grouped        solrResponseGrouped    `json:"grouped,omitempty"`  // grouped records
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`
-	solrReq        *solrRequest           // used internally to reference fields in original request
+	meta           *solrMeta              // pointer to struct in corresponding solrRequest
 }
