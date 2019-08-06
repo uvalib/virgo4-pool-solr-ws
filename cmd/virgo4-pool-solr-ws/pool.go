@@ -67,22 +67,24 @@ func timeoutWithMinimum(str string, min int) int {
 	return val
 }
 
-func (p *poolContext) init(config *poolConfig) {
-	p.config = config
-
+func (p *poolContext) initIdentity() {
 	p.identity = poolIdentity{
 		Name: p.config.poolType,
 		Desc: p.config.poolDescription,
 		URL:  p.config.poolServiceURL,
 	}
+}
 
+func (p *poolContext) initVersion() {
 	p.version = poolVersion{
 		BuildVersion: buildVersion(),
 		GoVersion:    fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		GitCommit:    gitCommit,
 	}
+}
 
-	p.solr.url = fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler)
+func (p *poolContext) initSolr() {
+	// client setup
 
 	connTimeout := timeoutWithMinimum(p.config.solrConnTimeout, 5)
 	readTimeout := timeoutWithMinimum(p.config.solrReadTimeout, 5)
@@ -94,10 +96,12 @@ func (p *poolContext) init(config *poolConfig) {
 		TLSHandshakeTimeout: time.Duration(connTimeout) * time.Second,
 	}
 
-	p.solr.client = &http.Client{
+	solrClient := &http.Client{
 		Timeout:   time.Duration(readTimeout) * time.Second,
 		Transport: solrTransport,
 	}
+
+	// facet setup
 
 	type facetInfo struct {
 		Facets []solrRequestFacet `json:"facets"`
@@ -110,12 +114,28 @@ func (p *poolContext) init(config *poolConfig) {
 		os.Exit(1)
 	}
 
-	p.solr.availableFacets = make(map[string]solrRequestFacet)
+	availableFacets := make(map[string]solrRequestFacet)
+	var virgoAvailableFacets []string
 
 	for _, facet := range facets.Facets {
-		p.solr.virgoAvailableFacets = append(p.solr.virgoAvailableFacets, facet.Name)
-		p.solr.availableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
+		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
+		availableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
 	}
 
+	p.solr = poolSolr{
+		url: fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler),
+		client: solrClient,
+		availableFacets: availableFacets,
+		virgoAvailableFacets: virgoAvailableFacets,
+	}
+}
+
+func (p *poolContext) init(config *poolConfig) {
+	p.config = config
+
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	p.initIdentity()
+	p.initVersion()
+	p.initSolr()
 }
