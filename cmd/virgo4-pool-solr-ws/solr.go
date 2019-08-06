@@ -19,7 +19,7 @@ func (s *searchContext) solrQuery() error {
 		return errors.New("Failed to marshal Solr JSON")
 	}
 
-	req, reqErr := http.NewRequest("GET", pool.solr.url, bytes.NewBuffer(jsonBytes))
+	req, reqErr := http.NewRequest("GET", s.pool.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
 		s.log("NewRequest() failed: %s", reqErr.Error())
 		return errors.New("Failed to create Solr request")
@@ -35,7 +35,7 @@ func (s *searchContext) solrQuery() error {
 
 	start := time.Now()
 
-	res, resErr := pool.solr.client.Do(req)
+	res, resErr := s.pool.solr.client.Do(req)
 
 	elapsedNanoSec := time.Since(start)
 	elapsedMS := int64(elapsedNanoSec / time.Millisecond)
@@ -45,7 +45,7 @@ func (s *searchContext) solrQuery() error {
 		return errors.New("Failed to receive Solr response")
 	}
 
-	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", pool.solr.url, elapsedMS)
+	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
 
 	defer res.Body.Close()
 
