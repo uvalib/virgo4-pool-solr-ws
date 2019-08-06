@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	//log "github.com/sirupsen/logrus"
 )
 
 const defaultScoreThresholdMedium = 100.0

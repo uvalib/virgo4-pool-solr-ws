@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	//log "github.com/sirupsen/logrus"
 )
 
 // git commit used for this build; supplied at compile time

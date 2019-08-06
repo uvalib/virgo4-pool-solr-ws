@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	//log "github.com/sirupsen/logrus"
 )
 
 // options set by or per client

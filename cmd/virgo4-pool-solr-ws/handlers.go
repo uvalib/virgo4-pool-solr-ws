@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	//log "github.com/sirupsen/logrus"
 )
 
 func (p *poolContext) searchHandler(c *gin.Context) {
