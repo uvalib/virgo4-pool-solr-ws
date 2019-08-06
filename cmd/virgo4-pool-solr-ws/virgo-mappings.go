@@ -52,7 +52,7 @@ func firstElementOf(s []string) string {
 	return val
 }
 
-func virgoPopulateRecordDebug(doc solrDocument) *VirgoRecordDebug {
+func virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
 	var debug VirgoRecordDebug
 
 	debug.Score = doc.Score
@@ -113,7 +113,7 @@ func (f *VirgoNuancedField) setVisibility(s string) *VirgoNuancedField {
 	return f
 }
 
-func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
+func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important!
@@ -122,36 +122,36 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	r.addBasicField(newField("title", "Title", firstElementOf(doc.Title)))
 	r.addBasicField(newField("subtitle", "Subtitle", firstElementOf(doc.Subtitle)))
 
-	for _, s := range doc.Author {
-		r.addBasicField(newField("author", "Author", s))
+	for _, item := range doc.Author {
+		r.addBasicField(newField("author", "Author", item))
 	}
 
-	for _, s := range doc.Subject {
-		r.addDetailedField(newField("subject", "Subject", s))
+	for _, item := range doc.Subject {
+		r.addDetailedField(newField("subject", "Subject", item))
 	}
 
-	for _, s := range doc.Language {
-		r.addDetailedField(newField("language", "Language", s))
+	for _, item := range doc.Language {
+		r.addDetailedField(newField("language", "Language", item))
 	}
 
-	for _, s := range doc.Format {
-		r.addDetailedField(newField("format", "Format", s))
+	for _, item := range doc.Format {
+		r.addDetailedField(newField("format", "Format", item))
 	}
 
-	for _, s := range doc.Library {
-		r.addDetailedField(newField("library", "Library", s))
+	for _, item := range doc.Library {
+		r.addDetailedField(newField("library", "Library", item))
 	}
 
-	for _, s := range doc.CallNumber {
-		r.addDetailedField(newField("call_number", "Call Number", s))
+	for _, item := range doc.CallNumber {
+		r.addDetailedField(newField("call_number", "Call Number", item))
 	}
 
-	for _, s := range doc.CallNumberBroad {
-		r.addDetailedField(newField("call_number_broad", "Call Number (Broad)", s))
+	for _, item := range doc.CallNumberBroad {
+		r.addDetailedField(newField("call_number_broad", "Call Number (Broad)", item))
 	}
 
-	for _, s := range doc.CallNumberNarrow {
-		r.addDetailedField(newField("call_number_narrow", "Call Number (Narrow)", s))
+	for _, item := range doc.CallNumberNarrow {
+		r.addDetailedField(newField("call_number_narrow", "Call Number (Narrow)", item))
 	}
 
 	// mocked up fields that we do not actually pass yet
@@ -171,7 +171,7 @@ func virgoPopulateRecord(doc solrDocument, client clientOptions) *VirgoRecord {
 	return &r
 }
 
-func virgoPopulateFacetBucket(value solrBucket, client clientOptions) *VirgoFacetBucket {
+func virgoPopulateFacetBucket(value solrBucket, client *clientOptions) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
 	bucket.Value = value.Val
@@ -180,7 +180,7 @@ func virgoPopulateFacetBucket(value solrBucket, client clientOptions) *VirgoFace
 	return &bucket
 }
 
-func virgoPopulateFacet(name string, value solrResponseFacet, client clientOptions) *VirgoFacet {
+func virgoPopulateFacet(name string, value solrResponseFacet, client *clientOptions) *VirgoFacet {
 	var facet VirgoFacet
 
 	facet.Name = name
@@ -208,7 +208,7 @@ func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	return &pagination
 }
 
-func virgoPopulatePoolResultDebug(solrRes *solrResponse, client clientOptions) *VirgoPoolResultDebug {
+func virgoPopulatePoolResultDebug(solrRes *solrResponse, client *clientOptions) *VirgoPoolResultDebug {
 	var debug VirgoPoolResultDebug
 
 	debug.RequestID = client.reqID
@@ -232,14 +232,14 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func virgoPopulateGroup(solrGroup *solrResponseGroup, client clientOptions) *VirgoGroup {
+func virgoPopulateGroup(solrGroup *solrResponseGroup, client *clientOptions) *VirgoGroup {
 	var group VirgoGroup
 
 	group.Value = solrGroup.GroupValue
 	group.Count = len(solrGroup.DocList.Docs)
 
 	for _, doc := range solrGroup.DocList.Docs {
-		record := virgoPopulateRecord(doc, client)
+		record := virgoPopulateRecord(&doc, client)
 
 		group.RecordList = append(group.RecordList, *record)
 	}
@@ -247,7 +247,7 @@ func virgoPopulateGroup(solrGroup *solrResponseGroup, client clientOptions) *Vir
 	return &group
 }
 
-func virgoPopulateGroupList(solrGrouping *solrResponseGrouping, client clientOptions) *[]VirgoGroup {
+func virgoPopulateGroupList(solrGrouping *solrResponseGrouping, client *clientOptions) *[]VirgoGroup {
 	var groupList []VirgoGroup
 
 	for _, g := range solrGrouping.Groups {
@@ -259,11 +259,11 @@ func virgoPopulateGroupList(solrGrouping *solrResponseGrouping, client clientOpt
 	return &groupList
 }
 
-func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client clientOptions) *[]VirgoRecord {
+func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientOptions) *[]VirgoRecord {
 	var recordList []VirgoRecord
 
 	for _, doc := range solrDocuments.Docs {
-		record := virgoPopulateRecord(doc, client)
+		record := virgoPopulateRecord(&doc, client)
 
 		recordList = append(recordList, *record)
 	}
@@ -271,7 +271,7 @@ func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client client
 	return &recordList
 }
 
-func virgoPopulateFacetList(solrFacets solrResponseFacets, client clientOptions) *[]VirgoFacet {
+func virgoPopulateFacetList(solrFacets solrResponseFacets, client *clientOptions) *[]VirgoFacet {
 	var facetList []VirgoFacet
 	gotFacet := false
 
@@ -292,87 +292,89 @@ func virgoPopulateFacetList(solrFacets solrResponseFacets, client clientOptions)
 	return nil
 }
 
-func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
+func (s *searchContext) virgoPopulatePoolResult() {
 	var poolResult VirgoPoolResult
 
-	poolResult.ServiceURL = pool.config.poolServiceURL
+	poolResult.ServiceURL = s.pool.config.poolServiceURL
 
-	poolResult.Pagination = virgoPopulatePagination(solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows)
+	poolResult.Pagination = virgoPopulatePagination(s.solrRes.meta.start, s.solrRes.meta.numRows, s.solrRes.meta.totalRows)
 
-	poolResult.ElapsedMS = int64(time.Since(client.start) / time.Millisecond)
+	poolResult.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
 	firstTitleResults := ""
-	firstTitleQueried := firstElementOf(solrRes.meta.parserInfo.parser.Titles)
+	firstTitleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
 
 	// default confidence, when there are no results
 	poolResult.Confidence = "low"
 
-	if solrRes.meta.numRows > 0 {
-		if client.grouped == true {
-			poolResult.GroupList = virgoPopulateGroupList(&solrRes.Grouped.WorkTitle2KeySort, client)
+	if s.solrRes.meta.numRows > 0 {
+		if s.client.grouped == true {
+			poolResult.GroupList = virgoPopulateGroupList(&s.solrRes.Grouped.WorkTitle2KeySort, s.client)
 		} else {
-			poolResult.RecordList = virgoPopulateRecordList(&solrRes.Response, client)
+			poolResult.RecordList = virgoPopulateRecordList(&s.solrRes.Response, s.client)
 		}
 
 		// FIXME: somehow create h/m/l confidence levels from the query score
-		firstTitleResults = firstElementOf(solrRes.meta.firstDoc.Title)
+		firstTitleResults = firstElementOf(s.solrRes.meta.firstDoc.Title)
 
 		scoreThresholdMedium, scoreThresholdHigh := getScoreThresholds()
 
 		switch {
-		case solrRes.meta.start == 0 && solrRes.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
+		case s.solrRes.meta.start == 0 && s.solrRes.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
 			poolResult.Confidence = "exact"
-		case solrRes.meta.maxScore > scoreThresholdHigh:
+		case s.solrRes.meta.maxScore > scoreThresholdHigh:
 			poolResult.Confidence = "high"
-		case solrRes.meta.maxScore > scoreThresholdMedium:
+		case s.solrRes.meta.maxScore > scoreThresholdMedium:
 			poolResult.Confidence = "medium"
 		}
 	}
 
-	if len(solrRes.Facets) > 0 {
-		poolResult.FacetList = virgoPopulateFacetList(solrRes.Facets, client)
+	if len(s.solrRes.Facets) > 0 {
+		poolResult.FacetList = virgoPopulateFacetList(s.solrRes.Facets, s.client)
 	}
 
 	// advertise facets?
-	if solrRes.meta.advertiseFacets == true {
-		poolResult.AvailableFacets = &pool.solr.virgoAvailableFacets
+	if s.solrRes.meta.advertiseFacets == true {
+		poolResult.AvailableFacets = &s.pool.solr.virgoAvailableFacets
 	}
 
-	if len(solrRes.meta.warnings) > 0 {
-		poolResult.Warn = &solrRes.meta.warnings
+	if len(s.solrRes.meta.warnings) > 0 {
+		poolResult.Warn = &s.solrRes.meta.warnings
 	}
 
-	if client.debug == true {
-		poolResult.Debug = virgoPopulatePoolResultDebug(solrRes, client)
+	if s.client.debug == true {
+		poolResult.Debug = virgoPopulatePoolResultDebug(s.solrRes, s.client)
 	}
 
-	return &poolResult
+	s.virgoPoolRes = &poolResult
 }
 
 // the main response functions for each endpoint
 
-func virgoSearchResponse(solrRes *solrResponse, client clientOptions) (*VirgoPoolResult, error) {
-	virgoRes := virgoPopulatePoolResult(solrRes, client)
+func (s *searchContext) virgoSearchResponse() error {
+	s.virgoPopulatePoolResult()
 
-	return virgoRes, nil
+	return nil
 }
 
-func virgoRecordResponse(solrRes *solrResponse, client clientOptions) (*VirgoRecord, error) {
-	var virgoRes *VirgoRecord
+func (s *searchContext) virgoRecordResponse() error {
+	var v *VirgoRecord
 
 	switch {
-	case solrRes.meta.numRows == 0:
-		return nil, errors.New("Item not found")
+	case s.solrRes.meta.numRows == 0:
+		return errors.New("Item not found")
 
-	case client.grouped == true && solrRes.meta.numGroups == 1 && solrRes.meta.numRecords == 1:
-		virgoRes = virgoPopulateRecord(*solrRes.meta.firstDoc, client)
+	case s.client.grouped == true && s.solrRes.meta.numGroups == 1 && s.solrRes.meta.numRecords == 1:
+		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
 
-	case client.grouped == false && solrRes.meta.numRecords == 1:
-		virgoRes = virgoPopulateRecord(*solrRes.meta.firstDoc, client)
+	case s.client.grouped == false && s.solrRes.meta.numRecords == 1:
+		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
 
 	default:
-		return nil, errors.New("Multiple items found")
+		return errors.New("Multiple items found")
 	}
 
-	return virgoRes, nil
+	s.virgoRecordRes = v
+
+	return nil
 }

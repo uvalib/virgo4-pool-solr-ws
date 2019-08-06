@@ -93,7 +93,7 @@ func (s *searchContext) getPoolQueryResults() error {
 		return err
 	}
 
-	if s.virgoPoolRes, err = virgoSearchResponse(s.solrRes, *s.client); err != nil {
+	if err = s.virgoSearchResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return err
 	}
@@ -110,7 +110,7 @@ func (s *searchContext) getRecordQueryResults() error {
 		return err
 	}
 
-	if s.virgoRecordRes, err = virgoRecordResponse(s.solrRes, *s.client); err != nil {
+	if err = s.virgoRecordResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return err
 	}
