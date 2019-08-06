@@ -126,32 +126,32 @@ func (s *solrRequest) buildGrouping() {
 	s.json.Params.Group = true
 }
 
-func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
-	var s solrRequest
+func (s *searchContext) solrRequestWithDefaults() {
+	var solrReq solrRequest
 
-	s.meta.client = v.meta.client
+	solrReq.meta.client = s.virgoReq.meta.client
 
 	// fill out as much as we can for a generic request
-	s.buildParameterQ(v.meta.solrQuery)
-	s.buildParameterQt()
-	s.buildParameterDefType()
-	s.buildParameterFq()
-	s.buildParameterFl()
+	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
+	solrReq.buildParameterQt()
+	solrReq.buildParameterDefType()
+	solrReq.buildParameterFq()
+	solrReq.buildParameterFl()
 
-	s.buildParameterStart(v.Pagination.Start)
-	s.buildParameterRows(v.Pagination.Rows)
+	solrReq.buildParameterStart(s.virgoReq.Pagination.Start)
+	solrReq.buildParameterRows(s.virgoReq.Pagination.Rows)
 
-	if v.meta.requestFacets == true {
-		s.buildFacets(v.Facet)
+	if s.virgoReq.meta.requestFacets == true {
+		solrReq.buildFacets(s.virgoReq.Facet)
 	}
 
-	s.buildFilters(v.Filters)
+	solrReq.buildFilters(s.virgoReq.Filters)
 
-	if s.meta.client.grouped == true {
-		s.buildGrouping()
+	if s.client.grouped == true {
+		solrReq.buildGrouping()
 	}
 
-	return s
+	s.solrReq = &solrReq
 }
 
 func (s *searchContext) solrSearchRequest() error {
@@ -168,24 +168,20 @@ func (s *searchContext) solrSearchRequest() error {
 		s.virgoReq.meta.solrQuery = p.query
 	}
 
-	solrReq := solrRequestWithDefaults(s.virgoReq)
+	s.solrRequestWithDefaults()
 
-	solrReq.meta.parserInfo = p
-
-	s.solrReq = &solrReq
+	s.solrReq.meta.parserInfo = p
 
 	return nil
 }
 
 func (s *searchContext) solrRecordRequest() error {
-	solrReq := solrRequestWithDefaults(s.virgoReq)
+	s.solrRequestWithDefaults()
 
 	// override these values from defaults.  specify two rows to catch
 	// the (impossible?) scenario of multiple records with the same id
-	solrReq.json.Params.Start = 0
-	solrReq.json.Params.Rows = 2
-
-	s.solrReq = &solrReq
+	s.solrReq.json.Params.Start = 0
+	s.solrReq.json.Params.Rows = 2
 
 	return nil
 }
