@@ -28,9 +28,9 @@ func scoreWithFallback(s string, fallback float32) float32 {
 	return score
 }
 
-func getScoreThresholds() (float32, float32) {
-	medium := scoreWithFallback(pool.config.scoreThresholdMedium, defaultScoreThresholdMedium)
-	high := scoreWithFallback(pool.config.scoreThresholdHigh, defaultScoreThresholdHigh)
+func getScoreThresholds(confMed string, confHigh string) (float32, float32) {
+	medium := scoreWithFallback(confMed, defaultScoreThresholdMedium)
+	high := scoreWithFallback(confHigh, defaultScoreThresholdHigh)
 
 	if medium >= high {
 		medium, high = high, medium
@@ -317,7 +317,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 		// FIXME: somehow create h/m/l confidence levels from the query score
 		firstTitleResults = firstElementOf(s.solrRes.meta.firstDoc.Title)
 
-		scoreThresholdMedium, scoreThresholdHigh := getScoreThresholds()
+		scoreThresholdMedium, scoreThresholdHigh := getScoreThresholds(s.pool.config.scoreThresholdMedium, s.pool.config.scoreThresholdHigh)
 
 		switch {
 		case s.solrRes.meta.start == 0 && s.solrRes.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):

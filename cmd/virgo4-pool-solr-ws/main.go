@@ -10,9 +10,6 @@ import (
 	//log "github.com/sirupsen/logrus"
 )
 
-// FIXME: temp during migration
-var pool poolContext
-
 /**
  * Main entry point for the web service
  */
@@ -22,7 +19,7 @@ func main() {
 	cfg := poolConfig{}
 	cfg.load()
 
-	pool = poolContext{}
+	pool := poolContext{}
 	pool.init(&cfg)
 
 	gin.SetMode(gin.ReleaseMode)
