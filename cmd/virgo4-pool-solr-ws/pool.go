@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -25,24 +25,24 @@ type poolVersion struct {
 }
 
 type poolIdentity struct {
-	Name string `json:"name,omitempty"` // pool type
+	Name string `json:"name,omitempty"`        // pool type
 	Desc string `json:"description,omitempty"` // localized description
-	Url  string `json:"public_url,omitempty"` // public (service) url
+	URL  string `json:"public_url,omitempty"`  // public (service) url
 }
 
 type poolSolr struct {
-	client *http.Client
-	url string
-	availableFacets map[string]solrRequestFacet
+	client               *http.Client
+	url                  string
+	availableFacets      map[string]solrRequestFacet
 	virgoAvailableFacets []string
 }
 
 type poolContext struct {
-	config *poolConfig
+	config       *poolConfig
 	randomSource *rand.Rand
-	identity poolIdentity
-	version poolVersion
-	solr poolSolr
+	identity     poolIdentity
+	version      poolVersion
+	solr         poolSolr
 }
 
 func buildVersion() string {
@@ -68,13 +68,13 @@ func timeoutWithMinimum(str string, min int) int {
 func (p *poolContext) init(config *poolConfig) {
 	p.config = config
 
-	p.identity = poolIdentity {
+	p.identity = poolIdentity{
 		Name: config.poolType,
 		Desc: config.poolDescription,
-		Url:  config.poolServiceURL,
+		URL:  config.poolServiceURL,
 	}
 
-	p.version = poolVersion {
+	p.version = poolVersion{
 		BuildVersion: buildVersion(),
 		GoVersion:    fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		GitCommit:    gitCommit,
@@ -96,7 +96,6 @@ func (p *poolContext) init(config *poolConfig) {
 		Timeout:   time.Duration(readTimeout) * time.Second,
 		Transport: solrTransport,
 	}
-
 
 	type facetInfo struct {
 		Facets []solrRequestFacet `json:"facets"`

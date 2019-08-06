@@ -16,7 +16,7 @@ var pool poolContext
  * Main entry point for the web service
  */
 func main() {
-	log.Printf("===> virgo4-pool-solr-ws starting up <===", pool.identity.Name)
+	log.Printf("===> virgo4-pool-solr-ws starting up <===")
 
 	cfg := poolConfig{}
 	cfg.load()

@@ -48,24 +48,24 @@ func (client *clientOptions) init(c *gin.Context) {
 	client.log("%s %s%s", c.Request.Method, c.Request.URL.Path, query)
 }
 
-func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
+func (client *clientOptions) printf(prefix, format string, args ...interface{}) {
 	str := fmt.Sprintf(format, args...)
 
 	if prefix != "" {
 		str = strings.Join([]string{prefix, str}, " ")
 	}
 
-	log.Printf("[%s] %s", c.reqID, str)
+	log.Printf("[%s] %s", client.reqID, str)
 }
 
-func (c *clientOptions) log(format string, args ...interface{}) {
-	if c.nolog == true {
+func (client *clientOptions) log(format string, args ...interface{}) {
+	if client.nolog == true {
 		return
 	}
 
-	c.printf("", format, args...)
+	client.printf("", format, args...)
 }
 
-func (c *clientOptions) err(format string, args ...interface{}) {
-	c.printf("ERROR:", format, args...)
+func (client *clientOptions) err(format string, args ...interface{}) {
+	client.printf("ERROR:", format, args...)
 }
