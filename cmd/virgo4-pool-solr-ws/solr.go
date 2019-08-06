@@ -12,25 +12,25 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
-	jsonBytes, jsonErr := json.Marshal(solrReq.json)
+func (s *searchContext) solrQuery() error {
+	jsonBytes, jsonErr := json.Marshal(s.solrReq.json)
 	if jsonErr != nil {
-		c.log("Marshal() failed: %s", jsonErr.Error())
-		return nil, errors.New("Failed to marshal Solr JSON")
+		s.log("Marshal() failed: %s", jsonErr.Error())
+		return errors.New("Failed to marshal Solr JSON")
 	}
 
 	req, reqErr := http.NewRequest("GET", pool.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
-		c.log("NewRequest() failed: %s", reqErr.Error())
-		return nil, errors.New("Failed to create Solr request")
+		s.log("NewRequest() failed: %s", reqErr.Error())
+		return errors.New("Failed to create Solr request")
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	if c.verbose == true {
-		c.log("[solr] req: [%s]", string(jsonBytes))
+	if s.client.verbose == true {
+		s.log("[solr] req: [%s]", string(jsonBytes))
 	} else {
-		c.log("[solr] req: [%s]", solrReq.json.Params.Q)
+		s.log("[solr] req: [%s]", s.solrReq.json.Params.Q)
 	}
 
 	start := time.Now()
@@ -41,11 +41,11 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	elapsedMS := int64(elapsedNanoSec / time.Millisecond)
 
 	if resErr != nil {
-		c.log("client.Do() failed: %s", resErr.Error())
-		return nil, errors.New("Failed to receive Solr response")
+		s.log("client.Do() failed: %s", resErr.Error())
+		return errors.New("Failed to receive Solr response")
 	}
 
-	c.log("Successful Solr response from %s. Elapsed Time: %d (ms)", pool.solr.url, elapsedMS)
+	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", pool.solr.url, elapsedMS)
 
 	defer res.Body.Close()
 
@@ -59,8 +59,8 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		decoder := json.NewDecoder(res.Body)
 
 		if decErr := decoder.Decode(&solrRes); decErr != nil {
-			c.log("Decode() failed: %s", decErr.Error())
-			return nil, errors.New("Failed to decode Solr response")
+			s.log("Decode() failed: %s", decErr.Error())
+			return errors.New("Failed to decode Solr response")
 		}
 	*/
 
@@ -68,14 +68,14 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	buf, _ := ioutil.ReadAll(res.Body)
 
-	if c.verbose == true {
-		c.log("[solr] raw: [%s]", buf)
+	if s.client.verbose == true {
+		s.log("[solr] raw: [%s]", buf)
 	}
 
 	if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
-		c.log("unexpected Solr response: [%s]", buf)
-		c.log("Unmarshal() failed: %s", jErr.Error())
-		return nil, errors.New("Failed to unmarshal Solr response")
+		s.log("unexpected Solr response: [%s]", buf)
+		s.log("Unmarshal() failed: %s", jErr.Error())
+		return errors.New("Failed to unmarshal Solr response")
 	}
 
 	// convert Solr "facets" block to internal structures.
@@ -109,11 +109,11 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	dec, _ := mapstructure.NewDecoder(cfg)
 
 	if mapDecErr := dec.Decode(facets); mapDecErr != nil {
-		c.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
-		return nil, errors.New("Failed to decode Solr facet map")
+		s.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
+		return errors.New("Failed to decode Solr facet map")
 	}
 
-	//c.log("dec json: %#v", solrRes)
+	//s.log("dec json: %#v", solrRes)
 
 	// log abbreviated results
 
@@ -121,17 +121,17 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
-		c.log("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
-		return nil, fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
+		s.log("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
+		return fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
 	// fill out meta fields for easier use later
 
-	solrRes.meta = &solrReq.meta
+	solrRes.meta = &s.solrReq.meta
 
-	solrRes.meta.start = solrReq.json.Params.Start
+	solrRes.meta.start = s.solrReq.json.Params.Start
 
-	if c.grouped == true {
+	if s.client.grouped == true {
 		solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
 
 		// calculate number of groups in this response, and total available
@@ -171,7 +171,9 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		solrRes.meta.totalRows = solrRes.meta.totalRecords
 	}
 
-	c.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
+	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
 
-	return &solrRes, nil
+	s.solrRes = &solrRes
+
+	return nil
 }

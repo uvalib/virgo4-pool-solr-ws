@@ -71,9 +71,9 @@ func (p *poolContext) init(config *poolConfig) {
 	p.config = config
 
 	p.identity = poolIdentity{
-		Name: config.poolType,
-		Desc: config.poolDescription,
-		URL:  config.poolServiceURL,
+		Name: p.config.poolType,
+		Desc: p.config.poolDescription,
+		URL:  p.config.poolServiceURL,
 	}
 
 	p.version = poolVersion{
@@ -82,10 +82,10 @@ func (p *poolContext) init(config *poolConfig) {
 		GitCommit:    gitCommit,
 	}
 
-	p.solr.url = fmt.Sprintf("%s/%s/%s", config.solrHost, config.solrCore, config.solrHandler)
+	p.solr.url = fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler)
 
-	connTimeout := timeoutWithMinimum(config.solrConnTimeout, 5)
-	readTimeout := timeoutWithMinimum(config.solrReadTimeout, 5)
+	connTimeout := timeoutWithMinimum(p.config.solrConnTimeout, 5)
+	readTimeout := timeoutWithMinimum(p.config.solrReadTimeout, 5)
 
 	solrTransport := &http.Transport{
 		Dial: (&net.Dialer{
@@ -105,7 +105,7 @@ func (p *poolContext) init(config *poolConfig) {
 
 	var facets facetInfo
 
-	if err := json.Unmarshal([]byte(config.solrAvailableFacets), &facets); err != nil {
+	if err := json.Unmarshal([]byte(p.config.solrAvailableFacets), &facets); err != nil {
 		log.Printf("error parsing available facets json: %s", err.Error())
 		os.Exit(1)
 	}

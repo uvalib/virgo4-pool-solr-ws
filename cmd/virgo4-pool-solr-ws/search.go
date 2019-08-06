@@ -78,7 +78,7 @@ func (s *searchContext) performQuery() error {
 		return err
 	}
 
-	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
+	if err = s.solrQuery(); err != nil {
 		s.err("query execution error: %s", err.Error())
 		return err
 	}
@@ -284,7 +284,7 @@ func (s *searchContext) handlePingRequest() error {
 		return err
 	}
 
-	if s.solrRes, err = solrQuery(s.solrReq, *s.client); err != nil {
+	if err = s.solrQuery(); err != nil {
 		s.err("query execution error: %s", err.Error())
 		return err
 	}
