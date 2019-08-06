@@ -73,6 +73,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	}
 
 	if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
+		c.log("unexpected Solr response: [%s]", buf)
 		c.log("Unmarshal() failed: %s", jErr.Error())
 		return nil, errors.New("Failed to unmarshal Solr response")
 	}
@@ -116,7 +117,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	// log abbreviated results
 
-	logHeader := fmt.Sprintf("[solr] res: header: { status = %d, QTime = %d (elapsed: %0.3fs) }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime, elapsedNanoSec.Seconds())
+	logHeader := fmt.Sprintf("[solr] res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
 
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {
