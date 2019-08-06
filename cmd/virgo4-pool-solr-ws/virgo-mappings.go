@@ -3,11 +3,41 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 )
 
+const defaultScoreThresholdMedium = 100.0
+const defaultScoreThresholdHigh = 200.0
+
 // functions that map solr data into virgo data
+
+func scoreWithFallback(s string, fallback float32) float32 {
+	score := fallback
+
+	if f, err := strconv.ParseFloat(s, 32); err == nil {
+		score = float32(f)
+	} else {
+		log.Printf("could not convert [%s] to float; falling back to %0.1f", fallback)
+	}
+
+	return score
+}
+
+func getScoreThresholds() (float32, float32) {
+	medium := scoreWithFallback(pool.config.scoreThresholdMedium, defaultScoreThresholdMedium)
+	high := scoreWithFallback(pool.config.scoreThresholdHigh, defaultScoreThresholdHigh)
+
+	if medium >= high {
+		medium, high = high, medium
+	}
+
+	log.Printf("score thresholds: medium = %0.1f, high = %0.1f", medium, high)
+
+	return medium, high
+}
 
 func firstElementOf(s []string) string {
 	// return first element of slice, or blank string if empty
@@ -285,12 +315,14 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 		// FIXME: somehow create h/m/l confidence levels from the query score
 		firstTitleResults = firstElementOf(solrRes.meta.firstDoc.Title)
 
+		scoreThresholdMedium, scoreThresholdHigh := getScoreThresholds()
+
 		switch {
 		case solrRes.meta.start == 0 && solrRes.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
 			poolResult.Confidence = "exact"
-		case solrRes.meta.maxScore > 200.0:
+		case solrRes.meta.maxScore > scoreThresholdHigh:
 			poolResult.Confidence = "high"
-		case solrRes.meta.maxScore > 100.0:
+		case solrRes.meta.maxScore > scoreThresholdMedium:
 			poolResult.Confidence = "medium"
 		}
 	}

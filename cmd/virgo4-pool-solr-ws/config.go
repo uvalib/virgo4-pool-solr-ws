@@ -6,11 +6,13 @@ import (
 )
 
 type poolConfig struct {
-	listenPort           string
 	poolType             string
 	poolDescription      string
 	poolServiceURL       string
 	poolLeaders          string
+	listenPort           string
+	scoreThresholdMedium string
+	scoreThresholdHigh   string
 	solrHost             string
 	solrCore             string
 	solrHandler          string
@@ -21,8 +23,6 @@ type poolConfig struct {
 	solrParameterFq      string
 	solrParameterFl      string
 	solrAvailableFacets  string
-	scoreThresholdMedium string
-	scoreThresholdHigh   string
 }
 
 func ensureSet(env string) string {
@@ -48,11 +48,13 @@ func ensureSetAndNonEmpty(env string) string {
 }
 
 func (cfg *poolConfig) load() {
-	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
 	cfg.poolType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_TYPE")
 	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
 	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
 	cfg.poolLeaders = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_LEADERS")
+	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
+	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
+	cfg.scoreThresholdHigh = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
 	cfg.solrHost = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_HOST")
 	cfg.solrCore = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_CORE")
 	cfg.solrHandler = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_HANDLER")
@@ -63,14 +65,14 @@ func (cfg *poolConfig) load() {
 	cfg.solrParameterFq = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FQ")
 	cfg.solrParameterFl = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL")
 	cfg.solrAvailableFacets = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_AVAILABLE_FACETS")
-	cfg.scoreThresholdMedium = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
-	cfg.scoreThresholdHigh = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
 
-	log.Printf("[CONFIG] listenPort           = [%s]", cfg.listenPort)
 	log.Printf("[CONFIG] poolType             = [%s]", cfg.poolType)
 	log.Printf("[CONFIG] poolDescription      = [%s]", cfg.poolDescription)
 	log.Printf("[CONFIG] poolServiceURL       = [%s]", cfg.poolServiceURL)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", cfg.poolLeaders)
+	log.Printf("[CONFIG] listenPort           = [%s]", cfg.listenPort)
+	log.Printf("[CONFIG] scoreThresholdMedium = [%s]", cfg.scoreThresholdMedium)
+	log.Printf("[CONFIG] scoreThresholdHigh   = [%s]", cfg.scoreThresholdHigh)
 	log.Printf("[CONFIG] solrHost             = [%s]", cfg.solrHost)
 	log.Printf("[CONFIG] solrCore             = [%s]", cfg.solrCore)
 	log.Printf("[CONFIG] solrHandler          = [%s]", cfg.solrHandler)
@@ -81,6 +83,4 @@ func (cfg *poolConfig) load() {
 	log.Printf("[CONFIG] solrParameterFq      = [%s]", cfg.solrParameterFq)
 	log.Printf("[CONFIG] solrParameterFl      = [%s]", cfg.solrParameterFl)
 	log.Printf("[CONFIG] solrAvailableFacets  = [%s]", cfg.solrAvailableFacets)
-	log.Printf("[CONFIG] scoreThresholdMedium = [%s]", cfg.scoreThresholdMedium)
-	log.Printf("[CONFIG] scoreThresholdHigh   = [%s]", cfg.scoreThresholdHigh)
 }
