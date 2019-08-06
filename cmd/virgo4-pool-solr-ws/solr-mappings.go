@@ -154,34 +154,38 @@ func solrRequestWithDefaults(v VirgoSearchRequest) solrRequest {
 	return s
 }
 
-func solrSearchRequest(v VirgoSearchRequest) (*solrRequest, error) {
+func (s *searchContext) solrSearchRequest() error {
 	var err error
 
 	var p *solrParserInfo
 
 	// caller might have already supplied a Solr query
-	if v.meta.solrQuery == "" {
-		if p, err = virgoQueryConvertToSolr(v.Query); err != nil {
-			return nil, fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())
+	if s.virgoReq.meta.solrQuery == "" {
+		if p, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
+			return fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())
 		}
 
-		v.meta.solrQuery = p.query
+		s.virgoReq.meta.solrQuery = p.query
 	}
 
-	solrReq := solrRequestWithDefaults(v)
+	solrReq := solrRequestWithDefaults(s.virgoReq)
 
 	solrReq.meta.parserInfo = p
 
-	return &solrReq, nil
+	s.solrReq = &solrReq
+
+	return nil
 }
 
-func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
-	solrReq := solrRequestWithDefaults(v)
+func (s *searchContext) solrRecordRequest() error {
+	solrReq := solrRequestWithDefaults(s.virgoReq)
 
 	// override these values from defaults.  specify two rows to catch
 	// the (impossible?) scenario of multiple records with the same id
 	solrReq.json.Params.Start = 0
 	solrReq.json.Params.Rows = 2
 
-	return &solrReq, nil
+	s.solrReq = &solrReq
+
+	return nil
 }

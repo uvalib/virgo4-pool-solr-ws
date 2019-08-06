@@ -73,7 +73,7 @@ func (s *searchContext) err(format string, args ...interface{}) {
 func (s *searchContext) performQuery() error {
 	var err error
 
-	if s.solrReq, err = solrSearchRequest(s.virgoReq); err != nil {
+	if err = s.solrSearchRequest(); err != nil {
 		s.err("query creation error: %s", err.Error())
 		return err
 	}
@@ -279,7 +279,7 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 func (s *searchContext) handlePingRequest() error {
 	var err error
 
-	if s.solrReq, err = solrRecordRequest(s.virgoReq); err != nil {
+	if err = s.solrRecordRequest(); err != nil {
 		s.err("query creation error: %s", err.Error())
 		return err
 	}
