@@ -1,20 +1,21 @@
 package main
 
+/*
 type poolInfo struct {
-	name string // pool type
-	desc string // localized description
-	url  string // public (service) url
+	name string            // pool type
+	desc string            // localized description
+	url  string            // public (service) url
 	id   map[string]string // identification endpoint info
 }
 
 // identifying info about the specific type of Solr pool we are
 var pool *poolInfo
 
-func init() {
+func poolInit() {
 	pool = &poolInfo{
-		name: config.poolType.value,
-		desc: config.poolDescription.value,
-		url:  config.poolServiceURL.value,
+		name: config.poolType,
+		desc: config.poolDescription,
+		url:  config.poolServiceURL,
 	}
 
 	pool.id = make(map[string]string)
@@ -23,3 +24,4 @@ func init() {
 	pool.id["description"] = pool.desc
 	pool.id["public_url"] = pool.url
 }
+*/
