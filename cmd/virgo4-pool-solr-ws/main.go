@@ -9,11 +9,20 @@ import (
 	"github.com/zsais/go-gin-prometheus"
 )
 
+// FIXME: temp during migration
+var ctx poolContext
+
 /**
  * Main entry point for the web service
  */
 func main() {
-	log.Printf("===> virgo4-pool-solr-ws (%s) starting up <===", pool.name)
+	config := poolConfig{}
+	config.load()
+
+	ctx = poolContext{}
+	ctx.init(&config)
+
+	log.Printf("===> virgo4-pool-solr-ws (%s) starting up <===", ctx.identity.Name)
 
 	gin.SetMode(gin.ReleaseMode)
 	//gin.DisableConsoleColor()
@@ -29,18 +38,18 @@ func main() {
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(router)
 
-	router.GET("/favicon.ico", ignoreHandler)
+	router.GET("/favicon.ico", ctx.ignoreHandler)
 
-	router.GET("/version", versionHandler)
-	router.GET("/identify", identifyHandler)
-	router.GET("/healthcheck", healthCheckHandler)
+	router.GET("/version", ctx.versionHandler)
+	router.GET("/identify", ctx.identifyHandler)
+	router.GET("/healthcheck", ctx.healthCheckHandler)
 
 	if api := router.Group("/api"); api != nil {
-		api.POST("/search", authenticateHandler, searchHandler)
-		api.GET("/resource/:id", authenticateHandler, resourceHandler)
+		api.POST("/search", ctx.authenticateHandler, ctx.searchHandler)
+		api.GET("/resource/:id", ctx.authenticateHandler, ctx.resourceHandler)
 	}
 
-	portStr := fmt.Sprintf(":%s", config.listenPort.value)
+	portStr := fmt.Sprintf(":%s", ctx.config.listenPort)
 	log.Printf("Start service on %s", portStr)
 
 	log.Fatal(router.Run(portStr))

@@ -6,16 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
 )
-
-var solrClient *http.Client
-var solrURL string
 
 func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	jsonBytes, jsonErr := json.Marshal(solrReq.json)
@@ -24,7 +19,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		return nil, errors.New("Failed to marshal Solr JSON")
 	}
 
-	req, reqErr := http.NewRequest("GET", solrURL, bytes.NewBuffer(jsonBytes))
+	req, reqErr := http.NewRequest("GET", ctx.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
 		c.log("NewRequest() failed: %s", reqErr.Error())
 		return nil, errors.New("Failed to create Solr request")
@@ -40,7 +35,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 
 	start := time.Now()
 
-	res, resErr := solrClient.Do(req)
+	res, resErr := ctx.solr.client.Do(req)
 
 	elapsedNanoSec := time.Since(start)
 	elapsedMS := int64(elapsedNanoSec / time.Millisecond)
@@ -50,7 +45,7 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 		return nil, errors.New("Failed to receive Solr response")
 	}
 
-	c.log("Successful Solr response from %s. Elapsed Time: %d (ms)", solrURL, elapsedMS)
+	c.log("Successful Solr response from %s. Elapsed Time: %d (ms)", ctx.solr.url, elapsedMS)
 
 	defer res.Body.Close()
 
@@ -178,34 +173,4 @@ func solrQuery(solrReq *solrRequest, c clientOptions) (*solrResponse, error) {
 	c.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
 
 	return &solrRes, nil
-}
-
-func timeoutWithMinimum(str string, min int) int {
-	val, err := strconv.Atoi(str)
-
-	// fallback for invalid or nonsensical timeout values
-	if err != nil || val < min {
-		val = min
-	}
-
-	return val
-}
-
-func init() {
-	solrURL = fmt.Sprintf("%s/%s/%s", config.solrHost.value, config.solrCore.value, config.solrHandler.value)
-
-	connTimeout := timeoutWithMinimum(config.solrConnTimeout.value, 5)
-	readTimeout := timeoutWithMinimum(config.solrReadTimeout.value, 5)
-
-	solrTransport := &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: time.Duration(connTimeout) * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: time.Duration(connTimeout) * time.Second,
-	}
-
-	solrClient = &http.Client{
-		Timeout:   time.Duration(readTimeout) * time.Second,
-		Transport: solrTransport,
-	}
 }

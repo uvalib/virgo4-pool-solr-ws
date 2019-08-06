@@ -1,15 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"os"
 	"strings"
 )
-
-var solrAvailableFacets map[string]solrRequestFacet
-var virgoAvailableFacets []string
 
 // functions that map virgo data into solr data
 
@@ -53,23 +47,23 @@ func (s *solrRequest) buildParameterRows(n int) {
 }
 
 func (s *solrRequest) buildParameterQt() {
-	s.json.Params.Qt = config.solrParameterQt.value
+	s.json.Params.Qt = ctx.config.solrParameterQt
 }
 
 func (s *solrRequest) buildParameterDefType() {
-	s.json.Params.DefType = config.solrParameterDefType.value
+	s.json.Params.DefType = ctx.config.solrParameterDefType
 }
 
 func (s *solrRequest) buildParameterFq() {
 	// leaders must be defined with beginning + or -
 
-	fqall := []string{config.solrParameterFq.value, config.poolLeaders.value}
+	fqall := []string{ctx.config.solrParameterFq, ctx.config.poolLeaders}
 
 	s.json.Params.Fq = nonemptyValues(fqall)
 }
 
 func (s *solrRequest) buildParameterFl() {
-	flall := strings.Split(config.solrParameterFl.value, ",")
+	flall := strings.Split(ctx.config.solrParameterFl, ",")
 
 	s.json.Params.Fl = nonemptyValues(flall)
 }
@@ -84,9 +78,9 @@ func (s *solrRequest) buildFacets(facet string) {
 
 	switch facet {
 	case "all":
-		facets = solrAvailableFacets
+		facets = ctx.solr.availableFacets
 	default:
-		solrFacet, ok := solrAvailableFacets[facet]
+		solrFacet, ok := ctx.solr.availableFacets[facet]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized facet: [%s]", facet)
@@ -109,7 +103,7 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
 	}
 
 	for _, filter := range *filters {
-		solrFacet, ok := solrAvailableFacets[filter.Name]
+		solrFacet, ok := ctx.solr.availableFacets[filter.Name]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.Name)
@@ -190,24 +184,4 @@ func solrRecordRequest(v VirgoSearchRequest) (*solrRequest, error) {
 	solrReq.json.Params.Rows = 2
 
 	return &solrReq, nil
-}
-
-func init() {
-	type facetInfo struct {
-		Facets []solrRequestFacet `json:"facets"`
-	}
-
-	var facets facetInfo
-
-	if err := json.Unmarshal([]byte(config.solrAvailableFacets.value), &facets); err != nil {
-		log.Printf("error parsing available facets json: %s", err.Error())
-		os.Exit(1)
-	}
-
-	solrAvailableFacets = make(map[string]solrRequestFacet)
-
-	for _, facet := range facets.Facets {
-		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
-		solrAvailableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
-	}
 }

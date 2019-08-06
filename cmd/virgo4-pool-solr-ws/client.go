@@ -3,15 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-var randpool *rand.Rand
 
 // options set by or per client
 type clientOptions struct {
@@ -78,9 +75,5 @@ func (c *clientOptions) err(format string, args ...interface{}) {
 }
 
 func randomID() string {
-	return fmt.Sprintf("%0x", randpool.Uint64())
-}
-
-func init() {
-	randpool = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return fmt.Sprintf("%0x", ctx.randomSource.Uint64())
 }

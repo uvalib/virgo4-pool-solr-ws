@@ -263,7 +263,7 @@ func virgoPopulateFacetList(solrFacets solrResponseFacets, client clientOptions)
 func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *VirgoPoolResult {
 	var poolResult VirgoPoolResult
 
-	poolResult.ServiceURL = config.poolServiceURL.value
+	poolResult.ServiceURL = ctx.config.poolServiceURL
 
 	poolResult.Pagination = virgoPopulatePagination(solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows)
 
@@ -301,7 +301,7 @@ func virgoPopulatePoolResult(solrRes *solrResponse, client clientOptions) *Virgo
 
 	// advertise facets?
 	if solrRes.meta.advertiseFacets == true {
-		poolResult.AvailableFacets = &virgoAvailableFacets
+		poolResult.AvailableFacets = &ctx.solr.virgoAvailableFacets
 	}
 
 	if len(solrRes.meta.warnings) > 0 {

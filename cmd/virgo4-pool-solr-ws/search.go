@@ -7,8 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var confidenceIndex map[string]int
-
 const defaultStart = 0
 const minimumStart = 0
 
@@ -23,6 +21,16 @@ type searchContext struct {
 	solrReq        *solrRequest
 	solrRes        *solrResponse
 	confidence     string
+}
+
+func confidenceIndex(s string) int {
+	// invalid values will be 0 (less than "low")
+	return map[string]int{
+		"low":    1,
+		"medium": 2,
+		"high":   3,
+		"exact":  4,
+	}[s]
 }
 
 func newSearchContext(c *gin.Context) *searchContext {
@@ -138,11 +146,11 @@ func (b *byConfidence) Swap(i, j int) {
 func (b *byConfidence) Less(i, j int) bool {
 	// sort by confidence index
 
-	if confidenceIndex[b.results[i].virgoPoolRes.Confidence] < confidenceIndex[b.results[j].virgoPoolRes.Confidence] {
+	if confidenceIndex(b.results[i].virgoPoolRes.Confidence) < confidenceIndex(b.results[j].virgoPoolRes.Confidence) {
 		return false
 	}
 
-	if confidenceIndex[b.results[i].virgoPoolRes.Confidence] > confidenceIndex[b.results[j].virgoPoolRes.Confidence] {
+	if confidenceIndex(b.results[i].virgoPoolRes.Confidence) > confidenceIndex(b.results[j].virgoPoolRes.Confidence) {
 		return true
 	}
 
@@ -249,7 +257,7 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	}
 
 	// restore actual confidence
-	if confidenceIndex[top.confidence] > confidenceIndex[s.virgoPoolRes.Confidence] {
+	if confidenceIndex(top.confidence) > confidenceIndex(s.virgoPoolRes.Confidence) {
 		s.log("overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
 		s.virgoPoolRes.Confidence = top.confidence
 	}
@@ -283,14 +291,4 @@ func (s *searchContext) handlePingRequest() error {
 	// we don't care if there are no results, this is just a connectivity test
 
 	return nil
-}
-
-func init() {
-	// invalid values will be 0 (less than "low")
-	confidenceIndex = map[string]int{
-		"low":    1,
-		"medium": 2,
-		"high":   3,
-		"exact":  4,
-	}
 }

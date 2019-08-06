@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func searchHandler(c *gin.Context) {
+func (p *poolContext) searchHandler(c *gin.Context) {
 	s := newSearchContext(c)
 
 	if err := c.BindJSON(&s.virgoReq); err != nil {
@@ -31,7 +31,7 @@ func searchHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, virgoRes)
 }
 
-func resourceHandler(c *gin.Context) {
+func (p *poolContext) resourceHandler(c *gin.Context) {
 	s := newSearchContext(c)
 
 	// fill out Solr query directly, bypassing query syntax parser
@@ -48,18 +48,18 @@ func resourceHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, virgoRes)
 }
 
-func ignoreHandler(c *gin.Context) {
+func (p *poolContext) ignoreHandler(c *gin.Context) {
 }
 
-func versionHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, versions)
+func (p *poolContext) versionHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, p.version)
 }
 
-func identifyHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, pool.id)
+func (p *poolContext) identifyHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, p.identity)
 }
 
-func healthCheckHandler(c *gin.Context) {
+func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	s := newSearchContext(c)
 
 	s.client.nolog = true
@@ -99,7 +99,7 @@ func getBearerToken(authorization string) (string, error) {
 	return components[1], nil
 }
 
-func authenticateHandler(c *gin.Context) {
+func (p *poolContext) authenticateHandler(c *gin.Context) {
 	token, err := getBearerToken(c.Request.Header.Get("Authorization"))
 
 	if err != nil {
