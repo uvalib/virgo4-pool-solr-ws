@@ -12,7 +12,7 @@ import (
 
 func (p *poolContext) searchHandler(c *gin.Context) {
 	s := searchContext{}
-	s.init(c)
+	s.init(p, c)
 
 	if err := c.BindJSON(&s.virgoReq); err != nil {
 		s.err("searchHandler: invalid request: %s", err.Error())
@@ -35,7 +35,7 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 
 func (p *poolContext) resourceHandler(c *gin.Context) {
 	s := searchContext{}
-	s.init(c)
+	s.init(p, c)
 
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = fmt.Sprintf("id:%s", c.Param("id"))
@@ -64,7 +64,7 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	s := searchContext{}
-	s.init(c)
+	s.init(p, c)
 
 	s.client.nolog = true
 

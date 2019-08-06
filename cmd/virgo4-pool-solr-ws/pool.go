@@ -40,8 +40,8 @@ type poolSolr struct {
 }
 
 type poolContext struct {
-	config       *poolConfig
 	randomSource *rand.Rand
+	config       *poolConfig
 	identity     poolIdentity
 	version      poolVersion
 	solr         poolSolr

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -33,9 +34,9 @@ func boolOptionWithFallback(opt string, fallback bool) bool {
 	return val
 }
 
-func (client *clientOptions) init(c *gin.Context) {
+func (client *clientOptions) init(c *gin.Context, r *rand.Rand) {
 	client.start = time.Now()
-	client.reqID = fmt.Sprintf("%0x", pool.randomSource.Uint64())
+	client.reqID = fmt.Sprintf("%0x", r.Uint64())
 	client.debug = boolOptionWithFallback(c.Query("debug"), false)
 	client.intuit = boolOptionWithFallback(c.Query("intuit"), true)
 	client.verbose = boolOptionWithFallback(c.Query("verbose"), false)

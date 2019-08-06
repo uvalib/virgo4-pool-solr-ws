@@ -14,6 +14,7 @@ const defaultRows = 10
 const minimumRows = 1
 
 type searchContext struct {
+	pool           *poolContext
 	client         *clientOptions
 	virgoReq       VirgoSearchRequest
 	virgoPoolRes   *VirgoPoolResult
@@ -33,9 +34,11 @@ func confidenceIndex(s string) int {
 	}[s]
 }
 
-func (s *searchContext) init(c *gin.Context) {
+func (s *searchContext) init(p *poolContext, c *gin.Context) {
+	s.pool = p
+
 	s.client = &clientOptions{}
-	s.client.init(c)
+	s.client.init(c, s.pool.randomSource)
 
 	s.virgoReq.meta.client = s.client
 	s.virgoReq.Pagination.Start = defaultStart
