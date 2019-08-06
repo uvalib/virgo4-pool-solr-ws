@@ -21,7 +21,7 @@ type clientOptions struct {
 	grouped bool      // client requested -- controls whether Solr results are grouped
 }
 
-func setBoolOption(opt string, fallback bool) bool {
+func boolOptionWithFallback(opt string, fallback bool) bool {
 	var err error
 	var val bool
 
@@ -35,10 +35,10 @@ func setBoolOption(opt string, fallback bool) bool {
 func (client *clientOptions) init(c *gin.Context) {
 	client.start = time.Now()
 	client.reqID = fmt.Sprintf("%0x", pool.randomSource.Uint64())
-	client.debug = setBoolOption(c.Query("debug"), false)
-	client.intuit = setBoolOption(c.Query("intuit"), true)
-	client.verbose = setBoolOption(c.Query("verbose"), false)
-	client.grouped = setBoolOption(c.Query("grouped"), false)
+	client.debug = boolOptionWithFallback(c.Query("debug"), false)
+	client.intuit = boolOptionWithFallback(c.Query("intuit"), true)
+	client.verbose = boolOptionWithFallback(c.Query("verbose"), false)
+	client.grouped = boolOptionWithFallback(c.Query("grouped"), false)
 
 	query := ""
 	if c.Request.URL.RawQuery != "" {
