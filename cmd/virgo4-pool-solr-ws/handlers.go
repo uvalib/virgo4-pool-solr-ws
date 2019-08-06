@@ -10,7 +10,8 @@ import (
 )
 
 func (p *poolContext) searchHandler(c *gin.Context) {
-	s := newSearchContext(c)
+	s := searchContext{}
+	s.init(c)
 
 	if err := c.BindJSON(&s.virgoReq); err != nil {
 		s.err("searchHandler: invalid request: %s", err.Error())
@@ -32,7 +33,8 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 }
 
 func (p *poolContext) resourceHandler(c *gin.Context) {
-	s := newSearchContext(c)
+	s := searchContext{}
+	s.init(c)
 
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = fmt.Sprintf("id:%s", c.Param("id"))
@@ -60,7 +62,8 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 }
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {
-	s := newSearchContext(c)
+	s := searchContext{}
+	s.init(c)
 
 	s.client.nolog = true
 
@@ -88,7 +91,7 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	c.JSON(status, hcMap)
 }
 
-func getBearerToken(authorization string) (string, error) {
+func (p *poolContext) getBearerToken(authorization string) (string, error) {
 	components := strings.Split(strings.Join(strings.Fields(authorization), " "), " ")
 
 	// must have two components, the first of which is "Bearer", and the second a non-empty token
@@ -100,7 +103,7 @@ func getBearerToken(authorization string) (string, error) {
 }
 
 func (p *poolContext) authenticateHandler(c *gin.Context) {
-	token, err := getBearerToken(c.Request.Header.Get("Authorization"))
+	token, err := p.getBearerToken(c.Request.Header.Get("Authorization"))
 
 	if err != nil {
 		log.Printf("Authentication failed: [%s]", err.Error())

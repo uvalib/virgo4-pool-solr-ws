@@ -21,7 +21,7 @@ type clientOptions struct {
 	grouped bool      // client requested -- controls whether Solr results are grouped
 }
 
-func parseBoolOption(opt string, fallback bool) bool {
+func setBoolOption(opt string, fallback bool) bool {
 	var err error
 	var val bool
 
@@ -32,15 +32,13 @@ func parseBoolOption(opt string, fallback bool) bool {
 	return val
 }
 
-func getClientOptions(c *gin.Context) *clientOptions {
-	client := clientOptions{}
-
+func (client *clientOptions) init(c *gin.Context) {
 	client.start = time.Now()
-	client.reqID = randomID()
-	client.debug = parseBoolOption(c.Query("debug"), false)
-	client.intuit = parseBoolOption(c.Query("intuit"), true)
-	client.verbose = parseBoolOption(c.Query("verbose"), false)
-	client.grouped = parseBoolOption(c.Query("grouped"), false)
+	client.reqID = fmt.Sprintf("%0x", pool.randomSource.Uint64())
+	client.debug = setBoolOption(c.Query("debug"), false)
+	client.intuit = setBoolOption(c.Query("intuit"), true)
+	client.verbose = setBoolOption(c.Query("verbose"), false)
+	client.grouped = setBoolOption(c.Query("grouped"), false)
 
 	query := ""
 	if c.Request.URL.RawQuery != "" {
@@ -48,8 +46,6 @@ func getClientOptions(c *gin.Context) *clientOptions {
 	}
 
 	client.log("%s %s%s", c.Request.Method, c.Request.URL.Path, query)
-
-	return &client
 }
 
 func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
@@ -72,8 +68,4 @@ func (c *clientOptions) log(format string, args ...interface{}) {
 
 func (c *clientOptions) err(format string, args ...interface{}) {
 	c.printf("ERROR:", format, args...)
-}
-
-func randomID() string {
-	return fmt.Sprintf("%0x", ctx.randomSource.Uint64())
 }

@@ -33,15 +33,13 @@ func confidenceIndex(s string) int {
 	}[s]
 }
 
-func newSearchContext(c *gin.Context) *searchContext {
-	s := searchContext{}
+func (s *searchContext) init(c *gin.Context) {
+	s.client = &clientOptions{}
+	s.client.init(c)
 
-	s.client = getClientOptions(c)
 	s.virgoReq.meta.client = s.client
 	s.virgoReq.Pagination.Start = defaultStart
 	s.virgoReq.Pagination.Rows = defaultRows
-
-	return &s
 }
 
 func (s *searchContext) copySearchContext() *searchContext {

@@ -47,23 +47,23 @@ func (s *solrRequest) buildParameterRows(n int) {
 }
 
 func (s *solrRequest) buildParameterQt() {
-	s.json.Params.Qt = ctx.config.solrParameterQt
+	s.json.Params.Qt = pool.config.solrParameterQt
 }
 
 func (s *solrRequest) buildParameterDefType() {
-	s.json.Params.DefType = ctx.config.solrParameterDefType
+	s.json.Params.DefType = pool.config.solrParameterDefType
 }
 
 func (s *solrRequest) buildParameterFq() {
 	// leaders must be defined with beginning + or -
 
-	fqall := []string{ctx.config.solrParameterFq, ctx.config.poolLeaders}
+	fqall := []string{pool.config.solrParameterFq, pool.config.poolLeaders}
 
 	s.json.Params.Fq = nonemptyValues(fqall)
 }
 
 func (s *solrRequest) buildParameterFl() {
-	flall := strings.Split(ctx.config.solrParameterFl, ",")
+	flall := strings.Split(pool.config.solrParameterFl, ",")
 
 	s.json.Params.Fl = nonemptyValues(flall)
 }
@@ -78,9 +78,9 @@ func (s *solrRequest) buildFacets(facet string) {
 
 	switch facet {
 	case "all":
-		facets = ctx.solr.availableFacets
+		facets = pool.solr.availableFacets
 	default:
-		solrFacet, ok := ctx.solr.availableFacets[facet]
+		solrFacet, ok := pool.solr.availableFacets[facet]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized facet: [%s]", facet)
@@ -103,7 +103,7 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
 	}
 
 	for _, filter := range *filters {
-		solrFacet, ok := ctx.solr.availableFacets[filter.Name]
+		solrFacet, ok := pool.solr.availableFacets[filter.Name]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.Name)

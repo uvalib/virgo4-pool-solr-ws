@@ -10,19 +10,19 @@ import (
 )
 
 // FIXME: temp during migration
-var ctx poolContext
+var pool poolContext
 
 /**
  * Main entry point for the web service
  */
 func main() {
-	config := poolConfig{}
-	config.load()
+	log.Printf("===> virgo4-pool-solr-ws starting up <===", pool.identity.Name)
 
-	ctx = poolContext{}
-	ctx.init(&config)
+	cfg := poolConfig{}
+	cfg.load()
 
-	log.Printf("===> virgo4-pool-solr-ws (%s) starting up <===", ctx.identity.Name)
+	pool = poolContext{}
+	pool.init(&cfg)
 
 	gin.SetMode(gin.ReleaseMode)
 	//gin.DisableConsoleColor()
@@ -38,18 +38,18 @@ func main() {
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(router)
 
-	router.GET("/favicon.ico", ctx.ignoreHandler)
+	router.GET("/favicon.ico", pool.ignoreHandler)
 
-	router.GET("/version", ctx.versionHandler)
-	router.GET("/identify", ctx.identifyHandler)
-	router.GET("/healthcheck", ctx.healthCheckHandler)
+	router.GET("/version", pool.versionHandler)
+	router.GET("/identify", pool.identifyHandler)
+	router.GET("/healthcheck", pool.healthCheckHandler)
 
 	if api := router.Group("/api"); api != nil {
-		api.POST("/search", ctx.authenticateHandler, ctx.searchHandler)
-		api.GET("/resource/:id", ctx.authenticateHandler, ctx.resourceHandler)
+		api.POST("/search", pool.authenticateHandler, pool.searchHandler)
+		api.GET("/resource/:id", pool.authenticateHandler, pool.resourceHandler)
 	}
 
-	portStr := fmt.Sprintf(":%s", ctx.config.listenPort)
+	portStr := fmt.Sprintf(":%s", pool.config.listenPort)
 	log.Printf("Start service on %s", portStr)
 
 	log.Fatal(router.Run(portStr))
