@@ -119,7 +119,7 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
 }
 
 func (s *solrRequest) buildGrouping() {
-	s.json.Params.GroupField = "work_title2_key_sort"
+	s.json.Params.GroupField = pool.config.solrGroupField
 	s.json.Params.GroupLimit = 10000
 	s.json.Params.GroupMain = false
 	//s.json.Params.GroupNGroups = true

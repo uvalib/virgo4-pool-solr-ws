@@ -22,6 +22,7 @@ type poolConfig struct {
 	solrParameterDefType string
 	solrParameterFq      string
 	solrParameterFl      string
+	solrGroupField       string
 	solrAvailableFacets  string
 }
 
@@ -64,6 +65,7 @@ func (cfg *poolConfig) load() {
 	cfg.solrParameterDefType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_DEFTYPE")
 	cfg.solrParameterFq = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FQ")
 	cfg.solrParameterFl = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL")
+	cfg.solrGroupField = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_GROUP_FIELD")
 	cfg.solrAvailableFacets = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_AVAILABLE_FACETS")
 
 	log.Printf("[CONFIG] poolType             = [%s]", cfg.poolType)
@@ -82,5 +84,6 @@ func (cfg *poolConfig) load() {
 	log.Printf("[CONFIG] solrParameterDefType = [%s]", cfg.solrParameterDefType)
 	log.Printf("[CONFIG] solrParameterFq      = [%s]", cfg.solrParameterFq)
 	log.Printf("[CONFIG] solrParameterFl      = [%s]", cfg.solrParameterFl)
+	log.Printf("[CONFIG] solrGroupField       = [%s]", cfg.solrGroupField)
 	log.Printf("[CONFIG] solrAvailableFacets  = [%s]", cfg.solrAvailableFacets)
 }
