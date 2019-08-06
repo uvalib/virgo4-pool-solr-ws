@@ -46,29 +46,29 @@ func (s *solrRequest) buildParameterRows(n int) {
 	s.json.Params.Rows = s.restrictValue("rows", n, minimumRows, defaultRows)
 }
 
-func (s *solrRequest) buildParameterQt() {
-	s.json.Params.Qt = pool.config.solrParameterQt
+func (s *solrRequest) buildParameterQt(qt string) {
+	s.json.Params.Qt = qt
 }
 
-func (s *solrRequest) buildParameterDefType() {
-	s.json.Params.DefType = pool.config.solrParameterDefType
+func (s *solrRequest) buildParameterDefType(defType string) {
+	s.json.Params.DefType = defType
 }
 
-func (s *solrRequest) buildParameterFq() {
+func (s *solrRequest) buildParameterFq(fq string, leaders string) {
 	// leaders must be defined with beginning + or -
 
-	fqall := []string{pool.config.solrParameterFq, pool.config.poolLeaders}
+	fqall := []string{fq, leaders}
 
 	s.json.Params.Fq = nonemptyValues(fqall)
 }
 
-func (s *solrRequest) buildParameterFl() {
-	flall := strings.Split(pool.config.solrParameterFl, ",")
+func (s *solrRequest) buildParameterFl(fl string) {
+	flall := strings.Split(fl, ",")
 
 	s.json.Params.Fl = nonemptyValues(flall)
 }
 
-func (s *solrRequest) buildFacets(facet string) {
+func (s *solrRequest) buildFacets(facet string, availableFacets map[string]solrRequestFacet) {
 	if facet == "" {
 		s.meta.advertiseFacets = true
 		return
@@ -78,9 +78,9 @@ func (s *solrRequest) buildFacets(facet string) {
 
 	switch facet {
 	case "all":
-		facets = pool.solr.availableFacets
+		facets = availableFacets
 	default:
-		solrFacet, ok := pool.solr.availableFacets[facet]
+		solrFacet, ok := availableFacets[facet]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized facet: [%s]", facet)
@@ -97,13 +97,13 @@ func (s *solrRequest) buildFacets(facet string) {
 	}
 }
 
-func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
+func (s *solrRequest) buildFilters(filters *[]VirgoFilter, availableFacets map[string]solrRequestFacet) {
 	if filters == nil {
 		return
 	}
 
 	for _, filter := range *filters {
-		solrFacet, ok := pool.solr.availableFacets[filter.Name]
+		solrFacet, ok := availableFacets[filter.Name]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.Name)
@@ -118,8 +118,8 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter) {
 	}
 }
 
-func (s *solrRequest) buildGrouping() {
-	s.json.Params.GroupField = pool.config.solrGroupField
+func (s *solrRequest) buildGrouping(groupField string) {
+	s.json.Params.GroupField = groupField
 	s.json.Params.GroupLimit = 10000
 	s.json.Params.GroupMain = false
 	//s.json.Params.GroupNGroups = true
@@ -133,22 +133,22 @@ func (s *searchContext) solrRequestWithDefaults() {
 
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
-	solrReq.buildParameterQt()
-	solrReq.buildParameterDefType()
-	solrReq.buildParameterFq()
-	solrReq.buildParameterFl()
+	solrReq.buildParameterQt(s.pool.config.solrParameterQt)
+	solrReq.buildParameterDefType(s.pool.config.solrParameterDefType)
+	solrReq.buildParameterFq(s.pool.config.solrParameterFq, s.pool.config.poolLeaders)
+	solrReq.buildParameterFl(s.pool.config.solrParameterFl)
 
 	solrReq.buildParameterStart(s.virgoReq.Pagination.Start)
 	solrReq.buildParameterRows(s.virgoReq.Pagination.Rows)
 
 	if s.virgoReq.meta.requestFacets == true {
-		solrReq.buildFacets(s.virgoReq.Facet)
+		solrReq.buildFacets(s.virgoReq.Facet, s.pool.solr.availableFacets)
 	}
 
-	solrReq.buildFilters(s.virgoReq.Filters)
+	solrReq.buildFilters(s.virgoReq.Filters, s.pool.solr.availableFacets)
 
 	if s.client.grouped == true {
-		solrReq.buildGrouping()
+		solrReq.buildGrouping(s.pool.config.solrGroupField)
 	}
 
 	s.solrReq = &solrReq
