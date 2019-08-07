@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-
 	//log "github.com/sirupsen/logrus"
 )
 
@@ -67,7 +66,8 @@ func (cfg *poolConfig) load() {
 	cfg.solrParameterDefType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_DEFTYPE")
 	cfg.solrParameterFq = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FQ")
 	cfg.solrParameterFl = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL")
-	cfg.solrGroupField = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_GROUP_FIELD")
+	//cfg.solrGroupField = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_GROUP_FIELD")
+	cfg.solrGroupField = "work_title2_key_sort" // currently hard-coded in json parsing so specifying it will break things
 	cfg.solrAvailableFacets = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_AVAILABLE_FACETS")
 
 	log.Printf("[CONFIG] poolType             = [%s]", cfg.poolType)

@@ -34,40 +34,40 @@ func boolOptionWithFallback(opt string, fallback bool) bool {
 	return val
 }
 
-func (client *clientOptions) init(c *gin.Context, r *rand.Rand) {
-	client.start = time.Now()
-	client.reqID = fmt.Sprintf("%0x", r.Uint64())
-	client.debug = boolOptionWithFallback(c.Query("debug"), false)
-	client.intuit = boolOptionWithFallback(c.Query("intuit"), true)
-	client.verbose = boolOptionWithFallback(c.Query("verbose"), false)
-	client.grouped = boolOptionWithFallback(c.Query("grouped"), false)
+func (c *clientOptions) init(ctx *gin.Context, r *rand.Rand) {
+	c.start = time.Now()
+	c.reqID = fmt.Sprintf("%0x", r.Uint64())
+	c.debug = boolOptionWithFallback(ctx.Query("debug"), false)
+	c.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
+	c.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
+	c.grouped = boolOptionWithFallback(ctx.Query("grouped"), false)
 
 	query := ""
-	if c.Request.URL.RawQuery != "" {
-		query = fmt.Sprintf("?%s", c.Request.URL.RawQuery)
+	if ctx.Request.URL.RawQuery != "" {
+		query = fmt.Sprintf("?%s", ctx.Request.URL.RawQuery)
 	}
 
-	client.log("%s %s%s", c.Request.Method, c.Request.URL.Path, query)
+	c.log("%s %s%s", ctx.Request.Method, ctx.Request.URL.Path, query)
 }
 
-func (client *clientOptions) printf(prefix, format string, args ...interface{}) {
+func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
 	str := fmt.Sprintf(format, args...)
 
 	if prefix != "" {
 		str = strings.Join([]string{prefix, str}, " ")
 	}
 
-	log.Printf("[%s] %s", client.reqID, str)
+	log.Printf("[%s] %s", c.reqID, str)
 }
 
-func (client *clientOptions) log(format string, args ...interface{}) {
-	if client.nolog == true {
+func (c *clientOptions) log(format string, args ...interface{}) {
+	if c.nolog == true {
 		return
 	}
 
-	client.printf("", format, args...)
+	c.printf("", format, args...)
 }
 
-func (client *clientOptions) err(format string, args ...interface{}) {
-	client.printf("ERROR:", format, args...)
+func (c *clientOptions) err(format string, args ...interface{}) {
+	c.printf("ERROR:", format, args...)
 }

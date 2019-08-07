@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	//log "github.com/sirupsen/logrus"
 )
 
@@ -163,12 +162,12 @@ func (p *poolContext) initSolr() {
 	medium, high := getScoreThresholds(p.config.scoreThresholdMedium, p.config.scoreThresholdHigh)
 
 	p.solr = poolSolr{
-		url: fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler),
-		client: solrClient,
-		availableFacets: availableFacets,
+		url:                  fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler),
+		client:               solrClient,
+		availableFacets:      availableFacets,
 		virgoAvailableFacets: virgoAvailableFacets,
 		scoreThresholdMedium: medium,
-		scoreThresholdHigh: high,
+		scoreThresholdHigh:   high,
 	}
 
 	log.Printf("[POOL] solr.url                  = [%s]", p.solr.url)
@@ -177,8 +176,8 @@ func (p *poolContext) initSolr() {
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
 }
 
-func (p *poolContext) init(config *poolConfig) {
-	p.config = config
+func (p *poolContext) init(cfg *poolConfig) {
+	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	p.initIdentity()
