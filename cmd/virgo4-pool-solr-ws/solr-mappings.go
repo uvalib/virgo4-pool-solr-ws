@@ -130,6 +130,7 @@ func (s *searchContext) solrRequestWithDefaults() {
 	var solrReq solrRequest
 
 	solrReq.meta.client = s.virgoReq.meta.client
+	solrReq.meta.parserInfo = s.virgoReq.meta.parserInfo
 
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
@@ -166,11 +167,10 @@ func (s *searchContext) solrSearchRequest() error {
 		}
 
 		s.virgoReq.meta.solrQuery = p.query
+		s.virgoReq.meta.parserInfo = p
 	}
 
 	s.solrRequestWithDefaults()
-
-	s.solrReq.meta.parserInfo = p
 
 	return nil
 }
