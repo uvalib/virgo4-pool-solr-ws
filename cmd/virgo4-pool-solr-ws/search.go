@@ -53,6 +53,9 @@ func (s *searchContext) copySearchContext() *searchContext {
 
 	sc := &searchContext{}
 
+	sc.pool = s.pool
+
+	// copy client (modified for speculative searches)
 	c := *s.client
 	sc.client = &c
 
@@ -121,6 +124,9 @@ func (s *searchContext) getRecordQueryResults() error {
 func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, error) {
 	// returns a new search context with the top result of the supplied query
 	top := s.copySearchContext()
+
+	// just want first result, not first result group
+	top.client.grouped = false
 
 	top.virgoReq.Query = query
 	top.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 1}
