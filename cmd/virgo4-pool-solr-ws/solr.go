@@ -12,6 +12,96 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+func (s *searchContext) convertFacets() error {
+	// convert Solr "facets" block to internal structures.
+	// due to its structure block, we cannot read it directly into arbitrary structs
+	// (it contains both named facet blocks along with a "count" field that is not such a block).
+	//
+	// e.g. '{ "count": 23, "facet1": { ... }, "facet2": { ... }, ..., "facetN": { ... } }'
+	//
+	// so we read it in as map[string]interface{}, strip out the keys that are not this type
+	// (e.g. "count", which will be float64), and then decode the resulting map into
+	// a map[string]solrResponseFacet type.
+	//
+	// NOTE: maybe this can be avoided by setting an appropriate "json.nl" Solr value... investigating!
+
+	facetsRaw := make(map[string]interface{})
+	var facets solrResponseFacets
+
+	for key, val := range s.solrRes.FacetsRaw {
+		switch val.(type) {
+		case map[string]interface{}:
+			facetsRaw[key] = val
+		}
+	}
+
+	cfg := &mapstructure.DecoderConfig{
+		Metadata:   nil,
+		Result:     &facets,
+		TagName:    "json",
+		ZeroFields: true,
+	}
+
+	dec, _ := mapstructure.NewDecoder(cfg)
+
+	if mapDecErr := dec.Decode(facetsRaw); mapDecErr != nil {
+		s.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
+		return errors.New("Failed to decode Solr facet map")
+	}
+
+	s.solrRes.Facets = facets
+
+	return nil
+}
+
+func (s *searchContext) populateMetaFields() {
+	// fill out meta fields for easier use later
+
+	s.solrRes.meta = &s.solrReq.meta
+
+	s.solrRes.meta.start = s.solrReq.json.Params.Start
+
+	if s.client.grouped == true {
+		s.solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
+
+		// calculate number of groups in this response, and total available
+		s.solrRes.meta.numGroups = len(s.solrRes.Grouped.WorkTitle2KeySort.Groups)
+		s.solrRes.meta.totalGroups = -1
+
+		// find max score and first document
+		if s.solrRes.meta.numGroups > 0 {
+			s.solrRes.meta.maxScore = s.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore
+			s.solrRes.meta.firstDoc = &s.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.Docs[0]
+		}
+
+		// calculate number of records in this response
+		s.solrRes.meta.numRecords = 0
+		s.solrRes.meta.totalRecords = -1
+
+		for _, g := range s.solrRes.Grouped.WorkTitle2KeySort.Groups {
+			s.solrRes.meta.numRecords += len(g.DocList.Docs)
+		}
+
+		// set generic "rows" fields for client pagination
+		s.solrRes.meta.numRows = s.solrRes.meta.numGroups
+		s.solrRes.meta.totalRows = s.solrRes.meta.totalGroups
+	} else {
+		// calculate number of records in this response, and total available
+		s.solrRes.meta.numRecords = len(s.solrRes.Response.Docs)
+		s.solrRes.meta.totalRecords = s.solrRes.Response.NumFound
+
+		// find max score and first document
+		if s.solrRes.meta.numRecords > 0 {
+			s.solrRes.meta.maxScore = s.solrRes.Response.MaxScore
+			s.solrRes.meta.firstDoc = &s.solrRes.Response.Docs[0]
+		}
+
+		// set generic "rows" fields for client pagination
+		s.solrRes.meta.numRows = s.solrRes.meta.numRecords
+		s.solrRes.meta.totalRows = s.solrRes.meta.totalRecords
+	}
+}
+
 func (s *searchContext) solrQuery() error {
 	jsonBytes, jsonErr := json.Marshal(s.solrReq.json)
 	if jsonErr != nil {
@@ -49,22 +139,7 @@ func (s *searchContext) solrQuery() error {
 
 	defer res.Body.Close()
 
-	// parse json from body
-
 	var solrRes solrResponse
-
-	/*
-		// from stream:
-
-		decoder := json.NewDecoder(res.Body)
-
-		if decErr := decoder.Decode(&solrRes); decErr != nil {
-			s.log("Decode() failed: %s", decErr.Error())
-			return errors.New("Failed to decode Solr response")
-		}
-	*/
-
-	// from buffer:
 
 	buf, _ := ioutil.ReadAll(res.Body)
 
@@ -78,42 +153,9 @@ func (s *searchContext) solrQuery() error {
 		return errors.New("Failed to unmarshal Solr response")
 	}
 
-	// convert Solr "facets" block to internal structures.
-	// due to its structure block, we cannot read it directly into arbitrary structs
-	// (it contains both named facet blocks along with a "count" field that is not such a block).
-	//
-	// e.g. '{ "count": 23, "facet1": { ... }, "facet2": { ... }, ..., "facetN": { ... } }'
-	//
-	// so we read it in as map[string]interface{}, strip out the keys that are not this type
-	// (e.g. "count", which will be float64), and then decode the resulting map into
-	// a map[string]solrResponseFacet type.
-	//
-	// NOTE: maybe this can be avoided by setting an appropriate "json.nl" Solr value... investigating!
+	s.solrRes = &solrRes
 
-	facets := make(map[string]interface{})
-
-	for key, val := range solrRes.FacetsRaw {
-		switch val.(type) {
-		case map[string]interface{}:
-			facets[key] = val
-		}
-	}
-
-	cfg := &mapstructure.DecoderConfig{
-		Metadata:   nil,
-		Result:     &solrRes.Facets,
-		TagName:    "json",
-		ZeroFields: true,
-	}
-
-	dec, _ := mapstructure.NewDecoder(cfg)
-
-	if mapDecErr := dec.Decode(facets); mapDecErr != nil {
-		s.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
-		return errors.New("Failed to decode Solr facet map")
-	}
-
-	//s.log("dec json: %#v", solrRes)
+	s.convertFacets()
 
 	// log abbreviated results
 
@@ -125,55 +167,9 @@ func (s *searchContext) solrQuery() error {
 		return fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
-	// fill out meta fields for easier use later
-
-	solrRes.meta = &s.solrReq.meta
-
-	solrRes.meta.start = s.solrReq.json.Params.Start
-
-	if s.client.grouped == true {
-		solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
-
-		// calculate number of groups in this response, and total available
-		solrRes.meta.numGroups = len(solrRes.Grouped.WorkTitle2KeySort.Groups)
-		solrRes.meta.totalGroups = -1
-
-		// find max score and first document
-		if solrRes.meta.numGroups > 0 {
-			solrRes.meta.maxScore = solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore
-			solrRes.meta.firstDoc = &solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.Docs[0]
-		}
-
-		// calculate number of records in this response
-		solrRes.meta.numRecords = 0
-		solrRes.meta.totalRecords = -1
-
-		for _, g := range solrRes.Grouped.WorkTitle2KeySort.Groups {
-			solrRes.meta.numRecords += len(g.DocList.Docs)
-		}
-
-		// set generic "rows" fields for client pagination
-		solrRes.meta.numRows = solrRes.meta.numGroups
-		solrRes.meta.totalRows = solrRes.meta.totalGroups
-	} else {
-		// calculate number of records in this response, and total available
-		solrRes.meta.numRecords = len(solrRes.Response.Docs)
-		solrRes.meta.totalRecords = solrRes.Response.NumFound
-
-		// find max score and first document
-		if solrRes.meta.numRecords > 0 {
-			solrRes.meta.maxScore = solrRes.Response.MaxScore
-			solrRes.meta.firstDoc = &solrRes.Response.Docs[0]
-		}
-
-		// set generic "rows" fields for client pagination
-		solrRes.meta.numRows = solrRes.meta.numRecords
-		solrRes.meta.totalRows = solrRes.meta.totalRecords
-	}
+	s.populateMetaFields()
 
 	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
-
-	s.solrRes = &solrRes
 
 	return nil
 }
