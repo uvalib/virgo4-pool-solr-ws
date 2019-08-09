@@ -11,8 +11,11 @@ import (
 )
 
 func (p *poolContext) searchHandler(c *gin.Context) {
+	cl := clientOptions{}
+	cl.init(p, c)
+
 	s := searchContext{}
-	s.init(p, c)
+	s.init(p, &cl)
 
 	if err := c.BindJSON(&s.virgoReq); err != nil {
 		s.err("searchHandler: invalid request: %s", err.Error())
@@ -34,8 +37,11 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 }
 
 func (p *poolContext) resourceHandler(c *gin.Context) {
+	cl := clientOptions{}
+	cl.init(p, c)
+
 	s := searchContext{}
-	s.init(p, c)
+	s.init(p, &cl)
 
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = fmt.Sprintf("id:%s", c.Param("id"))
@@ -55,16 +61,25 @@ func (p *poolContext) ignoreHandler(c *gin.Context) {
 }
 
 func (p *poolContext) versionHandler(c *gin.Context) {
+	cl := clientOptions{}
+	cl.init(p, c)
+
 	c.JSON(http.StatusOK, p.version)
 }
 
 func (p *poolContext) identifyHandler(c *gin.Context) {
+	cl := clientOptions{}
+	cl.init(p, c)
+
 	c.JSON(http.StatusOK, p.identity)
 }
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {
+	cl := clientOptions{}
+	cl.init(p, c)
+
 	s := searchContext{}
-	s.init(p, c)
+	s.init(p, &cl)
 
 	s.client.nolog = true
 
@@ -104,7 +119,7 @@ func (p *poolContext) getBearerToken(authorization string) (string, error) {
 }
 
 func (p *poolContext) authenticateHandler(c *gin.Context) {
-	token, err := p.getBearerToken(c.Request.Header.Get("Authorization"))
+	token, err := p.getBearerToken(c.GetHeader("Authorization"))
 
 	if err != nil {
 		log.Printf("Authentication failed: [%s]", err.Error())

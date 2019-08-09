@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -14,13 +13,15 @@ import (
 
 // options set by or per client
 type clientOptions struct {
-	start   time.Time // internally set
-	reqID   string    // internally generated
-	nolog   bool      // internally set
-	debug   bool      // client requested -- controls whether debug info is added to pool results
-	intuit  bool      // client requested -- controls whether intuited (speculative) searches are performed
-	verbose bool      // client requested -- controls whether verbose Solr requests/responses are logged
-	grouped bool      // client requested -- controls whether Solr results are grouped
+	start       time.Time // internally set
+	reqID       string    // internally generated
+	acceptLang  string    // set based on client header
+	contentLang string    // set based on what the pool supports
+	nolog       bool      // internally set
+	debug       bool      // client requested -- controls whether debug info is added to pool results
+	intuit      bool      // client requested -- controls whether intuited (speculative) searches are performed
+	verbose     bool      // client requested -- controls whether verbose Solr requests/responses are logged
+	grouped     bool      // client requested -- controls whether Solr results are grouped
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -34,9 +35,18 @@ func boolOptionWithFallback(opt string, fallback bool) bool {
 	return val
 }
 
-func (c *clientOptions) init(ctx *gin.Context, r *rand.Rand) {
+func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 	c.start = time.Now()
-	c.reqID = fmt.Sprintf("%0x", r.Uint64())
+	c.reqID = fmt.Sprintf("%0x", p.randomSource.Uint64())
+
+	if c.acceptLang = ctx.GetHeader("Accept-Language"); c.acceptLang == "" {
+		c.acceptLang = "en-US"
+	}
+
+	c.contentLang = "en-US"
+
+	ctx.Header("Content-Language", c.contentLang)
+
 	c.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
 	c.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)

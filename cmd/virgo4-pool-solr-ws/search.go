@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"sort"
-
-	"github.com/gin-gonic/gin"
 )
 
 const defaultStart = 0
@@ -34,11 +32,10 @@ func confidenceIndex(s string) int {
 	}[s]
 }
 
-func (s *searchContext) init(p *poolContext, c *gin.Context) {
+func (s *searchContext) init(p *poolContext, c *clientOptions) {
 	s.pool = p
 
-	s.client = &clientOptions{}
-	s.client.init(c, s.pool.randomSource)
+	s.client = c
 
 	s.virgoReq.meta.client = s.client
 	s.virgoReq.Pagination.Start = defaultStart
