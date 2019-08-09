@@ -7,9 +7,9 @@ package main
 
 type virgoSearchMeta struct {
 	client        *clientOptions
-	solrQuery     string // holds the solr query (either parsed or specified)
+	solrQuery     string          // holds the solr query (either parsed or specified)
 	parserInfo    *solrParserInfo // holds the information for parsed queries
-	requestFacets bool   // set to true for non-speculative searches
+	requestFacets bool            // set to true for non-speculative searches
 }
 
 // VirgoSearchRequest holds the contents of a search request as parsed
