@@ -13,7 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	//log "github.com/sirupsen/logrus"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 const defaultScoreThresholdMedium = 100.0
@@ -39,6 +41,7 @@ type poolSolr struct {
 	url                  string
 	availableFacets      map[string]solrRequestFacet
 	virgoAvailableFacets []string
+	reverseFacetMap      map[string]string
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
 }
@@ -191,6 +194,73 @@ func (p *poolContext) initSolr() {
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
 }
 
+func (p *poolContext) initTranslations() {
+	type translationItem struct {
+		Language    string `json:"language"`
+		Translation string `json:"translation"`
+	}
+
+	type translationSet struct {
+		ID           string            `json:"id"`
+		Translations []translationItem `json:"translations"`
+	}
+
+	type translationInfo struct {
+		SupportedLanguages []string         `json:"supported_languages"`
+		TranslationMap     []translationSet `json:"translation_map"`
+	}
+
+	var translations translationInfo
+
+	if err := json.Unmarshal([]byte(p.config.poolTranslations), &translations); err != nil {
+		log.Printf("error parsing translations json: %s", err.Error())
+		os.Exit(1)
+	}
+
+	// ensure each id has a translation for each supported language, logging all missing entries
+	missing := false
+
+	for _, language := range translations.SupportedLanguages {
+		for _, set := range translations.TranslationMap {
+			found := false
+			for _, item := range set.Translations {
+				if item.Language == language {
+					found = true
+					break
+				}
+			}
+
+			if found == false {
+				log.Printf("missing translation for language: [%s] and identifier: [%s]", language, set.ID)
+				missing = true
+			}
+		}
+	}
+
+	if missing == true {
+		log.Printf("exiting due to missing translations above")
+		os.Exit(1)
+	}
+
+	// now initialize translations
+
+	reverseFacetMap := make(map[string]string)
+
+	for _, set := range translations.TranslationMap {
+		for _, item := range set.Translations {
+			lang := language.MustParse(item.Language)
+			message.SetString(lang, set.ID, item.Translation)
+
+			// also fill out reverse facet translation map
+			if strings.HasPrefix(set.ID, "FACET_") {
+				reverseFacetMap[item.Translation] = set.ID
+			}
+		}
+	}
+
+	p.solr.reverseFacetMap = reverseFacetMap
+}
+
 func (p *poolContext) init(cfg *poolConfig) {
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -198,4 +268,5 @@ func (p *poolContext) init(cfg *poolConfig) {
 	p.initIdentity()
 	p.initVersion()
 	p.initSolr()
+	p.initTranslations()
 }

@@ -8,20 +8,22 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	//log "github.com/sirupsen/logrus"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // options set by or per client
 type clientOptions struct {
-	start       time.Time // internally set
-	reqID       string    // internally generated
-	acceptLang  string    // set based on client header
-	contentLang string    // set based on what the pool supports
-	nolog       bool      // internally set
-	debug       bool      // client requested -- controls whether debug info is added to pool results
-	intuit      bool      // client requested -- controls whether intuited (speculative) searches are performed
-	verbose     bool      // client requested -- controls whether verbose Solr requests/responses are logged
-	grouped     bool      // client requested -- controls whether Solr results are grouped
+	start       time.Time        // internally set
+	reqID       string           // internally generated
+	acceptLang  string           // set based on client header
+	contentLang language.Tag     // set based on what the pool supports
+	printer     *message.Printer // for localization
+	nolog       bool             // internally set
+	debug       bool             // client requested -- controls whether debug info is added to pool results
+	intuit      bool             // client requested -- controls whether intuited (speculative) searches are performed
+	verbose     bool             // client requested -- controls whether verbose Solr requests/responses are logged
+	grouped     bool             // client requested -- controls whether Solr results are grouped
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -43,9 +45,11 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 		c.acceptLang = "en-US"
 	}
 
-	c.contentLang = "en-US"
+	c.contentLang = message.MatchLanguage(c.acceptLang)
 
-	ctx.Header("Content-Language", c.contentLang)
+	c.printer = message.NewPrinter(c.contentLang)
+
+	ctx.Header("Content-Language", c.contentLang.String())
 
 	c.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
@@ -80,4 +84,8 @@ func (c *clientOptions) log(format string, args ...interface{}) {
 
 func (c *clientOptions) err(format string, args ...interface{}) {
 	c.printf("ERROR:", format, args...)
+}
+
+func (c *clientOptions) localize(id string) string {
+	return c.printer.Sprintf(id)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
-	//log "github.com/sirupsen/logrus"
 )
 
 /**

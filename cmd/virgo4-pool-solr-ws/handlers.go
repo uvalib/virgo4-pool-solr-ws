@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	//log "github.com/sirupsen/logrus"
 )
 
 func (p *poolContext) searchHandler(c *gin.Context) {
@@ -71,7 +70,12 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 	cl := clientOptions{}
 	cl.init(p, c)
 
-	c.JSON(http.StatusOK, p.identity)
+	localizedIdentity := p.identity
+
+	localizedIdentity.Name = cl.localize(p.identity.Name)
+	localizedIdentity.Desc = cl.localize(p.identity.Desc)
+
+	c.JSON(http.StatusOK, localizedIdentity)
 }
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {

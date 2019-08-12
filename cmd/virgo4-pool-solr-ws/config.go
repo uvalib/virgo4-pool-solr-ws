@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	//log "github.com/sirupsen/logrus"
 )
 
 type poolConfig struct {
@@ -12,6 +11,7 @@ type poolConfig struct {
 	poolServiceURL       string
 	poolLeaders          string
 	poolFacets           string
+	poolTranslations     string
 	listenPort           string
 	scoreThresholdMedium string
 	scoreThresholdHigh   string
@@ -56,6 +56,7 @@ func (cfg *poolConfig) load() {
 	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
 	cfg.poolLeaders = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_LEADERS")
 	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
+	cfg.poolTranslations = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_TRANSLATIONS")
 	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
 	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
 	cfg.scoreThresholdHigh = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
@@ -91,4 +92,5 @@ func (cfg *poolConfig) load() {
 	log.Printf("[CONFIG] solrParameterFl      = [%s]", cfg.solrParameterFl)
 	log.Printf("[CONFIG] solrGroupField       = [%s]", cfg.solrGroupField)
 	log.Printf("[CONFIG] solrFacetManifest    = [%s]", cfg.solrFacetManifest)
+	log.Printf("[CONFIG] poolTranslations     = [%s]", cfg.poolTranslations)
 }

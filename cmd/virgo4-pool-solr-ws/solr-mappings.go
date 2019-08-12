@@ -80,7 +80,7 @@ func (s *solrRequest) buildFacets(facet string, availableFacets map[string]solrR
 	case "all":
 		facets = availableFacets
 	default:
-		solrFacet, ok := availableFacets[facet]
+		solrFacet, ok := availableFacets[s.meta.reverseFacetMap[facet]]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized facet: [%s]", facet)
@@ -103,7 +103,7 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter, availableFacets map[s
 	}
 
 	for _, filter := range *filters {
-		solrFacet, ok := availableFacets[filter.Name]
+		solrFacet, ok := availableFacets[s.meta.reverseFacetMap[filter.Name]]
 
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.Name)
@@ -131,6 +131,7 @@ func (s *searchContext) solrRequestWithDefaults() {
 
 	solrReq.meta.client = s.virgoReq.meta.client
 	solrReq.meta.parserInfo = s.virgoReq.meta.parserInfo
+	solrReq.meta.reverseFacetMap = s.pool.solr.reverseFacetMap
 
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
