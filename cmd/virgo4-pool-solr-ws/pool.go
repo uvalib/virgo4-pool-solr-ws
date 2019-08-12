@@ -144,19 +144,34 @@ func (p *poolContext) initSolr() {
 		Facets []solrRequestFacet `json:"facets"`
 	}
 
-	var facets facetInfo
+	var facetManifest facetInfo
 
-	if err := json.Unmarshal([]byte(p.config.solrAvailableFacets), &facets); err != nil {
-		log.Printf("error parsing available facets json: %s", err.Error())
+	// read in all defined facets, and convert to a map
+	if err := json.Unmarshal([]byte(p.config.solrFacetManifest), &facetManifest); err != nil {
+		log.Printf("error parsing facets manifest json: %s", err.Error())
 		os.Exit(1)
 	}
 
+	facetManifestMap := make(map[string]solrRequestFacet)
+
+	for _, facet := range facetManifest.Facets {
+		facetManifestMap[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
+	}
+
+	// now select the facets from the manifest that are defined for this pool
 	availableFacets := make(map[string]solrRequestFacet)
 	var virgoAvailableFacets []string
 
-	for _, facet := range facets.Facets {
-		virgoAvailableFacets = append(virgoAvailableFacets, facet.Name)
-		availableFacets[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
+	for _, f := range strings.Split(p.config.poolFacets, ",") {
+		facet, ok := facetManifestMap[f]
+
+		if ok == false {
+			continue
+		}
+
+		// add this facet
+		virgoAvailableFacets = append(virgoAvailableFacets, f)
+		availableFacets[f] = facet
 	}
 
 	medium, high := getScoreThresholds(p.config.scoreThresholdMedium, p.config.scoreThresholdHigh)

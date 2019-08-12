@@ -11,6 +11,7 @@ type poolConfig struct {
 	poolDescription      string
 	poolServiceURL       string
 	poolLeaders          string
+	poolFacets           string
 	listenPort           string
 	scoreThresholdMedium string
 	scoreThresholdHigh   string
@@ -24,7 +25,7 @@ type poolConfig struct {
 	solrParameterFq      string
 	solrParameterFl      string
 	solrGroupField       string
-	solrAvailableFacets  string
+	solrFacetManifest    string
 }
 
 func ensureSet(env string) string {
@@ -54,6 +55,7 @@ func (cfg *poolConfig) load() {
 	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
 	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
 	cfg.poolLeaders = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_LEADERS")
+	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
 	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
 	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
 	cfg.scoreThresholdHigh = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
@@ -68,12 +70,13 @@ func (cfg *poolConfig) load() {
 	cfg.solrParameterFl = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL")
 	//cfg.solrGroupField = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_GROUP_FIELD")
 	cfg.solrGroupField = "work_title2_key_sort" // currently hard-coded in json parsing so specifying it will break things
-	cfg.solrAvailableFacets = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_AVAILABLE_FACETS")
+	cfg.solrFacetManifest = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_FACET_MANIFEST")
 
 	log.Printf("[CONFIG] poolType             = [%s]", cfg.poolType)
 	log.Printf("[CONFIG] poolDescription      = [%s]", cfg.poolDescription)
 	log.Printf("[CONFIG] poolServiceURL       = [%s]", cfg.poolServiceURL)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", cfg.poolLeaders)
+	log.Printf("[CONFIG] poolFacets           = [%s]", cfg.poolFacets)
 	log.Printf("[CONFIG] listenPort           = [%s]", cfg.listenPort)
 	log.Printf("[CONFIG] scoreThresholdMedium = [%s]", cfg.scoreThresholdMedium)
 	log.Printf("[CONFIG] scoreThresholdHigh   = [%s]", cfg.scoreThresholdHigh)
@@ -87,5 +90,5 @@ func (cfg *poolConfig) load() {
 	log.Printf("[CONFIG] solrParameterFq      = [%s]", cfg.solrParameterFq)
 	log.Printf("[CONFIG] solrParameterFl      = [%s]", cfg.solrParameterFl)
 	log.Printf("[CONFIG] solrGroupField       = [%s]", cfg.solrGroupField)
-	log.Printf("[CONFIG] solrAvailableFacets  = [%s]", cfg.solrAvailableFacets)
+	log.Printf("[CONFIG] solrFacetManifest    = [%s]", cfg.solrFacetManifest)
 }
