@@ -15,11 +15,8 @@ import (
 func main() {
 	log.Printf("===> virgo4-pool-solr-ws starting up <===")
 
-	cfg := poolConfig{}
-	cfg.load()
-
-	pool := poolContext{}
-	pool.init(&cfg)
+	cfg := loadConfig()
+	pool := initializePool(cfg)
 
 	gin.SetMode(gin.ReleaseMode)
 	//gin.DisableConsoleColor()

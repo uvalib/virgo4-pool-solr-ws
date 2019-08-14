@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -14,8 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BurntSushi/toml"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 const defaultScoreThresholdMedium = 100.0
@@ -49,6 +52,7 @@ type poolSolr struct {
 type poolContext struct {
 	randomSource *rand.Rand
 	config       *poolConfig
+	bundle       *i18n.Bundle
 	identity     poolIdentity
 	version      poolVersion
 	solr         poolSolr
@@ -177,12 +181,30 @@ func (p *poolContext) initSolr() {
 		availableFacets[f] = facet
 	}
 
+	// create reverse mapping from localized facet names to facet message IDs
+
+	reverseFacetMap := make(map[string]string)
+
+	tags := p.bundle.LanguageTags()
+
+	for _, facet := range virgoAvailableFacets {
+		for _, tag := range tags {
+			lang := tag.String()
+			localizer := i18n.NewLocalizer(p.bundle, lang)
+			localizedFacet := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: facet})
+			reverseFacetMap[localizedFacet] = facet
+		}
+	}
+
+	// set score thresholds
+
 	medium, high := getScoreThresholds(p.config.scoreThresholdMedium, p.config.scoreThresholdHigh)
 
 	p.solr = poolSolr{
 		url:                  fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler),
 		client:               solrClient,
 		availableFacets:      availableFacets,
+		reverseFacetMap:      reverseFacetMap,
 		virgoAvailableFacets: virgoAvailableFacets,
 		scoreThresholdMedium: medium,
 		scoreThresholdHigh:   high,
@@ -195,78 +217,48 @@ func (p *poolContext) initSolr() {
 }
 
 func (p *poolContext) initTranslations() {
-	type translationItem struct {
-		Language    string `json:"language"`
-		Translation string `json:"translation"`
+	decoded, err := base64.StdEncoding.DecodeString(p.config.poolTranslations)
+	if err != nil {
+		log.Printf("error decoding translation files: %s", err.Error())
 	}
 
-	type translationSet struct {
-		ID           string            `json:"id"`
-		Translations []translationItem `json:"translations"`
-	}
+	r := ioutil.NopCloser(strings.NewReader(string(decoded)))
 
-	type translationInfo struct {
-		SupportedLanguages []string         `json:"supported_languages"`
-		TranslationMap     []translationSet `json:"translation_map"`
-	}
-
-	var translations translationInfo
-
-	if err := json.Unmarshal([]byte(p.config.poolTranslations), &translations); err != nil {
-		log.Printf("error parsing translations json: %s", err.Error())
+	if err = Untar(r, "/tmp"); err != nil {
+		log.Printf("error untarring translation files: %s", err.Error())
 		os.Exit(1)
 	}
 
-	// ensure each id has a translation for each supported language, logging all missing entries
-	missing := false
+	p.bundle = i18n.NewBundle(language.English)
+	p.bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
-	for _, language := range translations.SupportedLanguages {
-		for _, set := range translations.TranslationMap {
-			found := false
-			for _, item := range set.Translations {
-				if item.Language == language {
-					found = true
-					break
-				}
-			}
-
-			if found == false {
-				log.Printf("missing translation for language: [%s] and identifier: [%s]", language, set.ID)
-				missing = true
-			}
-		}
+	// glob return files in lexical order (citation needed), which we rely upon for language priority (does it matter?)
+	toml, _ := filepath.Glob("/tmp/i18n/*.toml")
+	for _, f := range toml {
+		p.bundle.MustLoadMessageFile(f)
 	}
 
-	if missing == true {
-		log.Printf("exiting due to missing translations above")
-		os.Exit(1)
+	tags := p.bundle.LanguageTags()
+	langs := []string{}
+
+	for _, tag := range tags {
+		lang := tag.String()
+		langs = append(langs, lang)
 	}
 
-	// now initialize translations
-
-	reverseFacetMap := make(map[string]string)
-
-	for _, set := range translations.TranslationMap {
-		for _, item := range set.Translations {
-			lang := language.MustParse(item.Language)
-			message.SetString(lang, set.ID, item.Translation)
-
-			// also fill out reverse facet translation map
-			if strings.HasPrefix(set.ID, "FACET_") {
-				reverseFacetMap[item.Translation] = set.ID
-			}
-		}
-	}
-
-	p.solr.reverseFacetMap = reverseFacetMap
+	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
-func (p *poolContext) init(cfg *poolConfig) {
+func initializePool(cfg *poolConfig) *poolContext {
+	p := poolContext{}
+
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+	p.initTranslations()
 	p.initIdentity()
 	p.initVersion()
 	p.initSolr()
-	p.initTranslations()
+
+	return &p
 }

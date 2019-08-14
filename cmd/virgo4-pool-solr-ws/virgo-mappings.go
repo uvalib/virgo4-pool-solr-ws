@@ -86,49 +86,49 @@ func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord 
 
 	// new style records -- order is important!
 
-	r.addBasicField(newField("id", client.localize("FIELD_IDENTIFIER"), doc.ID))
-	r.addBasicField(newField("title", client.localize("FIELD_TITLE"), firstElementOf(doc.Title)))
-	r.addBasicField(newField("subtitle", client.localize("FIELD_SUBTITLE"), firstElementOf(doc.Subtitle)))
+	r.addBasicField(newField("id", client.localize("FieldIdentifier"), doc.ID))
+	r.addBasicField(newField("title", client.localize("FieldTitle"), firstElementOf(doc.Title)))
+	r.addBasicField(newField("subtitle", client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)))
 
 	for _, item := range doc.Author {
-		r.addBasicField(newField("author", client.localize("FIELD_AUTHOR"), item))
+		r.addBasicField(newField("author", client.localize("FieldAuthor"), item))
 	}
 
 	for _, item := range doc.Subject {
-		r.addDetailedField(newField("subject", client.localize("FIELD_SUBJECT"), item))
+		r.addDetailedField(newField("subject", client.localize("FieldSubject"), item))
 	}
 
 	for _, item := range doc.Language {
-		r.addDetailedField(newField("language", client.localize("FIELD_LANGUAGE"), item))
+		r.addDetailedField(newField("language", client.localize("FieldLanguage"), item))
 	}
 
 	for _, item := range doc.Format {
-		r.addDetailedField(newField("format", client.localize("FIELD_FORMAT"), item))
+		r.addDetailedField(newField("format", client.localize("FieldFormat"), item))
 	}
 
 	for _, item := range doc.Library {
-		r.addDetailedField(newField("library", client.localize("FIELD_LIBRARY"), item))
+		r.addDetailedField(newField("library", client.localize("FieldLibrary"), item))
 	}
 
 	for _, item := range doc.CallNumber {
-		r.addDetailedField(newField("call_number", client.localize("FIELD_CALL_NUMBER"), item))
+		r.addDetailedField(newField("call_number", client.localize("FieldCallNumber"), item))
 	}
 
 	for _, item := range doc.CallNumberBroad {
-		r.addDetailedField(newField("call_number_broad", client.localize("FIELD_CALL_NUMBER_BROAD"), item))
+		r.addDetailedField(newField("call_number_broad", client.localize("FieldCallNumberBroad"), item))
 	}
 
 	for _, item := range doc.CallNumberNarrow {
-		r.addDetailedField(newField("call_number_narrow", client.localize("FIELD_CALL_NUMBER_NARROW"), item))
+		r.addDetailedField(newField("call_number_narrow", client.localize("FieldCallNumberNarrow"), item))
 	}
 
 	// mocked up fields that we do not actually pass yet
 	previewURL := "https://www.library.virginia.edu/images/icon-32.png"
-	r.addDetailedField(newField("preview_url", client.localize("FIELD_PREVIEW_IMAGE"), previewURL).setType("url"))
+	r.addDetailedField(newField("preview_url", "", previewURL).setType("url"))
 
 	if doc.ID[0] == 'u' {
 		classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
-		r.addDetailedField(newField("classic_url", client.localize("FIELD_MORE"), classicURL).setType("url"))
+		r.addDetailedField(newField("classic_url", client.localize("FieldMore"), classicURL).setType("url"))
 	}
 
 	// add debug info?
@@ -151,7 +151,7 @@ func virgoPopulateFacetBucket(value solrBucket, client *clientOptions) *VirgoFac
 func virgoPopulateFacet(name string, value solrResponseFacet, client *clientOptions) *VirgoFacet {
 	var facet VirgoFacet
 
-	facet.Name = client.localize(name)
+	facet.Name = name
 
 	var buckets []VirgoFacetBucket
 

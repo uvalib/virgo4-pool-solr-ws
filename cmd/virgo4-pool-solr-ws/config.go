@@ -50,7 +50,9 @@ func ensureSetAndNonEmpty(env string) string {
 	return val
 }
 
-func (cfg *poolConfig) load() {
+func loadConfig() *poolConfig {
+	cfg := poolConfig{}
+
 	cfg.poolType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_TYPE")
 	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
 	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
@@ -78,6 +80,7 @@ func (cfg *poolConfig) load() {
 	log.Printf("[CONFIG] poolServiceURL       = [%s]", cfg.poolServiceURL)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", cfg.poolLeaders)
 	log.Printf("[CONFIG] poolFacets           = [%s]", cfg.poolFacets)
+	log.Printf("[CONFIG] poolTranslations     = [tarball omitted]")
 	log.Printf("[CONFIG] listenPort           = [%s]", cfg.listenPort)
 	log.Printf("[CONFIG] scoreThresholdMedium = [%s]", cfg.scoreThresholdMedium)
 	log.Printf("[CONFIG] scoreThresholdHigh   = [%s]", cfg.scoreThresholdHigh)
@@ -92,5 +95,6 @@ func (cfg *poolConfig) load() {
 	log.Printf("[CONFIG] solrParameterFl      = [%s]", cfg.solrParameterFl)
 	log.Printf("[CONFIG] solrGroupField       = [%s]", cfg.solrGroupField)
 	log.Printf("[CONFIG] solrFacetManifest    = [%s]", cfg.solrFacetManifest)
-	log.Printf("[CONFIG] poolTranslations     = [%s]", cfg.poolTranslations)
+
+	return &cfg
 }
