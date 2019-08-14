@@ -1,0 +1,143 @@
+[PoolArchival]
+desc = "The display name for the pool of Solr search results designated as archival."
+other = "Arkivoj"
+
+[PoolArchivalDescription]
+desc = "The longer description for the Solr pool designated as archival, as shown in Sources setup."
+other = "La Katalogo de Arkivoj de Biblioteko de UVA"
+
+[PoolCatalogBroad]
+desc = "The display name for the pool of Solr search results designated as the broad catalog."
+other = "Katalogo (Larĝa)"
+
+[PoolCatalogBroadDescription]
+desc = "The longer description for the Solr pool designated as the broad catalog, as shown in Sources setup."
+other = "Larĝa Katalogo de Biblioteko UVA"
+
+[PoolCatalog]
+desc = "The display name for the pool of Solr search results designated as the main catalog."
+other = "Katalogo"
+
+[PoolCatalogDescription]
+desc = "The longer description for the Solr pool designated as the main catalog, as shown in Sources setup."
+other = "UVA Biblioteko-Katalogo"
+
+[PoolMusicRecordings]
+desc = "The display name for the pool of Solr search results designated as music recordings."
+other = "Muzikaj Registradoj"
+
+[PoolMusicRecordingsDescription]
+desc = "The longer description for the Solr pool designated as music recordings, as shown in Sources setup."
+other = "Katalogo de Muzika Registrado de UVA Library"
+
+[PoolMusicalScores]
+desc = "The display name for the pool of Solr search results designated as musical scores."
+other = "Muzikaj Scores"
+
+[PoolMusicalScoresDescription]
+desc = "The longer description for the Solr pool designated as musical scores, as shown in Sources setup."
+other = "Katalogo de Muzika Scores de la UVA Library"
+
+[PoolSerials]
+desc = "The display name for the pool of Solr search results designated as serials."
+other = "Serioj"
+
+[PoolSerialsDescription]
+desc = "The longer description for the Solr pool designated as serials, as shown in Sources setup."
+other = "Katalogo de la UVA-Biblioteko-Serioj"
+
+[PoolSoundRecordings]
+desc = "The display name for the pool of Solr search results designated as sound recordings."
+other = "Sonaj Registradoj"
+
+[PoolSoundRecordingsDescription]
+desc = "The longer description for the Solr pool designated as sound recordings, as shown in Sources setup."
+other = "Katalogo de Sonregistradoj de UVA Library"
+
+[PoolVideo]
+desc = "The display name for the pool of Solr search results designated as video."
+other = "Filmeto"
+
+[PoolVideoDescription]
+desc = "The longer description for the Solr pool designated as video, as shown in Sources setup."
+other = "La katalogo pri DVD-Biblioteko de UVA"
+
+[FacetAuthor]
+desc = "The display name for the Author facet."
+other = "Aŭtoro"
+
+[FacetSubject]
+desc = "The display name for the Subject facet."
+other = "Subjekto"
+
+[FacetLanguage]
+desc = "The display name for the Language facet."
+other = "Lingvo"
+
+[FacetFormat]
+desc = "The display name for the Format facet."
+other = "Formato"
+
+[FacetLibrary]
+desc = "The display name for the Library facet."
+other = "Biblioteko"
+
+[FacetCallNumberBroad]
+desc = "The display name for the Call Number (Broad) facet."
+other = "Voka Numero (Larĝa)"
+
+[FacetCallNumberNarrow]
+desc = "The display name for the Call Number (Narrow) facet."
+other = "Voka Numero (Mallarĝa)"
+
+[FacetVideoFormat]
+desc = "The display name for the Video Format facet."
+other = "Video-Formato"
+
+[FieldIdentifier]
+desc = "The display name for the Identifier field in a single item record."
+other = "Identigilo"
+
+[FieldTitle]
+desc = "The display name for the Title field in a single item record."
+other = "Titolo"
+
+[FieldSubtitle]
+desc = "The display name for the Subtitle field in a single item record."
+other = "Subteksto"
+
+[FieldAuthor]
+desc = "The display name for the Author field in a single item record."
+other = "Aŭtoro"
+
+[FieldSubject]
+desc = "The display name for the Subject field in a single item record."
+other = "Subjekto"
+
+[FieldLanguage]
+desc = "The display name for the Language field in a single item record."
+other = "Lingvo"
+
+[FieldFormat]
+desc = "The display name for the Format field in a single item record."
+other = "Formato"
+
+[FieldLibrary]
+desc = "The display name for the Library field in a single item record."
+other = "Biblioteko"
+
+[FieldCallNumber]
+desc = "The display name for the Call Number field in a single item record."
+other = "Voka Numero"
+
+[FieldCallNumberBroad]
+desc = "The display name for the Call Number (Broad) field in a single item record."
+other = "Voka Numero (Larĝa)"
+
+[FieldCallNumberNarrow]
+desc = "The display name for the Call Number (Narrow) field in a single item record."
+other = "Voka Numero (Mallarĝa)"
+
+[FieldMore]
+desc = "The display name for the field that contains a link to an external URL with more details."
+other = "Pli multe"

@@ -1,0 +1,143 @@
+[PoolArchival]
+desc = "The display name for the pool of Solr search results designated as archival."
+other = "Archival"
+
+[PoolArchivalDescription]
+desc = "The longer description for the Solr pool designated as archival, as shown in Sources setup."
+other = "The UVA Library Archival Catalog"
+
+[PoolCatalogBroad]
+desc = "The display name for the pool of Solr search results designated as the broad catalog."
+other = "Catalog (Broad)"
+
+[PoolCatalogBroadDescription]
+desc = "The longer description for the Solr pool designated as the broad catalog, as shown in Sources setup."
+other = "The UVA Library Broad Catalog"
+
+[PoolCatalog]
+desc = "The display name for the pool of Solr search results designated as the main catalog."
+other = "Catalog"
+
+[PoolCatalogDescription]
+desc = "The longer description for the Solr pool designated as the main catalog, as shown in Sources setup."
+other = "The UVA Library Catalog"
+
+[PoolMusicRecordings]
+desc = "The display name for the pool of Solr search results designated as music recordings."
+other = "Music Recordings"
+
+[PoolMusicRecordingsDescription]
+desc = "The longer description for the Solr pool designated as music recordings, as shown in Sources setup."
+other = "The UVA Library Music Recordings Catalog"
+
+[PoolMusicalScores]
+desc = "The display name for the pool of Solr search results designated as musical scores."
+other = "Musical Scores"
+
+[PoolMusicalScoresDescription]
+desc = "The longer description for the Solr pool designated as musical scores, as shown in Sources setup."
+other = "The UVA Library Musical Scores Catalog"
+
+[PoolSerials]
+desc = "The display name for the pool of Solr search results designated as serials."
+other = "Serials"
+
+[PoolSerialsDescription]
+desc = "The longer description for the Solr pool designated as serials, as shown in Sources setup."
+other = "The UVA Library Serials Catalog"
+
+[PoolSoundRecordings]
+desc = "The display name for the pool of Solr search results designated as sound recordings."
+other = "Sound Recordings"
+
+[PoolSoundRecordingsDescription]
+desc = "The longer description for the Solr pool designated as sound recordings, as shown in Sources setup."
+other = "The UVA Library Sound Recordings Catalog"
+
+[PoolVideo]
+desc = "The display name for the pool of Solr search results designated as video."
+other = "Video"
+
+[PoolVideoDescription]
+desc = "The longer description for the Solr pool designated as video, as shown in Sources setup."
+other = "The UVA Library Video Catalog"
+
+[FacetAuthor]
+desc = "The display name for the Author facet."
+other = "Author"
+
+[FacetSubject]
+desc = "The display name for the Subject facet."
+other = "Subject"
+
+[FacetLanguage]
+desc = "The display name for the Language facet."
+other = "Language"
+
+[FacetFormat]
+desc = "The display name for the Format facet."
+other = "Format"
+
+[FacetLibrary]
+desc = "The display name for the Library facet."
+other = "Library"
+
+[FacetCallNumberBroad]
+desc = "The display name for the Call Number (Broad) facet."
+other = "Call Number (Broad)"
+
+[FacetCallNumberNarrow]
+desc = "The display name for the Call Number (Narrow) facet."
+other = "Call Number (Narrow)"
+
+[FacetVideoFormat]
+desc = "The display name for the Video Format facet."
+other = "Video Format"
+
+[FieldIdentifier]
+desc = "The display name for the Identifier field in a single item record."
+other = "Identifier"
+
+[FieldTitle]
+desc = "The display name for the Title field in a single item record."
+other = "Title"
+
+[FieldSubtitle]
+desc = "The display name for the Subtitle field in a single item record."
+other = "Subtitle"
+
+[FieldAuthor]
+desc = "The display name for the Author field in a single item record."
+other = "Author"
+
+[FieldSubject]
+desc = "The display name for the Subject field in a single item record."
+other = "Subject"
+
+[FieldLanguage]
+desc = "The display name for the Language field in a single item record."
+other = "Language"
+
+[FieldFormat]
+desc = "The display name for the Format field in a single item record."
+other = "Format"
+
+[FieldLibrary]
+desc = "The display name for the Library field in a single item record."
+other = "Library"
+
+[FieldCallNumber]
+desc = "The display name for the Call Number field in a single item record."
+other = "Call Number"
+
+[FieldCallNumberBroad]
+desc = "The display name for the Call Number (Broad) field in a single item record."
+other = "Call Number (Broad)"
+
+[FieldCallNumberNarrow]
+desc = "The display name for the Call Number (Narrow) field in a single item record."
+other = "Call Number (Narrow)"
+
+[FieldMore]
+desc = "The display name for the field that contains a link to an external URL with more details."
+other = "More"

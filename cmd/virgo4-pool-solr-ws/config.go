@@ -11,7 +11,6 @@ type poolConfig struct {
 	poolServiceURL       string
 	poolLeaders          string
 	poolFacets           string
-	poolTranslations     string
 	listenPort           string
 	scoreThresholdMedium string
 	scoreThresholdHigh   string
@@ -58,7 +57,6 @@ func loadConfig() *poolConfig {
 	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
 	cfg.poolLeaders = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_LEADERS")
 	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
-	cfg.poolTranslations = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_TRANSLATIONS")
 	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
 	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
 	cfg.scoreThresholdHigh = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
@@ -80,7 +78,6 @@ func loadConfig() *poolConfig {
 	log.Printf("[CONFIG] poolServiceURL       = [%s]", cfg.poolServiceURL)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", cfg.poolLeaders)
 	log.Printf("[CONFIG] poolFacets           = [%s]", cfg.poolFacets)
-	log.Printf("[CONFIG] poolTranslations     = [tarball omitted]")
 	log.Printf("[CONFIG] listenPort           = [%s]", cfg.listenPort)
 	log.Printf("[CONFIG] scoreThresholdMedium = [%s]", cfg.scoreThresholdMedium)
 	log.Printf("[CONFIG] scoreThresholdHigh   = [%s]", cfg.scoreThresholdHigh)

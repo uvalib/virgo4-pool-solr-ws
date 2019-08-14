@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -217,25 +215,21 @@ func (p *poolContext) initSolr() {
 }
 
 func (p *poolContext) initTranslations() {
-	decoded, err := base64.StdEncoding.DecodeString(p.config.poolTranslations)
-	if err != nil {
-		log.Printf("error decoding translation files: %s", err.Error())
-	}
+	defaultLang := language.English
 
-	r := ioutil.NopCloser(strings.NewReader(string(decoded)))
-
-	if err = Untar(r, "/tmp"); err != nil {
-		log.Printf("error untarring translation files: %s", err.Error())
-		os.Exit(1)
-	}
-
-	p.bundle = i18n.NewBundle(language.English)
+	p.bundle = i18n.NewBundle(defaultLang)
 	p.bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
-	// glob return files in lexical order (citation needed), which we rely upon for language priority (does it matter?)
-	toml, _ := filepath.Glob("/tmp/i18n/*.toml")
+	toml, _ := filepath.Glob("i18n/*.toml")
 	for _, f := range toml {
 		p.bundle.MustLoadMessageFile(f)
+	}
+
+	// sanity check: ensure default language translations were loaded by checking a known localization identifier
+	localizer := i18n.NewLocalizer(p.bundle, defaultLang.String())
+	if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: "FieldIdentifier"}); err != nil {
+		log.Printf("translations for default language (%s) do not appear to be loaded: %s", defaultLang.String(), err.Error())
+		os.Exit(1)
 	}
 
 	tags := p.bundle.LanguageTags()
