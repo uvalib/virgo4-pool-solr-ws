@@ -6,6 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/antlr/antlr4 v0.0.0-20190726171924-e4737db19f4f // indirect
 	github.com/gin-contrib/cors v1.3.0
+	github.com/gin-contrib/gzip v0.0.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
