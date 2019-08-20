@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/gzip"
+	//"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
 )
@@ -24,7 +24,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(gzip.Gzip(gzip.DefaultCompression))
+	//router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	corsCfg := cors.DefaultConfig()
 	corsCfg.AllowAllOrigins = true
