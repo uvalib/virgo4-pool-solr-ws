@@ -6,13 +6,14 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/antlr/antlr4 v0.0.0-20190819145818-b43a4c3a8015 // indirect
 	github.com/gin-contrib/cors v1.3.0
+	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/nicksnyder/go-i18n/v2 v2.0.2
-	github.com/prometheus/client_golang v1.1.0 // indirect
+	github.com/prometheus/client_golang v1.1.0
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/stretchr/testify v1.4.0 // indirect

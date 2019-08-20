@@ -5,8 +5,10 @@ import (
 	"log"
 
 	"github.com/gin-contrib/cors"
-	//"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/zsais/go-gin-prometheus"
 )
 
@@ -24,7 +26,7 @@ func main() {
 
 	router := gin.Default()
 
-	//router.Use(gzip.Gzip(gzip.DefaultCompression))
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	corsCfg := cors.DefaultConfig()
 	corsCfg.AllowAllOrigins = true
@@ -33,7 +35,14 @@ func main() {
 	router.Use(cors.New(corsCfg))
 
 	p := ginprometheus.NewPrometheus("gin")
-	p.Use(router)
+
+	// roundabout setup of /metrics endpoint to avoid double-gzip of response
+	router.Use(p.HandlerFunc())
+	h := promhttp.InstrumentMetricHandler(prometheus.DefaultRegisterer, promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{DisableCompression: true}))
+
+	router.GET(p.MetricsPath, func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
 
 	router.GET("/favicon.ico", pool.ignoreHandler)
 
