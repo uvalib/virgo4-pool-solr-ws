@@ -54,10 +54,11 @@ type VirgoRecordDebug struct {
 // VirgoNuancedField contains metadata for a single field in a record.
 type VirgoNuancedField struct {
 	Name       string `json:"name"`
-	Type       string `json:"type"` // assume simple string if not provided
+	Type       string `json:"type,omitempty"` // assume simple string if not provided
 	Label      string `json:"label"`
-	Value      string `json:"value"`      // could be any type
-	Visibility string `json:"visibility"` // e.g. "basic" (or empty) as opposed to "detailed"
+	Value      string `json:"value"`
+	Visibility string `json:"visibility,omitempty"` // e.g. "basic" (or empty) as opposed to "detailed"
+	Display    string `json:"display,omitempty"`    // e.g. "optional" (or empty)
 }
 
 // VirgoRecord contains the fields for a single record in a search result set.

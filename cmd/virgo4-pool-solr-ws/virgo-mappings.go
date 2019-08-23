@@ -37,7 +37,7 @@ func (r *VirgoRecord) addField(f *VirgoNuancedField) {
 }
 
 func (r *VirgoRecord) addBasicField(f *VirgoNuancedField) {
-	r.addField(f.setVisibility("basic"))
+	r.addField(f.setVisibility("")) // empty implies "basic"
 }
 
 func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
@@ -47,10 +47,11 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 func newField(name, label, value string) *VirgoNuancedField {
 	field := VirgoNuancedField{
 		Name:       name,
-		Type:       "text",
+		Type:       "", // implies "text"
 		Label:      label,
 		Value:      value,
-		Visibility: "basic",
+		Visibility: "", // implies "basic"
+		Display:    "", // implies not optional
 	}
 
 	return &field
@@ -81,12 +82,17 @@ func (f *VirgoNuancedField) setVisibility(s string) *VirgoNuancedField {
 	return f
 }
 
+func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
+	f.Display = s
+	return f
+}
+
 func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important!
 
-	r.addBasicField(newField("id", client.localize("FieldIdentifier"), doc.ID))
+	r.addBasicField(newField("id", client.localize("FieldIdentifier"), doc.ID).setDisplay("optional"))
 	r.addBasicField(newField("title", client.localize("FieldTitle"), firstElementOf(doc.Title)))
 	r.addBasicField(newField("subtitle", client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)))
 
