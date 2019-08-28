@@ -16,6 +16,7 @@ type clientOptions struct {
 	start     time.Time       // internally set
 	reqID     string          // internally generated
 	localizer *i18n.Localizer // for localization
+	english   *i18n.Localizer // for fallback english localization
 	nolog     bool            // internally set
 	debug     bool            // client requested -- controls whether debug info is added to pool results
 	intuit    bool            // client requested -- controls whether intuited (speculative) searches are performed
@@ -44,6 +45,7 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 	}
 
 	c.localizer = i18n.NewLocalizer(p.bundle, acceptLang)
+	c.english = i18n.NewLocalizer(p.bundle, "en")
 
 	// kludge to get the response language by checking the tag value returned for a known message ID
 	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: "FieldIdentifier"})
@@ -87,5 +89,22 @@ func (c *clientOptions) err(format string, args ...interface{}) {
 }
 
 func (c *clientOptions) localize(id string) string {
-	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
+	var localized string
+	var err error
+
+	if localized, err = c.localizer.Localize(&i18n.LocalizeConfig{MessageID: "test"}); err == nil {
+		return localized
+	}
+
+	c.log("localization failed for id [%s]: %s", id, err.Error())
+
+	if localized, err = c.english.Localize(&i18n.LocalizeConfig{MessageID: id}); err == nil {
+		return localized
+	}
+
+	c.log("fallback english localization failed for id [%s]: %s", id, err.Error())
+
+	// just return the identifier?  no need to panic
+
+	return id
 }
