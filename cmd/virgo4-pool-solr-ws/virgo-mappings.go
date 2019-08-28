@@ -92,7 +92,7 @@ func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord 
 
 	// new style records -- order is important!
 
-	r.addBasicField(newField("id", client.localize("FieldIdentifier"), doc.ID).setDisplay("optional"))
+	r.addBasicField(newField("id", client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
 	r.addBasicField(newField("title", client.localize("FieldTitle"), firstElementOf(doc.Title)))
 	r.addBasicField(newField("subtitle", client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)))
 
