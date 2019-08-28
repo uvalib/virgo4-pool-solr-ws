@@ -92,7 +92,7 @@ func (c *clientOptions) localize(id string) string {
 	var localized string
 	var err error
 
-	if localized, err = c.localizer.Localize(&i18n.LocalizeConfig{MessageID: "test"}); err == nil {
+	if localized, err = c.localizer.Localize(&i18n.LocalizeConfig{MessageID: id}); err == nil {
 		return localized
 	}
 
