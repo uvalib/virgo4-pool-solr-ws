@@ -47,10 +47,15 @@ type poolSolr struct {
 	scoreThresholdHigh   float32
 }
 
+type poolLocalization struct {
+	messageIDs []string
+	bundle     *i18n.Bundle
+}
+
 type poolContext struct {
 	randomSource *rand.Rand
 	config       *poolConfig
-	bundle       *i18n.Bundle
+	localization poolLocalization
 	identity     poolIdentity
 	version      poolVersion
 	solr         poolSolr
@@ -183,11 +188,11 @@ func (p *poolContext) initSolr() {
 
 	reverseFacetMap := make(map[string]string)
 
-	tags := p.bundle.LanguageTags()
+	tags := p.localization.bundle.LanguageTags()
 
 	for _, tag := range tags {
 		lang := tag.String()
-		localizer := i18n.NewLocalizer(p.bundle, lang)
+		localizer := i18n.NewLocalizer(p.localization.bundle, lang)
 
 		for _, facet := range virgoAvailableFacets {
 			localizedFacet := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: facet})
@@ -218,27 +223,89 @@ func (p *poolContext) initSolr() {
 func (p *poolContext) initTranslations() {
 	defaultLang := language.English
 
-	p.bundle = i18n.NewBundle(defaultLang)
-	p.bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	bundle := i18n.NewBundle(defaultLang)
+	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	toml, _ := filepath.Glob("i18n/*.toml")
 	for _, f := range toml {
-		p.bundle.MustLoadMessageFile(f)
+		bundle.MustLoadMessageFile(f)
 	}
 
-	// sanity check: ensure default language translations were loaded by checking a known localization identifier
-	localizer := i18n.NewLocalizer(p.bundle, defaultLang.String())
-	if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: "FieldIdentifier"}); err != nil {
-		log.Printf("translations for default language (%s) do not appear to be loaded: %s", defaultLang.String(), err.Error())
-		os.Exit(1)
+	// thorough check: for each messageID in english, ensure it exists in all other languages.
+	// ...but there does not appear to be a way to get all loaded messageIDs for a given language, so:
+
+	// hardcoded check: for each hardcoded messageID (i.e. all known), ensure it exists in all languages.
+	// NOTE: this list must be kept up to date.
+
+	messageIDs := []string{
+		"PoolArchival",
+		"PoolArchivalDescription",
+		"PoolCatalogBroad",
+		"PoolCatalogBroadDescription",
+		"PoolCatalog",
+		"PoolCatalogDescription",
+		"PoolMusicRecordings",
+		"PoolMusicRecordingsDescription",
+		"PoolMusicalScores",
+		"PoolMusicalScoresDescription",
+		"PoolSerials",
+		"PoolSerialsDescription",
+		"PoolSoundRecordings",
+		"PoolSoundRecordingsDescription",
+		"PoolVideo",
+		"PoolVideoDescription",
+		"FacetAuthor",
+		"FacetSubject",
+		"FacetLanguage",
+		"FacetFormat",
+		"FacetLibrary",
+		"FacetCallNumberBroad",
+		"FacetCallNumberNarrow",
+		"FacetVideoFormat",
+		"FieldIdentifier",
+		"FieldTitle",
+		"FieldSubtitle",
+		"FieldAuthor",
+		"FieldSubject",
+		"FieldLanguage",
+		"FieldFormat",
+		"FieldLibrary",
+		"FieldCallNumber",
+		"FieldCallNumberBroad",
+		"FieldCallNumberNarrow",
+		"FieldMore",
 	}
 
-	tags := p.bundle.LanguageTags()
 	langs := []string{}
+
+	tags := bundle.LanguageTags()
+	missingTranslations := false
 
 	for _, tag := range tags {
 		lang := tag.String()
+
+		log.Printf("[LANG] [%s] verifying translations...", lang)
+
 		langs = append(langs, lang)
+
+		localizer := i18n.NewLocalizer(bundle, lang)
+
+		for _, id := range messageIDs {
+			if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: id}); err != nil {
+				log.Printf("[LANG] [%s] missing translation for message ID: [%s]  (%s)", lang, id, err.Error())
+				missingTranslations = true
+			}
+		}
+	}
+
+	if missingTranslations == true {
+		log.Printf("[LANG] exiting due to missing translation(s) above")
+		os.Exit(1)
+	}
+
+	p.localization = poolLocalization{
+		messageIDs: messageIDs,
+		bundle:     bundle,
 	}
 
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
