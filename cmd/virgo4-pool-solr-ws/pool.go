@@ -47,7 +47,7 @@ type poolSolr struct {
 	scoreThresholdHigh   float32
 }
 
-type poolLocalization struct {
+type poolTranslations struct {
 	messageIDs []string
 	bundle     *i18n.Bundle
 }
@@ -55,7 +55,7 @@ type poolLocalization struct {
 type poolContext struct {
 	randomSource *rand.Rand
 	config       *poolConfig
-	localization poolLocalization
+	translations poolTranslations
 	identity     poolIdentity
 	version      poolVersion
 	solr         poolSolr
@@ -188,11 +188,11 @@ func (p *poolContext) initSolr() {
 
 	reverseFacetMap := make(map[string]string)
 
-	tags := p.localization.bundle.LanguageTags()
+	tags := p.translations.bundle.LanguageTags()
 
 	for _, tag := range tags {
 		lang := tag.String()
-		localizer := i18n.NewLocalizer(p.localization.bundle, lang)
+		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
 
 		for _, facet := range virgoAvailableFacets {
 			localizedFacet := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: facet})
@@ -303,7 +303,7 @@ func (p *poolContext) initTranslations() {
 		os.Exit(1)
 	}
 
-	p.localization = poolLocalization{
+	p.translations = poolTranslations{
 		messageIDs: messageIDs,
 		bundle:     bundle,
 	}

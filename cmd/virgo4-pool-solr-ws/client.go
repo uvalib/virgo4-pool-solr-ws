@@ -43,10 +43,10 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 		acceptLang = "en"
 	}
 
-	c.localizer = i18n.NewLocalizer(p.localization.bundle, acceptLang)
+	c.localizer = i18n.NewLocalizer(p.translations.bundle, acceptLang)
 
 	// kludge to get the response language by checking the tag value returned for a known message ID
-	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.localization.messageIDs[0]})
+	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.translations.messageIDs[0]})
 	contentLang := tag.String()
 
 	ctx.Header("Content-Language", contentLang)
