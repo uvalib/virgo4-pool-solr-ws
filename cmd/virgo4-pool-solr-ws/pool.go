@@ -185,10 +185,11 @@ func (p *poolContext) initSolr() {
 
 	tags := p.bundle.LanguageTags()
 
-	for _, facet := range virgoAvailableFacets {
-		for _, tag := range tags {
-			lang := tag.String()
-			localizer := i18n.NewLocalizer(p.bundle, lang)
+	for _, tag := range tags {
+		lang := tag.String()
+		localizer := i18n.NewLocalizer(p.bundle, lang)
+
+		for _, facet := range virgoAvailableFacets {
 			localizedFacet := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: facet})
 			reverseFacetMap[localizedFacet] = facet
 		}
