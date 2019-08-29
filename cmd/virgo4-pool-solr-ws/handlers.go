@@ -73,7 +73,8 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 	localizedIdentity := p.identity
 
 	localizedIdentity.Name = cl.localize(p.identity.Name)
-	localizedIdentity.Desc = cl.localize(p.identity.Desc)
+	localizedIdentity.Summary = cl.localize(p.identity.Summary)
+	localizedIdentity.Description = cl.localize(p.identity.Description)
 
 	c.JSON(http.StatusOK, localizedIdentity)
 }

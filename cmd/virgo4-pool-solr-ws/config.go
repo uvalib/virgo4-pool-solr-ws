@@ -7,6 +7,7 @@ import (
 
 type poolConfig struct {
 	poolType             string
+	poolSummary          string
 	poolDescription      string
 	poolServiceURL       string
 	poolLeaders          string
@@ -53,6 +54,7 @@ func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
 	cfg.poolType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_TYPE")
+	cfg.poolSummary = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SUMMARY")
 	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
 	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
 	cfg.poolLeaders = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_LEADERS")
@@ -74,6 +76,7 @@ func loadConfig() *poolConfig {
 	cfg.solrFacetManifest = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_FACET_MANIFEST")
 
 	log.Printf("[CONFIG] poolType             = [%s]", cfg.poolType)
+	log.Printf("[CONFIG] poolSummary          = [%s]", cfg.poolSummary)
 	log.Printf("[CONFIG] poolDescription      = [%s]", cfg.poolDescription)
 	log.Printf("[CONFIG] poolServiceURL       = [%s]", cfg.poolServiceURL)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", cfg.poolLeaders)

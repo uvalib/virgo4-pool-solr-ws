@@ -1,66 +1,98 @@
-[PoolArchival]
+[PoolArchivalName]
 desc = "The display name for the pool of Solr search results designated as archival."
 other = "Archivo"
 
-[PoolArchivalDescription]
-desc = "The longer description for the Solr pool designated as archival, as shown in Sources setup."
+[PoolArchivalSummary]
+desc = "The brief summary for the Solr pool designated as archival, as shown in Sources setup."
 other = "El Catálogo de Archivos de la Biblioteca UVA"
 
-[PoolCatalogBroad]
+[PoolArchivalDescription]
+desc = "The detailed description for the Solr pool designated as archival."
+other = "FIXME"
+
+[PoolCatalogBroadName]
 desc = "The display name for the pool of Solr search results designated as the broad catalog."
 other = "Catálogo (Amplio)"
 
-[PoolCatalogBroadDescription]
-desc = "The longer description for the Solr pool designated as the broad catalog, as shown in Sources setup."
+[PoolCatalogBroadSummary]
+desc = "The brief summary for the Solr pool designated as the broad catalog, as shown in Sources setup."
 other = "El Amplio Catálogo de la Biblioteca UVA"
 
-[PoolCatalog]
+[PoolCatalogBroadDescription]
+desc = "The detailed description for the Solr pool designated as the broad catalog."
+other = "FIXME"
+
+[PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
 other = "Catálogo"
 
-[PoolCatalogDescription]
-desc = "The longer description for the Solr pool designated as the main catalog, as shown in Sources setup."
+[PoolCatalogSummary]
+desc = "The brief summary for the Solr pool designated as the main catalog, as shown in Sources setup."
 other = "El Catálogo de la Biblioteca UVA"
 
-[PoolMusicRecordings]
+[PoolCatalogDescription]
+desc = "The detailed description for the Solr pool designated as the main catalog."
+other = "FIXME"
+
+[PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Grabaciones Musicales"
 
-[PoolMusicRecordingsDescription]
-desc = "The longer description for the Solr pool designated as music recordings, as shown in Sources setup."
+[PoolMusicRecordingsSummary]
+desc = "The brief summary for the Solr pool designated as music recordings, as shown in Sources setup."
 other = "El Catálogo de Grabaciones Musicales de la Biblioteca UVA"
 
-[PoolMusicalScores]
+[PoolMusicRecordingsDescription]
+desc = "The detailed description for the Solr pool designated as music recordings."
+other = "FIXME"
+
+[PoolMusicalScoresName]
 desc = "The display name for the pool of Solr search results designated as musical scores."
 other = "Partituras Musicales"
 
-[PoolMusicalScoresDescription]
-desc = "The longer description for the Solr pool designated as musical scores, as shown in Sources setup."
+[PoolMusicalScoresSummary]
+desc = "The brief summary for the Solr pool designated as musical scores, as shown in Sources setup."
 other = "El Catálogo de Partituras Musicales de la Biblioteca UVA"
 
-[PoolSerials]
+[PoolMusicalScoresDescription]
+desc = "The detailed description for the Solr pool designated as musical scores."
+other = "FIXME"
+
+[PoolSerialsName]
 desc = "The display name for the pool of Solr search results designated as serials."
 other = "Seriales"
 
-[PoolSerialsDescription]
-desc = "The longer description for the Solr pool designated as serials, as shown in Sources setup."
+[PoolSerialsSummary]
+desc = "The brief summary for the Solr pool designated as serials, as shown in Sources setup."
 other = "El Catálogo de Publicaciones Seriadas de la Biblioteca UVA"
 
-[PoolSoundRecordings]
+[PoolSerialsDescription]
+desc = "The detailed description for the Solr pool designated as serials."
+other = "FIXME"
+
+[PoolSoundRecordingsName]
 desc = "The display name for the pool of Solr search results designated as sound recordings."
 other = "Grabaciones de Sonido"
 
-[PoolSoundRecordingsDescription]
-desc = "The longer description for the Solr pool designated as sound recordings, as shown in Sources setup."
+[PoolSoundRecordingsSummary]
+desc = "The brief summary for the Solr pool designated as sound recordings, as shown in Sources setup."
 other = "El Catálogo de Grabaciones de Sonido de la Biblioteca UVA"
 
-[PoolVideo]
+[PoolSoundRecordingsDescription]
+desc = "The detailed description for the Solr pool designated as sound recordings."
+other = "FIXME"
+
+[PoolVideoName]
 desc = "The display name for the pool of Solr search results designated as video."
 other = "Vídeo"
 
-[PoolVideoDescription]
-desc = "The longer description for the Solr pool designated as video, as shown in Sources setup."
+[PoolVideoSummary]
+desc = "The brief summary for the Solr pool designated as video, as shown in Sources setup."
 other = "El Catálogo de Videos de la Biblioteca UVA"
+
+[PoolVideoDescription]
+desc = "The detailed description for the Solr pool designated as video."
+other = "FIXME"
 
 [FacetAuthor]
 desc = "The display name for the Author facet."

@@ -32,9 +32,10 @@ type poolVersion struct {
 }
 
 type poolIdentity struct {
-	Name string `json:"name,omitempty"`        // pool type
-	Desc string `json:"description,omitempty"` // localized description
-	URL  string `json:"public_url,omitempty"`  // public (service) url
+	Name        string `json:"name,omitempty"`        // localized pool name (i.e. type)
+	Summary     string `json:"summary,omitempty"`     // localized summary (a few words or so)
+	Description string `json:"description,omitempty"` // localized description (detailed information about what the pool contains)
+	PublicURL   string `json:"public_url,omitempty"`  // public (service) url
 }
 
 type poolSolr struct {
@@ -107,14 +108,16 @@ func getScoreThresholds(confMed, confHigh string) (medium, high float32) {
 
 func (p *poolContext) initIdentity() {
 	p.identity = poolIdentity{
-		Name: p.config.poolType,
-		Desc: p.config.poolDescription,
-		URL:  p.config.poolServiceURL,
+		Name:        p.config.poolType,
+		Summary:     p.config.poolSummary,
+		Description: p.config.poolDescription,
+		PublicURL:   p.config.poolServiceURL,
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
-	log.Printf("[POOL] identity.Desc             = [%s]", p.identity.Desc)
-	log.Printf("[POOL] identity.URL              = [%s]", p.identity.URL)
+	log.Printf("[POOL] identity.Summary          = [%s]", p.identity.Summary)
+	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
+	log.Printf("[POOL] identity.URL              = [%s]", p.identity.PublicURL)
 }
 
 func (p *poolContext) initVersion() {
@@ -220,21 +223,29 @@ func (p *poolContext) initTranslations() {
 	// NOTE: this list must be kept up to date.
 
 	messageIDs := []string{
-		"PoolArchival",
+		"PoolArchivalName",
+		"PoolArchivalSummary",
 		"PoolArchivalDescription",
-		"PoolCatalogBroad",
+		"PoolCatalogBroadName",
+		"PoolCatalogBroadSummary",
 		"PoolCatalogBroadDescription",
-		"PoolCatalog",
+		"PoolCatalogName",
+		"PoolCatalogSummary",
 		"PoolCatalogDescription",
-		"PoolMusicRecordings",
+		"PoolMusicRecordingsName",
+		"PoolMusicRecordingsSummary",
 		"PoolMusicRecordingsDescription",
-		"PoolMusicalScores",
+		"PoolMusicalScoresName",
+		"PoolMusicalScoresSummary",
 		"PoolMusicalScoresDescription",
-		"PoolSerials",
+		"PoolSerialsName",
+		"PoolSerialsSummary",
 		"PoolSerialsDescription",
-		"PoolSoundRecordings",
+		"PoolSoundRecordingsName",
+		"PoolSoundRecordingsSummary",
 		"PoolSoundRecordingsDescription",
-		"PoolVideo",
+		"PoolVideoName",
+		"PoolVideoSummary",
 		"PoolVideoDescription",
 		"FacetAuthor",
 		"FacetSubject",

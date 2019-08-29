@@ -1,66 +1,98 @@
-[PoolArchival]
+[PoolArchivalName]
 desc = "The display name for the pool of Solr search results designated as archival."
 other = "Archival"
 
-[PoolArchivalDescription]
-desc = "The longer description for the Solr pool designated as archival, as shown in Sources setup."
+[PoolArchivalSummary]
+desc = "The brief summary for the Solr pool designated as archival."
 other = "The UVA Library Archival Catalog"
 
-[PoolCatalogBroad]
+[PoolArchivalDescription]
+desc = "The detailed description for the Solr pool designated as archival."
+other = "Rare and unique materials that may be explored in a peaceful and elegant reading room environment. Treasures of all sorts, including manuscripts, business records, maps, correspondence, and so much more."
+
+[PoolCatalogBroadName]
 desc = "The display name for the pool of Solr search results designated as the broad catalog."
 other = "Catalog (Broad)"
 
-[PoolCatalogBroadDescription]
-desc = "The longer description for the Solr pool designated as the broad catalog, as shown in Sources setup."
+[PoolCatalogBroadSummary]
+desc = "The brief summary for the Solr pool designated as the broad catalog."
 other = "The UVA Library Broad Catalog"
 
-[PoolCatalog]
+[PoolCatalogBroadDescription]
+desc = "The detailed description for the Solr pool designated as the broad catalog."
+other = "FIXME"
+
+[PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
 other = "Catalog"
 
-[PoolCatalogDescription]
-desc = "The longer description for the Solr pool designated as the main catalog, as shown in Sources setup."
+[PoolCatalogSummary]
+desc = "The brief summary for the Solr pool designated as the main catalog."
 other = "The UVA Library Catalog"
 
-[PoolMusicRecordings]
+[PoolCatalogDescription]
+desc = "The detailed description for the Solr pool designated as the main catalog."
+other = "Physical and electronic books from the library's collection. Many of these materials may be available for check-out at one of our convenient locations, while others can be accessed online from the convenience of your home."
+
+[PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Music Recordings"
 
-[PoolMusicRecordingsDescription]
-desc = "The longer description for the Solr pool designated as music recordings, as shown in Sources setup."
+[PoolMusicRecordingsSummary]
+desc = "The brief summary for the Solr pool designated as music recordings."
 other = "The UVA Library Music Recordings Catalog"
 
-[PoolMusicalScores]
+[PoolMusicRecordingsDescription]
+desc = "The detailed description for the Solr pool designated as music recordings."
+other = "Music from yesterday and today."
+
+[PoolMusicalScoresName]
 desc = "The display name for the pool of Solr search results designated as musical scores."
 other = "Musical Scores"
 
-[PoolMusicalScoresDescription]
-desc = "The longer description for the Solr pool designated as musical scores, as shown in Sources setup."
+[PoolMusicalScoresSummary]
+desc = "The brief summary for the Solr pool designated as musical scores."
 other = "The UVA Library Musical Scores Catalog"
 
-[PoolSerials]
+[PoolMusicalScoresDescription]
+desc = "The detailed description for the Solr pool designated as musical scores."
+other = "FIXME"
+
+[PoolSerialsName]
 desc = "The display name for the pool of Solr search results designated as serials."
 other = "Serials"
 
-[PoolSerialsDescription]
-desc = "The longer description for the Solr pool designated as serials, as shown in Sources setup."
+[PoolSerialsSummary]
+desc = "The brief summary for the Solr pool designated as serials."
 other = "The UVA Library Serials Catalog"
 
-[PoolSoundRecordings]
+[PoolSerialsDescription]
+desc = "The detailed description for the Solr pool designated as serials."
+other = "Journals, Magazines, Newspapers, and runs of other materials published at regular intervals. These materials may be available as print issues, electronic access journals, bound volumes containing multiple issues, or online through various means. UNDER CONSTRUCTION. The display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
+
+[PoolSoundRecordingsName]
 desc = "The display name for the pool of Solr search results designated as sound recordings."
 other = "Sound Recordings"
 
-[PoolSoundRecordingsDescription]
-desc = "The longer description for the Solr pool designated as sound recordings, as shown in Sources setup."
+[PoolSoundRecordingsSummary]
+desc = "The brief summary for the Solr pool designated as sound recordings."
 other = "The UVA Library Sound Recordings Catalog"
 
-[PoolVideo]
+[PoolSoundRecordingsDescription]
+desc = "The detailed description for the Solr pool designated as sound recordings."
+other = "Audio materials that aren't primarily music."
+
+[PoolVideoName]
 desc = "The display name for the pool of Solr search results designated as video."
 other = "Video"
 
-[PoolVideoDescription]
-desc = "The longer description for the Solr pool designated as video, as shown in Sources setup."
+[PoolVideoSummary]
+desc = "The brief summary for the Solr pool designated as video."
 other = "The UVA Library Video Catalog"
+
+[PoolVideoDescription]
+desc = "The detailed description for the Solr pool designated as video."
+other = "Documentaries, Films, Television shows, and much more. While many of these materials can be checked for home viewing, others may be accessed online."
 
 [FacetAuthor]
 desc = "The display name for the Author facet."
