@@ -71,7 +71,6 @@ type solrMeta struct {
 	totalRecords    int // for grouped or ungrouped records
 	numRows         int // for client pagination -- numGroups or numRecords
 	totalRows       int // for client pagination -- totalGroups or totalRecords
-	reverseFacetMap map[string]string
 }
 
 type solrRequest struct {

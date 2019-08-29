@@ -42,7 +42,6 @@ type poolSolr struct {
 	url                  string
 	availableFacets      map[string]solrRequestFacet
 	virgoAvailableFacets []string
-	reverseFacetMap      map[string]string
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
 }
@@ -184,22 +183,6 @@ func (p *poolContext) initSolr() {
 		availableFacets[f] = facet
 	}
 
-	// create reverse mapping from localized facet names to facet message IDs
-
-	reverseFacetMap := make(map[string]string)
-
-	tags := p.translations.bundle.LanguageTags()
-
-	for _, tag := range tags {
-		lang := tag.String()
-		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-
-		for _, facet := range virgoAvailableFacets {
-			localizedFacet := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: facet})
-			reverseFacetMap[localizedFacet] = facet
-		}
-	}
-
 	// set score thresholds
 
 	medium, high := getScoreThresholds(p.config.scoreThresholdMedium, p.config.scoreThresholdHigh)
@@ -208,7 +191,6 @@ func (p *poolContext) initSolr() {
 		url:                  fmt.Sprintf("%s/%s/%s", p.config.solrHost, p.config.solrCore, p.config.solrHandler),
 		client:               solrClient,
 		availableFacets:      availableFacets,
-		reverseFacetMap:      reverseFacetMap,
 		virgoAvailableFacets: virgoAvailableFacets,
 		scoreThresholdMedium: medium,
 		scoreThresholdHigh:   high,

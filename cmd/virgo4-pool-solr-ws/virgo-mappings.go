@@ -148,16 +148,18 @@ func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord 
 func virgoPopulateFacetBucket(value solrBucket, client *clientOptions) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
+	bucket.ID = value.Val
 	bucket.Value = value.Val
 	bucket.Count = value.Count
 
 	return &bucket
 }
 
-func virgoPopulateFacet(name string, value solrResponseFacet, client *clientOptions) *VirgoFacet {
+func virgoPopulateFacet(facetID string, value solrResponseFacet, client *clientOptions) *VirgoFacet {
 	var facet VirgoFacet
 
-	facet.Name = name
+	facet.ID = facetID
+	facet.Name = client.localize(facetID)
 
 	var buckets []VirgoFacetBucket
 
@@ -307,10 +309,11 @@ func (s *searchContext) virgoPopulatePoolResult() {
 
 	// advertise facets?
 	if s.solrRes.meta.advertiseFacets == true {
-		var localizedFacets []string
+		var localizedFacets []VirgoFacet
 
 		for _, facet := range s.pool.solr.virgoAvailableFacets {
-			localizedFacets = append(localizedFacets, s.client.localize(facet))
+			localizedFacet := VirgoFacet{ID: facet, Name: s.client.localize(facet)}
+			localizedFacets = append(localizedFacets, localizedFacet)
 		}
 
 		poolResult.AvailableFacets = &localizedFacets

@@ -68,27 +68,28 @@ func (s *solrRequest) buildParameterFl(fl string) {
 	s.json.Params.Fl = nonemptyValues(flall)
 }
 
-func (s *solrRequest) buildFacets(facet string, availableFacets map[string]solrRequestFacet) {
-	if facet == "" {
+func (s *solrRequest) buildFacets(facetID string, availableFacets map[string]solrRequestFacet) {
+	if facetID == "" {
 		s.meta.advertiseFacets = true
 		return
 	}
 
 	facets := make(map[string]solrRequestFacet)
 
-	switch facet {
+	switch facetID {
 	case "all":
 		facets = availableFacets
 	default:
-		solrFacet, ok := availableFacets[s.meta.reverseFacetMap[facet]]
+		// facetID is "name" in available facet list
+		solrFacet, ok := availableFacets[facetID]
 
 		if ok == false {
-			warning := fmt.Sprintf("ignoring unrecognized facet: [%s]", facet)
+			warning := fmt.Sprintf("ignoring unrecognized facetID: [%s]", facetID)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
 			s.meta.advertiseFacets = true
 		} else {
-			facets[facet] = solrFacet
+			facets[facetID] = solrFacet
 		}
 	}
 
@@ -103,16 +104,16 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter, availableFacets map[s
 	}
 
 	for _, filter := range *filters {
-		solrFacet, ok := availableFacets[s.meta.reverseFacetMap[filter.Name]]
+		solrFacet, ok := availableFacets[filter.FacetID]
 
 		if ok == false {
-			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.Name)
+			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.FacetID)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
 			continue
 		}
 
-		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
+		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.ValueID)
 
 		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
 	}
@@ -131,7 +132,6 @@ func (s *searchContext) solrRequestWithDefaults() {
 
 	solrReq.meta.client = s.virgoReq.meta.client
 	solrReq.meta.parserInfo = s.virgoReq.meta.parserInfo
-	solrReq.meta.reverseFacetMap = s.pool.solr.reverseFacetMap
 
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
