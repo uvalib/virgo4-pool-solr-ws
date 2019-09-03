@@ -113,7 +113,7 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter, availableFacets map[s
 			continue
 		}
 
-		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.ValueID)
+		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
 
 		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
 	}

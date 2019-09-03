@@ -76,7 +76,6 @@ type VirgoGroup struct {
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
-	ID    string `json:"id"`
 	Value string `json:"value"`
 	Count int    `json:"count"`
 }
@@ -84,7 +83,7 @@ type VirgoFacetBucket struct {
 // VirgoFilter contains the fields for a single filter.
 type VirgoFilter struct {
 	FacetID string `json:"facet_id"`
-	ValueID string `json:"value_id"`
+	Value   string `json:"value"`
 }
 
 // VirgoFacet contains the fields for a single facet.

@@ -148,7 +148,6 @@ func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord 
 func virgoPopulateFacetBucket(value solrBucket, client *clientOptions) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
-	bucket.ID = value.Val
 	bucket.Value = value.Val
 	bucket.Count = value.Count
 
