@@ -8,7 +8,7 @@ other = "The UVA Library Archival Catalog"
 
 [PoolArchivalDescription]
 desc = "The detailed description for the Solr pool designated as archival."
-other = "Rare and unique materials that may be explored in a peaceful and elegant reading room environment. Treasures of all sorts, including manuscripts, business records, maps, correspondence, and so much more."
+other = "(UNDER CONSTRUCTION) Rare and unique materials that may be explored in a peaceful and elegant reading room environment. Treasures of all sorts, including manuscripts, business records, maps, correspondence, and so much more."
 
 [PoolCatalogBroadName]
 desc = "The display name for the pool of Solr search results designated as the broad catalog."
@@ -20,7 +20,7 @@ other = "The UVA Library Broad Catalog"
 
 [PoolCatalogBroadDescription]
 desc = "The detailed description for the Solr pool designated as the broad catalog."
-other = "FIXME"
+other = "(EXPERIMENTAL) All of the content from the Catalog plus some odds and ends that don't fit neatly into any particular category."
 
 [PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
@@ -56,7 +56,7 @@ other = "The UVA Library Musical Scores Catalog"
 
 [PoolMusicalScoresDescription]
 desc = "The detailed description for the Solr pool designated as musical scores."
-other = "FIXME"
+other = "Sheet music and other music notation."
 
 [PoolSerialsName]
 desc = "The display name for the pool of Solr search results designated as serials."
@@ -68,7 +68,7 @@ other = "The UVA Library Serials Catalog"
 
 [PoolSerialsDescription]
 desc = "The detailed description for the Solr pool designated as serials."
-other = "Journals, Magazines, Newspapers, and runs of other materials published at regular intervals. These materials may be available as print issues, electronic access journals, bound volumes containing multiple issues, or online through various means. UNDER CONSTRUCTION. The display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
+other = "(UNDER CONSTRUCTION) Journals, Magazines, Newspapers, and runs of other materials published at regular intervals. These materials may be available as print issues, electronic access journals, bound volumes containing multiple issues, or online through various means. The display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
 
 [PoolSoundRecordingsName]
 desc = "The display name for the pool of Solr search results designated as sound recordings."
