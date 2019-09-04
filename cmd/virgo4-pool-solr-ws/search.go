@@ -9,7 +9,7 @@ const defaultStart = 0
 const minimumStart = 0
 
 const defaultRows = 10
-const minimumRows = 1
+const minimumRows = 0
 
 type searchContext struct {
 	pool           *poolContext
@@ -218,6 +218,11 @@ func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*sea
 func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	var err error
 	var parsedQuery *solrParserInfo
+
+	// facet-only requests don't need speculation, as the client is only looking for buckets
+	if s.virgoReq.Pagination.Rows == 0 {
+		return s, nil
+	}
 
 	// parse original query to determine query type
 
