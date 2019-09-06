@@ -121,7 +121,7 @@ func (s *solrRequest) buildFilters(filters *[]VirgoFilter, availableFacets map[s
 
 func (s *solrRequest) buildGrouping(groupField string) {
 	// groups take 2:
-	grouping := fmt.Sprintf("{!collapse field=work_title2_key_sort}", groupField)
+	grouping := fmt.Sprintf("{!collapse field=%s}", groupField)
 	s.json.Params.Fq = append(s.json.Params.Fq, grouping)
 }
 
