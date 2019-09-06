@@ -272,6 +272,12 @@ func (s *searchContext) virgoPopulatePoolResult() {
 
 	poolResult.ServiceURL = s.pool.config.poolServiceURL
 
+	poolResult.Identity = VirgoPoolIdentity{
+		Name:        s.client.localize(s.pool.identity.Name),
+		Summary:     s.client.localize(s.pool.identity.Summary),
+		Description: s.client.localize(s.pool.identity.Description),
+	}
+
 	poolResult.Pagination = virgoPopulatePagination(s.solrRes.meta.start, s.solrRes.meta.numRows, s.solrRes.meta.totalRows)
 
 	poolResult.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)

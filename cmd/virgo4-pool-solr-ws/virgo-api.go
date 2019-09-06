@@ -30,16 +30,24 @@ type VirgoPoolResultDebug struct {
 	MaxScore  float32 `json:"max_score"`
 }
 
+// VirgoPoolIdentity holds localized information about this pool (same as returned by /identify endpoint)
+type VirgoPoolIdentity struct {
+	Name        string `json:"name,omitempty"`        // localized pool name (i.e. type)
+	Summary     string `json:"summary,omitempty"`     // localized pool summary (a few words or so)
+	Description string `json:"description,omitempty"` // localized pool description (detailed information about what the pool contains)
+}
+
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
-	ServiceURL      string                `json:"service_url,omitempty"` // required
-	ElapsedMS       int64                 `json:"elapsed_ms,omitempty"`
-	Pagination      *VirgoPagination      `json:"pagination,omitempty"`
+	ServiceURL      string                `json:"service_url,omitempty"`      // public url
+	Identity        VirgoPoolIdentity     `json:"identity"`                   // localized identity
+	Pagination      *VirgoPagination      `json:"pagination,omitempty"`       // pagination info for results
 	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`      // ungrouped records
 	GroupList       *[]VirgoGroup         `json:"group_list,omitempty"`       // grouped records
 	AvailableFacets *[]VirgoFacet         `json:"available_facets,omitempty"` // available facets advertised to the client
 	FacetList       *[]VirgoFacet         `json:"facet_list,omitempty"`       // facet values for client-requested facets
 	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
+	ElapsedMS       int64                 `json:"elapsed_ms,omitempty"`       // total round-trip time for this request
 	Debug           *VirgoPoolResultDebug `json:"debug,omitempty"`
 	Warn            *[]string             `json:"warn,omitempty"`
 }
