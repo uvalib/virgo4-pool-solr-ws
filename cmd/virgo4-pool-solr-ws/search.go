@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"time"
 )
 
 const defaultStart = 0
@@ -330,6 +331,8 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 		s.log("overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
 		s.virgoPoolRes.Confidence = top.confidence
 	}
+
+	s.virgoPoolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
 	return s.virgoPoolRes, nil
 }
