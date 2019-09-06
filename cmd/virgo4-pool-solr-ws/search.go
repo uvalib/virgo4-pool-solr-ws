@@ -247,6 +247,61 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	return s, nil
 }
 
+func (s *searchContext) newSearchWithRecordListForGroup(group string) (*searchContext, error) {
+	c := s.copySearchContext()
+
+	// just want records
+	c.client.grouped = false
+
+	c.virgoReq.meta.solrQuery = fmt.Sprintf(`%s AND %s:"%s"`, c.virgoReq.meta.solrQuery, s.pool.config.solrGroupField, group)
+	c.virgoReq.meta.requestFacets = false
+
+	// get everything!  even bible (5000+)
+	c.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 10000}
+
+	if err := c.getPoolQueryResults(); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func (s *searchContext) populateGroups() error {
+	// populate record list for each group (i.e. entry in initial record list)
+
+	if s.client.grouped == false || s.solrRes.meta.numGroups == 0 {
+		return nil
+	}
+
+	var groups []VirgoGroup
+
+	for _, g := range s.solrRes.Response.Docs {
+		group := VirgoGroup{
+			Value: g.WorkTitle2KeySort,
+		}
+
+		// perform subsearch for this group's records
+		r, err := s.newSearchWithRecordListForGroup(group.Value)
+		if err != nil {
+			return err
+		}
+
+		group.RecordList = *r.virgoPoolRes.RecordList
+
+		// set count (this may be wrong if there are more records than are queried in the subsearch above)
+		group.Count = len(group.RecordList)
+
+		groups = append(groups, group)
+	}
+
+	s.virgoPoolRes.GroupList = &groups
+
+	// remove record list, as results are now in groups
+	s.virgoPoolRes.RecordList = nil
+
+	return nil
+}
+
 func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	var err error
 	var top *searchContext
@@ -262,6 +317,11 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	s.virgoReq.meta.requestFacets = true
 
 	if err = s.getPoolQueryResults(); err != nil {
+		return nil, err
+	}
+
+	// populate group list, if this is a grouped request
+	if err = s.populateGroups(); err != nil {
 		return nil, err
 	}
 

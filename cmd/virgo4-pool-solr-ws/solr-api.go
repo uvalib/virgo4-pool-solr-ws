@@ -84,18 +84,19 @@ type solrResponseHeader struct {
 }
 
 type solrDocument struct {
-	Score            float32  `json:"score,omitempty"`
-	ID               string   `json:"id,omitempty"`
-	Title            []string `json:"title_a,omitempty"`
-	Subtitle         []string `json:"title_sub_a,omitempty"`
-	Author           []string `json:"author_facet_a,omitempty"`
-	Subject          []string `json:"subject_a,omitempty"`
-	Language         []string `json:"language_a,omitempty"`
-	Format           []string `json:"format_a,omitempty"`
-	Library          []string `json:"library_a,omitempty"`
-	CallNumber       []string `json:"call_number_a,omitempty"`
-	CallNumberBroad  []string `json:"call_number_broad_a,omitempty"`
-	CallNumberNarrow []string `json:"call_number_narrow_a,omitempty"`
+	Score             float32  `json:"score,omitempty"`
+	ID                string   `json:"id,omitempty"`
+	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
+	Title             []string `json:"title_a,omitempty"`
+	Subtitle          []string `json:"title_sub_a,omitempty"`
+	Author            []string `json:"author_facet_a,omitempty"`
+	Subject           []string `json:"subject_a,omitempty"`
+	Language          []string `json:"language_a,omitempty"`
+	Format            []string `json:"format_a,omitempty"`
+	Library           []string `json:"library_a,omitempty"`
+	CallNumber        []string `json:"call_number_a,omitempty"`
+	CallNumberBroad   []string `json:"call_number_broad_a,omitempty"`
+	CallNumberNarrow  []string `json:"call_number_narrow_a,omitempty"`
 	// etc.
 }
 
@@ -117,21 +118,6 @@ type solrResponseDocuments struct {
 	Docs     []solrDocument `json:"docs,omitempty"`
 }
 
-type solrResponseGroup struct {
-	GroupValue string                `json:"groupValue,omitempty"`
-	DocList    solrResponseDocuments `json:"doclist,omitempty"`
-}
-
-type solrResponseGrouping struct {
-	Matches int                 `json:"matches,omitempty"`
-	NGroups int                 `json:"ngroups,omitempty"`
-	Groups  []solrResponseGroup `json:"groups,omitempty"`
-}
-
-type solrResponseGrouped struct {
-	WorkTitle2KeySort solrResponseGrouping `json:"work_title2_key_sort,omitempty"`
-}
-
 type solrError struct {
 	Metadata []string `json:"metadata,omitempty"`
 	Msg      string   `json:"msg,omitempty"`
@@ -141,7 +127,6 @@ type solrError struct {
 type solrResponse struct {
 	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
 	Response       solrResponseDocuments  `json:"response,omitempty"` // ungrouped records
-	Grouped        solrResponseGrouped    `json:"grouped,omitempty"`  // grouped records
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`

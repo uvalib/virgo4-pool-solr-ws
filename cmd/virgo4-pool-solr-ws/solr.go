@@ -62,25 +62,22 @@ func (s *searchContext) populateMetaFields() {
 	s.solrRes.meta.start = s.solrReq.json.Params.Start
 
 	if s.client.grouped == true {
-		s.solrRes.Grouped.WorkTitle2KeySort.NGroups = -1
-
 		// calculate number of groups in this response, and total available
-		s.solrRes.meta.numGroups = len(s.solrRes.Grouped.WorkTitle2KeySort.Groups)
-		s.solrRes.meta.totalGroups = -1
+		// (grouping, take 2: each record is the top entry of a group, so effectively records == groups)
+
+		s.solrRes.meta.numGroups = len(s.solrRes.Response.Docs)
+		s.solrRes.meta.totalGroups = s.solrRes.Response.NumFound
 
 		// find max score and first document
 		if s.solrRes.meta.numGroups > 0 {
-			s.solrRes.meta.maxScore = s.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.MaxScore
-			s.solrRes.meta.firstDoc = &s.solrRes.Grouped.WorkTitle2KeySort.Groups[0].DocList.Docs[0]
+			s.solrRes.meta.maxScore = s.solrRes.Response.MaxScore
+			s.solrRes.meta.firstDoc = &s.solrRes.Response.Docs[0]
 		}
 
 		// calculate number of records in this response
+		// (grouping, take 2: this happens later, after all groups are queried to fill out their records)
 		s.solrRes.meta.numRecords = 0
 		s.solrRes.meta.totalRecords = -1
-
-		for _, g := range s.solrRes.Grouped.WorkTitle2KeySort.Groups {
-			s.solrRes.meta.numRecords += len(g.DocList.Docs)
-		}
 
 		// set generic "rows" fields for client pagination
 		s.solrRes.meta.numRows = s.solrRes.meta.numGroups

@@ -207,33 +207,6 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func virgoPopulateGroup(solrGroup *solrResponseGroup, client *clientOptions) *VirgoGroup {
-	var group VirgoGroup
-
-	group.Value = solrGroup.GroupValue
-	group.Count = len(solrGroup.DocList.Docs)
-
-	for _, doc := range solrGroup.DocList.Docs {
-		record := virgoPopulateRecord(&doc, client)
-
-		group.RecordList = append(group.RecordList, *record)
-	}
-
-	return &group
-}
-
-func virgoPopulateGroupList(solrGrouping *solrResponseGrouping, client *clientOptions) *[]VirgoGroup {
-	var groupList []VirgoGroup
-
-	for _, g := range solrGrouping.Groups {
-		group := virgoPopulateGroup(&g, client)
-
-		groupList = append(groupList, *group)
-	}
-
-	return &groupList
-}
-
 func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientOptions) *[]VirgoRecord {
 	var recordList []VirgoRecord
 
@@ -283,11 +256,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	poolResult.Confidence = "low"
 
 	if s.solrRes.meta.numRows > 0 {
-		if s.client.grouped == true {
-			poolResult.GroupList = virgoPopulateGroupList(&s.solrRes.Grouped.WorkTitle2KeySort, s.client)
-		} else {
-			poolResult.RecordList = virgoPopulateRecordList(&s.solrRes.Response, s.client)
-		}
+		poolResult.RecordList = virgoPopulateRecordList(&s.solrRes.Response, s.client)
 
 		// FIXME: somehow create h/m/l confidence levels from the query score
 		firstTitleResults = firstElementOf(s.solrRes.meta.firstDoc.Title)
