@@ -9,7 +9,6 @@ type poolConfig struct {
 	poolType             string
 	poolSummary          string
 	poolDescription      string
-	poolServiceURL       string
 	poolLeaders          string
 	poolFacets           string
 	listenPort           string
@@ -56,7 +55,6 @@ func loadConfig() *poolConfig {
 	cfg.poolType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_TYPE")
 	cfg.poolSummary = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SUMMARY")
 	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
-	cfg.poolServiceURL = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SERVICE_URL")
 	cfg.poolLeaders = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_LEADERS")
 	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
 	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
@@ -78,7 +76,6 @@ func loadConfig() *poolConfig {
 	log.Printf("[CONFIG] poolType             = [%s]", cfg.poolType)
 	log.Printf("[CONFIG] poolSummary          = [%s]", cfg.poolSummary)
 	log.Printf("[CONFIG] poolDescription      = [%s]", cfg.poolDescription)
-	log.Printf("[CONFIG] poolServiceURL       = [%s]", cfg.poolServiceURL)
 	log.Printf("[CONFIG] poolLeaders          = [%s]", cfg.poolLeaders)
 	log.Printf("[CONFIG] poolFacets           = [%s]", cfg.poolFacets)
 	log.Printf("[CONFIG] listenPort           = [%s]", cfg.listenPort)

@@ -89,3 +89,13 @@ func (c *clientOptions) err(format string, args ...interface{}) {
 func (c *clientOptions) localize(id string) string {
 	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
 }
+
+func (c *clientOptions) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity {
+	id := VirgoPoolIdentity{
+		Name:        c.localize(p.identity.Name),
+		Summary:     c.localize(p.identity.Summary),
+		Description: c.localize(p.identity.Description),
+	}
+
+	return id
+}

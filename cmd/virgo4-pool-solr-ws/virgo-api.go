@@ -39,7 +39,6 @@ type VirgoPoolIdentity struct {
 
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
-	ServiceURL      string                `json:"service_url,omitempty"`      // public url
 	Identity        VirgoPoolIdentity     `json:"identity"`                   // localized identity
 	Pagination      *VirgoPagination      `json:"pagination,omitempty"`       // pagination info for results
 	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`      // ungrouped records

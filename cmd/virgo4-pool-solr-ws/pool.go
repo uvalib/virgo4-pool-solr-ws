@@ -31,13 +31,6 @@ type poolVersion struct {
 	GitCommit    string `json:"git_commit,omitempty"`
 }
 
-type poolIdentity struct {
-	Name        string `json:"name,omitempty"`        // localized pool name (i.e. type)
-	Summary     string `json:"summary,omitempty"`     // localized summary (a few words or so)
-	Description string `json:"description,omitempty"` // localized description (detailed information about what the pool contains)
-	PublicURL   string `json:"public_url,omitempty"`  // public (service) url
-}
-
 type poolSolr struct {
 	client               *http.Client
 	url                  string
@@ -56,7 +49,7 @@ type poolContext struct {
 	randomSource *rand.Rand
 	config       *poolConfig
 	translations poolTranslations
-	identity     poolIdentity
+	identity     VirgoPoolIdentity
 	version      poolVersion
 	solr         poolSolr
 }
@@ -107,17 +100,15 @@ func getScoreThresholds(confMed, confHigh string) (medium, high float32) {
 }
 
 func (p *poolContext) initIdentity() {
-	p.identity = poolIdentity{
+	p.identity = VirgoPoolIdentity{
 		Name:        p.config.poolType,
 		Summary:     p.config.poolSummary,
 		Description: p.config.poolDescription,
-		PublicURL:   p.config.poolServiceURL,
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
 	log.Printf("[POOL] identity.Summary          = [%s]", p.identity.Summary)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
-	log.Printf("[POOL] identity.URL              = [%s]", p.identity.PublicURL)
 }
 
 func (p *poolContext) initVersion() {

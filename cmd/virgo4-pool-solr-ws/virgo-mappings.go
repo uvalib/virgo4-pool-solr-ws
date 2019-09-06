@@ -270,13 +270,7 @@ func virgoPopulateFacetList(solrFacets solrResponseFacets, client *clientOptions
 func (s *searchContext) virgoPopulatePoolResult() {
 	var poolResult VirgoPoolResult
 
-	poolResult.ServiceURL = s.pool.config.poolServiceURL
-
-	poolResult.Identity = VirgoPoolIdentity{
-		Name:        s.client.localize(s.pool.identity.Name),
-		Summary:     s.client.localize(s.pool.identity.Summary),
-		Description: s.client.localize(s.pool.identity.Description),
-	}
+	poolResult.Identity = s.client.localizedPoolIdentity(s.pool)
 
 	poolResult.Pagination = virgoPopulatePagination(s.solrRes.meta.start, s.solrRes.meta.numRows, s.solrRes.meta.totalRows)
 
