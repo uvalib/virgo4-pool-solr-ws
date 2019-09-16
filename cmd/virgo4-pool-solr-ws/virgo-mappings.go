@@ -137,6 +137,10 @@ func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord 
 		r.addDetailedField(newField("classic_url", client.localize("FieldMore"), classicURL).setType("url"))
 	}
 
+	// add internal info
+
+	r.workTitle2KeySort = doc.WorkTitle2KeySort
+
 	// add debug info?
 	if client.debug == true {
 		r.Debug = virgoPopulateRecordDebug(doc)

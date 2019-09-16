@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -248,17 +249,19 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	return s, nil
 }
 
-func (s *searchContext) newSearchWithRecordListForGroup(group string) (*searchContext, error) {
+func (s *searchContext) newSearchWithRecordListForGroups(groups []string) (*searchContext, error) {
+	// NOTE: groups passed in are quoted strings
+
 	c := s.copySearchContext()
 
 	// just want records
 	c.client.grouped = false
 
-	c.virgoReq.meta.solrQuery = fmt.Sprintf(`%s AND %s:"%s"`, c.virgoReq.meta.solrQuery, s.pool.config.solrGroupField, group)
+	c.virgoReq.meta.solrQuery = fmt.Sprintf(`%s AND %s:(%s)`, c.virgoReq.meta.solrQuery, s.pool.config.solrGroupField, strings.Join(groups, " OR "))
 	c.virgoReq.meta.requestFacets = false
 
 	// get everything!  even bible (5000+)
-	c.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 10000}
+	c.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 100000}
 
 	if err := c.getPoolQueryResults(); err != nil {
 		return nil, err
@@ -269,6 +272,7 @@ func (s *searchContext) newSearchWithRecordListForGroup(group string) (*searchCo
 
 func (s *searchContext) populateGroups() error {
 	// populate record list for each group (i.e. entry in initial record list)
+	// by querying for all group records in one request, and sorting the results to the correct groups
 
 	if s.client.grouped == false || s.solrRes.meta.numGroups == 0 {
 		return nil
@@ -276,23 +280,33 @@ func (s *searchContext) populateGroups() error {
 
 	var groups []VirgoGroup
 
-	for _, g := range s.solrRes.Response.Docs {
-		group := VirgoGroup{
-			Value: g.WorkTitle2KeySort,
-		}
+	var groupValues []string
 
-		// perform subsearch for this group's records
-		r, err := s.newSearchWithRecordListForGroup(group.Value)
-		if err != nil {
-			return err
-		}
+	groupValueMap := make(map[string]int)
 
-		group.RecordList = *r.virgoPoolRes.RecordList
+	for i, g := range s.solrRes.Response.Docs {
+		groupValues = append(groupValues, fmt.Sprintf(`"%s"`, g.WorkTitle2KeySort))
+		groupValueMap[g.WorkTitle2KeySort] = i
+		var records []VirgoRecord
+		groups = append(groups, VirgoGroup{Value: g.WorkTitle2KeySort, RecordList: records})
+	}
 
-		// set count (this may be wrong if there are more records than are queried in the subsearch above)
-		group.Count = len(group.RecordList)
+	r, err := s.newSearchWithRecordListForGroups(groupValues)
+	if err != nil {
+		return err
+	}
 
-		groups = append(groups, group)
+	// loop through records to route to correct group
+
+	for _, record := range *r.virgoPoolRes.RecordList {
+		v := groupValueMap[record.workTitle2KeySort]
+		groups[v].RecordList = append(groups[v].RecordList, record)
+	}
+
+	// loop through groups to assign counts
+
+	for i, g := range groups {
+		groups[i].Count = len(g.RecordList)
 	}
 
 	s.virgoPoolRes.GroupList = &groups

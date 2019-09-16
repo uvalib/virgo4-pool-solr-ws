@@ -70,8 +70,9 @@ type VirgoNuancedField struct {
 
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	Debug  *VirgoRecordDebug   `json:"debug,omitempty"`
-	Fields []VirgoNuancedField `json:"fields,omitempty"`
+	Debug             *VirgoRecordDebug   `json:"debug,omitempty"`
+	Fields            []VirgoNuancedField `json:"fields,omitempty"`
+	workTitle2KeySort string              // used internally
 }
 
 // VirgoGroup contains the records for a single group in a search result set.

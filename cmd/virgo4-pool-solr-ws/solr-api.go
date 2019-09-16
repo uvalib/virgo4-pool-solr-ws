@@ -26,19 +26,14 @@ Unmapped parameters (or original query parameters above) can be passed in "param
 */
 
 type solrRequestParams struct {
-	Debug        bool     `json:"debug,omitempty"`
-	DefType      string   `json:"defType,omitempty"`
-	Qt           string   `json:"qt,omitempty"`
-	Start        int      `json:"start"`
-	Rows         int      `json:"rows"`
-	Fl           []string `json:"fl,omitempty"`
-	Fq           []string `json:"fq,omitempty"`
-	Q            string   `json:"q,omitempty"`
-	GroupField   string   `json:"group.field"`
-	GroupLimit   int      `json:"group.limit"`
-	GroupNGroups bool     `json:"group.ngroups"`
-	GroupMain    bool     `json:"group.main"`
-	Group        bool     `json:"group"`
+	Debug   bool     `json:"debug,omitempty"`
+	DefType string   `json:"defType,omitempty"`
+	Qt      string   `json:"qt,omitempty"`
+	Start   int      `json:"start"`
+	Rows    int      `json:"rows"`
+	Fl      []string `json:"fl,omitempty"`
+	Fq      []string `json:"fq,omitempty"`
+	Q       string   `json:"q,omitempty"`
 }
 
 type solrRequestFacets map[string]solrRequestFacet
@@ -84,6 +79,7 @@ type solrResponseHeader struct {
 }
 
 type solrDocument struct {
+	// for performance reasons, pools should be configured to only request the fields below
 	Score             float32  `json:"score,omitempty"`
 	ID                string   `json:"id,omitempty"`
 	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
@@ -126,7 +122,7 @@ type solrError struct {
 
 type solrResponse struct {
 	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
-	Response       solrResponseDocuments  `json:"response,omitempty"` // ungrouped records
+	Response       solrResponseDocuments  `json:"response,omitempty"`
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`
