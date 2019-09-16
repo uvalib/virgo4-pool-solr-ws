@@ -128,7 +128,7 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 		return
 	}
 
-	// do something with token
+	// save token to context
 
-	log.Printf("got bearer token: [%s]", token)
+	c.Set("token", token)
 }

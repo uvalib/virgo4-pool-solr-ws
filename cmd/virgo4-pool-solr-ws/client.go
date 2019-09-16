@@ -13,14 +13,16 @@ import (
 
 // options set by or per client
 type clientOptions struct {
-	start     time.Time       // internally set
-	reqID     string          // internally generated
-	localizer *i18n.Localizer // for localization
-	nolog     bool            // internally set
-	debug     bool            // client requested -- controls whether debug info is added to pool results
-	intuit    bool            // client requested -- controls whether intuited (speculative) searches are performed
-	verbose   bool            // client requested -- controls whether verbose Solr requests/responses are logged
-	grouped   bool            // client requested -- controls whether Solr results are grouped
+	start         time.Time       // internally set
+	reqID         string          // internally generated
+	token         string          // internally set
+	authenticated bool            // internally set based on token, if needed
+	localizer     *i18n.Localizer // for localization
+	nolog         bool            // internally set
+	debug         bool            // client requested -- controls whether debug info is added to pool results
+	intuit        bool            // client requested -- controls whether intuited (speculative) searches are performed
+	verbose       bool            // client requested -- controls whether verbose Solr requests/responses are logged
+	grouped       bool            // client requested -- controls whether Solr results are grouped
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -38,6 +40,12 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 	c.start = time.Now()
 	c.reqID = fmt.Sprintf("%016x", p.randomSource.Uint64())
 
+	// get authentication token, if any
+	if val, ok := ctx.Get("token"); ok == true {
+		c.token = val.(string)
+	}
+
+	// determine client preferred language
 	acceptLang := strings.Split(ctx.GetHeader("Accept-Language"), ",")[0]
 	if acceptLang == "" {
 		acceptLang = "en"
