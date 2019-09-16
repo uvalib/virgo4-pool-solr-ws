@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -12,17 +13,23 @@ import (
 )
 
 // options set by or per client
+type clientAuth struct {
+	token         string // from client headers
+	url           string // url for client authentication checks
+	checked       bool   // whether we have checked if this token is authenticated
+	authenticated bool   // whether this token is authenticated
+}
+
 type clientOptions struct {
-	start         time.Time       // internally set
-	reqID         string          // internally generated
-	token         string          // internally set
-	authenticated bool            // internally set based on token, if needed
-	localizer     *i18n.Localizer // for localization
-	nolog         bool            // internally set
-	debug         bool            // client requested -- controls whether debug info is added to pool results
-	intuit        bool            // client requested -- controls whether intuited (speculative) searches are performed
-	verbose       bool            // client requested -- controls whether verbose Solr requests/responses are logged
-	grouped       bool            // client requested -- controls whether Solr results are grouped
+	start     time.Time       // internally set
+	reqID     string          // internally generated
+	auth      clientAuth      // internally set
+	localizer *i18n.Localizer // for localization
+	nolog     bool            // internally set
+	debug     bool            // client requested -- controls whether debug info is added to pool results
+	intuit    bool            // client requested -- controls whether intuited (speculative) searches are performed
+	verbose   bool            // client requested -- controls whether verbose Solr requests/responses are logged
+	grouped   bool            // client requested -- controls whether Solr results are grouped
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -42,7 +49,8 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 
 	// get authentication token, if any
 	if val, ok := ctx.Get("token"); ok == true {
-		c.token = val.(string)
+		c.auth.token = val.(string)
+		c.auth.url = fmt.Sprintf("%s/api/authenticated/%s", p.config.clientHost, c.auth.token)
 	}
 
 	// determine client preferred language
@@ -106,4 +114,52 @@ func (c *clientOptions) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	}
 
 	return id
+}
+
+func (c *clientOptions) checkAuthentication() error {
+	req, reqErr := http.NewRequest("GET", c.auth.url, nil)
+	if reqErr != nil {
+		c.log("NewRequest() failed: %s", reqErr.Error())
+		return fmt.Errorf("Failed to create client authentication check request")
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	res, resErr := client.Do(req)
+
+	if resErr != nil {
+		c.log("client.Do() failed: %s", resErr.Error())
+		return fmt.Errorf("Failed to receive client authentication check response")
+	}
+
+	defer res.Body.Close()
+
+	switch res.StatusCode {
+	case http.StatusOK:
+		c.auth.authenticated = true
+		c.auth.checked = true
+	case http.StatusNotFound:
+		c.auth.authenticated = false
+		c.auth.checked = true
+	default:
+		return fmt.Errorf("Unexpected status code for client authentication check response: %d", res.StatusCode)
+	}
+
+	return nil
+}
+
+func (c *clientOptions) isAuthenticated() bool {
+	if strings.HasPrefix(c.auth.url, "http") == false {
+		return false
+	}
+
+	if c.auth.checked {
+		return c.auth.authenticated
+	}
+
+	if err := c.checkAuthentication(); err != nil {
+		return false
+	}
+
+	return c.auth.authenticated
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -46,7 +45,7 @@ func (s *searchContext) convertFacets() error {
 
 	if mapDecErr := dec.Decode(facetsRaw); mapDecErr != nil {
 		s.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
-		return errors.New("Failed to decode Solr facet map")
+		return fmt.Errorf("Failed to decode Solr facet map")
 	}
 
 	s.solrRes.Facets = facets
@@ -103,13 +102,13 @@ func (s *searchContext) solrQuery() error {
 	jsonBytes, jsonErr := json.Marshal(s.solrReq.json)
 	if jsonErr != nil {
 		s.log("Marshal() failed: %s", jsonErr.Error())
-		return errors.New("Failed to marshal Solr JSON")
+		return fmt.Errorf("Failed to marshal Solr JSON")
 	}
 
 	req, reqErr := http.NewRequest("GET", s.pool.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
 		s.log("NewRequest() failed: %s", reqErr.Error())
-		return errors.New("Failed to create Solr request")
+		return fmt.Errorf("Failed to create Solr request")
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -129,7 +128,7 @@ func (s *searchContext) solrQuery() error {
 
 	if resErr != nil {
 		s.log("client.Do() failed: %s", resErr.Error())
-		return errors.New("Failed to receive Solr response")
+		return fmt.Errorf("Failed to receive Solr response")
 	}
 
 	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
@@ -147,7 +146,7 @@ func (s *searchContext) solrQuery() error {
 	if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
 		s.log("unexpected Solr response: [%s]", buf)
 		s.log("Unmarshal() failed: %s", jErr.Error())
-		return errors.New("Failed to unmarshal Solr response")
+		return fmt.Errorf("Failed to unmarshal Solr response")
 	}
 
 	s.solrRes = &solrRes

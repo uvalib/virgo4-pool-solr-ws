@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -315,7 +314,7 @@ func (s *searchContext) virgoRecordResponse() error {
 
 	switch {
 	case s.solrRes.meta.numRows == 0:
-		return errors.New("Item not found")
+		return fmt.Errorf("Item not found")
 
 	case s.client.grouped == true && s.solrRes.meta.numGroups == 1 && s.solrRes.meta.numRecords == 1:
 		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
@@ -324,7 +323,7 @@ func (s *searchContext) virgoRecordResponse() error {
 		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
 
 	default:
-		return errors.New("Multiple items found")
+		return fmt.Errorf("Multiple items found")
 	}
 
 	s.virgoRecordRes = v
