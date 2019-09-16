@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -51,6 +52,9 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 	if val, ok := ctx.Get("token"); ok == true {
 		c.auth.token = val.(string)
 		c.auth.url = fmt.Sprintf("%s/api/authenticated/%s", p.config.clientHost, c.auth.token)
+
+		// test code
+		c.log("client authenticated: %v", c.isAuthenticated())
 	}
 
 	// determine client preferred language
@@ -134,6 +138,10 @@ func (c *clientOptions) checkAuthentication() error {
 
 	defer res.Body.Close()
 
+	buf, _ := ioutil.ReadAll(res.Body)
+
+	c.log("authentication check returned: %d (%s)", res.StatusCode, buf)
+
 	switch res.StatusCode {
 	case http.StatusOK:
 		c.auth.authenticated = true
@@ -149,6 +157,10 @@ func (c *clientOptions) checkAuthentication() error {
 }
 
 func (c *clientOptions) isAuthenticated() bool {
+	if c.auth.token == "" {
+		return false
+	}
+
 	if strings.HasPrefix(c.auth.url, "http") == false {
 		return false
 	}
