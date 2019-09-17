@@ -126,6 +126,10 @@ other = "Call Number (Narrow)"
 desc = "The display name for the Video Format facet."
 other = "Video Format"
 
+[FacetAvailability]
+desc = "The display name for the Availability facet."
+other = "Availability"
+
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
 other = "Identifier"

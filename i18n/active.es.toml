@@ -126,6 +126,10 @@ other = "Número de Llamada (Estrecho)"
 desc = "The display name for the Video Format facet."
 other = "Formato de Video"
 
+[FacetAvailability]
+desc = "The display name for the Availability facet."
+other = "Disponibilidad"
+
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
 other = "Identificador"
