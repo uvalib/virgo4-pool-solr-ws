@@ -128,6 +128,7 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	top.client.opts.grouped = false
 
 	top.virgoReq.Query = query
+	top.virgoReq.meta.solrQuery = ""
 	top.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 1}
 
 	if err := top.getPoolQueryResults(); err != nil {
