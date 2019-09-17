@@ -86,7 +86,7 @@ func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 	return f
 }
 
-func virgoPopulateRecord(doc *solrDocument, client *clientContext) *VirgoRecord {
+func virgoPopulateRecord(doc *solrDocument, client *clientContext, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important!
@@ -134,6 +134,14 @@ func virgoPopulateRecord(doc *solrDocument, client *clientContext) *VirgoRecord 
 	if doc.ID[0] == 'u' {
 		classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
 		r.addDetailedField(newField("classic_url", client.localize("FieldMore"), classicURL).setType("url"))
+	}
+
+	// add exact designator if applicable
+
+	itemTitle := firstElementOf(doc.Title)
+
+	if isSingleTitleSearch == true && titlesAreEqual(itemTitle, titleQueried) {
+		r.Exact = true
 	}
 
 	// add internal info
@@ -210,11 +218,11 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientContext) *[]VirgoRecord {
+func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientContext, isSingleTitleSearch bool, titleQueried string) *[]VirgoRecord {
 	var recordList []VirgoRecord
 
 	for _, doc := range solrDocuments.Docs {
-		record := virgoPopulateRecord(&doc, client)
+		record := virgoPopulateRecord(&doc, client, isSingleTitleSearch, titleQueried)
 
 		recordList = append(recordList, *record)
 	}
@@ -253,19 +261,19 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	poolResult.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
 	firstTitleResults := ""
-	firstTitleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
+	titleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
 
 	// default confidence, when there are no results
 	poolResult.Confidence = "low"
 
 	if s.solrRes.meta.numRows > 0 {
-		poolResult.RecordList = virgoPopulateRecordList(&s.solrRes.Response, s.client)
+		poolResult.RecordList = virgoPopulateRecordList(&s.solrRes.Response, s.client, s.solrRes.meta.parserInfo.isSingleTitleSearch, titleQueried)
 
 		// FIXME: somehow create h/m/l confidence levels from the query score
 		firstTitleResults = firstElementOf(s.solrRes.meta.firstDoc.Title)
 
 		switch {
-		case s.solrRes.meta.start == 0 && s.solrRes.meta.parserInfo.isTitleSearch && titlesAreEqual(firstTitleResults, firstTitleQueried):
+		case s.solrRes.meta.start == 0 && s.solrRes.meta.parserInfo.isSingleTitleSearch && titlesAreEqual(firstTitleResults, titleQueried):
 			poolResult.Confidence = "exact"
 		case s.solrRes.meta.maxScore > s.pool.solr.scoreThresholdHigh:
 			poolResult.Confidence = "high"
@@ -317,10 +325,10 @@ func (s *searchContext) virgoRecordResponse() error {
 		return fmt.Errorf("Item not found")
 
 	case s.client.opts.grouped == true && s.solrRes.meta.numGroups == 1 && s.solrRes.meta.numRecords == 1:
-		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
+		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client, false, "")
 
 	case s.client.opts.grouped == false && s.solrRes.meta.numRecords == 1:
-		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
+		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client, false, "")
 
 	default:
 		return fmt.Errorf("Multiple items found")

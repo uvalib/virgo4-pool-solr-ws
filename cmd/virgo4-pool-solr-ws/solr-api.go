@@ -8,8 +8,8 @@ type solrParserInfo struct {
 	query  string
 	parser v4parser.SolrParser
 	// convenience flags based on parser results
-	isTitleSearch   bool
-	isKeywordSearch bool
+	isSingleTitleSearch   bool
+	isSingleKeywordSearch bool
 }
 
 /*
