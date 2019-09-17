@@ -304,10 +304,20 @@ func (s *searchContext) populateGroups() error {
 		groups[v].RecordList = append(groups[v].RecordList, record)
 	}
 
-	// loop through groups to assign counts
+	// loop through groups to assign count and fields
 
-	for i, g := range groups {
-		groups[i].Count = len(g.RecordList)
+	for i, _ := range groups {
+		group := &groups[i]
+
+		group.Count = len(group.RecordList)
+
+		parts := strings.Split(group.Value, "/")
+
+		title := parts[0]
+		author := parts[1]
+
+		group.addBasicField(newField("title", s.client.localize("FieldTitle"), title))
+		group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author))
 	}
 
 	s.virgoPoolRes.GroupList = &groups

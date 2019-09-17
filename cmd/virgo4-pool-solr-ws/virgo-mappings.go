@@ -43,6 +43,22 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 	r.addField(f.setVisibility("detailed"))
 }
 
+func (g *VirgoGroup) addField(f *VirgoNuancedField) {
+	if f.Name == "" {
+		return
+	}
+
+	g.Fields = append(g.Fields, *f)
+}
+
+func (g *VirgoGroup) addBasicField(f *VirgoNuancedField) {
+	g.addField(f.setVisibility("")) // empty implies "basic"
+}
+
+func (g *VirgoGroup) addDetailedField(f *VirgoNuancedField) {
+	g.addField(f.setVisibility("detailed"))
+}
+
 func newField(name, label, value string) *VirgoNuancedField {
 	field := VirgoNuancedField{
 		Name:       name,

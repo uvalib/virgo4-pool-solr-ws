@@ -78,9 +78,10 @@ type VirgoRecord struct {
 
 // VirgoGroup contains the records for a single group in a search result set.
 type VirgoGroup struct {
-	Value      string        `json:"value,omitempty"`
-	Count      int           `json:"count,omitempty"`
-	RecordList []VirgoRecord `json:"record_list,omitempty"`
+	Value      string              `json:"value,omitempty"`
+	Count      int                 `json:"count,omitempty"`
+	Fields     []VirgoNuancedField `json:"fields,omitempty"`
+	RecordList []VirgoRecord       `json:"record_list,omitempty"`
 }
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
