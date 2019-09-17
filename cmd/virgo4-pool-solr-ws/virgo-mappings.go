@@ -181,18 +181,27 @@ func virgoPopulateFacetBucket(value solrBucket, client *clientContext) *VirgoFac
 	return &bucket
 }
 
-func virgoPopulateFacet(facetID string, value solrResponseFacet, client *clientContext) *VirgoFacet {
+func virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet, client *clientContext) *VirgoFacet {
 	var facet VirgoFacet
 
-	facet.ID = facetID
-	facet.Name = client.localize(facetID)
+	facet.ID = facetDef.Name
+	facet.Name = client.localize(facet.ID)
 
 	var buckets []VirgoFacetBucket
 
 	for _, b := range value.Buckets {
 		bucket := virgoPopulateFacetBucket(b, client)
 
-		buckets = append(buckets, *bucket)
+		if len(facetDef.ExposedValues) > 0 {
+			for _, val := range facetDef.ExposedValues {
+				if bucket.Value == val {
+					buckets = append(buckets, *bucket)
+					break
+				}
+			}
+		} else {
+			buckets = append(buckets, *bucket)
+		}
 	}
 
 	facet.Buckets = buckets
@@ -246,7 +255,7 @@ func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clien
 	return &recordList
 }
 
-func virgoPopulateFacetList(solrFacets solrResponseFacets, client *clientContext) *[]VirgoFacet {
+func virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets solrResponseFacets, client *clientContext) *[]VirgoFacet {
 	var facetList []VirgoFacet
 	gotFacet := false
 
@@ -254,7 +263,7 @@ func virgoPopulateFacetList(solrFacets solrResponseFacets, client *clientContext
 		if len(val.Buckets) > 0 {
 			gotFacet = true
 
-			facet := virgoPopulateFacet(key, val, client)
+			facet := virgoPopulateFacet(facetDefs[key], val, client)
 
 			facetList = append(facetList, *facet)
 		}
@@ -299,7 +308,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	}
 
 	if len(s.solrRes.Facets) > 0 {
-		poolResult.FacetList = virgoPopulateFacetList(s.solrRes.Facets, s.client)
+		poolResult.FacetList = virgoPopulateFacetList(s.pool.solr.availableFacets, s.solrRes.Facets, s.client)
 	}
 
 	// advertise facets?
