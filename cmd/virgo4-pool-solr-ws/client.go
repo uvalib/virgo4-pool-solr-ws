@@ -74,7 +74,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.opts.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
-	c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), false)
+	c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
 
 	query := ""
 	if ctx.Request.URL.RawQuery != "" {
