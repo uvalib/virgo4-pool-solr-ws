@@ -155,8 +155,13 @@ func (s *searchContext) solrRequestWithDefaults() {
 			exposedValues: facet.ExposedValues,
 		}
 
-		if facet.FieldAuth != "" && solrReq.meta.client.isAuthenticated() == true {
-			f.Field = facet.FieldAuth
+		if facet.FieldAuth != "" {
+			if solrReq.meta.client.isAuthenticated() == true {
+				f.Field = facet.FieldAuth
+				s.log("[FACET] authenticated session using facet: [%s]", f.Field)
+			} else {
+				s.log("[FACET] unauthenticated session using facet: [%s]", f.Field)
+			}
 		}
 
 		availableFacets[facet.Name] = f
