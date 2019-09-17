@@ -60,7 +60,7 @@ func (s *searchContext) populateMetaFields() {
 
 	s.solrRes.meta.start = s.solrReq.json.Params.Start
 
-	if s.client.grouped == true {
+	if s.client.opts.grouped == true {
 		// calculate number of groups in this response, and total available
 		// (grouping, take 2: each record is the top entry of a group, so effectively records == groups)
 
@@ -113,7 +113,7 @@ func (s *searchContext) solrQuery() error {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	if s.client.verbose == true {
+	if s.client.opts.verbose == true {
 		s.log("[solr] req: [%s]", string(jsonBytes))
 	} else {
 		s.log("[solr] req: [%s]", s.solrReq.json.Params.Q)
@@ -139,7 +139,7 @@ func (s *searchContext) solrQuery() error {
 
 	buf, _ := ioutil.ReadAll(res.Body)
 
-	if s.client.verbose == true {
+	if s.client.opts.verbose == true {
 		s.log("[solr] raw: [%s]", buf)
 	}
 

@@ -141,13 +141,36 @@ func (s *searchContext) solrRequestWithDefaults() {
 	solrReq.buildParameterStart(s.virgoReq.Pagination.Start)
 	solrReq.buildParameterRows(s.virgoReq.Pagination.Rows)
 
-	if s.virgoReq.meta.requestFacets == true {
-		solrReq.buildFacets(s.virgoReq.Facet, s.pool.solr.availableFacets)
+	// build customized/personalized available facets from facets definition
+
+	availableFacets := make(map[string]solrRequestFacet)
+
+	for _, facet := range s.pool.solr.availableFacets {
+		f := solrRequestFacet{
+			Type:          facet.Type,
+			Field:         facet.Field,
+			Sort:          facet.Sort,
+			Offset:        facet.Offset,
+			Limit:         facet.Limit,
+			exposedValues: facet.ExposedValues,
+		}
+
+		if facet.FieldAuth != "" && solrReq.meta.client.isAuthenticated() == true {
+			f.Field = facet.FieldAuth
+		}
+
+		availableFacets[facet.Name] = f
 	}
 
-	solrReq.buildFilters(s.virgoReq.Filters, s.pool.solr.availableFacets)
+	// add facets/filters
 
-	if s.client.grouped == true {
+	if s.virgoReq.meta.requestFacets == true {
+		solrReq.buildFacets(s.virgoReq.Facet, availableFacets)
+	}
+
+	solrReq.buildFilters(s.virgoReq.Filters, availableFacets)
+
+	if s.client.opts.grouped == true {
 		solrReq.buildGrouping(s.pool.config.solrGroupField)
 	}
 

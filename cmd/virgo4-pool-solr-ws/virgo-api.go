@@ -6,7 +6,7 @@ package main
 // https://github.com/uvalib/v4-api/blob/master/pool-search-api-OAS3.json
 
 type virgoSearchMeta struct {
-	client        *clientOptions
+	client        *clientContext
 	solrQuery     string          // holds the solr query (either parsed or specified)
 	parserInfo    *solrParserInfo // holds the information for parsed queries
 	requestFacets bool            // set to true for non-speculative searches

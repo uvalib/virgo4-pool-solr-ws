@@ -10,7 +10,7 @@ import (
 )
 
 func (p *poolContext) searchHandler(c *gin.Context) {
-	cl := clientOptions{}
+	cl := clientContext{}
 	cl.init(p, c)
 
 	s := searchContext{}
@@ -36,7 +36,7 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 }
 
 func (p *poolContext) resourceHandler(c *gin.Context) {
-	cl := clientOptions{}
+	cl := clientContext{}
 	cl.init(p, c)
 
 	s := searchContext{}
@@ -60,14 +60,14 @@ func (p *poolContext) ignoreHandler(c *gin.Context) {
 }
 
 func (p *poolContext) versionHandler(c *gin.Context) {
-	cl := clientOptions{}
+	cl := clientContext{}
 	cl.init(p, c)
 
 	c.JSON(http.StatusOK, p.version)
 }
 
 func (p *poolContext) identifyHandler(c *gin.Context) {
-	cl := clientOptions{}
+	cl := clientContext{}
 	cl.init(p, c)
 
 	localizedIdentity := cl.localizedPoolIdentity(p)
@@ -76,7 +76,7 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 }
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {
-	cl := clientOptions{}
+	cl := clientContext{}
 	cl.init(p, c)
 
 	s := searchContext{}

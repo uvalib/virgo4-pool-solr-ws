@@ -86,7 +86,7 @@ func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 	return f
 }
 
-func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord {
+func virgoPopulateRecord(doc *solrDocument, client *clientContext) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important!
@@ -141,14 +141,14 @@ func virgoPopulateRecord(doc *solrDocument, client *clientOptions) *VirgoRecord 
 	r.workTitle2KeySort = doc.WorkTitle2KeySort
 
 	// add debug info?
-	if client.debug == true {
+	if client.opts.debug == true {
 		r.Debug = virgoPopulateRecordDebug(doc)
 	}
 
 	return &r
 }
 
-func virgoPopulateFacetBucket(value solrBucket, client *clientOptions) *VirgoFacetBucket {
+func virgoPopulateFacetBucket(value solrBucket, client *clientContext) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
 	bucket.Value = value.Val
@@ -157,7 +157,7 @@ func virgoPopulateFacetBucket(value solrBucket, client *clientOptions) *VirgoFac
 	return &bucket
 }
 
-func virgoPopulateFacet(facetID string, value solrResponseFacet, client *clientOptions) *VirgoFacet {
+func virgoPopulateFacet(facetID string, value solrResponseFacet, client *clientContext) *VirgoFacet {
 	var facet VirgoFacet
 
 	facet.ID = facetID
@@ -186,7 +186,7 @@ func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	return &pagination
 }
 
-func virgoPopulatePoolResultDebug(solrRes *solrResponse, client *clientOptions) *VirgoPoolResultDebug {
+func virgoPopulatePoolResultDebug(solrRes *solrResponse, client *clientContext) *VirgoPoolResultDebug {
 	var debug VirgoPoolResultDebug
 
 	debug.RequestID = client.reqID
@@ -210,7 +210,7 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientOptions) *[]VirgoRecord {
+func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientContext) *[]VirgoRecord {
 	var recordList []VirgoRecord
 
 	for _, doc := range solrDocuments.Docs {
@@ -222,7 +222,7 @@ func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clien
 	return &recordList
 }
 
-func virgoPopulateFacetList(solrFacets solrResponseFacets, client *clientOptions) *[]VirgoFacet {
+func virgoPopulateFacetList(solrFacets solrResponseFacets, client *clientContext) *[]VirgoFacet {
 	var facetList []VirgoFacet
 	gotFacet := false
 
@@ -294,7 +294,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 		poolResult.Warn = &s.solrRes.meta.warnings
 	}
 
-	if s.client.debug == true {
+	if s.client.opts.debug == true {
 		poolResult.Debug = virgoPopulatePoolResultDebug(s.solrRes, s.client)
 	}
 
@@ -316,10 +316,10 @@ func (s *searchContext) virgoRecordResponse() error {
 	case s.solrRes.meta.numRows == 0:
 		return fmt.Errorf("Item not found")
 
-	case s.client.grouped == true && s.solrRes.meta.numGroups == 1 && s.solrRes.meta.numRecords == 1:
+	case s.client.opts.grouped == true && s.solrRes.meta.numGroups == 1 && s.solrRes.meta.numRecords == 1:
 		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
 
-	case s.client.grouped == false && s.solrRes.meta.numRecords == 1:
+	case s.client.opts.grouped == false && s.solrRes.meta.numRecords == 1:
 		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client)
 
 	default:

@@ -39,12 +39,12 @@ type solrRequestParams struct {
 type solrRequestFacets map[string]solrRequestFacet
 
 type solrRequestFacet struct {
-	Name   string `json:"name,omitempty"` // used internally when initializing available facets
-	Type   string `json:"type"`
-	Field  string `json:"field"`
-	Sort   string `json:"sort,omitempty"`
-	Offset int    `json:"offset,omitempty"`
-	Limit  int    `json:"limit,omitempty"`
+	Type          string `json:"type"`
+	Field         string `json:"field"`
+	Sort          string `json:"sort,omitempty"`
+	Offset        int    `json:"offset,omitempty"`
+	Limit         int    `json:"limit,omitempty"`
+	exposedValues []string
 }
 
 type solrRequestJSON struct {
@@ -53,7 +53,7 @@ type solrRequestJSON struct {
 }
 
 type solrMeta struct {
-	client          *clientOptions
+	client          *clientContext
 	parserInfo      *solrParserInfo
 	warnings        []string
 	advertiseFacets bool

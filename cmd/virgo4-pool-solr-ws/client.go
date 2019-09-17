@@ -13,7 +13,13 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-// options set by or per client
+type clientOpts struct {
+	debug   bool // controls whether debug info is added to pool results
+	intuit  bool // controls whether intuited (speculative) searches are performed
+	verbose bool // controls whether verbose Solr requests/responses are logged
+	grouped bool // controls whether Solr results are grouped
+}
+
 type clientAuth struct {
 	token         string // from client headers
 	url           string // url for client authentication checks
@@ -21,16 +27,13 @@ type clientAuth struct {
 	authenticated bool   // whether this token is authenticated
 }
 
-type clientOptions struct {
-	start     time.Time       // internally set
+type clientContext struct {
 	reqID     string          // internally generated
-	auth      clientAuth      // internally set
-	localizer *i18n.Localizer // for localization
+	start     time.Time       // internally set
+	opts      clientOpts      // options set by client
+	auth      clientAuth      // authentication-related variables
 	nolog     bool            // internally set
-	debug     bool            // client requested -- controls whether debug info is added to pool results
-	intuit    bool            // client requested -- controls whether intuited (speculative) searches are performed
-	verbose   bool            // client requested -- controls whether verbose Solr requests/responses are logged
-	grouped   bool            // client requested -- controls whether Solr results are grouped
+	localizer *i18n.Localizer // per-request localization
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -44,7 +47,7 @@ func boolOptionWithFallback(opt string, fallback bool) bool {
 	return val
 }
 
-func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
+func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.start = time.Now()
 	c.reqID = fmt.Sprintf("%016x", p.randomSource.Uint64())
 
@@ -52,9 +55,6 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 	if val, ok := ctx.Get("token"); ok == true {
 		c.auth.token = val.(string)
 		c.auth.url = fmt.Sprintf("%s/api/authenticated/%s", p.config.clientHost, c.auth.token)
-
-		// test code
-		c.log("client authenticated: %v", c.isAuthenticated())
 	}
 
 	// determine client preferred language
@@ -71,10 +71,10 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 
 	ctx.Header("Content-Language", contentLang)
 
-	c.debug = boolOptionWithFallback(ctx.Query("debug"), false)
-	c.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
-	c.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
-	c.grouped = boolOptionWithFallback(ctx.Query("grouped"), false)
+	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
+	c.opts.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
+	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
+	c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), false)
 
 	query := ""
 	if ctx.Request.URL.RawQuery != "" {
@@ -84,7 +84,7 @@ func (c *clientOptions) init(p *poolContext, ctx *gin.Context) {
 	c.log("%s %s%s  (%s) => (%s)", ctx.Request.Method, ctx.Request.URL.Path, query, acceptLang, contentLang)
 }
 
-func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
+func (c *clientContext) printf(prefix, format string, args ...interface{}) {
 	str := fmt.Sprintf(format, args...)
 
 	if prefix != "" {
@@ -94,7 +94,7 @@ func (c *clientOptions) printf(prefix, format string, args ...interface{}) {
 	log.Printf("[%s] %s", c.reqID, str)
 }
 
-func (c *clientOptions) log(format string, args ...interface{}) {
+func (c *clientContext) log(format string, args ...interface{}) {
 	if c.nolog == true {
 		return
 	}
@@ -102,15 +102,15 @@ func (c *clientOptions) log(format string, args ...interface{}) {
 	c.printf("", format, args...)
 }
 
-func (c *clientOptions) err(format string, args ...interface{}) {
+func (c *clientContext) err(format string, args ...interface{}) {
 	c.printf("ERROR:", format, args...)
 }
 
-func (c *clientOptions) localize(id string) string {
+func (c *clientContext) localize(id string) string {
 	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
 }
 
-func (c *clientOptions) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity {
+func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity {
 	id := VirgoPoolIdentity{
 		Name:        c.localize(p.identity.Name),
 		Summary:     c.localize(p.identity.Summary),
@@ -120,7 +120,7 @@ func (c *clientOptions) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	return id
 }
 
-func (c *clientOptions) checkAuthentication() error {
+func (c *clientContext) checkAuthentication() error {
 	req, reqErr := http.NewRequest("GET", c.auth.url, nil)
 	if reqErr != nil {
 		c.log("NewRequest() failed: %s", reqErr.Error())
@@ -156,7 +156,7 @@ func (c *clientOptions) checkAuthentication() error {
 	return nil
 }
 
-func (c *clientOptions) isAuthenticated() bool {
+func (c *clientContext) isAuthenticated() bool {
 	if c.auth.token == "" {
 		return false
 	}

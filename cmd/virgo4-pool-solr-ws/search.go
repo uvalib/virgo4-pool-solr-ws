@@ -15,7 +15,7 @@ const minimumRows = 0
 
 type searchContext struct {
 	pool           *poolContext
-	client         *clientOptions
+	client         *clientContext
 	virgoReq       VirgoSearchRequest
 	virgoPoolRes   *VirgoPoolResult
 	virgoRecordRes *VirgoRecord
@@ -34,7 +34,7 @@ func confidenceIndex(s string) int {
 	}[s]
 }
 
-func (s *searchContext) init(p *poolContext, c *clientOptions) {
+func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.pool = p
 
 	s.client = c
@@ -125,7 +125,7 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	top := s.copySearchContext()
 
 	// just want first result, not first result group
-	top.client.grouped = false
+	top.client.opts.grouped = false
 
 	top.virgoReq.Query = query
 	top.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 1}
@@ -186,7 +186,7 @@ func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*sea
 	var searchResults []*searchContext
 
 	// if the client specified no intuition, just return original query
-	if s.client.intuit != true {
+	if s.client.opts.intuit != true {
 		return s, nil
 	}
 
@@ -255,7 +255,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(groups []string) (*sear
 	c := s.copySearchContext()
 
 	// just want records
-	c.client.grouped = false
+	c.client.opts.grouped = false
 
 	c.virgoReq.meta.solrQuery = fmt.Sprintf(`%s AND %s:(%s)`, c.virgoReq.meta.solrQuery, s.pool.config.solrGroupField, strings.Join(groups, " OR "))
 	c.virgoReq.meta.requestFacets = false
@@ -274,7 +274,7 @@ func (s *searchContext) populateGroups() error {
 	// populate record list for each group (i.e. entry in initial record list)
 	// by querying for all group records in one request, and sorting the results to the correct groups
 
-	if s.client.grouped == false || s.solrRes.meta.numGroups == 0 {
+	if s.client.opts.grouped == false || s.solrRes.meta.numGroups == 0 {
 		return nil
 	}
 

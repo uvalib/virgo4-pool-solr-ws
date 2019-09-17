@@ -34,7 +34,7 @@ type poolVersion struct {
 type poolSolr struct {
 	client               *http.Client
 	url                  string
-	availableFacets      map[string]solrRequestFacet
+	availableFacets      map[string]poolFacetDefinition
 	virgoAvailableFacets []string
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
@@ -52,6 +52,18 @@ type poolContext struct {
 	identity     VirgoPoolIdentity
 	version      poolVersion
 	solr         poolSolr
+}
+
+// NOTE: this struct is a superset of solrRequestFacet, and is separate so that extra fields are not sent to Solr
+type poolFacetDefinition struct {
+	Name          string   `json:"name"`           // the internal name of this facet
+	Field         string   `json:"field"`          // the default Solr field to use
+	FieldAuth     string   `json:"field_auth"`     // if defined, the Solr field to use if the client is authenticated
+	ExposedValues []string `json:"exposed_values"` // if defined, only values in this list will be exposed to the client
+	Type          string   `json:"type"`           // the Solr type of this facet
+	Sort          string   `json:"sort"`           // the Solr sorting to use for this facet
+	Offset        int      `json:"offset"`         // the Solr offset to use for this facet
+	Limit         int      `json:"limit"`          // the Solr limit to apply to this facet
 }
 
 func buildVersion() string {
@@ -144,7 +156,7 @@ func (p *poolContext) initSolr() {
 	// facet setup
 
 	type facetInfo struct {
-		Facets []solrRequestFacet `json:"facets"`
+		Facets []poolFacetDefinition `json:"facets"`
 	}
 
 	var facetManifest facetInfo
@@ -155,14 +167,14 @@ func (p *poolContext) initSolr() {
 		os.Exit(1)
 	}
 
-	facetManifestMap := make(map[string]solrRequestFacet)
+	facetManifestMap := make(map[string]poolFacetDefinition)
 
 	for _, facet := range facetManifest.Facets {
-		facetManifestMap[facet.Name] = solrRequestFacet{Type: facet.Type, Field: facet.Field, Sort: facet.Sort, Limit: facet.Limit}
+		facetManifestMap[facet.Name] = facet
 	}
 
 	// now select the facets from the manifest that are defined for this pool
-	availableFacets := make(map[string]solrRequestFacet)
+	availableFacets := make(map[string]poolFacetDefinition)
 	var virgoAvailableFacets []string
 
 	for _, f := range strings.Split(p.config.poolFacets, ",") {
@@ -246,6 +258,7 @@ func (p *poolContext) initTranslations() {
 		"FacetCallNumberBroad",
 		"FacetCallNumberNarrow",
 		"FacetVideoFormat",
+		"FacetAvailability",
 		"FieldIdentifier",
 		"FieldTitle",
 		"FieldSubtitle",
