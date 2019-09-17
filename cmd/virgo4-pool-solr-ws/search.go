@@ -306,7 +306,7 @@ func (s *searchContext) populateGroups() error {
 
 	// loop through groups to assign count and fields
 
-	for i, _ := range groups {
+	for i := range groups {
 		group := &groups[i]
 
 		group.Count = len(group.RecordList)
