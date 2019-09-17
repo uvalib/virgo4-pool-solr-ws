@@ -315,9 +315,19 @@ func (s *searchContext) populateGroups() error {
 
 		title := parts[0]
 		author := parts[1]
+		format := parts[2]
 
-		group.addBasicField(newField("title", s.client.localize("FieldTitle"), title))
-		group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author))
+		if title != "" {
+			group.addBasicField(newField("title", s.client.localize("FieldTitle"), title))
+		}
+
+		if author != "" {
+			group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author))
+		}
+
+		if format != "" {
+			group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
+		}
 	}
 
 	s.virgoPoolRes.GroupList = &groups
