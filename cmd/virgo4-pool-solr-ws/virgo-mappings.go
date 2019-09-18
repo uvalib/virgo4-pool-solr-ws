@@ -19,7 +19,7 @@ func firstElementOf(s []string) string {
 	return val
 }
 
-func virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
+func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
 	var debug VirgoRecordDebug
 
 	debug.Score = doc.Score
@@ -102,45 +102,45 @@ func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 	return f
 }
 
-func virgoPopulateRecord(doc *solrDocument, client *clientContext, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
+func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important!
 
-	r.addBasicField(newField("id", client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
-	r.addBasicField(newField("title", client.localize("FieldTitle"), firstElementOf(doc.Title)))
-	r.addBasicField(newField("subtitle", client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)))
+	r.addBasicField(newField("id", s.client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
+	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)))
+	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)))
 
 	for _, item := range doc.Author {
-		r.addBasicField(newField("author", client.localize("FieldAuthor"), item))
+		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item))
 	}
 
 	for _, item := range doc.Subject {
-		r.addDetailedField(newField("subject", client.localize("FieldSubject"), item))
+		r.addDetailedField(newField("subject", s.client.localize("FieldSubject"), item))
 	}
 
 	for _, item := range doc.Language {
-		r.addDetailedField(newField("language", client.localize("FieldLanguage"), item))
+		r.addDetailedField(newField("language", s.client.localize("FieldLanguage"), item))
 	}
 
 	for _, item := range doc.Format {
-		r.addDetailedField(newField("format", client.localize("FieldFormat"), item))
+		r.addDetailedField(newField("format", s.client.localize("FieldFormat"), item))
 	}
 
 	for _, item := range doc.Library {
-		r.addDetailedField(newField("library", client.localize("FieldLibrary"), item))
+		r.addDetailedField(newField("library", s.client.localize("FieldLibrary"), item))
 	}
 
 	for _, item := range doc.CallNumber {
-		r.addDetailedField(newField("call_number", client.localize("FieldCallNumber"), item))
+		r.addDetailedField(newField("call_number", s.client.localize("FieldCallNumber"), item))
 	}
 
 	for _, item := range doc.CallNumberBroad {
-		r.addDetailedField(newField("call_number_broad", client.localize("FieldCallNumberBroad"), item))
+		r.addDetailedField(newField("call_number_broad", s.client.localize("FieldCallNumberBroad"), item))
 	}
 
 	for _, item := range doc.CallNumberNarrow {
-		r.addDetailedField(newField("call_number_narrow", client.localize("FieldCallNumberNarrow"), item))
+		r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
 	}
 
 	for _, item := range doc.ISBN {
@@ -163,13 +163,23 @@ func virgoPopulateRecord(doc *solrDocument, client *clientContext, isSingleTitle
 		r.addDetailedField(newField("upc", "UPC", item))
 	}
 
+	fallbackCoverURL := "https://www.library.virginia.edu/images/icon-32.png"
+
+	if s.client.opts.covers == true {
+		if imgdata, err := s.getCoverImageData(doc); err == nil {
+			r.addBasicField(newField("cover_image", "", imgdata).setType("image-data"))
+		} else {
+			r.addBasicField(newField("cover_image", "", fallbackCoverURL).setType("image-url"))
+		}
+	} else {
+		r.addBasicField(newField("cover_image", "", fallbackCoverURL).setType("url"))
+	}
+
 	// mocked up fields that we do not actually pass yet
-	previewURL := "https://www.library.virginia.edu/images/icon-32.png"
-	r.addDetailedField(newField("preview_url", "", previewURL).setType("url"))
 
 	if doc.ID[0] == 'u' {
 		classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
-		r.addDetailedField(newField("classic_url", client.localize("FieldMore"), classicURL).setType("url"))
+		r.addDetailedField(newField("classic_url", s.client.localize("FieldMore"), classicURL).setType("url"))
 	}
 
 	// add exact designator if applicable
@@ -185,14 +195,14 @@ func virgoPopulateRecord(doc *solrDocument, client *clientContext, isSingleTitle
 	r.workTitle2KeySort = doc.WorkTitle2KeySort
 
 	// add debug info?
-	if client.opts.debug == true {
-		r.Debug = virgoPopulateRecordDebug(doc)
+	if s.client.opts.debug == true {
+		r.Debug = s.virgoPopulateRecordDebug(doc)
 	}
 
 	return &r
 }
 
-func virgoPopulateFacetBucket(value solrBucket, client *clientContext) *VirgoFacetBucket {
+func (s *searchContext) virgoPopulateFacetBucket(value solrBucket) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
 	bucket.Value = value.Val
@@ -201,16 +211,16 @@ func virgoPopulateFacetBucket(value solrBucket, client *clientContext) *VirgoFac
 	return &bucket
 }
 
-func virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet, client *clientContext) *VirgoFacet {
+func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet) *VirgoFacet {
 	var facet VirgoFacet
 
 	facet.ID = facetDef.Name
-	facet.Name = client.localize(facet.ID)
+	facet.Name = s.client.localize(facet.ID)
 
 	var buckets []VirgoFacetBucket
 
 	for _, b := range value.Buckets {
-		bucket := virgoPopulateFacetBucket(b, client)
+		bucket := s.virgoPopulateFacetBucket(b)
 
 		if len(facetDef.ExposedValues) > 0 {
 			for _, val := range facetDef.ExposedValues {
@@ -229,7 +239,7 @@ func virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet, c
 	return &facet
 }
 
-func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
+func (s *searchContext) virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	var pagination VirgoPagination
 
 	pagination.Start = start
@@ -239,10 +249,10 @@ func virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	return &pagination
 }
 
-func virgoPopulatePoolResultDebug(solrRes *solrResponse, client *clientContext) *VirgoPoolResultDebug {
+func (s *searchContext) virgoPopulatePoolResultDebug(solrRes *solrResponse) *VirgoPoolResultDebug {
 	var debug VirgoPoolResultDebug
 
-	debug.RequestID = client.reqID
+	debug.RequestID = s.client.reqID
 	debug.MaxScore = solrRes.meta.maxScore
 
 	return &debug
@@ -263,11 +273,11 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clientContext, isSingleTitleSearch bool, titleQueried string) *[]VirgoRecord {
+func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocuments, isSingleTitleSearch bool, titleQueried string) *[]VirgoRecord {
 	var recordList []VirgoRecord
 
 	for _, doc := range solrDocuments.Docs {
-		record := virgoPopulateRecord(&doc, client, isSingleTitleSearch, titleQueried)
+		record := s.virgoPopulateRecord(&doc, isSingleTitleSearch, titleQueried)
 
 		recordList = append(recordList, *record)
 	}
@@ -275,7 +285,7 @@ func virgoPopulateRecordList(solrDocuments *solrResponseDocuments, client *clien
 	return &recordList
 }
 
-func virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets solrResponseFacets, client *clientContext) *[]VirgoFacet {
+func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets solrResponseFacets) *[]VirgoFacet {
 	var facetList []VirgoFacet
 	gotFacet := false
 
@@ -283,7 +293,7 @@ func virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets
 		if len(val.Buckets) > 0 {
 			gotFacet = true
 
-			facet := virgoPopulateFacet(facetDefs[key], val, client)
+			facet := s.virgoPopulateFacet(facetDefs[key], val)
 
 			facetList = append(facetList, *facet)
 		}
@@ -301,7 +311,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 
 	poolResult.Identity = s.client.localizedPoolIdentity(s.pool)
 
-	poolResult.Pagination = virgoPopulatePagination(s.solrRes.meta.start, s.solrRes.meta.numRows, s.solrRes.meta.totalRows)
+	poolResult.Pagination = s.virgoPopulatePagination(s.solrRes.meta.start, s.solrRes.meta.numRows, s.solrRes.meta.totalRows)
 
 	poolResult.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
@@ -312,7 +322,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	poolResult.Confidence = "low"
 
 	if s.solrRes.meta.numRows > 0 {
-		poolResult.RecordList = virgoPopulateRecordList(&s.solrRes.Response, s.client, s.solrRes.meta.parserInfo.isSingleTitleSearch, titleQueried)
+		poolResult.RecordList = s.virgoPopulateRecordList(&s.solrRes.Response, s.solrRes.meta.parserInfo.isSingleTitleSearch, titleQueried)
 
 		// FIXME: somehow create h/m/l confidence levels from the query score
 		firstTitleResults = firstElementOf(s.solrRes.meta.firstDoc.Title)
@@ -328,7 +338,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	}
 
 	if len(s.solrRes.Facets) > 0 {
-		poolResult.FacetList = virgoPopulateFacetList(s.pool.solr.availableFacets, s.solrRes.Facets, s.client)
+		poolResult.FacetList = s.virgoPopulateFacetList(s.pool.solr.availableFacets, s.solrRes.Facets)
 	}
 
 	// advertise facets?
@@ -348,7 +358,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	}
 
 	if s.client.opts.debug == true {
-		poolResult.Debug = virgoPopulatePoolResultDebug(s.solrRes, s.client)
+		poolResult.Debug = s.virgoPopulatePoolResultDebug(s.solrRes)
 	}
 
 	s.virgoPoolRes = &poolResult
@@ -370,7 +380,7 @@ func (s *searchContext) virgoRecordResponse() error {
 		return fmt.Errorf("Item not found")
 
 	case 1:
-		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client, false, "")
+		v = s.virgoPopulateRecord(s.solrRes.meta.firstDoc, false, "")
 
 	default:
 		return fmt.Errorf("Multiple items found")
