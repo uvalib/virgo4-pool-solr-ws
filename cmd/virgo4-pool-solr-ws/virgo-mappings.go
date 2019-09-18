@@ -143,6 +143,26 @@ func virgoPopulateRecord(doc *solrDocument, client *clientContext, isSingleTitle
 		r.addDetailedField(newField("call_number_narrow", client.localize("FieldCallNumberNarrow"), item))
 	}
 
+	for _, item := range doc.ISBN {
+		r.addDetailedField(newField("isbn", "ISBN", item))
+	}
+
+	for _, item := range doc.ISSN {
+		r.addDetailedField(newField("issn", "ISSN", item))
+	}
+
+	for _, item := range doc.OCLC {
+		r.addDetailedField(newField("oclc", "OCLC", item))
+	}
+
+	for _, item := range doc.LCCN {
+		r.addDetailedField(newField("lccn", "LCCN", item))
+	}
+
+	for _, item := range doc.UPC {
+		r.addDetailedField(newField("upc", "UPC", item))
+	}
+
 	// mocked up fields that we do not actually pass yet
 	previewURL := "https://www.library.virginia.edu/images/icon-32.png"
 	r.addDetailedField(newField("preview_url", "", previewURL).setType("url"))

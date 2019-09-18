@@ -93,6 +93,11 @@ type solrDocument struct {
 	CallNumber        []string `json:"call_number_a,omitempty"`
 	CallNumberBroad   []string `json:"call_number_broad_a,omitempty"`
 	CallNumberNarrow  []string `json:"call_number_narrow_a,omitempty"`
+	ISBN              []string `json:"isbn_a,omitempty"`
+	ISSN              []string `json:"issn_a,omitempty"`
+	OCLC              []string `json:"oclc_a,omitempty"`
+	LCCN              []string `json:"lccn_a,omitempty"`
+	UPC               []string `json:"upc_a,omitempty"`
 	// etc.
 }
 
