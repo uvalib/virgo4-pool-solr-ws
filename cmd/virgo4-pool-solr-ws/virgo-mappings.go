@@ -345,14 +345,11 @@ func (s *searchContext) virgoSearchResponse() error {
 func (s *searchContext) virgoRecordResponse() error {
 	var v *VirgoRecord
 
-	switch {
-	case s.solrRes.meta.numRows == 0:
+	switch s.solrRes.meta.numRecords {
+	case 0:
 		return fmt.Errorf("Item not found")
 
-	case s.client.opts.grouped == true && s.solrRes.meta.numGroups == 1 && s.solrRes.meta.numRecords == 1:
-		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client, false, "")
-
-	case s.client.opts.grouped == false && s.solrRes.meta.numRecords == 1:
+	case 1:
 		v = virgoPopulateRecord(s.solrRes.meta.firstDoc, s.client, false, "")
 
 	default:
