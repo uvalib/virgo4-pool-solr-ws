@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -137,16 +136,29 @@ func (s *searchContext) solrQuery() error {
 
 	var solrRes solrResponse
 
-	buf, _ := ioutil.ReadAll(res.Body)
+	/*
+		// read entire response, then parse it (causing issues for large responses?)
 
-	if s.client.opts.verbose == true {
-		s.log("[solr] raw: [%s]", buf)
-	}
+		buf, _ := ioutil.ReadAll(res.Body)
 
-	if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
-		s.log("unexpected Solr response: [%s]", buf)
-		s.log("Unmarshal() failed: %s", jErr.Error())
-		return fmt.Errorf("Failed to unmarshal Solr response")
+		if s.client.opts.verbose == true {
+			s.log("[solr] raw: [%s]", buf)
+		}
+
+		if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
+			s.log("unexpected Solr response: [%s]", buf)
+			s.log("Unmarshal() failed: %s", jErr.Error())
+			return fmt.Errorf("Failed to unmarshal Solr response")
+		}
+	*/
+
+	// parse response from stream
+
+	decoder := json.NewDecoder(res.Body)
+
+	if decErr := decoder.Decode(&solrRes); decErr != nil {
+		s.log("Decode() failed: %s", decErr.Error())
+		return fmt.Errorf("Failed to decode Solr response")
 	}
 
 	s.solrRes = &solrRes
