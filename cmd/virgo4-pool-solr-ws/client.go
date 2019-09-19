@@ -18,7 +18,6 @@ type clientOpts struct {
 	intuit  bool // controls whether intuited (speculative) searches are performed
 	verbose bool // controls whether verbose Solr requests/responses are logged
 	grouped bool // controls whether Solr results are grouped
-	covers  bool // controls whether cover images are queried
 }
 
 type clientAuth struct {
@@ -76,7 +75,6 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.intuit = boolOptionWithFallback(ctx.Query("intuit"), true)
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 	c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
-	c.opts.covers = boolOptionWithFallback(ctx.Query("covers"), false)
 
 	query := ""
 	if ctx.Request.URL.RawQuery != "" {

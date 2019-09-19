@@ -43,6 +43,10 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 	r.addField(f.setVisibility("detailed"))
 }
 
+func (r *VirgoRecord) addHiddenField(f *VirgoNuancedField) {
+	r.addField(f.setVisibility("hidden"))
+}
+
 func (g *VirgoGroup) addField(f *VirgoNuancedField) {
 	if f.Name == "" {
 		return
@@ -57,6 +61,10 @@ func (g *VirgoGroup) addBasicField(f *VirgoNuancedField) {
 
 func (g *VirgoGroup) addDetailedField(f *VirgoNuancedField) {
 	g.addField(f.setVisibility("detailed"))
+}
+
+func (g *VirgoGroup) addHiddenField(f *VirgoNuancedField) {
+	g.addField(f.setVisibility("hidden"))
 }
 
 func newField(name, label, value string) *VirgoNuancedField {
@@ -102,6 +110,20 @@ func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 	return f
 }
 
+func (s *searchContext) getSirsiURL(id string) string {
+	url := strings.Replace(s.pool.config.sirsiURLTemplate, "__identifier__", id, -1)
+
+	return url
+}
+
+func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
+	url := strings.Replace(s.pool.config.coverImageURLTemplate, "__identifier__", doc.ID, -1)
+
+	// also add query parameters?
+
+	return url
+}
+
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
 	var r VirgoRecord
 
@@ -143,43 +165,40 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 		r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
 	}
 
+	/*
+		for _, item := range doc.Pool {
+			r.addHiddenField(newField("pool", "", item))
+		}
+	*/
+
 	for _, item := range doc.ISBN {
-		r.addDetailedField(newField("isbn", "ISBN", item))
+		r.addHiddenField(newField("isbn", "ISBN", item))
 	}
 
 	for _, item := range doc.ISSN {
-		r.addDetailedField(newField("issn", "ISSN", item))
+		r.addHiddenField(newField("issn", "ISSN", item))
 	}
 
 	for _, item := range doc.OCLC {
-		r.addDetailedField(newField("oclc", "OCLC", item))
+		r.addHiddenField(newField("oclc", "OCLC", item))
 	}
 
 	for _, item := range doc.LCCN {
-		r.addDetailedField(newField("lccn", "LCCN", item))
+		r.addHiddenField(newField("lccn", "LCCN", item))
 	}
 
 	for _, item := range doc.UPC {
-		r.addDetailedField(newField("upc", "UPC", item))
+		r.addHiddenField(newField("upc", "UPC", item))
 	}
 
-	fallbackCoverURL := "https://www.library.virginia.edu/images/icon-32.png"
+	// cover image url
 
-	if s.client.opts.covers == true {
-		if imgdata, err := s.getCoverImageData(doc); err == nil {
-			r.addBasicField(newField("cover_image", "", imgdata).setType("image-data"))
-		} else {
-			r.addBasicField(newField("cover_image", "", fallbackCoverURL).setType("image-url"))
-		}
-	} else {
-		r.addBasicField(newField("cover_image", "", fallbackCoverURL).setType("url"))
-	}
+	r.addBasicField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json"))
 
-	// mocked up fields that we do not actually pass yet
+	// virgo classic url
 
-	if doc.ID[0] == 'u' {
-		classicURL := fmt.Sprintf("https://ils.lib.virginia.edu/uhtbin/cgisirsi/uva/0/0/5?searchdata1=%s{CKEY}", doc.ID[1:])
-		r.addDetailedField(newField("classic_url", s.client.localize("FieldMore"), classicURL).setType("url"))
+	if strings.HasPrefix(doc.ID, "u") {
+		r.addDetailedField(newField("sirsi_url", s.client.localize("FieldMore"), s.getSirsiURL(doc.ID[1:])).setType("url"))
 	}
 
 	// add exact designator if applicable

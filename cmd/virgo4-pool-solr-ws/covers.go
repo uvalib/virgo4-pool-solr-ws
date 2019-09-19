@@ -119,7 +119,7 @@ func (s *searchContext) getCoverImageData(doc *solrDocument) (string, error) {
 
 	var coverRes coverImageResponse
 
-	url := fmt.Sprintf("https://coverimages.lib.virginia.edu/cover_images/%s.json", doc.ID)
+	url := s.getCoverImageURL(doc)
 
 	req, reqErr := http.NewRequest("GET", url, nil)
 	if reqErr != nil {
