@@ -43,8 +43,8 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 	r.addField(f.setVisibility("detailed"))
 }
 
-func (r *VirgoRecord) addHiddenField(f *VirgoNuancedField) {
-	r.addField(f.setVisibility("hidden"))
+func (r *VirgoRecord) addOptionalField(f *VirgoNuancedField) {
+	r.addField(f.setVisibility("optional"))
 }
 
 func (g *VirgoGroup) addField(f *VirgoNuancedField) {
@@ -63,8 +63,8 @@ func (g *VirgoGroup) addDetailedField(f *VirgoNuancedField) {
 	g.addField(f.setVisibility("detailed"))
 }
 
-func (g *VirgoGroup) addHiddenField(f *VirgoNuancedField) {
-	g.addField(f.setVisibility("hidden"))
+func (g *VirgoGroup) addOptionalField(f *VirgoNuancedField) {
+	g.addField(f.setVisibility("optional"))
 }
 
 func newField(name, label, value string) *VirgoNuancedField {
@@ -165,41 +165,35 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 		r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
 	}
 
-	/*
-		for _, item := range doc.Pool {
-			r.addHiddenField(newField("pool", "", item))
-		}
-	*/
-
 	for _, item := range doc.ISBN {
-		r.addDetailedField(newField("isbn", "ISBN", item))
+		r.addOptionalField(newField("isbn", "ISBN", item))
 	}
 
 	for _, item := range doc.ISSN {
-		r.addDetailedField(newField("issn", "ISSN", item))
+		r.addOptionalField(newField("issn", "ISSN", item))
 	}
 
 	for _, item := range doc.OCLC {
-		r.addDetailedField(newField("oclc", "OCLC", item))
+		r.addOptionalField(newField("oclc", "OCLC", item))
 	}
 
 	for _, item := range doc.LCCN {
-		r.addDetailedField(newField("lccn", "LCCN", item))
+		r.addOptionalField(newField("lccn", "LCCN", item))
 	}
 
 	for _, item := range doc.UPC {
-		r.addDetailedField(newField("upc", "UPC", item))
+		r.addOptionalField(newField("upc", "UPC", item))
 	}
-
-	// cover image url
-
-	r.addBasicField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json"))
 
 	// virgo classic url
 
 	if strings.HasPrefix(doc.ID, "u") {
 		r.addDetailedField(newField("sirsi_url", s.client.localize("FieldMore"), s.getSirsiURL(doc.ID[1:])).setType("url"))
 	}
+
+	// cover image url
+
+	r.addOptionalField(newField("cover_image", "", s.getCoverImageURL(doc)))
 
 	// add exact designator if applicable
 
