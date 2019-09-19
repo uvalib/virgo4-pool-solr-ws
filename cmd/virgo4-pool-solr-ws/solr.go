@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -115,15 +116,18 @@ func (s *searchContext) solrQuery() error {
 	if s.client.opts.verbose == true {
 		s.log("[solr] req: [%s]", string(jsonBytes))
 	} else {
-		s.log("[solr] req: [%s]", s.solrReq.json.Params.Q)
+		// prettify logged query
+		pieces := strings.SplitAfter(s.solrReq.json.Params.Q, fmt.Sprintf(" AND %s:", s.pool.config.solrGroupField))
+		q := pieces[0]
+		if len(pieces) > 1 {
+			q = q + " ..."
+		}
+		s.log("[solr] req: [%s]", q)
 	}
 
 	start := time.Now()
-
 	res, resErr := s.pool.solr.client.Do(req)
-
-	elapsedNanoSec := time.Since(start)
-	elapsedMS := int64(elapsedNanoSec / time.Millisecond)
+	elapsedMS := int64(time.Since(start) / time.Millisecond)
 
 	if resErr != nil {
 		s.log("client.Do() failed: %s", resErr.Error())
@@ -131,6 +135,8 @@ func (s *searchContext) solrQuery() error {
 	}
 
 	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
+
+	s.log("[SOLR] http res: %5d ms", int64(time.Since(start) / time.Millisecond))
 
 	defer res.Body.Close()
 
@@ -156,14 +162,18 @@ func (s *searchContext) solrQuery() error {
 
 	decoder := json.NewDecoder(res.Body)
 
+	start = time.Now()
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
 		s.log("Decode() failed: %s", decErr.Error())
 		return fmt.Errorf("Failed to decode Solr response")
 	}
+	s.log("[SOLR] json dec: %5d ms", int64(time.Since(start) / time.Millisecond))
 
 	s.solrRes = &solrRes
 
+	start = time.Now()
 	s.convertFacets()
+	s.log("[SOLR] conv fac: %5d ms", int64(time.Since(start) / time.Millisecond))
 
 	// log abbreviated results
 
@@ -175,7 +185,9 @@ func (s *searchContext) solrQuery() error {
 		return fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
+	start = time.Now()
 	s.populateMetaFields()
+	s.log("[SOLR] pop meta: %5d ms", int64(time.Since(start) / time.Millisecond))
 
 	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
 
