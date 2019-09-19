@@ -54,10 +54,8 @@ func (s *solrRequest) buildParameterDefType(defType string) {
 	s.json.Params.DefType = defType
 }
 
-func (s *solrRequest) buildParameterFq(fq string, leaders string) {
-	// leaders must be defined with beginning + or -
-
-	fqall := []string{fq, leaders}
+func (s *solrRequest) buildParameterFq(fq string, poolDefinition string) {
+	fqall := []string{fq, poolDefinition}
 
 	s.json.Params.Fq = nonemptyValues(fqall)
 }
@@ -135,7 +133,7 @@ func (s *searchContext) solrRequestWithDefaults() {
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
 	solrReq.buildParameterQt(s.pool.config.solrParameterQt)
 	solrReq.buildParameterDefType(s.pool.config.solrParameterDefType)
-	solrReq.buildParameterFq(s.pool.config.solrParameterFq, s.pool.config.poolLeaders)
+	solrReq.buildParameterFq(s.pool.config.solrParameterFq, s.pool.config.poolDefinition)
 	solrReq.buildParameterFl(s.pool.config.solrParameterFl)
 
 	solrReq.buildParameterStart(s.virgoReq.Pagination.Start)
