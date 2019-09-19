@@ -43,10 +43,6 @@ func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
 	r.addField(f.setVisibility("detailed"))
 }
 
-func (r *VirgoRecord) addOptionalField(f *VirgoNuancedField) {
-	r.addField(f.setVisibility("optional"))
-}
-
 func (g *VirgoGroup) addField(f *VirgoNuancedField) {
 	if f.Name == "" {
 		return
@@ -61,10 +57,6 @@ func (g *VirgoGroup) addBasicField(f *VirgoNuancedField) {
 
 func (g *VirgoGroup) addDetailedField(f *VirgoNuancedField) {
 	g.addField(f.setVisibility("detailed"))
-}
-
-func (g *VirgoGroup) addOptionalField(f *VirgoNuancedField) {
-	g.addField(f.setVisibility("optional"))
 }
 
 func newField(name, label, value string) *VirgoNuancedField {
@@ -166,23 +158,23 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 	}
 
 	for _, item := range doc.ISBN {
-		r.addOptionalField(newField("isbn", "ISBN", item))
+		r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
 	}
 
 	for _, item := range doc.ISSN {
-		r.addOptionalField(newField("issn", "ISSN", item))
+		r.addDetailedField(newField("issn", "ISSN", item).setDisplay("optional"))
 	}
 
 	for _, item := range doc.OCLC {
-		r.addOptionalField(newField("oclc", "OCLC", item))
+		r.addDetailedField(newField("oclc", "OCLC", item).setDisplay("optional"))
 	}
 
 	for _, item := range doc.LCCN {
-		r.addOptionalField(newField("lccn", "LCCN", item))
+		r.addDetailedField(newField("lccn", "LCCN", item).setDisplay("optional"))
 	}
 
 	for _, item := range doc.UPC {
-		r.addOptionalField(newField("upc", "UPC", item))
+		r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
 	}
 
 	// virgo classic url
@@ -193,7 +185,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// cover image url
 
-	r.addOptionalField(newField("cover_image", "", s.getCoverImageURL(doc)))
+	r.addDetailedField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json").setDisplay("optional"))
 
 	// add exact designator if applicable
 
