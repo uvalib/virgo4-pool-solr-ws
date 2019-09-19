@@ -157,6 +157,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 		r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
 	}
 
+/*
 	for _, item := range doc.ISBN {
 		r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
 	}
@@ -176,6 +177,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 	for _, item := range doc.UPC {
 		r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
 	}
+*/
 
 	// virgo classic url
 
@@ -185,7 +187,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// cover image url
 
-	r.addDetailedField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json").setDisplay("optional"))
+	r.addBasicField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json").setDisplay("optional"))
 
 	// add exact designator if applicable
 
