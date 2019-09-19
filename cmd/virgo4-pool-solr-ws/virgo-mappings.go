@@ -172,23 +172,23 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 	*/
 
 	for _, item := range doc.ISBN {
-		r.addHiddenField(newField("isbn", "ISBN", item))
+		r.addDetailedField(newField("isbn", "ISBN", item))
 	}
 
 	for _, item := range doc.ISSN {
-		r.addHiddenField(newField("issn", "ISSN", item))
+		r.addDetailedField(newField("issn", "ISSN", item))
 	}
 
 	for _, item := range doc.OCLC {
-		r.addHiddenField(newField("oclc", "OCLC", item))
+		r.addDetailedField(newField("oclc", "OCLC", item))
 	}
 
 	for _, item := range doc.LCCN {
-		r.addHiddenField(newField("lccn", "LCCN", item))
+		r.addDetailedField(newField("lccn", "LCCN", item))
 	}
 
 	for _, item := range doc.UPC {
-		r.addHiddenField(newField("upc", "UPC", item))
+		r.addDetailedField(newField("upc", "UPC", item))
 	}
 
 	// cover image url
