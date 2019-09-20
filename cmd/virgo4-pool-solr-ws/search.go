@@ -328,6 +328,10 @@ func (s *searchContext) populateGroups() error {
 		if format != "" {
 			group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
 		}
+
+		// cover image url
+
+		group.addBasicField(newField("cover_image", "", "https://www.library.virginia.edu/images/icon-32.png").setType("image-url").setDisplay("optional"))
 	}
 
 	s.virgoPoolRes.GroupList = &groups
