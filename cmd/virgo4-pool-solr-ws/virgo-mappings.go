@@ -187,7 +187,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// cover image url
 
-	r.addBasicField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json").setDisplay("optional"))
+	r.addBasicField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json-url").setDisplay("optional"))
 
 	// add exact designator if applicable
 
