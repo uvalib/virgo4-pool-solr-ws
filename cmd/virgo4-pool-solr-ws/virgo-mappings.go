@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -17,6 +18,16 @@ func firstElementOf(s []string) string {
 	}
 
 	return val
+}
+
+func sliceContainsString(list []string, val string) bool {
+	for _, i := range list {
+		if i == val {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
@@ -111,9 +122,61 @@ func (s *searchContext) getSirsiURL(id string) string {
 func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	url := strings.Replace(s.pool.config.coverImageURLTemplate, "__identifier__", doc.ID, -1)
 
-	// also add query parameters?
+	// also add query parameters:
+	// doc_type: music or non_music
+	// books require at least one of: isbn, oclc, lccn, upc
+	// music requires: artist_name, album_name
+	// all else is optional
 
-	return url
+	// build query parameters using http package to properly quote values
+	req, reqErr := http.NewRequest("GET", url, nil)
+	if reqErr != nil {
+		return ""
+	}
+
+	qp := req.URL.Query()
+
+	switch {
+	// music
+	case sliceContainsString(doc.Pool, "music_recordings"):
+		qp.Add("doc_type", "music")
+
+		if len(doc.Author) > 0 {
+			qp.Add("artist_name", firstElementOf(doc.Author))
+		}
+
+		if len(doc.Title) > 0 {
+			qp.Add("album_name", firstElementOf(doc.Title))
+		}
+
+	// books
+	case sliceContainsString(doc.Pool, "catalog"):
+		qp.Add("doc_type", "non_music")
+
+		if len(doc.ISBN) > 0 {
+			qp.Add("isbn", strings.Join(doc.ISBN, ","))
+		}
+
+		if len(doc.OCLC) > 0 {
+			qp.Add("oclc", strings.Join(doc.OCLC, ","))
+		}
+
+		if len(doc.LCCN) > 0 {
+			qp.Add("lccn", strings.Join(doc.LCCN, ","))
+		}
+
+		if len(doc.UPC) > 0 {
+			qp.Add("upc", strings.Join(doc.UPC, ","))
+		}
+
+	// everything else
+	default:
+		qp.Add("doc_type", "non_music")
+	}
+
+	req.URL.RawQuery = qp.Encode()
+
+	return req.URL.String()
 }
 
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
@@ -187,7 +250,9 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// cover image url
 
-	r.addBasicField(newField("cover_image", "", s.getCoverImageURL(doc)).setType("image-json-url").setDisplay("optional"))
+	if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
+		r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-json-url").setDisplay("optional"))
+	}
 
 	// add exact designator if applicable
 
