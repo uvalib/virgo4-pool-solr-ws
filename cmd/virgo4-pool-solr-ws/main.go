@@ -16,6 +16,7 @@ import (
  * Main entry point for the web service
  */
 func main() {
+	fixme
 	log.Printf("===> virgo4-pool-solr-ws starting up <===")
 
 	cfg := loadConfig()
