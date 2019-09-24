@@ -136,7 +136,7 @@ func (s *searchContext) solrQuery() error {
 
 	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
 
-	s.log("[SOLR] http res: %5d ms", int64(time.Since(start) / time.Millisecond))
+	s.log("[SOLR] http res: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	defer res.Body.Close()
 
@@ -167,13 +167,13 @@ func (s *searchContext) solrQuery() error {
 		s.log("Decode() failed: %s", decErr.Error())
 		return fmt.Errorf("Failed to decode Solr response")
 	}
-	s.log("[SOLR] json dec: %5d ms", int64(time.Since(start) / time.Millisecond))
+	s.log("[SOLR] json dec: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	s.solrRes = &solrRes
 
 	start = time.Now()
 	s.convertFacets()
-	s.log("[SOLR] conv fac: %5d ms", int64(time.Since(start) / time.Millisecond))
+	s.log("[SOLR] conv fac: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	// log abbreviated results
 
@@ -187,7 +187,7 @@ func (s *searchContext) solrQuery() error {
 
 	start = time.Now()
 	s.populateMetaFields()
-	s.log("[SOLR] pop meta: %5d ms", int64(time.Since(start) / time.Millisecond))
+	s.log("[SOLR] pop meta: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
 
