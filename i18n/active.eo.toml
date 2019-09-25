@@ -24,11 +24,11 @@ other = "FIXME"
 
 [PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
-other = "Katalogo"
+other = "Libroj"
 
 [PoolCatalogSummary]
 desc = "The brief summary for the Solr pool designated as the main catalog, as shown in Sources setup."
-other = "UVA Biblioteko-Katalogo"
+other = "Katalogo de Libroj pri Biblioteko de UVA"
 
 [PoolCatalogDescription]
 desc = "The detailed description for the Solr pool designated as the main catalog."

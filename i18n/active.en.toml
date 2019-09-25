@@ -24,11 +24,11 @@ other = "(EXPERIMENTAL) All of the content from the Catalog plus some odds and e
 
 [PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
-other = "Catalog"
+other = "Books"
 
 [PoolCatalogSummary]
 desc = "The brief summary for the Solr pool designated as the main catalog."
-other = "The UVA Library Catalog"
+other = "The UVA Library Books Catalog"
 
 [PoolCatalogDescription]
 desc = "The detailed description for the Solr pool designated as the main catalog."
