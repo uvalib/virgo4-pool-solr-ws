@@ -179,6 +179,20 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	return req.URL.String()
 }
 
+func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value string) bool {
+	if len(facetDef.ExposedValues) == 0 {
+		return true
+	}
+
+	for _, exposedValue := range facetDef.ExposedValues {
+		if strings.EqualFold(value, exposedValue) == true {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
 	var r VirgoRecord
 
@@ -188,17 +202,19 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
 
+	for _, item := range doc.Author {
+		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
+	}
+
 	availability := doc.AnonAvailability
 	if s.client.isAuthenticated() == true {
 		availability = doc.UVAAvailability
 	}
 
-	for _, item := range doc.Author {
-		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
-	}
-
 	for _, item := range availability {
-		r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
+		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
+			r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
+		}
 	}
 
 	for _, item := range doc.Subject {
@@ -305,14 +321,7 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value s
 	for _, b := range value.Buckets {
 		bucket := s.virgoPopulateFacetBucket(b)
 
-		if len(facetDef.ExposedValues) > 0 {
-			for _, val := range facetDef.ExposedValues {
-				if strings.EqualFold(bucket.Value, val) == true {
-					buckets = append(buckets, *bucket)
-					break
-				}
-			}
-		} else {
+		if s.isExposedFacetValue(facetDef, bucket.Value) {
 			buckets = append(buckets, *bucket)
 		}
 	}
