@@ -318,11 +318,11 @@ func (s *searchContext) populateGroups() error {
 		format := parts[2]
 
 		if title != "" {
-			group.addBasicField(newField("title", s.client.localize("FieldTitle"), title))
+			group.addBasicField(newField("title", s.client.localize("FieldTitle"), title).setType("title"))
 		}
 
 		if author != "" {
-			group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author))
+			group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author).setType("author"))
 		}
 
 		if format != "" {
@@ -335,19 +335,21 @@ func (s *searchContext) populateGroups() error {
 
 		gotCover := false
 
-		for _, r := range group.RecordList {
-			for _, f := range r.Fields {
-				if f.Name == "cover_image" {
-					group.addBasicField(&f)
-					gotCover = true
+		/*
+			for _, r := range group.RecordList {
+				for _, f := range r.Fields {
+					if f.Name == "cover_image" {
+						group.addBasicField(&f)
+						gotCover = true
+						break
+					}
+				}
+
+				if gotCover == true {
 					break
 				}
 			}
-
-			if gotCover == true {
-				break
-			}
-		}
+		*/
 
 		// use a fallback image if no cover image url was found
 		if gotCover == false {

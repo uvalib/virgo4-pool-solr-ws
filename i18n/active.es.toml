@@ -142,6 +142,10 @@ other = "Número de Llamada (Amplio)"
 desc = "The display name for the Call Number (Narrow) field in a single item record."
 other = "Número de Llamada (Estrecho)"
 
+[FieldAvailability]
+desc = "The display name for the Availability field in a single item record."
+other = "Disponibilidad"
+
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."
 other = "Más"

@@ -142,6 +142,10 @@ other = "Call Number (Broad)"
 desc = "The display name for the Call Number (Narrow) field in a single item record."
 other = "Call Number (Narrow)"
 
+[FieldAvailability]
+desc = "The display name for the Availability field in a single item record."
+other = "Availability"
+
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."
 other = "More"

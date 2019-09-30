@@ -182,14 +182,23 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
 	var r VirgoRecord
 
-	// new style records -- order is important!
+	// new style records -- order is important, primarily for generic "text" fields
 
 	r.addBasicField(newField("id", s.client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
-	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)))
-	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)))
+	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
+	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
+
+	availability := doc.AnonAvailability
+	if s.client.isAuthenticated() == true {
+		availability = doc.UVAAvailability
+	}
+
+	for _, item := range availability {
+		r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
+	}
 
 	for _, item := range doc.Author {
-		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item))
+		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
 	}
 
 	for _, item := range doc.Subject {
@@ -250,9 +259,11 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// cover image url
 
-	if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
-		r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-json-url").setDisplay("optional"))
-	}
+	/*
+		if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
+			r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-json-url").setDisplay("optional"))
+		}
+	*/
 
 	// add exact designator if applicable
 

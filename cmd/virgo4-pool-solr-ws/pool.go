@@ -260,6 +260,7 @@ func (p *poolContext) initTranslations() {
 		"FieldCallNumber",
 		"FieldCallNumberBroad",
 		"FieldCallNumberNarrow",
+		"FieldAvailability",
 		"FieldMore",
 	}
 
