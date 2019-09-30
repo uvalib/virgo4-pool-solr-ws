@@ -193,12 +193,12 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 		availability = doc.UVAAvailability
 	}
 
-	for _, item := range availability {
-		r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
-	}
-
 	for _, item := range doc.Author {
 		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
+	}
+
+	for _, item := range availability {
+		r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
 	}
 
 	for _, item := range doc.Subject {
