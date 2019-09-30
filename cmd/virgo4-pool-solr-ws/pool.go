@@ -113,13 +113,11 @@ func getScoreThresholds(confMed, confHigh string) (medium, high float32) {
 
 func (p *poolContext) initIdentity() {
 	p.identity = VirgoPoolIdentity{
-		Name:        p.config.poolType,
-		Summary:     p.config.poolSummary,
+		Name:        p.config.poolName,
 		Description: p.config.poolDescription,
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
-	log.Printf("[POOL] identity.Summary          = [%s]", p.identity.Summary)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
 }
 
@@ -227,28 +225,20 @@ func (p *poolContext) initTranslations() {
 
 	messageIDs := []string{
 		"PoolArchivalName",
-		"PoolArchivalSummary",
 		"PoolArchivalDescription",
 		"PoolCatalogBroadName",
-		"PoolCatalogBroadSummary",
 		"PoolCatalogBroadDescription",
 		"PoolCatalogName",
-		"PoolCatalogSummary",
 		"PoolCatalogDescription",
 		"PoolMusicRecordingsName",
-		"PoolMusicRecordingsSummary",
 		"PoolMusicRecordingsDescription",
 		"PoolMusicalScoresName",
-		"PoolMusicalScoresSummary",
 		"PoolMusicalScoresDescription",
 		"PoolSerialsName",
-		"PoolSerialsSummary",
 		"PoolSerialsDescription",
 		"PoolSoundRecordingsName",
-		"PoolSoundRecordingsSummary",
 		"PoolSoundRecordingsDescription",
 		"PoolVideoName",
-		"PoolVideoSummary",
 		"PoolVideoDescription",
 		"FacetAuthor",
 		"FacetSubject",

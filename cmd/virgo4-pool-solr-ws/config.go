@@ -6,8 +6,7 @@ import (
 )
 
 type poolConfig struct {
-	poolType              string
-	poolSummary           string
+	poolName              string
 	poolDescription       string
 	poolDefinition        string
 	poolFacets            string
@@ -55,8 +54,7 @@ func ensureSetAndNonEmpty(env string) string {
 func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
-	cfg.poolType = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_TYPE")
-	cfg.poolSummary = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_SUMMARY")
+	cfg.poolName = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_NAME")
 	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
 	cfg.poolDefinition = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_DEFINITION")
 	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
@@ -79,8 +77,7 @@ func loadConfig() *poolConfig {
 	cfg.solrGroupField = "work_title2_key_sort" // currently hard-coded in json parsing so specifying it will break things
 	cfg.solrFacetManifest = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_FACET_MANIFEST")
 
-	log.Printf("[CONFIG] poolType              = [%s]", cfg.poolType)
-	log.Printf("[CONFIG] poolSummary           = [%s]", cfg.poolSummary)
+	log.Printf("[CONFIG] poolName              = [%s]", cfg.poolName)
 	log.Printf("[CONFIG] poolDescription       = [%s]", cfg.poolDescription)
 	log.Printf("[CONFIG] poolDefinition        = [%s]", cfg.poolDefinition)
 	log.Printf("[CONFIG] poolFacets            = [%s]", cfg.poolFacets)

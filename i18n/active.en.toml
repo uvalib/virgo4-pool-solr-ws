@@ -2,10 +2,6 @@
 desc = "The display name for the pool of Solr search results designated as archival."
 other = "Archival"
 
-[PoolArchivalSummary]
-desc = "The brief summary for the Solr pool designated as archival."
-other = "The UVA Library Archival Catalog"
-
 [PoolArchivalDescription]
 desc = "The detailed description for the Solr pool designated as archival."
 other = "(UNDER CONSTRUCTION) Rare and unique materials that may be explored in a peaceful and elegant reading room environment. Treasures of all sorts, including manuscripts, business records, maps, correspondence, and so much more."
@@ -13,10 +9,6 @@ other = "(UNDER CONSTRUCTION) Rare and unique materials that may be explored in 
 [PoolCatalogBroadName]
 desc = "The display name for the pool of Solr search results designated as the broad catalog."
 other = "Catalog (Broad)"
-
-[PoolCatalogBroadSummary]
-desc = "The brief summary for the Solr pool designated as the broad catalog."
-other = "The UVA Library Broad Catalog"
 
 [PoolCatalogBroadDescription]
 desc = "The detailed description for the Solr pool designated as the broad catalog."
@@ -26,10 +18,6 @@ other = "(EXPERIMENTAL) All of the content from the Catalog plus some odds and e
 desc = "The display name for the pool of Solr search results designated as the main catalog."
 other = "Books"
 
-[PoolCatalogSummary]
-desc = "The brief summary for the Solr pool designated as the main catalog."
-other = "The UVA Library Books Catalog"
-
 [PoolCatalogDescription]
 desc = "The detailed description for the Solr pool designated as the main catalog."
 other = "Physical and electronic books from the library's collection. Many of these materials may be available for check-out at one of our convenient locations, while others can be accessed online from the convenience of your home."
@@ -37,10 +25,6 @@ other = "Physical and electronic books from the library's collection. Many of th
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Music Recordings"
-
-[PoolMusicRecordingsSummary]
-desc = "The brief summary for the Solr pool designated as music recordings."
-other = "The UVA Library Music Recordings Catalog"
 
 [PoolMusicRecordingsDescription]
 desc = "The detailed description for the Solr pool designated as music recordings."
@@ -50,10 +34,6 @@ other = "Music from yesterday and today."
 desc = "The display name for the pool of Solr search results designated as musical scores."
 other = "Musical Scores"
 
-[PoolMusicalScoresSummary]
-desc = "The brief summary for the Solr pool designated as musical scores."
-other = "The UVA Library Musical Scores Catalog"
-
 [PoolMusicalScoresDescription]
 desc = "The detailed description for the Solr pool designated as musical scores."
 other = "Sheet music and other music notation."
@@ -61,10 +41,6 @@ other = "Sheet music and other music notation."
 [PoolSerialsName]
 desc = "The display name for the pool of Solr search results designated as serials."
 other = "Serials"
-
-[PoolSerialsSummary]
-desc = "The brief summary for the Solr pool designated as serials."
-other = "The UVA Library Serials Catalog"
 
 [PoolSerialsDescription]
 desc = "The detailed description for the Solr pool designated as serials."
@@ -74,10 +50,6 @@ other = "(UNDER CONSTRUCTION) Journals, Magazines, Newspapers, and runs of other
 desc = "The display name for the pool of Solr search results designated as sound recordings."
 other = "Sound Recordings"
 
-[PoolSoundRecordingsSummary]
-desc = "The brief summary for the Solr pool designated as sound recordings."
-other = "The UVA Library Sound Recordings Catalog"
-
 [PoolSoundRecordingsDescription]
 desc = "The detailed description for the Solr pool designated as sound recordings."
 other = "Audio materials that aren't primarily music."
@@ -85,10 +57,6 @@ other = "Audio materials that aren't primarily music."
 [PoolVideoName]
 desc = "The display name for the pool of Solr search results designated as video."
 other = "Video"
-
-[PoolVideoSummary]
-desc = "The brief summary for the Solr pool designated as video."
-other = "The UVA Library Video Catalog"
 
 [PoolVideoDescription]
 desc = "The detailed description for the Solr pool designated as video."

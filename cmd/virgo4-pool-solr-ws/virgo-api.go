@@ -32,8 +32,7 @@ type VirgoPoolResultDebug struct {
 
 // VirgoPoolIdentity holds localized information about this pool (same as returned by /identify endpoint)
 type VirgoPoolIdentity struct {
-	Name        string `json:"name,omitempty"`        // localized pool name (i.e. type)
-	Summary     string `json:"summary,omitempty"`     // localized pool summary (a few words or so)
+	Name        string `json:"name,omitempty"`        // localized pool name
 	Description string `json:"description,omitempty"` // localized pool description (detailed information about what the pool contains)
 }
 

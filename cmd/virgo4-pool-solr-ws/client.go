@@ -113,7 +113,6 @@ func (c *clientContext) localize(id string) string {
 func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity {
 	id := VirgoPoolIdentity{
 		Name:        c.localize(p.identity.Name),
-		Summary:     c.localize(p.identity.Summary),
 		Description: c.localize(p.identity.Description),
 	}
 
