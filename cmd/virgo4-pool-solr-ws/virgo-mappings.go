@@ -296,7 +296,7 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value s
 
 		if len(facetDef.ExposedValues) > 0 {
 			for _, val := range facetDef.ExposedValues {
-				if bucket.Value == val {
+				if strings.EqualFold(bucket.Value, val) == true {
 					buckets = append(buckets, *bucket)
 					break
 				}
