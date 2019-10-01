@@ -333,28 +333,26 @@ func (s *searchContext) populateGroups() error {
 		// just use url from first grouped result that has one
 		// (they all will for now, but we check properly anyway)
 
-		/*
-			gotCover := false
+		gotCover := false
 
-			for _, r := range group.RecordList {
-				for _, f := range r.Fields {
-					if f.Name == "cover_image" {
-						group.addBasicField(&f)
-						gotCover = true
-						break
-					}
-				}
-
-				if gotCover == true {
+		for _, r := range group.RecordList {
+			for _, f := range r.Fields {
+				if f.Name == "cover_image" {
+					group.addBasicField(&f)
+					gotCover = true
 					break
 				}
 			}
 
-			// use a fallback image if no cover image url was found
-			if gotCover == false {
-				group.addBasicField(newField("cover_image", "", "https://www.library.virginia.edu/images/icon-32.png").setType("image-url").setDisplay("optional"))
+			if gotCover == true {
+				break
 			}
-		*/
+		}
+
+		// use a fallback image if no cover image url was found
+		if gotCover == false {
+			group.addBasicField(newField("cover_image", "", "https://www.library.virginia.edu/images/icon-32.png").setType("image-url").setDisplay("optional"))
+		}
 	}
 
 	s.virgoPoolRes.GroupList = &groups

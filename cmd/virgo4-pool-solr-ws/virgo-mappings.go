@@ -136,9 +136,9 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 	qp := req.URL.Query()
 
-	switch {
-	// music
-	case sliceContainsString(doc.Pool, "music_recordings"):
+	if sliceContainsString(doc.Pool, "music_recordings") == true {
+		// music
+
 		qp.Add("doc_type", "music")
 
 		if len(doc.Author) > 0 {
@@ -149,8 +149,9 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 			qp.Add("album_name", firstElementOf(doc.Title))
 		}
 
-	// books
-	case sliceContainsString(doc.Pool, "catalog"):
+	} else {
+		// books... and everything else.  throw everything we have at it
+
 		qp.Add("doc_type", "non_music")
 
 		if len(doc.ISBN) > 0 {
@@ -169,9 +170,9 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 			qp.Add("upc", strings.Join(doc.UPC, ","))
 		}
 
-	// everything else
-	default:
-		qp.Add("doc_type", "non_music")
+		if len(doc.Title) > 0 {
+			qp.Add("title", firstElementOf(doc.Title))
+		}
 	}
 
 	req.URL.RawQuery = qp.Encode()
@@ -275,11 +276,9 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// cover image url
 
-	/*
-		if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
-			r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-json-url").setDisplay("optional"))
-		}
-	*/
+	if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
+		r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-url").setDisplay("optional"))
+	}
 
 	// add exact designator if applicable
 
