@@ -311,32 +311,77 @@ func (s *searchContext) populateGroups() error {
 
 		group.Count = len(group.RecordList)
 
-		// set most group fields based on first result
-
-		for _, f := range group.RecordList[0].Fields {
-			switch f.Name {
-			case "title":
-				fallthrough
-			case "subtitle":
-				fallthrough
-			case "author":
-				fallthrough
-			case "cover_image":
-				group.addBasicField(&f)
-			}
-		}
-
-		// set group format based on solr grouping field
+		// FIXME: old way (client keys off of field types to generate labels from first record)
 
 		parts := strings.Split(group.Value, "/")
 
-		if len(parts) >= 2 {
-			format := strings.Title(parts[2])
+		title := parts[0]
+		author := parts[1]
+		format := parts[2]
 
-			if format != "" {
-				group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
+		if title != "" {
+			group.addBasicField(newField("title", s.client.localize("FieldTitle"), title).setType("title"))
+		}
+
+		if author != "" {
+			group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author).setType("author"))
+		}
+
+		if format != "" {
+			group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
+		}
+
+		// cover image url
+		// just use url from first grouped result that has one
+		// (they all will for now, but we check properly anyway)
+
+		gotCover := false
+
+		for _, r := range group.RecordList {
+			for _, f := range r.Fields {
+				if f.Name == "cover_image" {
+					group.addBasicField(&f)
+					gotCover = true
+					break
+				}
+			}
+
+			if gotCover == true {
+				break
 			}
 		}
+
+		/*
+			// FIXME: new way (client uses these fields as-is)
+
+			// set most group fields based on first result
+
+			for _, f := range group.RecordList[0].Fields {
+				switch f.Name {
+				case "title":
+					fallthrough
+				case "subtitle":
+					fallthrough
+				case "author":
+					fallthrough
+				case "cover_image":
+					group.addBasicField(&f)
+				}
+			}
+
+			// set group format based on solr grouping field
+			// (or intersection of all records?)
+
+			parts := strings.Split(group.Value, "/")
+
+			if len(parts) >= 2 {
+				format := strings.Title(parts[2])
+
+				if format != "" {
+					group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
+				}
+			}
+		*/
 	}
 
 	s.virgoPoolRes.GroupList = &groups
