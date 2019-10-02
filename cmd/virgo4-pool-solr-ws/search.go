@@ -311,7 +311,7 @@ func (s *searchContext) populateGroups() error {
 
 		group.Count = len(group.RecordList)
 
-		// set group title/author/format/cover image based on first result
+		// set most group fields based on first result
 
 		for _, f := range group.RecordList[0].Fields {
 			switch f.Name {
@@ -321,10 +321,20 @@ func (s *searchContext) populateGroups() error {
 				fallthrough
 			case "author":
 				fallthrough
-			case "format":
-				fallthrough
 			case "cover_image":
 				group.addBasicField(&f)
+			}
+		}
+
+		// set group format based on solr grouping field
+
+		parts := strings.Split(group.Value, "/")
+
+		if len(parts) >= 2 {
+			format := strings.Title(parts[2])
+
+			if format != "" {
+				group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
 			}
 		}
 	}
