@@ -348,11 +348,6 @@ func (s *searchContext) populateGroups() error {
 				break
 			}
 		}
-
-		// use a fallback image if no cover image url was found
-		if gotCover == false {
-			group.addBasicField(newField("cover_image", "", "https://www.library.virginia.edu/images/icon-32.png").setType("image-url").setDisplay("optional"))
-		}
 	}
 
 	s.virgoPoolRes.GroupList = &groups
