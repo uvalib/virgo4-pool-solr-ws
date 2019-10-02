@@ -311,41 +311,20 @@ func (s *searchContext) populateGroups() error {
 
 		group.Count = len(group.RecordList)
 
-		parts := strings.Split(group.Value, "/")
+		// set group title/author/format/cover image based on first result
 
-		title := parts[0]
-		author := parts[1]
-		format := parts[2]
-
-		if title != "" {
-			group.addBasicField(newField("title", s.client.localize("FieldTitle"), title).setType("title"))
-		}
-
-		if author != "" {
-			group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author).setType("author"))
-		}
-
-		if format != "" {
-			group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
-		}
-
-		// cover image url
-		// just use url from first grouped result that has one
-		// (they all will for now, but we check properly anyway)
-
-		gotCover := false
-
-		for _, r := range group.RecordList {
-			for _, f := range r.Fields {
-				if f.Name == "cover_image" {
-					group.addBasicField(&f)
-					gotCover = true
-					break
-				}
-			}
-
-			if gotCover == true {
-				break
+		for _, f := range group.RecordList[0].Fields {
+			switch f.Name {
+			case "title":
+				fallthrough
+			case "subtitle":
+				fallthrough
+			case "author":
+				fallthrough
+			case "format":
+				fallthrough
+			case "cover_image":
+				group.addBasicField(&f)
 			}
 		}
 	}
