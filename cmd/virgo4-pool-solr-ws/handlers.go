@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,7 +33,9 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 		return
 	}
 
+	start := time.Now()
 	c.JSON(http.StatusOK, virgoRes)
+	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
 }
 
 func (p *poolContext) resourceHandler(c *gin.Context) {

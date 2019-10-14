@@ -299,13 +299,16 @@ func (s *searchContext) populateGroups() error {
 
 	// loop through records to route to correct group
 
+	start := time.Now()
 	for _, record := range *r.virgoPoolRes.RecordList {
 		v := groupValueMap[record.workTitle2KeySort]
 		groups[v].RecordList = append(groups[v].RecordList, record)
 	}
+	s.log("[GROUP] map groups: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	// loop through groups to assign count and fields
 
+	start = time.Now()
 	for i := range groups {
 		group := &groups[i]
 
@@ -383,6 +386,7 @@ func (s *searchContext) populateGroups() error {
 			}
 		*/
 	}
+	s.log("[GROUP] group vals: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	s.virgoPoolRes.GroupList = &groups
 
