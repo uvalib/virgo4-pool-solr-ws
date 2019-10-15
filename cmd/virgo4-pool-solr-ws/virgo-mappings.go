@@ -136,43 +136,51 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 	qp := req.URL.Query()
 
+	author := firstElementOf(doc.Author)
+	title := firstElementOf(doc.Title)
+
 	if sliceContainsString(doc.Pool, "music_recordings") == true {
 		// music
 
 		qp.Add("doc_type", "music")
 
 		if len(doc.Author) > 0 {
-			qp.Add("artist_name", firstElementOf(doc.Author))
+			qp.Add("artist_name", author)
 		}
 
 		if len(doc.Title) > 0 {
-			qp.Add("album_name", firstElementOf(doc.Title))
+			qp.Add("album_name", title)
 		}
-
 	} else {
-		// books... and everything else.  throw everything we have at it
+		// books... and everything else
 
 		qp.Add("doc_type", "non_music")
 
-		if len(doc.ISBN) > 0 {
-			qp.Add("isbn", strings.Join(doc.ISBN, ","))
-		}
-
-		if len(doc.OCLC) > 0 {
-			qp.Add("oclc", strings.Join(doc.OCLC, ","))
-		}
-
-		if len(doc.LCCN) > 0 {
-			qp.Add("lccn", strings.Join(doc.LCCN, ","))
-		}
-
-		if len(doc.UPC) > 0 {
-			qp.Add("upc", strings.Join(doc.UPC, ","))
+		if len(doc.Author) > 0 {
+			qp.Add("author", author)
 		}
 
 		if len(doc.Title) > 0 {
-			qp.Add("title", firstElementOf(doc.Title))
+			qp.Add("title", title)
 		}
+	}
+
+	// always throw these values at the cover image service
+
+	if len(doc.ISBN) > 0 {
+		qp.Add("isbn", strings.Join(doc.ISBN, ","))
+	}
+
+	if len(doc.OCLC) > 0 {
+		qp.Add("oclc", strings.Join(doc.OCLC, ","))
+	}
+
+	if len(doc.LCCN) > 0 {
+		qp.Add("lccn", strings.Join(doc.LCCN, ","))
+	}
+
+	if len(doc.UPC) > 0 {
+		qp.Add("upc", strings.Join(doc.UPC, ","))
 	}
 
 	req.URL.RawQuery = qp.Encode()
@@ -246,27 +254,25 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 		r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
 	}
 
-	/*
-		for _, item := range doc.ISBN {
-			r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
-		}
+	for _, item := range doc.ISBN {
+		r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
+	}
 
-		for _, item := range doc.ISSN {
-			r.addDetailedField(newField("issn", "ISSN", item).setDisplay("optional"))
-		}
+	for _, item := range doc.ISSN {
+		r.addDetailedField(newField("issn", "ISSN", item).setDisplay("optional"))
+	}
 
-		for _, item := range doc.OCLC {
-			r.addDetailedField(newField("oclc", "OCLC", item).setDisplay("optional"))
-		}
+	for _, item := range doc.OCLC {
+		r.addDetailedField(newField("oclc", "OCLC", item).setDisplay("optional"))
+	}
 
-		for _, item := range doc.LCCN {
-			r.addDetailedField(newField("lccn", "LCCN", item).setDisplay("optional"))
-		}
+	for _, item := range doc.LCCN {
+		r.addDetailedField(newField("lccn", "LCCN", item).setDisplay("optional"))
+	}
 
-		for _, item := range doc.UPC {
-			r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
-		}
-	*/
+	for _, item := range doc.UPC {
+		r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
+	}
 
 	// virgo classic url
 
