@@ -136,7 +136,8 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 	qp := req.URL.Query()
 
-	author := firstElementOf(doc.Author)
+	// remove extraneous dates from author
+	author := strings.Trim(strings.Split(firstElementOf(doc.Author), "[")[0], " ")
 	title := firstElementOf(doc.Title)
 
 	if sliceContainsString(doc.Pool, "music_recordings") == true {
