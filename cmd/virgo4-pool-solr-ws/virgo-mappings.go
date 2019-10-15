@@ -150,15 +150,13 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 		if len(doc.Title) > 0 {
 			qp.Add("album_name", title)
+			// also send as title so it populates in cover image server?
+			qp.Add("title", title)
 		}
 	} else {
 		// books... and everything else
 
 		qp.Add("doc_type", "non_music")
-
-		if len(doc.Author) > 0 {
-			qp.Add("author", author)
-		}
 
 		if len(doc.Title) > 0 {
 			qp.Add("title", title)
