@@ -91,6 +91,7 @@ type solrDocument struct {
 	Language          []string `json:"language_a,omitempty"`
 	Format            []string `json:"format_a,omitempty"`
 	Library           []string `json:"library_a,omitempty"`
+	Location          []string `json:"location2_a,omitempty"`
 	CallNumber        []string `json:"call_number_a,omitempty"`
 	CallNumberBroad   []string `json:"call_number_broad_a,omitempty"`
 	CallNumberNarrow  []string `json:"call_number_narrow_a,omitempty"`

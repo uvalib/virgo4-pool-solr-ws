@@ -227,8 +227,8 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 		r.addBasicField(newField("format", s.client.localize("FieldFormat"), item))
 	}
 
-	for _, item := range doc.Library {
-		r.addBasicField(newField("library", s.client.localize("FieldLibrary"), item))
+	for _, item := range doc.Location {
+		r.addBasicField(newField("location", s.client.localize("FieldLocation"), item))
 	}
 
 	for _, item := range doc.CallNumber {
@@ -241,6 +241,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	for _, item := range doc.Language {
 		r.addDetailedField(newField("language", s.client.localize("FieldLanguage"), item))
+	}
+
+	for _, item := range doc.Library {
+		r.addDetailedField(newField("library", s.client.localize("FieldLibrary"), item))
 	}
 
 	for _, item := range doc.CallNumberBroad {

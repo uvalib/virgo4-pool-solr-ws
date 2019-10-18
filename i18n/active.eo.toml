@@ -130,6 +130,10 @@ other = "Formato"
 desc = "The display name for the Library field in a single item record."
 other = "Biblioteko"
 
+[FieldLocation]
+desc = "The display name for the Location field in a single item record."
+other = "Loko"
+
 [FieldCallNumber]
 desc = "The display name for the Call Number field in a single item record."
 other = "Voka Numero"
