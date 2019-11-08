@@ -199,7 +199,7 @@ func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value 
 	return false
 }
 
-func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSearch bool, titleQueried string) *VirgoRecord {
+func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important, primarily for generic "text" fields
@@ -289,9 +289,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument, isSingleTitleSear
 
 	// add exact designator if applicable
 
-	itemTitle := firstElementOf(doc.Title)
-
-	if isSingleTitleSearch == true && titlesAreEqual(itemTitle, titleQueried) {
+	if s.itemIsExactMatch(doc) {
 		r.Exact = true
 	}
 
@@ -371,11 +369,11 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocuments, isSingleTitleSearch bool, titleQueried string) *[]VirgoRecord {
+func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocuments) *[]VirgoRecord {
 	var recordList []VirgoRecord
 
 	for _, doc := range solrDocuments.Docs {
-		record := s.virgoPopulateRecord(&doc, isSingleTitleSearch, titleQueried)
+		record := s.virgoPopulateRecord(&doc)
 
 		recordList = append(recordList, *record)
 	}
@@ -404,6 +402,50 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 	return nil
 }
 
+func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
+	// encapsulates document-level exact-match logic for a given search
+
+	// case 1: a single title search query matches the first title in this document
+	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
+		firstTitleResult := firstElementOf(doc.Title)
+
+		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
+
+		if titlesAreEqual(titleQueried, firstTitleResult) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *searchContext) searchIsExactMatch() bool {
+	// encapsulates search-level exact-match logic for a given search
+
+	// cannot determine exactness if this is not the first page of results
+	if s.solrRes.meta.start != 0 {
+		return false
+	}
+
+	// cannot be exact if the first result does not satisfy exactness check
+	if s.itemIsExactMatch(s.solrRes.meta.firstDoc) == false {
+		return false
+	}
+
+	// first document is an exact match, but we need more checks
+
+	// case 1: title searches must have multiple words, otherwise exactness determination is too aggressive
+	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
+		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
+
+		if strings.Contains(titleQueried, " ") == false {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (s *searchContext) virgoPopulatePoolResult() {
 	var poolResult VirgoPoolResult
 
@@ -413,20 +455,18 @@ func (s *searchContext) virgoPopulatePoolResult() {
 
 	poolResult.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
-	firstTitleResults := ""
-	titleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
-
 	// default confidence, when there are no results
 	poolResult.Confidence = "low"
 
 	if s.solrRes.meta.numRows > 0 {
-		poolResult.RecordList = s.virgoPopulateRecordList(&s.solrRes.Response, s.solrRes.meta.parserInfo.isSingleTitleSearch, titleQueried)
+		poolResult.RecordList = s.virgoPopulateRecordList(&s.solrRes.Response)
 
-		// FIXME: somehow create h/m/l confidence levels from the query score
-		firstTitleResults = firstElementOf(s.solrRes.meta.firstDoc.Title)
+		// create h/m/l confidence levels from the query score
 
+		// individual items can have exact match status, but overall confidence
+		// level might be more restrictive, e.g. title searches need multiple words
 		switch {
-		case s.solrRes.meta.start == 0 && s.solrRes.meta.parserInfo.isSingleTitleSearch && titlesAreEqual(firstTitleResults, titleQueried):
+		case s.searchIsExactMatch():
 			poolResult.Confidence = "exact"
 		case s.solrRes.meta.maxScore > s.pool.solr.scoreThresholdHigh:
 			poolResult.Confidence = "high"
@@ -478,7 +518,7 @@ func (s *searchContext) virgoRecordResponse() error {
 		return fmt.Errorf("Item not found")
 
 	case 1:
-		v = s.virgoPopulateRecord(s.solrRes.meta.firstDoc, false, "")
+		v = s.virgoPopulateRecord(s.solrRes.meta.firstDoc)
 
 	default:
 		return fmt.Errorf("Multiple items found")
