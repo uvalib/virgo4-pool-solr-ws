@@ -405,6 +405,12 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
 	// encapsulates document-level exact-match logic for a given search
 
+	// resource requests are not exact matches
+	// FIXME: should find or create a better way to check for this
+	if s.solrRes.meta.parserInfo == nil {
+		return false
+	}
+
 	// case 1: a single title search query matches the first title in this document
 	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
 		firstTitleResult := firstElementOf(doc.Title)
