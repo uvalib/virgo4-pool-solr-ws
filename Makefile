@@ -119,8 +119,6 @@ lint:
 		(cd "$(SRCDIR)/$${pkg}" && $(GOLNT)) ; \
 	done
 
-check: fmt vet lint
-
 clean:
 	@ \
 	echo "purge: $(BINDIR)/" ; \
@@ -134,3 +132,7 @@ dep:
 	$(GOGET) -u ./$(SRCDIR)/...
 	$(GOMOD) tidy
 	$(GOMOD) verify
+
+check:
+	go get honnef.co/go/tools/cmd/staticcheck
+	~/go/bin/staticcheck -checks all,-S1002,-ST1003 cmd/$(PKGDOCKER)/*.go
