@@ -38,6 +38,34 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
 }
 
+func (p *poolContext) facetsHandler(c *gin.Context) {
+	cl := clientContext{}
+	cl.init(p, c)
+
+	s := searchContext{}
+	s.init(p, &cl)
+
+	if err := c.BindJSON(&s.virgoReq); err != nil {
+		s.err("facetsHandler: invalid request: %s", err.Error())
+		c.String(http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	s.log("query: [%s]", s.virgoReq.Query)
+
+	virgoRes, err := s.handleFacetsRequest()
+
+	if err != nil {
+		s.err("facetsHandler: error: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	start := time.Now()
+	c.JSON(http.StatusOK, virgoRes)
+	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
+}
+
 func (p *poolContext) resourceHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)

@@ -66,36 +66,18 @@ func (s *solrRequest) buildParameterFl(fl string) {
 	s.json.Params.Fl = nonemptyValues(flall)
 }
 
-func (s *solrRequest) buildFacets(facetID string, availableFacets map[string]solrRequestFacet) {
-	if facetID == "" {
-		return
-	}
-
-	facets := make(map[string]solrRequestFacet)
-
-	switch facetID {
-	case "all":
-		facets = availableFacets
-	default:
-		// facetID is "name" in available facet list
-		solrFacet, ok := availableFacets[facetID]
-
-		if ok == false {
-			warning := fmt.Sprintf("ignoring unrecognized facetID: [%s]", facetID)
-			s.meta.client.log(warning)
-			s.meta.warnings = append(s.meta.warnings, warning)
-		} else {
-			facets[facetID] = solrFacet
-		}
-	}
-
-	if len(facets) > 0 {
-		s.json.Facets = facets
+func (s *solrRequest) buildFacets(availableFacets map[string]solrRequestFacet) {
+	if len(availableFacets) > 0 {
+		s.json.Facets = availableFacets
 	}
 }
 
 func (s *solrRequest) buildFilters(filterGroups *[]VirgoFilter, availableFacets map[string]solrRequestFacet) {
 	if filterGroups == nil {
+		return
+	}
+
+	if len(*filterGroups) == 0 {
 		return
 	}
 
@@ -119,6 +101,13 @@ func (s *solrRequest) buildFilters(filterGroups *[]VirgoFilter, availableFacets 
 		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
 
 		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
+
+		// add this filter to selection map
+		if s.meta.selectionMap[filter.FacetID] == nil {
+			s.meta.selectionMap[filter.FacetID] = make(map[string]bool)
+		}
+
+		s.meta.selectionMap[filter.FacetID][filter.Value] = true
 	}
 }
 
@@ -164,6 +153,8 @@ func (s *searchContext) solrRequestWithDefaults() {
 	solrReq.meta.client = s.virgoReq.meta.client
 	solrReq.meta.parserInfo = s.virgoReq.meta.parserInfo
 
+	solrReq.meta.selectionMap = make(map[string]map[string]bool)
+
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
 	solrReq.buildParameterQt(s.pool.config.solrParameterQt)
@@ -179,7 +170,7 @@ func (s *searchContext) solrRequestWithDefaults() {
 	availableFacets := s.solrAvailableFacets()
 
 	if s.virgoReq.meta.requestFacets == true {
-		solrReq.buildFacets(s.virgoReq.Facet, availableFacets)
+		solrReq.buildFacets(availableFacets)
 	}
 
 	solrReq.buildFilters(s.virgoReq.Filters, availableFacets)

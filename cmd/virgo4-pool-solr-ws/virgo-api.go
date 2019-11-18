@@ -17,7 +17,6 @@ type virgoSearchMeta struct {
 type VirgoSearchRequest struct {
 	Query      string          `json:"query"`
 	Pagination VirgoPagination `json:"pagination"`
-	Facet      string          `json:"facet"`
 	Filters    *[]VirgoFilter  `json:"filters,omitempty"`
 	meta       virgoSearchMeta // used internally
 }
@@ -38,15 +37,21 @@ type VirgoPoolIdentity struct {
 
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
-	Identity        VirgoPoolIdentity     `json:"identity"`                   // localized identity
-	Pagination      *VirgoPagination      `json:"pagination,omitempty"`       // pagination info for results
-	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`      // ungrouped records
-	GroupList       *[]VirgoGroup         `json:"group_list,omitempty"`       // grouped records
-	FacetList       *[]VirgoFacet         `json:"facet_list,omitempty"`       // facet values for client-requested facets
-	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
-	ElapsedMS       int64                 `json:"elapsed_ms,omitempty"`       // total round-trip time for this request
-	Debug           *VirgoPoolResultDebug `json:"debug,omitempty"`
-	Warn            *[]string             `json:"warn,omitempty"`
+	Identity   VirgoPoolIdentity     `json:"identity"`              // localized identity
+	Pagination *VirgoPagination      `json:"pagination,omitempty"`  // pagination info for results
+	RecordList *[]VirgoRecord        `json:"record_list,omitempty"` // ungrouped records
+	GroupList  *[]VirgoGroup         `json:"group_list,omitempty"`  // grouped records
+	FacetList  *[]VirgoFacet         `json:"facet_list,omitempty"`  // facet values for client-requested facets
+	Confidence string                `json:"confidence,omitempty"`  // required; i.e. low, medium, high, exact
+	ElapsedMS  int64                 `json:"elapsed_ms,omitempty"`  // total round-trip time for this request
+	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
+	Warn       *[]string             `json:"warn,omitempty"`
+}
+
+// VirgoFacetsResult contains the full response to a facets request
+type VirgoFacetsResult struct {
+	FacetList *[]VirgoFacet `json:"facet_list,omitempty"` // facet values for client-requested facets
+	ElapsedMS int64         `json:"elapsed_ms,omitempty"` // total round-trip time for this request
 }
 
 // VirgoRecordDebug is an arbitrary set of key-value pairs of debugging
@@ -84,8 +89,9 @@ type VirgoGroup struct {
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
-	Value string `json:"value"`
-	Count int    `json:"count"`
+	Value    string `json:"value"`
+	Count    int    `json:"count"`
+	Selected bool   `json:"selected"`
 }
 
 // VirgoFilter contains the fields for a single filter.

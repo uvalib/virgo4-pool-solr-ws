@@ -305,11 +305,12 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	return &r
 }
 
-func (s *searchContext) virgoPopulateFacetBucket(value solrBucket) *VirgoFacetBucket {
+func (s *searchContext) virgoPopulateFacetBucket(name string, value solrBucket) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
 	bucket.Value = value.Val
 	bucket.Count = value.Count
+	bucket.Selected = s.solrReq.meta.selectionMap[name][value.Val]
 
 	return &bucket
 }
@@ -323,7 +324,7 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value s
 	var buckets []VirgoFacetBucket
 
 	for _, b := range value.Buckets {
-		bucket := s.virgoPopulateFacetBucket(b)
+		bucket := s.virgoPopulateFacetBucket(facetDef.Name, b)
 
 		if s.isExposedFacetValue(facetDef, bucket.Value) {
 			buckets = append(buckets, *bucket)

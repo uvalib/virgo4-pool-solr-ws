@@ -52,6 +52,7 @@ func main() {
 
 	if api := router.Group("/api"); api != nil {
 		api.POST("/search", pool.authenticateHandler, pool.searchHandler)
+		api.POST("/search/facets", pool.authenticateHandler, pool.facetsHandler)
 		api.GET("/resource/:id", pool.authenticateHandler, pool.resourceHandler)
 	}
 

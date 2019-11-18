@@ -11,7 +11,7 @@ import (
 const defaultStart = 0
 const minimumStart = 0
 
-const defaultRows = 10
+const defaultRows = 0
 const minimumRows = 0
 
 type searchContext struct {
@@ -223,10 +223,13 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	var err error
 	var parsedQuery *solrParserInfo
 
+	// maybe facet buckets might differ based on speculative search?
+/*
 	// facet-only requests don't need speculation, as the client is only looking for buckets
 	if s.virgoReq.Pagination.Rows == 0 {
 		return s, nil
 	}
+*/
 
 	// parse original query to determine query type
 
@@ -277,6 +280,11 @@ func (s *searchContext) populateGroups() error {
 	// by querying for all group records in one request, and sorting the results to the correct groups
 
 	if s.client.opts.grouped == false || s.solrRes.meta.numGroups == 0 {
+		return nil
+	}
+
+	// no need to group facet endpoint results
+	if s.virgoReq.meta.requestFacets == true {
 		return nil
 	}
 
@@ -404,19 +412,23 @@ func (s *searchContext) validateSearchRequest() error {
 	// and that any filters provided are supported
 
 	if s.virgoReq.Filters != nil {
-		if len(*s.virgoReq.Filters) > 1 {
+		numFilterGroups := len(*s.virgoReq.Filters)
+
+		switch {
+		case numFilterGroups > 1:
 			return errors.New("received too many filter groups")
-		}
 
-		availableFacets := s.solrAvailableFacets()
+		case numFilterGroups == 1:
+			availableFacets := s.solrAvailableFacets()
 
-		filterGroup := (*s.virgoReq.Filters)[0]
+			filterGroup := (*s.virgoReq.Filters)[0]
 
-		s.log("received filter group: [%s]", filterGroup.PoolID)
+			s.log("received filter group: [%s]", filterGroup.PoolID)
 
-		for _, filter := range filterGroup.Facets {
-			if _, ok := availableFacets[filter.FacetID]; ok == false {
-				return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
+			for _, filter := range filterGroup.Facets {
+				if _, ok := availableFacets[filter.FacetID]; ok == false {
+					return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
+				}
 			}
 		}
 	}
@@ -424,31 +436,35 @@ func (s *searchContext) validateSearchRequest() error {
 	return nil
 }
 
-func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
+func (s *searchContext) handleSearchOrFacetsRequest() error {
 	var err error
 	var top *searchContext
 
 	if err = s.validateSearchRequest(); err != nil {
-		return nil, err
+		return err
 	}
 
+	// save original facet request flag
+	requestFacets := s.virgoReq.meta.requestFacets
+
 	if top, err = s.performSpeculativeSearches(); err != nil {
-		return nil, err
+		return err
 	}
 
 	// use query syntax from chosen search
 	s.virgoReq.Query = top.virgoReq.Query
 
-	// set variables for the actual search
-	s.virgoReq.meta.requestFacets = true
+	// restore original facet request flag
+	s.virgoReq.meta.requestFacets = requestFacets
 
+	// now do the search
 	if err = s.getPoolQueryResults(); err != nil {
-		return nil, err
+		return err
 	}
 
 	// populate group list, if this is a grouped request
 	if err = s.populateGroups(); err != nil {
-		return nil, err
+		return err
 	}
 
 	// restore actual confidence
@@ -459,7 +475,33 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 
 	s.virgoPoolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
-	return s.virgoPoolRes, nil
+	return nil
+}
+
+func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
+	if err := s.handleSearchOrFacetsRequest(); err != nil {
+		return nil, err
+	} else {
+		s.virgoPoolRes.FacetList = nil
+		return s.virgoPoolRes, nil
+	}
+}
+
+func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
+	s.virgoReq.meta.requestFacets = true
+	s.virgoReq.Pagination.Start = 0
+	s.virgoReq.Pagination.Rows = 0
+
+	if err := s.handleSearchOrFacetsRequest(); err != nil {
+		return nil, err
+	} else {
+		virgoFacetsRes := VirgoFacetsResult{
+			FacetList: s.virgoPoolRes.FacetList,
+			ElapsedMS: s.virgoPoolRes.ElapsedMS,
+		}
+
+		return &virgoFacetsRes, nil
+	}
 }
 
 func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
