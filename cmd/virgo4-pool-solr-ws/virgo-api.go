@@ -91,8 +91,11 @@ type VirgoFacetBucket struct {
 
 // VirgoFilter contains the fields for a single filter.
 type VirgoFilter struct {
-	FacetID string `json:"facet_id"`
-	Value   string `json:"value"`
+	PoolID string `json:"pool_id"`
+	Facets []struct {
+		FacetID string `json:"facet_id"`
+		Value   string `json:"value"`
+	} `json:"facets"`
 }
 
 // VirgoFacet contains the fields for a single facet.

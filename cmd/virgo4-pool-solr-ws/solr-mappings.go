@@ -96,14 +96,21 @@ func (s *solrRequest) buildFacets(facetID string, availableFacets map[string]sol
 	}
 }
 
-func (s *solrRequest) buildFilters(filters *[]VirgoFilter, availableFacets map[string]solrRequestFacet) {
-	if filters == nil {
+func (s *solrRequest) buildFilters(filterGroups *[]VirgoFilter, availableFacets map[string]solrRequestFacet) {
+	if filterGroups == nil {
 		return
 	}
 
-	for _, filter := range *filters {
+	// we are guaranteed to only have one filter group due to up-front validations
+
+	filterGroup := (*filterGroups)[0]
+
+	s.meta.client.log("filter group: [%s]", filterGroup.PoolID)
+
+	for _, filter := range filterGroup.Facets {
 		solrFacet, ok := availableFacets[filter.FacetID]
 
+		// this should never happen due to up-front validations, perhaps this can be removed
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.FacetID)
 			s.meta.client.log(warning)
@@ -123,6 +130,36 @@ func (s *solrRequest) buildGrouping(groupField string) {
 	s.json.Params.Fq = append(s.json.Params.Fq, grouping)
 }
 
+func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
+	// build customized/personalized available facets from facets definition
+
+	availableFacets := make(map[string]solrRequestFacet)
+
+	for _, facet := range s.pool.solr.availableFacets {
+		f := solrRequestFacet{
+			Type:          facet.Type,
+			Field:         facet.Field,
+			Sort:          facet.Sort,
+			Offset:        facet.Offset,
+			Limit:         facet.Limit,
+			exposedValues: facet.ExposedValues,
+		}
+
+		if facet.FieldAuth != "" {
+			if s.virgoReq.meta.client.isAuthenticated() == true {
+				f.Field = facet.FieldAuth
+				s.log("[FACET] authenticated session using facet: [%s]", f.Field)
+			} else {
+				s.log("[FACET] unauthenticated session using facet: [%s]", f.Field)
+			}
+		}
+
+		availableFacets[facet.Name] = f
+	}
+
+	return availableFacets
+}
+
 func (s *searchContext) solrRequestWithDefaults() {
 	var solrReq solrRequest
 
@@ -139,33 +176,9 @@ func (s *searchContext) solrRequestWithDefaults() {
 	solrReq.buildParameterStart(s.virgoReq.Pagination.Start)
 	solrReq.buildParameterRows(s.virgoReq.Pagination.Rows)
 
-	// build customized/personalized available facets from facets definition
-
-	availableFacets := make(map[string]solrRequestFacet)
-
-	for _, facet := range s.pool.solr.availableFacets {
-		f := solrRequestFacet{
-			Type:          facet.Type,
-			Field:         facet.Field,
-			Sort:          facet.Sort,
-			Offset:        facet.Offset,
-			Limit:         facet.Limit,
-			exposedValues: facet.ExposedValues,
-		}
-
-		if facet.FieldAuth != "" {
-			if solrReq.meta.client.isAuthenticated() == true {
-				f.Field = facet.FieldAuth
-				s.log("[FACET] authenticated session using facet: [%s]", f.Field)
-			} else {
-				s.log("[FACET] unauthenticated session using facet: [%s]", f.Field)
-			}
-		}
-
-		availableFacets[facet.Name] = f
-	}
-
 	// add facets/filters
+
+	availableFacets := s.solrAvailableFacets()
 
 	if s.virgoReq.meta.requestFacets == true {
 		solrReq.buildFacets(s.virgoReq.Facet, availableFacets)

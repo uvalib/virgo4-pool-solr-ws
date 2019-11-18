@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -396,9 +397,40 @@ func (s *searchContext) populateGroups() error {
 	return nil
 }
 
+func (s *searchContext) validateSearchRequest() error {
+	// quick validations we can do up front
+
+	// ensure we received either zero or one filter group,
+	// and that any filters provided are supported
+
+	if s.virgoReq.Filters != nil {
+		if len(*s.virgoReq.Filters) > 1 {
+			return errors.New("received too many filter groups")
+		}
+
+		availableFacets := s.solrAvailableFacets()
+
+		filterGroup := (*s.virgoReq.Filters)[0]
+
+		s.log("received filter group: [%s]", filterGroup.PoolID)
+
+		for _, filter := range filterGroup.Facets {
+			if _, ok := availableFacets[filter.FacetID]; ok == false {
+				return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
+			}
+		}
+	}
+
+	return nil
+}
+
 func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	var err error
 	var top *searchContext
+
+	if err = s.validateSearchRequest(); err != nil {
+		return nil, err
+	}
 
 	if top, err = s.performSpeculativeSearches(); err != nil {
 		return nil, err
