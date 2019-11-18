@@ -68,7 +68,6 @@ func (s *solrRequest) buildParameterFl(fl string) {
 
 func (s *solrRequest) buildFacets(facetID string, availableFacets map[string]solrRequestFacet) {
 	if facetID == "" {
-		s.meta.advertiseFacets = true
 		return
 	}
 
@@ -85,7 +84,6 @@ func (s *solrRequest) buildFacets(facetID string, availableFacets map[string]sol
 			warning := fmt.Sprintf("ignoring unrecognized facetID: [%s]", facetID)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
-			s.meta.advertiseFacets = true
 		} else {
 			facets[facetID] = solrFacet
 		}

@@ -56,7 +56,6 @@ type solrMeta struct {
 	client          *clientContext
 	parserInfo      *solrParserInfo
 	warnings        []string
-	advertiseFacets bool
 	maxScore        float32
 	firstDoc        *solrDocument
 	start           int

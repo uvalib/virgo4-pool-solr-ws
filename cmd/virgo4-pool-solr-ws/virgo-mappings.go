@@ -485,18 +485,6 @@ func (s *searchContext) virgoPopulatePoolResult() {
 		poolResult.FacetList = s.virgoPopulateFacetList(s.pool.solr.availableFacets, s.solrRes.Facets)
 	}
 
-	// advertise facets?
-	if s.solrRes.meta.advertiseFacets == true {
-		var localizedFacets []VirgoFacet
-
-		for _, facet := range s.pool.solr.virgoAvailableFacets {
-			localizedFacet := VirgoFacet{ID: facet, Name: s.client.localize(facet)}
-			localizedFacets = append(localizedFacets, localizedFacet)
-		}
-
-		poolResult.AvailableFacets = &localizedFacets
-	}
-
 	if len(s.solrRes.meta.warnings) > 0 {
 		poolResult.Warn = &s.solrRes.meta.warnings
 	}

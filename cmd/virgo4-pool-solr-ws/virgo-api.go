@@ -42,7 +42,6 @@ type VirgoPoolResult struct {
 	Pagination      *VirgoPagination      `json:"pagination,omitempty"`       // pagination info for results
 	RecordList      *[]VirgoRecord        `json:"record_list,omitempty"`      // ungrouped records
 	GroupList       *[]VirgoGroup         `json:"group_list,omitempty"`       // grouped records
-	AvailableFacets *[]VirgoFacet         `json:"available_facets,omitempty"` // available facets advertised to the client
 	FacetList       *[]VirgoFacet         `json:"facet_list,omitempty"`       // facet values for client-requested facets
 	Confidence      string                `json:"confidence,omitempty"`       // required; i.e. low, medium, high, exact
 	ElapsedMS       int64                 `json:"elapsed_ms,omitempty"`       // total round-trip time for this request
