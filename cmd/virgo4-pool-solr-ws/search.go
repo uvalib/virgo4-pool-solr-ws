@@ -224,12 +224,12 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	var parsedQuery *solrParserInfo
 
 	// maybe facet buckets might differ based on speculative search?
-/*
-	// facet-only requests don't need speculation, as the client is only looking for buckets
-	if s.virgoReq.Pagination.Rows == 0 {
-		return s, nil
-	}
-*/
+	/*
+		// facet-only requests don't need speculation, as the client is only looking for buckets
+		if s.virgoReq.Pagination.Rows == 0 {
+			return s, nil
+		}
+	*/
 
 	// parse original query to determine query type
 
@@ -288,7 +288,7 @@ func (s *searchContext) populateGroups() error {
 		return nil
 	}
 
-	var groups []VirgoGroup
+	var groups VirgoGroups
 
 	var groupValues []string
 
@@ -297,7 +297,7 @@ func (s *searchContext) populateGroups() error {
 	for i, g := range s.solrRes.Response.Docs {
 		groupValues = append(groupValues, fmt.Sprintf(`"%s"`, g.WorkTitle2KeySort))
 		groupValueMap[g.WorkTitle2KeySort] = i
-		var records []VirgoRecord
+		var records VirgoRecords
 		groups = append(groups, VirgoGroup{Value: g.WorkTitle2KeySort, RecordList: records})
 	}
 
@@ -481,10 +481,10 @@ func (s *searchContext) handleSearchOrFacetsRequest() error {
 func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	if err := s.handleSearchOrFacetsRequest(); err != nil {
 		return nil, err
-	} else {
-		s.virgoPoolRes.FacetList = nil
-		return s.virgoPoolRes, nil
 	}
+
+	s.virgoPoolRes.FacetList = nil
+	return s.virgoPoolRes, nil
 }
 
 func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
@@ -494,14 +494,14 @@ func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
 
 	if err := s.handleSearchOrFacetsRequest(); err != nil {
 		return nil, err
-	} else {
-		virgoFacetsRes := VirgoFacetsResult{
-			FacetList: s.virgoPoolRes.FacetList,
-			ElapsedMS: s.virgoPoolRes.ElapsedMS,
-		}
-
-		return &virgoFacetsRes, nil
 	}
+
+	virgoFacetsRes := VirgoFacetsResult{
+		FacetList: s.virgoPoolRes.FacetList,
+		ElapsedMS: s.virgoPoolRes.ElapsedMS,
+	}
+
+	return &virgoFacetsRes, nil
 }
 
 func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {

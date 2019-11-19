@@ -17,7 +17,7 @@ type virgoSearchMeta struct {
 type VirgoSearchRequest struct {
 	Query      string          `json:"query"`
 	Pagination VirgoPagination `json:"pagination"`
-	Filters    *[]VirgoFilter  `json:"filters,omitempty"`
+	Filters    *VirgoFilters   `json:"filters,omitempty"`
 	meta       virgoSearchMeta // used internally
 }
 
@@ -39,9 +39,9 @@ type VirgoPoolIdentity struct {
 type VirgoPoolResult struct {
 	Identity   VirgoPoolIdentity     `json:"identity"`              // localized identity
 	Pagination *VirgoPagination      `json:"pagination,omitempty"`  // pagination info for results
-	RecordList *[]VirgoRecord        `json:"record_list,omitempty"` // ungrouped records
-	GroupList  *[]VirgoGroup         `json:"group_list,omitempty"`  // grouped records
-	FacetList  *[]VirgoFacet         `json:"facet_list,omitempty"`  // facet values for client-requested facets
+	RecordList *VirgoRecords         `json:"record_list,omitempty"` // ungrouped records
+	GroupList  *VirgoGroups          `json:"group_list,omitempty"`  // grouped records
+	FacetList  *VirgoFacets          `json:"facet_list,omitempty"`  // facet values for client-requested facets
 	Confidence string                `json:"confidence,omitempty"`  // required; i.e. low, medium, high, exact
 	ElapsedMS  int64                 `json:"elapsed_ms,omitempty"`  // total round-trip time for this request
 	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
@@ -50,8 +50,8 @@ type VirgoPoolResult struct {
 
 // VirgoFacetsResult contains the full response to a facets request
 type VirgoFacetsResult struct {
-	FacetList *[]VirgoFacet `json:"facet_list,omitempty"` // facet values for client-requested facets
-	ElapsedMS int64         `json:"elapsed_ms,omitempty"` // total round-trip time for this request
+	FacetList *VirgoFacets `json:"facet_list,omitempty"` // facet values for client-requested facets
+	ElapsedMS int64        `json:"elapsed_ms,omitempty"` // total round-trip time for this request
 }
 
 // VirgoRecordDebug is an arbitrary set of key-value pairs of debugging
@@ -71,21 +71,30 @@ type VirgoNuancedField struct {
 	Display    string `json:"display,omitempty"`    // e.g. "optional" (or empty)
 }
 
+// VirgoNuancedFields is a slice of VirgoNuancedField structs
+type VirgoNuancedFields []VirgoNuancedField
+
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	Fields            []VirgoNuancedField `json:"fields,omitempty"`
-	Exact             bool                `json:"exact,omitempty"`
-	Debug             *VirgoRecordDebug   `json:"debug,omitempty"`
-	workTitle2KeySort string              // used internally
+	Fields            VirgoNuancedFields `json:"fields,omitempty"`
+	Exact             bool               `json:"exact,omitempty"`
+	Debug             *VirgoRecordDebug  `json:"debug,omitempty"`
+	workTitle2KeySort string             // used internally
 }
+
+// VirgoRecords is a slice of VirgoRecord structs
+type VirgoRecords []VirgoRecord
 
 // VirgoGroup contains the records for a single group in a search result set.
 type VirgoGroup struct {
-	Value      string              `json:"value,omitempty"`
-	Count      int                 `json:"count,omitempty"`
-	Fields     []VirgoNuancedField `json:"fields,omitempty"`
-	RecordList []VirgoRecord       `json:"record_list,omitempty"`
+	Value      string             `json:"value,omitempty"`
+	Count      int                `json:"count,omitempty"`
+	Fields     VirgoNuancedFields `json:"fields,omitempty"`
+	RecordList VirgoRecords       `json:"record_list,omitempty"`
 }
+
+// VirgoGroups is a slice of VirgoGroup structs
+type VirgoGroups []VirgoGroup
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
@@ -93,6 +102,9 @@ type VirgoFacetBucket struct {
 	Count    int    `json:"count"`
 	Selected bool   `json:"selected"`
 }
+
+// VirgoFacetBuckets is a slice of VirgoFacetBucket structs
+type VirgoFacetBuckets []VirgoFacetBucket
 
 // VirgoFilter contains the fields for a single filter.
 type VirgoFilter struct {
@@ -103,17 +115,23 @@ type VirgoFilter struct {
 	} `json:"facets"`
 }
 
+// VirgoFilters is a slice of VirgoFilter structs
+type VirgoFilters []VirgoFilter
+
 // VirgoFacet contains the fields for a single facet.
 type VirgoFacet struct {
-	ID      string             `json:"id"`
-	Name    string             `json:"name"`
-	Type    string             `json:"type,omitempty"`    // when advertised as part of a non-faceted/non-filtered search response
-	Value   string             `json:"value,omitempty"`   // when used as a filter in a search request
-	Sort    string             `json:"sort,omitempty"`    // when used as a facet or filter in a search request
-	Offset  int                `json:"offset,omitempty"`  // when used as a facet or filter in a search request
-	Limit   int                `json:"limit,omitempty"`   // when used as a facet or filter in a search request
-	Buckets []VirgoFacetBucket `json:"buckets,omitempty"` // when returned as part of a facted search response
+	ID      string            `json:"id"`
+	Name    string            `json:"name"`
+	Type    string            `json:"type,omitempty"`    // when advertised as part of a non-faceted/non-filtered search response
+	Value   string            `json:"value,omitempty"`   // when used as a filter in a search request
+	Sort    string            `json:"sort,omitempty"`    // when used as a facet or filter in a search request
+	Offset  int               `json:"offset,omitempty"`  // when used as a facet or filter in a search request
+	Limit   int               `json:"limit,omitempty"`   // when used as a facet or filter in a search request
+	Buckets VirgoFacetBuckets `json:"buckets,omitempty"` // when returned as part of a facted search response
 }
+
+// VirgoFacets is a slice of VirgoFacet structs
+type VirgoFacets []VirgoFacet
 
 // VirgoPagination defines a page (contiguous subset) of records for a given search.
 type VirgoPagination struct {

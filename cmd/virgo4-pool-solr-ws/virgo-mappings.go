@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -305,37 +306,6 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	return &r
 }
 
-func (s *searchContext) virgoPopulateFacetBucket(name string, value solrBucket) *VirgoFacetBucket {
-	var bucket VirgoFacetBucket
-
-	bucket.Value = value.Val
-	bucket.Count = value.Count
-	bucket.Selected = s.solrReq.meta.selectionMap[name][value.Val]
-
-	return &bucket
-}
-
-func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet) *VirgoFacet {
-	var facet VirgoFacet
-
-	facet.ID = facetDef.Name
-	facet.Name = s.client.localize(facet.ID)
-
-	var buckets []VirgoFacetBucket
-
-	for _, b := range value.Buckets {
-		bucket := s.virgoPopulateFacetBucket(facetDef.Name, b)
-
-		if s.isExposedFacetValue(facetDef, bucket.Value) {
-			buckets = append(buckets, *bucket)
-		}
-	}
-
-	facet.Buckets = buckets
-
-	return &facet
-}
-
 func (s *searchContext) virgoPopulatePagination(start, rows, total int) *VirgoPagination {
 	var pagination VirgoPagination
 
@@ -370,8 +340,8 @@ func titlesAreEqual(t1, t2 string) bool {
 	return strings.EqualFold(s1, s2)
 }
 
-func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocuments) *[]VirgoRecord {
-	var recordList []VirgoRecord
+func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocuments) *VirgoRecords {
+	var recordList VirgoRecords
 
 	for _, doc := range solrDocuments.Docs {
 		record := s.virgoPopulateRecord(&doc)
@@ -382,8 +352,51 @@ func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocum
 	return &recordList
 }
 
-func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets solrResponseFacets) *[]VirgoFacet {
-	var facetList []VirgoFacet
+func (v VirgoFacets) Len() int {
+	return len(v)
+}
+
+func (v VirgoFacets) Less(i, j int) bool {
+	return v[i].Name < v[j].Name
+}
+
+func (v VirgoFacets) Swap(i, j int) {
+	v[i], v[j] = v[j], v[i]
+}
+
+func (s *searchContext) virgoPopulateFacetBucket(name string, value solrBucket) *VirgoFacetBucket {
+	var bucket VirgoFacetBucket
+
+	bucket.Value = value.Val
+	bucket.Count = value.Count
+	bucket.Selected = s.solrReq.meta.selectionMap[name][value.Val]
+
+	return &bucket
+}
+
+func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet) *VirgoFacet {
+	var facet VirgoFacet
+
+	facet.ID = facetDef.Name
+	facet.Name = s.client.localize(facet.ID)
+
+	var buckets VirgoFacetBuckets
+
+	for _, b := range value.Buckets {
+		bucket := s.virgoPopulateFacetBucket(facetDef.Name, b)
+
+		if s.isExposedFacetValue(facetDef, bucket.Value) {
+			buckets = append(buckets, *bucket)
+		}
+	}
+
+	facet.Buckets = buckets
+
+	return &facet
+}
+
+func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets solrResponseFacets) *VirgoFacets {
+	var facetList VirgoFacets
 	gotFacet := false
 
 	for key, val := range solrFacets {
@@ -396,11 +409,16 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 		}
 	}
 
-	if gotFacet == true {
-		return &facetList
+	if gotFacet == false {
+		return nil
 	}
 
-	return nil
+	// sort facet names alphabetically (Solr returns them randomly)
+	// sort facet values by count (this is done when we set facet.sort = count)
+
+	sort.Sort(facetList)
+
+	return &facetList
 }
 
 func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {

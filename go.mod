@@ -22,9 +22,8 @@ require (
 	github.com/uvalib/virgo4-parser v0.0.0-20190809174825-657b986d7f46
 	github.com/zsais/go-gin-prometheus v0.1.0
 	golang.org/x/net v0.0.0-20190918130420-a8b05e9114ab // indirect
-	golang.org/x/sys v0.0.0-20191118133127-cf1e2d577169 // indirect
+	golang.org/x/sys v0.0.0-20191119060738-e882bf8e40c2 // indirect
 	golang.org/x/text v0.3.2
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/yaml.v2 v2.2.5 // indirect
-	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
+	gopkg.in/yaml.v2 v2.2.6 // indirect
 )

@@ -72,7 +72,7 @@ func (s *solrRequest) buildFacets(availableFacets map[string]solrRequestFacet) {
 	}
 }
 
-func (s *solrRequest) buildFilters(filterGroups *[]VirgoFilter, availableFacets map[string]solrRequestFacet) {
+func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet) {
 	if filterGroups == nil {
 		return
 	}
