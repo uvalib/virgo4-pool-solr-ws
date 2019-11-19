@@ -352,18 +352,6 @@ func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocum
 	return &recordList
 }
 
-func (v VirgoFacets) Len() int {
-	return len(v)
-}
-
-func (v VirgoFacets) Less(i, j int) bool {
-	return v[i].Name < v[j].Name
-}
-
-func (v VirgoFacets) Swap(i, j int) {
-	v[i], v[j] = v[j], v[i]
-}
-
 func (s *searchContext) virgoPopulateFacetBucket(name string, value solrBucket) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
@@ -416,7 +404,7 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 	// sort facet names alphabetically (Solr returns them randomly)
 	// sort facet values by count (this is done when we set facet.sort = count)
 
-	sort.Sort(facetList)
+	sort.Slice(facetList, func(i, j int) bool { return facetList[i].Name < facetList[j].Name })
 
 	return &facetList
 }
