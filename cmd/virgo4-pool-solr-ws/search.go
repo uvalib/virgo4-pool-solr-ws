@@ -488,9 +488,11 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 }
 
 func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
+	// override these values from the original search query, since we are
+	// only interested in facets, not records
+	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 0}
+
 	s.virgoReq.meta.requestFacets = true
-	s.virgoReq.Pagination.Start = 0
-	s.virgoReq.Pagination.Rows = 0
 
 	if err := s.handleSearchOrFacetsRequest(); err != nil {
 		return nil, err
@@ -505,9 +507,11 @@ func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
 }
 
 func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
-	var err error
+	// override these values from defaults.  specify two rows to catch
+	// the (impossible?) scenario of multiple records with the same id
+	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 2}
 
-	if err = s.getRecordQueryResults(); err != nil {
+	if err := s.getRecordQueryResults(); err != nil {
 		return nil, err
 	}
 
@@ -515,19 +519,13 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 }
 
 func (s *searchContext) handlePingRequest() error {
-	var err error
+	// override these values from defaults.  we are not interested
+	// in records, just connectivity
+	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 0}
 
-	if err = s.solrRecordRequest(); err != nil {
-		s.err("query creation error: %s", err.Error())
+	if err := s.performQuery(); err != nil {
 		return err
 	}
-
-	if err = s.solrQuery(); err != nil {
-		s.err("query execution error: %s", err.Error())
-		return err
-	}
-
-	// we don't care if there are no results, this is just a connectivity test
 
 	return nil
 }

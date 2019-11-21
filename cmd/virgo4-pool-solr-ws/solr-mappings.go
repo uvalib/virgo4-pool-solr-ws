@@ -201,14 +201,3 @@ func (s *searchContext) solrSearchRequest() error {
 
 	return nil
 }
-
-func (s *searchContext) solrRecordRequest() error {
-	s.solrRequestWithDefaults()
-
-	// override these values from defaults.  specify two rows to catch
-	// the (impossible?) scenario of multiple records with the same id
-	s.solrReq.json.Params.Start = 0
-	s.solrReq.json.Params.Rows = 2
-
-	return nil
-}
