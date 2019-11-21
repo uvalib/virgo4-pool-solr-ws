@@ -116,7 +116,9 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
-	s.client.nolog = true
+	if s.client.opts.verbose == false {
+		s.client.nolog = true
+	}
 
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = "id:pingtest"
