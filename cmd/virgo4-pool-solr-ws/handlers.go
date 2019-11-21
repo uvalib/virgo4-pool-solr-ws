@@ -118,7 +118,8 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 
 	s.client.nolog = true
 
-	s.virgoReq.Query = "id:pingtest"
+	// fill out Solr query directly, bypassing query syntax parser
+	s.virgoReq.meta.solrQuery = "id:pingtest"
 
 	type hcResp struct {
 		Healthy bool   `json:"healthy"`
