@@ -100,7 +100,7 @@ other = "Serie"
 
 [FacetSubject]
 desc = "The display name for the Subject facet."
-other = "Tema"
+other = "Sujeto"
 
 [FacetVideoFormat]
 desc = "The display name for the Video Format facet."
@@ -158,13 +158,13 @@ other = "Número de Llamada (Estrecho)"
 desc = "The display name for the Availability field in a single item record."
 other = "Disponibilidad"
 
-[FieldGenre]
-desc = "The display name for the Genre field in a single item record."
-other = "Género"
-
 [FieldSeries]
 desc = "The display name for the Series field in a single item record."
 other = "Serie"
+
+[FieldTopic]
+desc = "The display name for the Topic field in a single item record."
+other = "Tema"
 
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."

@@ -266,6 +266,7 @@ func (p *poolContext) initTranslations() {
 		"FieldAvailability",
 		"FieldSeries",
 		"FieldGenre",
+		"FieldTopic",
 		"FieldMore",
 	}
 

@@ -256,11 +256,9 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		r.addDetailedField(newField("video_genre", s.client.localize("FieldGenre"), item))
 	}
 
-	/*
-		for _, item := range doc.TopicFormGenre {
-			r.addDetailedField(newField("topic_form_genre", s.client.localize("FieldTopic"), item))
-		}
-	*/
+	for _, item := range doc.TopicFormGenre {
+		r.addDetailedField(newField("topic_form_genre", s.client.localize("FieldTopic"), item))
+	}
 
 	for _, item := range doc.CallNumberBroad {
 		r.addDetailedField(newField("call_number_broad", s.client.localize("FieldCallNumberBroad"), item))
