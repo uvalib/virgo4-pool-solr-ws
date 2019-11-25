@@ -264,8 +264,8 @@ func (p *poolContext) initTranslations() {
 		"FieldCallNumberBroad",
 		"FieldCallNumberNarrow",
 		"FieldAvailability",
-		"FieldGenre",
 		"FieldSeries",
+		"FieldGenre",
 		"FieldMore",
 	}
 

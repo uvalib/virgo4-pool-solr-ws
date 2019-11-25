@@ -102,8 +102,9 @@ type solrDocument struct {
 	OCLC              []string `json:"oclc_a,omitempty"`
 	LCCN              []string `json:"lccn_a,omitempty"`
 	UPC               []string `json:"upc_a,omitempty"`
-	Genre             []string `json:"topic_form_genre_a,omitempty"`
 	Series            []string `json:"title_series_a,omitempty"`
+	VideoGenre        []string `json:"video_genre_a,omitempty"`
+	TopicFormGenre    []string `json:"topic_form_genre_a,omitempty"`
 	// etc.
 }
 
