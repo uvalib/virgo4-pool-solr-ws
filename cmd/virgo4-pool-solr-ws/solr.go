@@ -114,7 +114,7 @@ func (s *searchContext) solrQuery() error {
 	req.Header.Set("Content-Type", "application/json")
 
 	if s.client.opts.verbose == true {
-		s.log("[solr] req: [%s]", string(jsonBytes))
+		s.log("[SOLR] req: [%s]", string(jsonBytes))
 	} else {
 		// prettify logged query
 		pieces := strings.SplitAfter(s.solrReq.json.Params.Q, fmt.Sprintf(" AND %s:", s.pool.config.solrGroupField))
@@ -122,7 +122,7 @@ func (s *searchContext) solrQuery() error {
 		if len(pieces) > 1 {
 			q = q + " ..."
 		}
-		s.log("[solr] req: [%s]", q)
+		s.log("[SOLR] req: [%s]", q)
 	}
 
 	start := time.Now()
@@ -148,7 +148,7 @@ func (s *searchContext) solrQuery() error {
 		buf, _ := ioutil.ReadAll(res.Body)
 
 		if s.client.opts.verbose == true {
-			s.log("[solr] raw: [%s]", buf)
+			s.log("[SOLR] raw: [%s]", buf)
 		}
 
 		if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
@@ -177,7 +177,7 @@ func (s *searchContext) solrQuery() error {
 
 	// log abbreviated results
 
-	logHeader := fmt.Sprintf("[solr] res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
+	logHeader := fmt.Sprintf("[SOLR] res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
 
 	// quick validation
 	if solrRes.ResponseHeader.Status != 0 {

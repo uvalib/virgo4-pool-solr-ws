@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -182,7 +183,7 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 	return s, nil
 }
 
-func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*searchContext, error) {
+func (s *searchContext) performSpeculativeKeywordSearch(origSearchTerm string) (*searchContext, error) {
 	var err error
 	var title, author, keyword *searchContext
 	var searchResults []*searchContext
@@ -192,24 +193,33 @@ func (s *searchContext) performSpeculativeKeywordSearch(searchTerm string) (*sea
 		return s, nil
 	}
 
-	s.log("KEYWORD SEARCH: intuiting best search for [%s]", searchTerm)
+	// first, unescape the search term (which may have been escaped by the query parser)
 
-	s.log("checking if keyword search term [%s] might be a title or author search...", searchTerm)
+	searchTerm := origSearchTerm
+
+	var unquotedSearchTerm string
+	if unquotedSearchTerm, err = strconv.Unquote(fmt.Sprintf(`"%s"`, origSearchTerm)); err == nil {
+		searchTerm = unquotedSearchTerm
+	}
+
+	s.log("[INTUIT] KEYWORD SEARCH: intuiting best search for [%s]", searchTerm)
+
+	s.log("[INTUIT] checking if keyword search term [%s] might be a title or author search...", searchTerm)
 
 	if keyword, err = s.newSearchWithTopResult(s.virgoReq.Query); err != nil {
 		return nil, err
 	}
 
-	s.log("keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoPoolRes.Confidence, keyword.solrRes.meta.maxScore)
+	s.log("[INTUIT] keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoPoolRes.Confidence, keyword.solrRes.meta.maxScore)
 	searchResults = append(searchResults, keyword)
 
 	if title, err = keyword.newSearchWithTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
-		s.log("title: confidence = [%s]  maxScore = [%0.2f]", title.virgoPoolRes.Confidence, title.solrRes.meta.maxScore)
+		s.log("[INTUIT] title: confidence = [%s]  maxScore = [%0.2f]", title.virgoPoolRes.Confidence, title.solrRes.meta.maxScore)
 		searchResults = append(searchResults, title)
 	}
 
 	if author, err = keyword.newSearchWithTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
-		s.log("author: confidence = [%s]  maxScore = [%0.2f]", author.virgoPoolRes.Confidence, author.solrRes.meta.maxScore)
+		s.log("[INTUIT] author: confidence = [%s]  maxScore = [%0.2f]", author.virgoPoolRes.Confidence, author.solrRes.meta.maxScore)
 		searchResults = append(searchResults, author)
 	}
 
