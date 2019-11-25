@@ -66,21 +66,9 @@ other = "FIXME"
 desc = "The display name for the Author facet."
 other = "Autor"
 
-[FacetSubject]
-desc = "The display name for the Subject facet."
-other = "Tema"
-
-[FacetLanguage]
-desc = "The display name for the Language facet."
-other = "Idioma"
-
-[FacetFormat]
-desc = "The display name for the Format facet."
-other = "Formato"
-
-[FacetLibrary]
-desc = "The display name for the Library facet."
-other = "Biblioteca"
+[FacetAvailability]
+desc = "The display name for the Availability facet."
+other = "Disponibilidad"
 
 [FacetCallNumberBroad]
 desc = "The display name for the Call Number (Broad) facet."
@@ -90,13 +78,33 @@ other = "Número de Llamada (Amplio)"
 desc = "The display name for the Call Number (Narrow) facet."
 other = "Número de Llamada (Estrecho)"
 
+[FacetFormat]
+desc = "The display name for the Format facet."
+other = "Formato"
+
+[FacetGenre]
+desc = "The display name for the Genre facet."
+other = "Género"
+
+[FacetLanguage]
+desc = "The display name for the Language facet."
+other = "Idioma"
+
+[FacetLibrary]
+desc = "The display name for the Library facet."
+other = "Biblioteca"
+
+[FacetSeries]
+desc = "The display name for the Series facet."
+other = "Serie"
+
+[FacetSubject]
+desc = "The display name for the Subject facet."
+other = "Tema"
+
 [FacetVideoFormat]
 desc = "The display name for the Video Format facet."
 other = "Formato de Video"
-
-[FacetAvailability]
-desc = "The display name for the Availability facet."
-other = "Disponibilidad"
 
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
@@ -149,6 +157,14 @@ other = "Número de Llamada (Estrecho)"
 [FieldAvailability]
 desc = "The display name for the Availability field in a single item record."
 other = "Disponibilidad"
+
+[FieldGenre]
+desc = "The display name for the Genre field in a single item record."
+other = "Género"
+
+[FieldSeries]
+desc = "The display name for the Series field in a single item record."
+other = "Serie"
 
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."

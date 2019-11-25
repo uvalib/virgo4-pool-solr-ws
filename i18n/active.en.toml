@@ -66,21 +66,9 @@ other = "Documentaries, Films, Television shows, and much more. While many of th
 desc = "The display name for the Author facet."
 other = "Author"
 
-[FacetSubject]
-desc = "The display name for the Subject facet."
-other = "Subject"
-
-[FacetLanguage]
-desc = "The display name for the Language facet."
-other = "Language"
-
-[FacetFormat]
-desc = "The display name for the Format facet."
-other = "Format"
-
-[FacetLibrary]
-desc = "The display name for the Library facet."
-other = "Library"
+[FacetAvailability]
+desc = "The display name for the Availability facet."
+other = "Availability"
 
 [FacetCallNumberBroad]
 desc = "The display name for the Call Number (Broad) facet."
@@ -90,13 +78,33 @@ other = "Call Number (Broad)"
 desc = "The display name for the Call Number (Narrow) facet."
 other = "Call Number (Narrow)"
 
+[FacetFormat]
+desc = "The display name for the Format facet."
+other = "Format"
+
+[FacetGenre]
+desc = "The display name for the Genre facet."
+other = "Genre"
+
+[FacetLanguage]
+desc = "The display name for the Language facet."
+other = "Language"
+
+[FacetLibrary]
+desc = "The display name for the Library facet."
+other = "Library"
+
+[FacetSeries]
+desc = "The display name for the Series facet."
+other = "Series"
+
+[FacetSubject]
+desc = "The display name for the Subject facet."
+other = "Subject"
+
 [FacetVideoFormat]
 desc = "The display name for the Video Format facet."
 other = "Video Format"
-
-[FacetAvailability]
-desc = "The display name for the Availability facet."
-other = "Availability"
 
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
@@ -149,6 +157,14 @@ other = "Call Number (Narrow)"
 [FieldAvailability]
 desc = "The display name for the Availability field in a single item record."
 other = "Availability"
+
+[FieldGenre]
+desc = "The display name for the Genre field in a single item record."
+other = "Genre"
+
+[FieldSeries]
+desc = "The display name for the Series field in a single item record."
+other = "Series"
 
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."
