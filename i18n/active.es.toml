@@ -162,9 +162,9 @@ other = "Disponibilidad"
 desc = "The display name for the Series field in a single item record."
 other = "Serie"
 
-[FieldTopic]
-desc = "The display name for the Topic field in a single item record."
-other = "Tema"
+[FieldGenre]
+desc = "The display name for the Genre field in a single item record."
+other = "Género"
 
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."

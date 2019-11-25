@@ -166,10 +166,6 @@ other = "Series"
 desc = "The display name for the Genre field in a single item record."
 other = "Genre"
 
-[FieldTopic]
-desc = "The display name for the Topic field in a single item record."
-other = "Topic"
-
 [FieldMore]
 desc = "The display name for the field that contains a link to an external URL with more details."
 other = "More"
