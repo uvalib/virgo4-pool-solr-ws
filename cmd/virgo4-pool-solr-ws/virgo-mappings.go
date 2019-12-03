@@ -213,57 +213,121 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// new style records -- order is important, primarily for generic "text" fields
 
+	/**************************************** [ basic fields ] ****************************************/
+
 	r.addBasicField(newField("id", s.client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
+
+	// title / subtitle
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
 
-	for _, item := range doc.Author {
-		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
+	// principal author
+	r.addBasicField(newField("author", s.client.localize("FieldAuthor"), firstElementOf(doc.Author)).setType("author"))
+
+	// publication date
+	if doc.PublicationDate != "" {
+		r.addBasicField(newField("publication_date", s.client.localize("FieldPublicationDate"), doc.PublicationDate))
 	}
 
+	// format
+	for _, item := range doc.Format {
+		r.addBasicField(newField("format", s.client.localize("FieldFormat"), item))
+	}
+
+	// availability
 	availability := doc.AnonAvailability
 	if s.client.isAuthenticated() == true {
 		availability = doc.UVAAvailability
 	}
 
+	isAvailableOnShelf := false
+	isAvailableOnline := false
+
 	for _, item := range availability {
 		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
 			r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
+
+			switch item {
+			case "On Shelf":
+				isAvailableOnShelf = true
+			case "Online":
+				isAvailableOnline = true
+			}
 		}
 	}
 
-	for _, item := range doc.Format {
-		r.addBasicField(newField("format", s.client.localize("FieldFormat"), item))
+	// access info:
+
+	if isAvailableOnShelf == true {
+		// locations
+		for _, item := range doc.Library {
+			r.addBasicField(newField("library", s.client.localize("FieldLibrary"), item))
+		}
+
+		// sublocations
+		for _, item := range doc.Location {
+			r.addBasicField(newField("location", s.client.localize("FieldLocation"), item))
+		}
+
+		// NOTE: this might require client to determine availability... always returning it for now
+		// call numbers (if physical and available)
+		for _, item := range doc.CallNumber {
+			r.addBasicField(newField("call_number", s.client.localize("FieldCallNumber"), item))
+		}
 	}
 
-	for _, item := range doc.Location {
-		r.addBasicField(newField("location", s.client.localize("FieldLocation"), item))
+	if isAvailableOnline == true {
+		// urls
+		for _, item := range doc.URL {
+			pieces := strings.Split(item, "||")
+			r.addBasicField(newField("access_url", s.client.localize("FieldAccessURL"), pieces[0]).setType("url"))
+		}
 	}
 
-	for _, item := range doc.CallNumber {
-		r.addBasicField(newField("call_number", s.client.localize("FieldCallNumber"), item))
+
+	/**************************************** [ detailed fields ] ****************************************/
+
+	// additional authors
+	for i, item := range doc.Author {
+		if i > 0 {
+			r.addDetailedField(newField("author", s.client.localize("FieldAuthor"), item))
+		}
 	}
 
-	for _, item := range doc.Subject {
-		r.addDetailedField(newField("subject", s.client.localize("FieldSubject"), item))
-	}
-
+	// languages
 	for _, item := range doc.Language {
 		r.addDetailedField(newField("language", s.client.localize("FieldLanguage"), item))
 	}
 
-	for _, item := range doc.Library {
-		r.addDetailedField(newField("library", s.client.localize("FieldLibrary"), item))
+	// FIXME
+	// editions
+
+	// identifier(s)
+	r.addDetailedField(newField("id", s.client.localize("FieldIdentifier"), doc.ID))
+
+	// publication info
+	for _, item := range doc.Published {
+		r.addDetailedField(newField("published", s.client.localize("FieldPublished"), item))
 	}
 
+	// subject
+	for _, item := range doc.Subject {
+		r.addDetailedField(newField("subject", s.client.localize("FieldSubject"), item))
+	}
+
+	// pool-specific detailed fields follow
+
+	// series
 	for _, item := range doc.Series {
 		r.addDetailedField(newField("series", s.client.localize("FieldSeries"), item))
 	}
 
+	// genres
 	for _, item := range doc.VideoGenre {
 		r.addDetailedField(newField("genre", s.client.localize("FieldGenre"), item))
 	}
 
+/*
 	for _, item := range doc.CallNumberBroad {
 		r.addDetailedField(newField("call_number_broad", s.client.localize("FieldCallNumberBroad"), item))
 	}
@@ -291,11 +355,14 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	for _, item := range doc.UPC {
 		r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
 	}
+*/
+
+	/**************************************** [ special fields ] ****************************************/
 
 	// virgo classic url
 
 	if strings.HasPrefix(doc.ID, "u") {
-		r.addDetailedField(newField("sirsi_url", s.client.localize("FieldMore"), s.getSirsiURL(doc.ID[1:])).setType("url"))
+		r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), s.getSirsiURL(doc.ID[1:])).setType("url"))
 	}
 
 	// cover image url

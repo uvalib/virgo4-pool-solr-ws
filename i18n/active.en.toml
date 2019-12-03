@@ -166,6 +166,18 @@ other = "Series"
 desc = "The display name for the Genre field in a single item record."
 other = "Genre"
 
-[FieldMore]
+[FieldPublicationDate]
+desc = "The display name for the Publication Date field in a single item record."
+other = "Publication Date"
+
+[FieldPublished]
+desc = "The display name for the Published field in a single item record."
+other = "Published"
+
+[FieldAccessURL]
+desc = "The display name for the field that contains a link to an external URL for online access."
+other = "Online Access"
+
+[FieldDetailsURL]
 desc = "The display name for the field that contains a link to an external URL with more details."
 other = "More"

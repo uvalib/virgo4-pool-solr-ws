@@ -166,6 +166,18 @@ other = "Serioj"
 desc = "The display name for the Genre field in a single item record."
 other = "Ĝenro"
 
-[FieldMore]
+[FieldPublicationDate]
+desc = "The display name for the Publication Date field in a single item record."
+other = "Eldona Dato"
+
+[FieldPublished]
+desc = "The display name for the Published field in a single item record."
+other = "Eldonita"
+
+[FieldAccessURL]
+desc = "The display name for the field that contains a link to an external URL for online access."
+other = "Interreta Aliro"
+
+[FieldDetailsURL]
 desc = "The display name for the field that contains a link to an external URL with more details."
 other = "Pli multe"

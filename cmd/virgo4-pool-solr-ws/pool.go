@@ -266,7 +266,10 @@ func (p *poolContext) initTranslations() {
 		"FieldAvailability",
 		"FieldSeries",
 		"FieldGenre",
-		"FieldMore",
+		"FieldPublicationDate",
+		"FieldPublished",
+		"FieldAccessURL",
+		"FieldDetailsURL",
 	}
 
 	langs := []string{}
