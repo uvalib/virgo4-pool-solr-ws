@@ -104,6 +104,7 @@ type solrDocument struct {
 	UPC               []string `json:"upc_a,omitempty"`
 	Series            []string `json:"title_series_a,omitempty"`
 	VideoGenre        []string `json:"video_genre_a,omitempty"`
+	ThumbnailURL      []string `json:"thumbnail_url_a,omitempty"`
 	// etc.
 }
 

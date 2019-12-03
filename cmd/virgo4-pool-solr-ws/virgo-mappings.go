@@ -121,6 +121,14 @@ func (s *searchContext) getSirsiURL(id string) string {
 }
 
 func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
+	// use solr-provided url if present
+
+	if thumbnailURL := firstElementOf(doc.ThumbnailURL); thumbnailURL != "" {
+		return thumbnailURL
+	}
+
+	// otherwise, compose a url to the cover image service
+
 	url := strings.Replace(s.pool.config.coverImageURLTemplate, "__identifier__", doc.ID, -1)
 
 	// also add query parameters:
