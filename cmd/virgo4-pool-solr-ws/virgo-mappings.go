@@ -247,10 +247,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
 			r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
 
-			switch item {
-			case "On Shelf":
+			switch {
+			case strings.EqualFold(item, "On shelf") == true:
 				isAvailableOnShelf = true
-			case "Online":
+			case strings.EqualFold(item, "Online") == true:
 				isAvailableOnline = true
 			}
 		}
