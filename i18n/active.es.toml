@@ -122,6 +122,10 @@ other = "Subtítulo"
 desc = "The display name for the Author field in a single item record."
 other = "Autor"
 
+[FieldAdditionalAuthors]
+desc = "The display name for the Additional Authors field in a single item record."
+other = "Autores Adicionales"
+
 [FieldSubject]
 desc = "The display name for the Subject field in a single item record."
 other = "Tema"
@@ -176,7 +180,7 @@ other = "Publicado"
 
 [FieldAccessURL]
 desc = "The display name for the field that contains a link to an external URL for online access."
-other = "Acceso en Linea"
+other = "Acceda en Línea"
 
 [FieldDetailsURL]
 desc = "The display name for the field that contains a link to an external URL with more details."

@@ -290,7 +290,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	// additional authors
 	for i, item := range doc.Author {
 		if i > 0 {
-			r.addDetailedField(newField("author", s.client.localize("FieldAuthor"), item))
+			r.addDetailedField(newField("additional_authors", s.client.localize("FieldAdditionalAuthors"), item))
 		}
 	}
 
