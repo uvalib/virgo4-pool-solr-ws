@@ -221,8 +221,17 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
 
-	// principal author
-	r.addBasicField(newField("author", s.client.localize("FieldAuthor"), firstElementOf(doc.Author)).setType("author"))
+	// authors (princial and additional)
+	for i, item := range doc.Author {
+		f := newField("author", s.client.localize("FieldAuthor"), item)
+
+		// principal author
+		if i == 0 {
+			f.setType("author")
+		}
+
+		r.addBasicField(f)
+	}
 
 	// publication date
 	if doc.PublicationDate != "" {
@@ -286,13 +295,6 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 
 	/**************************************** [ detailed fields ] ****************************************/
-
-	// additional authors
-	for i, item := range doc.Author {
-		if i > 0 {
-			r.addDetailedField(newField("additional_authors", s.client.localize("FieldAdditionalAuthors"), item))
-		}
-	}
 
 	// languages
 	for _, item := range doc.Language {

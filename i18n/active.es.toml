@@ -122,10 +122,6 @@ other = "Subtítulo"
 desc = "The display name for the Author field in a single item record."
 other = "Autor"
 
-[FieldAdditionalAuthors]
-desc = "The display name for the Additional Authors field in a single item record."
-other = "Autores Adicionales"
-
 [FieldSubject]
 desc = "The display name for the Subject field in a single item record."
 other = "Tema"
