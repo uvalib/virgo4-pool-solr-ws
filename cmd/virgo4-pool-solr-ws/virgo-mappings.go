@@ -221,16 +221,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
 
+	// FIXME: somehow indicate principal/additional authors to client?
 	// authors (princial and additional)
-	for i, item := range doc.Author {
-		f := newField("author", s.client.localize("FieldAuthor"), item)
-
-		// principal author
-		if i == 0 {
-			f.setType("author")
-		}
-
-		r.addBasicField(f)
+	for _, item := range doc.Author {
+		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
 	}
 
 	// publication date
