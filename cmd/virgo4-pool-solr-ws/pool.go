@@ -139,16 +139,17 @@ func (p *poolContext) initSolr() {
 	connTimeout := timeoutWithMinimum(p.config.solrConnTimeout, 5)
 	readTimeout := timeoutWithMinimum(p.config.solrReadTimeout, 5)
 
-	solrTransport := &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: time.Duration(connTimeout) * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: time.Duration(connTimeout) * time.Second,
-	}
-
 	solrClient := &http.Client{
-		Timeout:   time.Duration(readTimeout) * time.Second,
-		Transport: solrTransport,
+		Timeout: time.Duration(readTimeout) * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   time.Duration(connTimeout) * time.Second,
+				KeepAlive: 60 * time.Second,
+			}).DialContext,
+			MaxIdleConns:        100, // we are hitting one solr host, so
+			MaxIdleConnsPerHost: 100, // these two values can be the same
+			IdleConnTimeout:     90 * time.Second,
+		},
 	}
 
 	// facet setup
