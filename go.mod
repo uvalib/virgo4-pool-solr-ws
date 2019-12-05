@@ -16,12 +16,13 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
 	github.com/prometheus/client_golang v1.2.1
-	github.com/prometheus/procfs v0.0.7 // indirect
+	github.com/prometheus/client_model v0.0.0-20191202183732-d1d2010b5bee // indirect
+	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/uvalib/virgo4-parser v0.0.0-20191125162258-f2864d46f0e0
 	github.com/zsais/go-gin-prometheus v0.1.0
-	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e // indirect
+	golang.org/x/sys v0.0.0-20191204072324-ce4227a45e2e // indirect
 	golang.org/x/text v0.3.2
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/go-playground/validator.v9 v9.30.0 // indirect
+	gopkg.in/go-playground/validator.v9 v9.30.2 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 )

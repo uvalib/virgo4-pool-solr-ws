@@ -287,7 +287,6 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		}
 	}
 
-
 	/**************************************** [ detailed fields ] ****************************************/
 
 	// languages
@@ -323,35 +322,35 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		r.addDetailedField(newField("genre", s.client.localize("FieldGenre"), item))
 	}
 
-/*
-	for _, item := range doc.CallNumberBroad {
-		r.addDetailedField(newField("call_number_broad", s.client.localize("FieldCallNumberBroad"), item))
-	}
+	/*
+		for _, item := range doc.CallNumberBroad {
+			r.addDetailedField(newField("call_number_broad", s.client.localize("FieldCallNumberBroad"), item))
+		}
 
-	for _, item := range doc.CallNumberNarrow {
-		r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
-	}
+		for _, item := range doc.CallNumberNarrow {
+			r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
+		}
 
-	for _, item := range doc.ISBN {
-		r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
-	}
+		for _, item := range doc.ISBN {
+			r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
+		}
 
-	for _, item := range doc.ISSN {
-		r.addDetailedField(newField("issn", "ISSN", item).setDisplay("optional"))
-	}
+		for _, item := range doc.ISSN {
+			r.addDetailedField(newField("issn", "ISSN", item).setDisplay("optional"))
+		}
 
-	for _, item := range doc.OCLC {
-		r.addDetailedField(newField("oclc", "OCLC", item).setDisplay("optional"))
-	}
+		for _, item := range doc.OCLC {
+			r.addDetailedField(newField("oclc", "OCLC", item).setDisplay("optional"))
+		}
 
-	for _, item := range doc.LCCN {
-		r.addDetailedField(newField("lccn", "LCCN", item).setDisplay("optional"))
-	}
+		for _, item := range doc.LCCN {
+			r.addDetailedField(newField("lccn", "LCCN", item).setDisplay("optional"))
+		}
 
-	for _, item := range doc.UPC {
-		r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
-	}
-*/
+		for _, item := range doc.UPC {
+			r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
+		}
+	*/
 
 	/**************************************** [ special fields ] ****************************************/
 
