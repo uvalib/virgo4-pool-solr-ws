@@ -488,17 +488,6 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 	// sort facet names alphabetically (Solr returns them randomly)
 
 	sort.Slice(facetList, func(i, j int) bool {
-		_, iSelected := s.solrReq.meta.selectionMap[facetList[i].ID]
-		_, jSelected := s.solrReq.meta.selectionMap[facetList[j].ID]
-
-		if iSelected && !jSelected {
-			return true
-		}
-
-		if !iSelected && jSelected {
-			return false
-		}
-
 		return facetList[i].Name < facetList[j].Name
 	})
 
