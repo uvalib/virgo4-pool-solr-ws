@@ -456,6 +456,12 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value s
 		}
 	}
 
+	// sort facet values alphabetically (they are queried by count, but we want to present a-z)
+
+	sort.Slice(buckets, func(i, j int) bool {
+		return buckets[i].Value < buckets[j].Value
+	})
+
 	facet.Buckets = buckets
 
 	return &facet
@@ -480,14 +486,15 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 	}
 
 	// sort facet names alphabetically (Solr returns them randomly)
-	// sort facet values by count (this is done when we set facet.sort = count)
 
 	sort.Slice(facetList, func(i, j int) bool {
 		_, iSelected := s.solrReq.meta.selectionMap[facetList[i].ID]
 		_, jSelected := s.solrReq.meta.selectionMap[facetList[j].ID]
+
 		if iSelected && !jSelected {
 			return true
 		}
+
 		if !iSelected && jSelected {
 			return false
 		}
