@@ -39,8 +39,8 @@ desc = "The detailed description for the Solr pool designated as musical scores.
 other = "FIXME"
 
 [PoolSerialsName]
-desc = "The display name for the pool of Solr search results designated as serials."
-other = "Seriales"
+desc = "The display name for the pool of Solr search results designated as journals."
+other = "Revistas"
 
 [PoolSerialsDescription]
 desc = "The detailed description for the Solr pool designated as serials."

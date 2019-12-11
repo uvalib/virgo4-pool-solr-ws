@@ -39,8 +39,8 @@ desc = "The detailed description for the Solr pool designated as musical scores.
 other = "Sheet music and other music notation."
 
 [PoolSerialsName]
-desc = "The display name for the pool of Solr search results designated as serials."
-other = "Serials"
+desc = "The display name for the pool of Solr search results designated as journals."
+other = "Journals"
 
 [PoolSerialsDescription]
 desc = "The detailed description for the Solr pool designated as serials."
