@@ -1,0 +1,142 @@
+-bash: ../bin/virgo4-pool-solr-ws: No such file or directory
+2019/12/12 10:06:10 ===> virgo4-pool-solr-ws starting up <===
+2019/12/12 10:06:10 [CONFIG] poolName              = [PoolCatalogName]
+2019/12/12 10:06:10 [CONFIG] poolDescription       = [PoolCatalogDescription]
+2019/12/12 10:06:10 [CONFIG] poolDefinition        = [+pool_f:(catalog)]
+2019/12/12 10:06:10 [CONFIG] poolFacets            = [FacetAuthor,FacetSubject,FacetLanguage,FacetFormat,FacetLibrary,FacetCallNumberBroad,FacetCallNumberNarrow,FacetVideoFormat,FacetAvailability]
+2019/12/12 10:06:10 [CONFIG] listenPort            = [8461]
+2019/12/12 10:06:10 [CONFIG] clientHost            = [none]
+2019/12/12 10:06:10 [CONFIG] sirsiURLTemplate      = [https://ils.lib.virginia.edu/uhtbin/cgisirsi/x/0/0/57/5/0?searchdata1=__identifier__{CKEY}&user_id=VIRGO]
+2019/12/12 10:06:10 [CONFIG] coverImageURLTemplate = [https://coverimages.lib.virginia.edu/cover_images/__identifier__]
+2019/12/12 10:06:10 [CONFIG] scoreThresholdMedium  = [100]
+2019/12/12 10:06:10 [CONFIG] scoreThresholdHigh    = [200]
+2019/12/12 10:06:10 [CONFIG] solrHost              = [http://virgo4-solr-staging-replica-private.internal.lib.virginia.edu:8080/solr]
+2019/12/12 10:06:10 [CONFIG] solrCore              = [test_core]
+2019/12/12 10:06:10 [CONFIG] solrHandler           = [select]
+2019/12/12 10:06:10 [CONFIG] solrConnTimeout       = [30]
+2019/12/12 10:06:10 [CONFIG] solrReadTimeout       = [30]
+2019/12/12 10:06:10 [CONFIG] solrParameterQt       = [search]
+2019/12/12 10:06:10 [CONFIG] solrParameterDefType  = [lucene]
+2019/12/12 10:06:10 [CONFIG] solrParameterFq       = [+shadowed_location_f:VISIBLE]
+2019/12/12 10:06:10 [CONFIG] solrParameterFl       = [id,score,pool_f,work_title2_key_sort,title_a,title_sub_a,author_facet_a,subject_a,language_a,format_a,library_a,location2_a,call_number_a,call_number_broad_a,call_number_narrow_a,anon_availability_a,uva_availability_a,isbn_a,issn_a,oclc_a,lccn_a,upc_a]
+2019/12/12 10:06:10 [CONFIG] solrGroupField        = [work_title2_key_sort]
+2019/12/12 10:06:10 [CONFIG] solrFacetManifest     = [
+{
+  "facets": [
+    {
+      "name": "FacetAuthor",
+      "type": "terms",
+      "field": "author_facet_f",
+      "sort": "count",
+      "limit": 25
+    },
+    {
+      "name": "FacetSubject",
+      "type": "terms",
+      "field": "subject_f",
+      "sort": "count",
+      "limit": 25
+    },
+    {
+      "name": "FacetLanguage",
+      "type": "terms",
+      "field": "language_f",
+      "sort": "count",
+      "limit": 25
+    },
+    {
+      "name": "FacetFormat",
+      "type": "terms",
+      "field": "format_f",
+      "sort": "count",
+      "limit": 25
+    },
+    {
+      "name": "FacetLibrary",
+      "type": "terms",
+      "field": "library_f",
+      "sort": "count",
+      "limit": 25
+    },
+    {
+      "name": "FacetCallNumberBroad",
+      "type": "terms",
+      "field": "call_number_broad_f",
+      "sort": "count",
+      "limit": -1
+    },
+    {
+      "name": "FacetCallNumberNarrow",
+      "type": "terms",
+      "field": "call_number_narrow_f",
+      "sort": "count",
+      "limit": -1
+    },
+    {
+      "name": "FacetVideoFormat",
+      "type": "terms",
+      "field": "video_format_f",
+      "sort": "count",
+      "limit": -1
+    },
+    {
+      "name": "FacetAvailability",
+      "type": "terms",
+      "field": "anon_availability_a",
+      "field_auth": "uva_availability_a",
+      "exposed_values": [
+        "On Shelf",
+        "Online",
+        "Request",
+        "Recall"
+      ],
+      "sort": "count",
+      "limit": -1
+    }
+  ]
+}
+]
+2019/12/12 10:06:10 [LANG] [en] verifying translations...
+2019/12/12 10:06:10 [LANG] [eo] verifying translations...
+2019/12/12 10:06:10 [LANG] [es] verifying translations...
+2019/12/12 10:06:10 [POOL] supported languages       = [en, eo, es]
+2019/12/12 10:06:10 [POOL] identity.Name             = [PoolCatalogName]
+2019/12/12 10:06:10 [POOL] identity.Description      = [PoolCatalogDescription]
+2019/12/12 10:06:10 [POOL] version.BuildVersion      = [unknown]
+2019/12/12 10:06:10 [POOL] version.GoVersion         = [go1.13 darwin/amd64]
+2019/12/12 10:06:10 [POOL] version.GitCommit         = [7623923c242d83678e5fdde57a93dfe5398a52ee-modified]
+2019/12/12 10:06:10 [POOL] solr.url                  = [http://virgo4-solr-staging-replica-private.internal.lib.virginia.edu:8080/solr/test_core/select]
+2019/12/12 10:06:10 [POOL] solr.virgoAvailableFacets = [FacetAuthor; FacetSubject; FacetLanguage; FacetFormat; FacetLibrary; FacetCallNumberBroad; FacetCallNumberNarrow; FacetVideoFormat; FacetAvailability]
+2019/12/12 10:06:10 [POOL] solr.scoreThresholdMedium = [100.0]
+2019/12/12 10:06:10 [POOL] solr.scoreThresholdHigh   = [200.0]
+2019/12/12 10:06:10 Start service on :8461
+2019/12/12 10:08:56 [4be209dbab4b814d] GET /identify  (en-US) => (en)
+[GIN] 2019/12/12 - 10:08:56 | 200 |     724.075µs |             ::1 | GET      /identify
+2019/12/12 10:09:01 [ffa471e341d05b71] GET /identify  (en-US) => (en)
+[GIN] 2019/12/12 - 10:09:01 | 200 |     986.426µs |             ::1 | GET      /identify
+2019/12/12 10:09:01 [79c2445f9c8fd658] POST /api/search?debug=&intuit=1&verbose=1  (en-US) => (en)
+2019/12/12 10:09:01 [79c2445f9c8fd658] query: [keyword: {lizard}]
+2019/12/12 10:09:01 [79c2445f9c8fd658] [FACET] unauthenticated session using facet: [anon_availability_a]
+2019/12/12 10:09:01 [79c2445f9c8fd658] received filter group: [books]
+2019/12/12 10:09:01 [79c2445f9c8fd658] [FACET] unauthenticated session using facet: [anon_availability_a]
+2019/12/12 10:09:01 [79c2445f9c8fd658] filter group: [books]
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] req: [{"params":{"defType":"lucene","qt":"search","start":0,"rows":20,"fl":["id","score","pool_f","work_title2_key_sort","title_a","title_sub_a","author_facet_a","subject_a","language_a","format_a","library_a","location2_a","call_number_a","call_number_broad_a","call_number_narrow_a","anon_availability_a","uva_availability_a","isbn_a","issn_a","oclc_a","lccn_a","upc_a"],"fq":["+shadowed_location_f:VISIBLE","+pool_f:(catalog)","{!collapse field=work_title2_key_sort}"],"q":"_query_:\"{!edismax}(lizard)\""}}]
+2019/12/12 10:09:01 [79c2445f9c8fd658] Successful Solr response from http://virgo4-solr-staging-replica-private.internal.lib.virginia.edu:8080/solr/test_core/select. Elapsed Time: 284 (ms)
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] http res:   284 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] json dec:    38 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] conv fac:     0 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] pop meta:     0 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] res: header: { status = 0, QTime = 172 }, meta: { groups = 20, records = 0 }, body: { start = 0, rows = 20, total = 423, maxScore = 287.64 }
+2019/12/12 10:09:01 [79c2445f9c8fd658] [FACET] unauthenticated session using facet: [anon_availability_a]
+2019/12/12 10:09:01 [79c2445f9c8fd658] filter group: [books]
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] req: [{"params":{"defType":"lucene","qt":"search","start":0,"rows":100000,"fl":["id","score","pool_f","work_title2_key_sort","title_a","title_sub_a","author_facet_a","subject_a","language_a","format_a","library_a","location2_a","call_number_a","call_number_broad_a","call_number_narrow_a","anon_availability_a","uva_availability_a","isbn_a","issn_a","oclc_a","lccn_a","upc_a"],"fq":["+shadowed_location_f:VISIBLE","+pool_f:(catalog)"],"q":"_query_:\"{!edismax}(lizard)\" AND work_title2_key_sort:(\"lizards_windows_to_the_evolution_of_diversity/pianka_eric_r/Book\" OR \"lizards/greenberg_daniel_a/Book\" OR \"lizards/bishop_nic/Book\" OR \"tokage/yoshimoto_banana/Book\" OR \"lizards/edwards_charles_lincoln/Book\" OR \"lizard_ecology_historical_and_experimental_perspectives/vitt_laurie_j/Book\" OR \"lizard_ecology_a_symposium/milstead_william_w/Book\" OR \"lizard_ecology_studies_of_a_model_organism/huey_raymond_b/Book\" OR \"lizard_behavior_evolutionary_and_mechanistic_perspectives/bels_v_l_vincent_l/Book\" OR \"rabos_de_lagartija/marse_juan/Book\" OR \"lizard_ecology_the_evolutionary_consequences_of_foraging_mode/reilly_stephen_m/Book\" OR \"lizard_social_behavior/fox_stanley_f/Book\" OR \"lizard_head_wilderness_uncompahgre_san_juan_national_forests_keep_wilderness_wild_national_wilderness_preservation_system//Book\" OR \"terrible_lizard_the_first_dinosaur_hunters_and_the_birth_of_a_new_science/cadbury_deborah/Book\" OR \"pure_lizard/bhatt_sujata/Book\" OR \"lizard_head_wilderness_area_san_juan_national_forest_uncompahgre_national_forest//Book\" OR \"lizards_of_the_world/mattison_christopher/Book\" OR \"lizard_in_the_grass/mills_john/Book\" OR \"lizards_love_round_stones_dalla_modellazione_parametrica_all_emozione_della_percezione_spaziale_attraverso_la_poetica_dell_involucro_architettonico_from_parametric_modeling_to_the_emotion_of_spatial_perception_trough_the_poetics_of_the_architectural_shell/forconi_fabio/Book\" OR \"lizards_on_the_wall/buchanan_ken/Book\")"}}]
+2019/12/12 10:09:01 [79c2445f9c8fd658] Successful Solr response from http://virgo4-solr-staging-replica-private.internal.lib.virginia.edu:8080/solr/test_core/select. Elapsed Time: 140 (ms)
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] http res:   140 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] json dec:    11 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] conv fac:     0 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] pop meta:     0 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [SOLR] res: header: { status = 0, QTime = 96 }, meta: { groups = 0, records = 22 }, body: { start = 0, rows = 22, total = 22, maxScore = 303.33 }
+2019/12/12 10:09:01 [79c2445f9c8fd658] [GROUP] map groups:     0 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [GROUP] group vals:     0 ms
+2019/12/12 10:09:01 [79c2445f9c8fd658] [CLIENT] response:     1 ms
+[GIN] 2019/12/12 - 10:09:01 | 200 |  480.449774ms |             ::1 | POST     /api/search?debug=&intuit=1&verbose=1

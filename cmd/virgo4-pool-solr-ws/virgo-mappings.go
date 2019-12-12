@@ -307,7 +307,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// subject
 	for _, item := range doc.Subject {
-		r.addDetailedField(newField("subject", s.client.localize("FieldSubject"), item))
+		r.addDetailedField(newField("subject", s.client.localize("FieldSubject"), item).setType("subject"))
 	}
 
 	// pool-specific detailed fields follow
