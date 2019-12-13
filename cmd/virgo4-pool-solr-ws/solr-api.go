@@ -84,9 +84,11 @@ type solrDocument struct {
 	ID                string   `json:"id,omitempty"`
 	Pool              []string `json:"pool_f,omitempty"`
 	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
+	//SomeOtherKeySort  string   `json:"some_other_key_sort_fixme,omitempty"` // FIXME additional grouping field(s) go here
 	Title             []string `json:"title_a,omitempty"`
 	Subtitle          []string `json:"title_sub_a,omitempty"`
 	Author            []string `json:"author_facet_a,omitempty"`
+	//Director          []string `json:"director_a_fixme,omitempty"` // FIXME director field goes here
 	Subject           []string `json:"subject_a,omitempty"`
 	Language          []string `json:"language_a,omitempty"`
 	Format            []string `json:"format_a,omitempty"`
