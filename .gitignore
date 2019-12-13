@@ -1,6 +1,7 @@
 .DS_Store
 log/*.*
 *.log
+log
 tmp/*
 *~
 *.bak
