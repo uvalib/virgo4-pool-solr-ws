@@ -235,6 +235,8 @@ func (p *poolContext) initTranslations() {
 		"PoolMusicRecordingsDescription",
 		"PoolMusicalScoresName",
 		"PoolMusicalScoresDescription",
+		"PoolRareBooksName",
+		"PoolRareBooksDescription",
 		"PoolSerialsName",
 		"PoolSerialsDescription",
 		"PoolSoundRecordingsName",

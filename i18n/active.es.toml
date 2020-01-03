@@ -4,7 +4,7 @@ other = "Los Archivos"
 
 [PoolArchivalDescription]
 desc = "The detailed description for the Solr pool designated as archival."
-other = "FIXME"
+other = " "
 
 [PoolCatalogBroadName]
 desc = "The display name for the pool of Solr search results designated as the broad catalog."
@@ -12,7 +12,7 @@ other = "Catálogo (Amplio)"
 
 [PoolCatalogBroadDescription]
 desc = "The detailed description for the Solr pool designated as the broad catalog."
-other = "FIXME"
+other = " "
 
 [PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
@@ -20,7 +20,7 @@ other = "Libros"
 
 [PoolCatalogDescription]
 desc = "The detailed description for the Solr pool designated as the main catalog."
-other = "FIXME"
+other = " "
 
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
@@ -28,7 +28,7 @@ other = "Grabaciones Musicales"
 
 [PoolMusicRecordingsDescription]
 desc = "The detailed description for the Solr pool designated as music recordings."
-other = "FIXME"
+other = " "
 
 [PoolMusicalScoresName]
 desc = "The display name for the pool of Solr search results designated as musical scores."
@@ -36,15 +36,23 @@ other = "Partituras Musicales"
 
 [PoolMusicalScoresDescription]
 desc = "The detailed description for the Solr pool designated as musical scores."
-other = "FIXME"
+other = " "
+
+[PoolRareBooksName]
+desc = "The display name for the pool of Solr search results designated as rare books."
+other = "Libros Raros"
+
+[PoolRareBooksDescription]
+desc = "The detailed description for the Solr pool designated as rare books."
+other = " "
 
 [PoolSerialsName]
-desc = "The display name for the pool of Solr search results designated as journals."
+desc = "The display name for the pool of Solr search results designated as serials."
 other = "Revistas"
 
 [PoolSerialsDescription]
 desc = "The detailed description for the Solr pool designated as serials."
-other = "FIXME"
+other = " "
 
 [PoolSoundRecordingsName]
 desc = "The display name for the pool of Solr search results designated as sound recordings."
@@ -52,7 +60,7 @@ other = "Grabaciones de Sonido"
 
 [PoolSoundRecordingsDescription]
 desc = "The detailed description for the Solr pool designated as sound recordings."
-other = "FIXME"
+other = " "
 
 [PoolVideoName]
 desc = "The display name for the pool of Solr search results designated as video."
@@ -60,7 +68,7 @@ other = "Vídeo"
 
 [PoolVideoDescription]
 desc = "The detailed description for the Solr pool designated as video."
-other = "FIXME"
+other = " "
 
 [FacetAuthor]
 desc = "The display name for the Author facet."
