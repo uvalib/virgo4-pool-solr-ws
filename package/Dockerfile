@@ -2,6 +2,8 @@
 # build the target application
 #
 FROM golang:1.13 as builder
+RUN apt-get -y update
+
 WORKDIR /build
 COPY go.mod go.sum Makefile ./
 COPY cmd ./cmd
@@ -12,7 +14,7 @@ RUN make rebuild-docker GIT_COMMIT="$GIT_COMMIT"
 #
 # build the target container
 #
-FROM alpine:3.10
+FROM alpine:3.11
 
 # update the packages
 RUN apk update && apk upgrade && apk add bash tzdata ca-certificates && rm -rf /var/cache/apk/*
