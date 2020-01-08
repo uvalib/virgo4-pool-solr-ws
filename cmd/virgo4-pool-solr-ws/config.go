@@ -27,6 +27,7 @@ type poolConfig struct {
 	solrParameterFl       string
 	solrGroupField        string
 	solrAuthorField       string
+	solrAuthorLabel       string
 	solrFacetManifest     string
 }
 
@@ -76,6 +77,7 @@ func loadConfig() *poolConfig {
 	cfg.solrParameterFl = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL")
 	cfg.solrGroupField = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_GROUP_FIELD")
 	cfg.solrAuthorField = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_AUTHOR_FIELD")
+	cfg.solrAuthorLabel = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_AUTHOR_LABEL")
 	cfg.solrFacetManifest = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_FACET_MANIFEST")
 
 	log.Printf("[CONFIG] poolName              = [%s]", cfg.poolName)
@@ -99,6 +101,7 @@ func loadConfig() *poolConfig {
 	log.Printf("[CONFIG] solrParameterFl       = [%s]", cfg.solrParameterFl)
 	log.Printf("[CONFIG] solrGroupField        = [%s]", cfg.solrGroupField)
 	log.Printf("[CONFIG] solrAuthorField       = [%s]", cfg.solrAuthorField)
+	log.Printf("[CONFIG] solrAuthorLabel       = [%s]", cfg.solrAuthorLabel)
 	log.Printf("[CONFIG] solrFacetManifest     = [%s]", cfg.solrFacetManifest)
 
 	return &cfg

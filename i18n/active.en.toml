@@ -130,6 +130,10 @@ other = "Subtitle"
 desc = "The display name for the Author field in a single item record."
 other = "Author"
 
+[FieldDirector]
+desc = "The display name for the Director field in a single item record."
+other = "Director"
+
 [FieldSubject]
 desc = "The display name for the Subject field in a single item record."
 other = "Subject"

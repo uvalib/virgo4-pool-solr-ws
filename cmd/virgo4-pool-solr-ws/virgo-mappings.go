@@ -266,7 +266,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// authors (principal and additional)
 	for _, item := range s.getAuthorFieldValue(doc) {
-		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
+		r.addBasicField(newField("author", s.client.localize(s.pool.config.solrAuthorLabel), item).setType("author"))
 	}
 
 	// publication date

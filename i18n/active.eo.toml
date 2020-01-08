@@ -130,6 +130,10 @@ other = "Subteksto"
 desc = "The display name for the Author field in a single item record."
 other = "Aŭtoro"
 
+[FieldDirector]
+desc = "The display name for the Director field in a single item record."
+other = "Direktoro"
+
 [FieldSubject]
 desc = "The display name for the Subject field in a single item record."
 other = "Subjekto"

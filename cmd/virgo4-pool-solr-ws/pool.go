@@ -258,6 +258,7 @@ func (p *poolContext) initTranslations() {
 		"FieldTitle",
 		"FieldSubtitle",
 		"FieldAuthor",
+		"FieldDirector",
 		"FieldSubject",
 		"FieldLanguage",
 		"FieldFormat",

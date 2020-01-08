@@ -347,7 +347,7 @@ func (s *searchContext) populateGroups() error {
 		}
 
 		if author != "" {
-			group.addBasicField(newField("author", s.client.localize("FieldAuthor"), author).setType("author"))
+			group.addBasicField(newField("author", s.client.localize(s.pool.config.solrAuthorLabel), author).setType("author"))
 		}
 
 		if format != "" {
