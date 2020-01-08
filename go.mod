@@ -18,7 +18,7 @@ require (
 	github.com/prometheus/client_golang v1.3.0
 	github.com/uvalib/virgo4-parser v0.0.0-20191125162258-f2864d46f0e0
 	github.com/zsais/go-gin-prometheus v0.1.0
-	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7 // indirect
+	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
 	golang.org/x/text v0.3.2
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
