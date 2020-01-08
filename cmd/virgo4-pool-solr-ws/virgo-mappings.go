@@ -53,13 +53,8 @@ func (s *solrDocument) getFieldValueByTag(tag string) interface{} {
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 	v := doc.getFieldValueByTag(s.pool.config.solrGroupField)
 
-	rt := reflect.TypeOf(v)
-
-	s.log("getSolrGroupFieldValue: v is type %v with value: [%v]", rt.Kind(), v)
-
 	switch t := v.(type) {
 		case string:
-			s.log("t = [%v]", t)
 			return t
 	}
 
@@ -69,13 +64,8 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 func (s *searchContext) getAuthorFieldValue(doc *solrDocument) []string {
 	v := doc.getFieldValueByTag(s.pool.config.solrAuthorField)
 
-	rt := reflect.TypeOf(v)
-
-	s.log("getAuthorFieldValue: v is type %v with value: [%v]", rt.Kind(), v)
-
 	switch t := v.(type) {
 		case []string:
-			s.log("t = [%v]", t)
 			return t
 	}
 
