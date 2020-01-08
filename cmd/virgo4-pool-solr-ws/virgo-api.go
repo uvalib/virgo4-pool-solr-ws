@@ -76,10 +76,10 @@ type VirgoNuancedFields []VirgoNuancedField
 
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	Fields            VirgoNuancedFields `json:"fields,omitempty"`
-	Exact             bool               `json:"exact,omitempty"`
-	Debug             *VirgoRecordDebug  `json:"debug,omitempty"`
-	workTitle2KeySort string             // used internally
+	Fields     VirgoNuancedFields `json:"fields,omitempty"`
+	Exact      bool               `json:"exact,omitempty"`
+	Debug      *VirgoRecordDebug  `json:"debug,omitempty"`
+	groupValue string             // used internally
 }
 
 // VirgoRecords is a slice of VirgoRecord structs

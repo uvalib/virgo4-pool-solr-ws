@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -29,6 +30,56 @@ func sliceContainsString(list []string, val string) bool {
 	}
 
 	return false
+}
+
+func (s *solrDocument) getFieldValueByTag(tag string) interface{} {
+	rt := reflect.TypeOf(*s)
+
+	if rt.Kind() != reflect.Struct {
+		return nil
+	}
+
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		v := strings.Split(f.Tag.Get("json"), ",")[0]
+		if v == tag {
+			return reflect.ValueOf(*s).Field(i).Interface()
+		}
+	}
+
+	return nil
+}
+
+func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
+	v := doc.getFieldValueByTag(s.pool.config.solrGroupField)
+
+	rt := reflect.TypeOf(v)
+
+	s.log("getSolrGroupFieldValue: v is type %v with value: [%v]", rt.Kind(), v)
+
+	switch t := v.(type) {
+		case string:
+			s.log("t = [%v]", t)
+			return t
+	}
+
+	return ""
+}
+
+func (s *searchContext) getAuthorFieldValue(doc *solrDocument) []string {
+	v := doc.getFieldValueByTag(s.pool.config.solrAuthorField)
+
+	rt := reflect.TypeOf(v)
+
+	s.log("getAuthorFieldValue: v is type %v with value: [%v]", rt.Kind(), v)
+
+	switch t := v.(type) {
+		case []string:
+			s.log("t = [%v]", t)
+			return t
+	}
+
+	return []string{}
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
@@ -145,8 +196,10 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 	qp := req.URL.Query()
 
+	authorValues := s.getAuthorFieldValue(doc)
+
 	// remove extraneous dates from author
-	author := strings.Trim(strings.Split(firstElementOf(doc.Author), "[")[0], " ")
+	author := strings.Trim(strings.Split(firstElementOf(authorValues), "[")[0], " ")
 	title := firstElementOf(doc.Title)
 
 	if sliceContainsString(doc.Pool, "music_recordings") == true {
@@ -154,7 +207,7 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 		qp.Add("doc_type", "music")
 
-		if len(doc.Author) > 0 {
+		if len(author) > 0 {
 			qp.Add("artist_name", author)
 		}
 
@@ -221,9 +274,8 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
 
-	// FIXME: somehow indicate principal/additional authors to client?
-	// authors (princial and additional)
-	for _, item := range doc.Author {
+	// authors (principal and additional)
+	for _, item := range s.getAuthorFieldValue(doc) {
 		r.addBasicField(newField("author", s.client.localize("FieldAuthor"), item).setType("author"))
 	}
 
@@ -374,7 +426,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// add internal info
 
-	r.workTitle2KeySort = doc.WorkTitle2KeySort
+	r.groupValue = s.getSolrGroupFieldValue(doc)
 
 	// add debug info?
 	if s.client.opts.debug == true {

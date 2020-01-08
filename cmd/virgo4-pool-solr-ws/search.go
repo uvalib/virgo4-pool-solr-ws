@@ -304,11 +304,12 @@ func (s *searchContext) populateGroups() error {
 
 	groupValueMap := make(map[string]int)
 
-	for i, g := range s.solrRes.Response.Docs {
-		groupValues = append(groupValues, fmt.Sprintf(`"%s"`, g.WorkTitle2KeySort))
-		groupValueMap[g.WorkTitle2KeySort] = i
+	for i, groupRecord := range s.solrRes.Response.Docs {
+		groupValue := s.getSolrGroupFieldValue(&groupRecord)
+		groupValues = append(groupValues, fmt.Sprintf(`"%s"`, groupValue))
+		groupValueMap[groupValue] = i
 		var records VirgoRecords
-		groups = append(groups, VirgoGroup{Value: g.WorkTitle2KeySort, RecordList: records})
+		groups = append(groups, VirgoGroup{Value: groupValue, RecordList: records})
 	}
 
 	r, err := s.newSearchWithRecordListForGroups(groupValues)
@@ -320,7 +321,7 @@ func (s *searchContext) populateGroups() error {
 
 	start := time.Now()
 	for _, record := range *r.virgoPoolRes.RecordList {
-		v := groupValueMap[record.workTitle2KeySort]
+		v := groupValueMap[record.groupValue]
 		groups[v].RecordList = append(groups[v].RecordList, record)
 	}
 	s.log("[GROUP] map groups: %5d ms", int64(time.Since(start)/time.Millisecond))

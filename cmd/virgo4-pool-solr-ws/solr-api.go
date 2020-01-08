@@ -84,11 +84,11 @@ type solrDocument struct {
 	ID                string   `json:"id,omitempty"`
 	Pool              []string `json:"pool_f,omitempty"`
 	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
-	//SomeOtherKeySort  string   `json:"some_other_key_sort_fixme,omitempty"` // FIXME additional grouping field(s) go here
+	WorkTitle3KeySort string   `json:"work_title3_key_sort,omitempty"`
 	Title             []string `json:"title_a,omitempty"`
 	Subtitle          []string `json:"title_sub_a,omitempty"`
 	Author            []string `json:"author_facet_a,omitempty"`
-	//Director          []string `json:"director_a_fixme,omitempty"` // FIXME director field goes here
+	Director          []string `json:"author_director_a,omitempty"`
 	Subject           []string `json:"subject_a,omitempty"`
 	Language          []string `json:"language_a,omitempty"`
 	Format            []string `json:"format_a,omitempty"`
@@ -110,7 +110,6 @@ type solrDocument struct {
 	PublicationDate   string   `json:"published_daterange,omitempty"`
 	Published         []string `json:"published_a,omitempty"`
 	URL               []string `json:"url_a,omitempty"`
-	// etc.
 }
 
 type solrBucket struct {
