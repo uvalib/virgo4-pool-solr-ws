@@ -311,6 +311,27 @@ func (p *poolContext) initTranslations() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
+func (p *poolContext) sanityChecks() {
+	// ensure certain pool-specific field mappings exist by extracting values from a fake solr document
+
+	doc := solrDocument{
+		Author:            []string{"test"},
+		Director:          []string{"test"},
+		WorkTitle2KeySort: "test",
+		WorkTitle3KeySort: "test",
+	}
+
+	if group := doc.getStringValueByTag(p.config.solrGroupField); group == "" {
+		log.Printf("[SANITY] grouping field not found in struct tags: [%s]", p.config.solrGroupField)
+		os.Exit(1)
+	}
+
+	if author := doc.getStringSliceValueByTag(p.config.solrAuthorField); len(author) == 0 {
+		log.Printf("[SANITY] author field not found in struct tags: [%s]", p.config.solrAuthorField)
+		os.Exit(1)
+	}
+}
+
 func initializePool(cfg *poolConfig) *poolContext {
 	p := poolContext{}
 
@@ -321,6 +342,8 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initIdentity()
 	p.initVersion()
 	p.initSolr()
+
+	p.sanityChecks()
 
 	return &p
 }

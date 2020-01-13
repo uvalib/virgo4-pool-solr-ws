@@ -50,26 +50,34 @@ func (s *solrDocument) getFieldValueByTag(tag string) interface{} {
 	return nil
 }
 
-func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	v := doc.getFieldValueByTag(s.pool.config.solrGroupField)
+func (s *solrDocument) getStringValueByTag(tag string) string {
+	v := s.getFieldValueByTag(tag)
 
 	switch t := v.(type) {
-		case string:
-			return t
+	case string:
+		return t
 	}
 
 	return ""
 }
 
-func (s *searchContext) getAuthorFieldValue(doc *solrDocument) []string {
-	v := doc.getFieldValueByTag(s.pool.config.solrAuthorField)
+func (s *solrDocument) getStringSliceValueByTag(tag string) []string {
+	v := s.getFieldValueByTag(tag)
 
 	switch t := v.(type) {
-		case []string:
-			return t
+	case []string:
+		return t
 	}
 
 	return []string{}
+}
+
+func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
+	return doc.getStringValueByTag(s.pool.config.solrGroupField)
+}
+
+func (s *searchContext) getAuthorFieldValue(doc *solrDocument) []string {
+	return doc.getStringSliceValueByTag(s.pool.config.solrAuthorField)
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
