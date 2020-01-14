@@ -107,7 +107,7 @@ type solrDocument struct {
 	Series            []string `json:"title_series_a,omitempty"`
 	VideoGenre        []string `json:"video_genre_a,omitempty"`
 	ThumbnailURL      []string `json:"thumbnail_url_a,omitempty"`
-	PublicationDate   string   `json:"published_daterange,omitempty"`
+	PublicationDate   []string `json:"published_daterange,omitempty"`
 	Published         []string `json:"published_a,omitempty"`
 	URL               []string `json:"url_a,omitempty"`
 }

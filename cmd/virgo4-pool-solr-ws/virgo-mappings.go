@@ -278,8 +278,8 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	}
 
 	// publication date
-	if doc.PublicationDate != "" {
-		r.addBasicField(newField("publication_date", s.client.localize("FieldPublicationDate"), doc.PublicationDate))
+	for _, item := range doc.PublicationDate {
+		r.addBasicField(newField("publication_date", s.client.localize("FieldPublicationDate"), item))
 	}
 
 	// format
