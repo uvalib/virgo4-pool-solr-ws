@@ -62,6 +62,14 @@ other = "Sound Recordings"
 desc = "The detailed description for the Solr pool designated as sound recordings."
 other = "Audio materials that aren't primarily music."
 
+[PoolThesisName]
+desc = "The display name for the pool of Solr search results designated as thesis."
+other = "Theses"
+
+[PoolThesisDescription]
+desc = "The detailed description for the Solr pool designated as thesis."
+other = " "
+
 [PoolVideoName]
 desc = "The display name for the pool of Solr search results designated as video."
 other = "Video"
