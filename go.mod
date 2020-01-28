@@ -15,7 +15,7 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
 	github.com/prometheus/client_golang v1.4.0
-	github.com/uvalib/virgo4-parser v0.0.0-20200127195650-8a3284812e41
+	github.com/uvalib/virgo4-parser v0.0.0-20200128004226-f00aff4dd7f3
 	github.com/zsais/go-gin-prometheus v0.1.0
 	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9 // indirect
 	golang.org/x/text v0.3.2
