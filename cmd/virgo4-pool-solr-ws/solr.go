@@ -129,12 +129,13 @@ func (s *searchContext) solrQuery() error {
 	res, resErr := s.pool.solr.client.Do(req)
 	elapsedMS := int64(time.Since(start) / time.Millisecond)
 
+	// external service failure logging (scenario 1)
+
 	if resErr != nil {
 		s.log("client.Do() failed: %s", resErr.Error())
+		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, res.StatusCode, resErr.Error(), elapsedMS)
 		return fmt.Errorf("Failed to receive Solr response")
 	}
-
-	s.log("Successful Solr response from %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
 
 	s.log("[SOLR] http res: %5d ms", int64(time.Since(start)/time.Millisecond))
 
@@ -162,12 +163,19 @@ func (s *searchContext) solrQuery() error {
 
 	decoder := json.NewDecoder(res.Body)
 
+	// external service failure logging (scenario 2)
+
 	start = time.Now()
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
 		s.log("Decode() failed: %s", decErr.Error())
+		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("Failed to decode Solr response")
 	}
 	s.log("[SOLR] json dec: %5d ms", int64(time.Since(start)/time.Millisecond))
+
+	// external service success logging
+
+	s.log("Successful Solr response from GET %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
 
 	s.solrRes = &solrRes
 
