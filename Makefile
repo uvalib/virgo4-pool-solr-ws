@@ -1,8 +1,7 @@
 # project specific definitions
 SRCDIR = cmd
 BINDIR = bin
-PKGDOCKER = virgo4-pool-solr-ws
-PACKAGES = $(PKGDOCKER)
+PACKAGE = virgo4-pool-solr-ws
 
 # go commands
 GOCMD = go
@@ -22,7 +21,14 @@ TARGET = $(MACHINE)
 
 # git commit used for this build, either passed to make via Dockerfile or determined from local directory
 ifeq ($(GIT_COMMIT),)
-	GIT_COMMIT = $(shell commit="$$(git rev-list -1 HEAD)" ; postfix="" ; git diff --quiet || postfix="-modified" ; echo "$${commit}$${postfix}")
+	GIT_COMMIT = $(shell \
+		commit="$$(git rev-list -1 HEAD 2>/dev/null)" ; \
+		if [ "$${commit}" != "" ] ; then \
+			postfix="" ; \
+			git diff --quiet || postfix="-modified" ; \
+			echo "$${commit}$${postfix}" ; \
+		fi \
+	)
 endif
 
 # darwin-specific definitions
@@ -51,22 +57,18 @@ go-vars:
 
 compile:
 	@ \
-	echo "building packages: [$(PACKAGES)] for target: [$(TARGET)]" ; \
+	echo "building [$(PACKAGE)] for target: [$(TARGET)]" ; \
 	echo ; \
 	$(GOVER) ; \
 	echo ; \
-	for pkg in $(PACKAGES) ; do \
-		printf "compile: %-6s  env: [%s]  flags: [%s]  link: [%s]\n" "$${pkg}" "$(GOENV)" "$(GOFLAGS)" "$(GOLINK)" ; \
-		$(GOENV) $(GOBLD) $(GOFLAGS) $(GOLINK) -o "$(BINDIR)/$${pkg}.$(TARGET)" "$(SRCDIR)/$${pkg}"/*.go || exit 1 ; \
-	done
+	printf "compile: %-6s  env: [%s]  flags: [%s]  link: [%s]\n" "$(PACKAGE)" "$(GOENV)" "$(GOFLAGS)" "$(GOLINK)" ; \
+	$(GOENV) $(GOBLD) $(GOFLAGS) $(GOLINK) -o "$(BINDIR)/$(PACKAGE).$(TARGET)" "$(SRCDIR)"/*.go || exit 1
 
 symlink:
 	@ \
 	echo ; \
-	for pkg in $(PACKAGES) ; do \
-		echo "symlink: $(BINDIR)/$${pkg} -> $${pkg}.$(TARGET)" ; \
-		ln -sf "$${pkg}.$(TARGET)" "$(BINDIR)/$${pkg}" || exit 1 ; \
-	done
+	echo "symlink: $(BINDIR)/$(PACKAGE) -> $(PACKAGE).$(TARGET)" ; \
+	ln -sf "$(PACKAGE).$(TARGET)" "$(BINDIR)/$(PACKAGE)" || exit 1
 
 darwin: target-darwin build
 
@@ -89,7 +91,6 @@ rebuild-linux: target-linux rebuild
 
 # docker: make sure binary is linux and truly static
 docker-vars:
-	$(eval PACKAGES = $(PKGDOCKER))
 	$(eval GOENV_EXTRA += CGO_ENABLED=0)
 	$(eval GOLINK_EXTRA += -extldflags "-static")
 
@@ -100,33 +101,25 @@ rebuild-docker: docker-vars rebuild-linux
 # maintenance rules
 fmt:
 	@ \
-	for pkg in $(PACKAGES) ; do \
-		echo "fmt: $${pkg}" ; \
-		(cd "$(SRCDIR)/$${pkg}" && $(GOFMT)) ; \
-	done
+	echo "fmt: $(PACKAGE)" ; \
+	(cd "$(SRCDIR)" && $(GOFMT))
 
 vet:
 	@ \
-	for pkg in $(PACKAGES) ; do \
-		echo "vet: $${pkg}" ; \
-		(cd "$(SRCDIR)/$${pkg}" && $(GOVET)) ; \
-	done
+	echo "vet: $(PACKAGE)" ; \
+	(cd "$(SRCDIR)" && $(GOVET))
 
 lint:
 	@ \
-	for pkg in $(PACKAGES) ; do \
-		echo "lint: $${pkg}" ; \
-		(cd "$(SRCDIR)/$${pkg}" && $(GOLNT)) ; \
-	done
+	echo "lint: $(PACKAGE)" ; \
+	(cd "$(SRCDIR)" && $(GOLNT))
 
 clean:
 	@ \
 	echo "purge: $(BINDIR)/" ; \
 	rm -rf $(BINDIR) ; \
-	for pkg in $(PACKAGES) ; do \
-		echo "clean: $${pkg}" ; \
-		(cd "$(SRCDIR)/$${pkg}" && $(GOCLN)) ; \
-	done
+	echo "clean: $(PACKAGE)" ; \
+	(cd "$(SRCDIR)" && $(GOCLN))
 
 dep:
 	$(GOGET) -u ./$(SRCDIR)/...
@@ -135,4 +128,4 @@ dep:
 
 check:
 	go get honnef.co/go/tools/cmd/staticcheck
-	~/go/bin/staticcheck -checks all,-S1002,-ST1003 cmd/$(PKGDOCKER)/*.go
+	~/go/bin/staticcheck -checks all,-S1002,-ST1003 cmd/*.go
