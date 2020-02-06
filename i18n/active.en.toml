@@ -94,6 +94,14 @@ other = "Call Number (Broad)"
 desc = "The display name for the Call Number (Narrow) facet."
 other = "Call Number (Narrow)"
 
+[FacetComposer]
+desc = "The display name for the Composer facet."
+other = "Composer"
+
+[FacetCompositionEra]
+desc = "The display name for the Composition Era facet."
+other = "Composition Era"
+
 [FacetFormat]
 desc = "The display name for the Format facet."
 other = "Format"
@@ -102,6 +110,10 @@ other = "Format"
 desc = "The display name for the Genre facet."
 other = "Genre"
 
+[FacetInstrument]
+desc = "The display name for the Instrument facet."
+other = "Instrument"
+
 [FacetLanguage]
 desc = "The display name for the Language facet."
 other = "Language"
@@ -109,6 +121,10 @@ other = "Language"
 [FacetLibrary]
 desc = "The display name for the Library facet."
 other = "Library"
+
+[FacetRegion]
+desc = "The display name for the Region facet."
+other = "Region"
 
 [FacetSeries]
 desc = "The display name for the Series facet."

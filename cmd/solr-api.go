@@ -82,7 +82,7 @@ type solrDocument struct {
 	// for performance reasons, pools should be configured to only request the fields below
 	Score             float32  `json:"score,omitempty"`
 	ID                string   `json:"id,omitempty"`
-	Pool              []string `json:"pool_f,omitempty"`
+	Pool              []string `json:"pool_a,omitempty"`
 	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
 	WorkTitle3KeySort string   `json:"work_title3_key_sort,omitempty"`
 	Title             []string `json:"title_a,omitempty"`

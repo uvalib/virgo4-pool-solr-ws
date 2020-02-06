@@ -523,9 +523,37 @@ func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDef
 
 	for key, val := range solrFacets {
 		if len(val.Buckets) > 0 {
+			facetDef := facetDefs[key]
+
+			// FIXME: hard-coded special case; needs to be generalized
+
+			// for the musical scores pool, if the selection map (of requested filters)
+			// has selections for composer, composition era, instrument, or region,
+			// then add the subject facet values; otherwise, omit
+
+			s.log("virgoPopulateFacetList: %s  (%s)", s.pool.config.poolName, facetDef.Name)
+
+			if s.pool.config.poolName == "PoolMusicalScoresName" && facetDef.Name == "FacetSubject" {
+				facets := []string{"FacetComposer", "FacetCompostionEra", "FacetInstrument", "FacetRegion"}
+
+				numSelected := 0
+				for _, facet := range facets {
+					n := len(s.solrReq.meta.selectionMap[facet])
+					s.log("%d selected filters for %s", n, facet)
+					numSelected += n
+				}
+
+				if numSelected == 0 {
+					s.log("omitting facet %s due to lack of selected dependent filters", facetDef.Name)
+					continue
+				}
+
+				s.log("including facet %s due to %d selected dependent filters", facetDef.Name, numSelected)
+			}
+
 			gotFacet = true
 
-			facet := s.virgoPopulateFacet(facetDefs[key], val)
+			facet := s.virgoPopulateFacet(facetDef, val)
 
 			facetList = append(facetList, *facet)
 		}
