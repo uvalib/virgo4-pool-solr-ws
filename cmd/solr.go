@@ -132,8 +132,18 @@ func (s *searchContext) solrQuery() error {
 	// external service failure logging (scenario 1)
 
 	if resErr != nil {
+		status := http.StatusBadRequest
+		errMsg := resErr.Error()
+		if strings.Contains(errMsg, "Timeout") {
+			status = http.StatusRequestTimeout
+			errMsg = fmt.Sprintf("%s timed out", s.pool.solr.url)
+		} else if strings.Contains(errMsg, "connection refused") {
+			status = http.StatusServiceUnavailable
+			errMsg = fmt.Sprintf("%s refused connection", s.pool.solr.url)
+		}
+
 		s.log("client.Do() failed: %s", resErr.Error())
-		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, res.StatusCode, resErr.Error(), elapsedMS)
+		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, status, errMsg, elapsedMS)
 		return fmt.Errorf("Failed to receive Solr response")
 	}
 
