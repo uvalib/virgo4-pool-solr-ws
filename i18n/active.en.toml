@@ -20,7 +20,7 @@ other = "Books"
 
 [PoolCatalogDescription]
 desc = "The detailed description for the Solr pool designated as the main catalog."
-other = "Physical and electronic books from the library's collection. Many of these materials may be available for check-out at one of our convenient locations, while others can be accessed online from the convenience of your home."
+other = "Physical and electronic books from UVA’s collection."
 
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
@@ -28,7 +28,7 @@ other = "Music Recordings"
 
 [PoolMusicRecordingsDescription]
 desc = "The detailed description for the Solr pool designated as music recordings."
-other = "Music from yesterday and today."
+other = "Music-based audio available for streaming, download, or in-person use."
 
 [PoolMusicalScoresName]
 desc = "The display name for the pool of Solr search results designated as musical scores."
@@ -36,7 +36,7 @@ other = "Musical Scores"
 
 [PoolMusicalScoresDescription]
 desc = "The detailed description for the Solr pool designated as musical scores."
-other = "Sheet music and other music notation."
+other = "Sheet music and other musical notation."
 
 [PoolRareBooksName]
 desc = "The display name for the pool of Solr search results designated as rare books."
@@ -44,7 +44,7 @@ other = "Rare Books"
 
 [PoolRareBooksDescription]
 desc = "The detailed description for the Solr pool designated as rare books."
-other = "These are materials (not just books) that don't leave the premises and have to be requested to be accessed in the Special Collections Reading Room."
+other = "The “Rare Books” collection includes manuscripts, business records, maps, correspondence, and more. Items may be requested for access in the Clifton Waller Barrett Reading Room and cannot leave the premises."
 
 [PoolSerialsName]
 desc = "The display name for the pool of Solr search results designated as serials."
@@ -52,7 +52,7 @@ other = "Journals"
 
 [PoolSerialsDescription]
 desc = "The detailed description for the Solr pool designated as serials."
-other = "(UNDER CONSTRUCTION) Journals, Magazines, Newspapers, and runs of other materials published at regular intervals. These materials may be available as print issues, electronic access journals, bound volumes containing multiple issues, or online through various means. The display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
+other = "Journals, magazines, newspapers, and other periodicals. May be available in print, electronic access journals, bound volumes containing multiple issues, or online. NOTE: Display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
 
 [PoolSoundRecordingsName]
 desc = "The display name for the pool of Solr search results designated as sound recordings."
@@ -60,7 +60,7 @@ other = "Sound Recordings"
 
 [PoolSoundRecordingsDescription]
 desc = "The detailed description for the Solr pool designated as sound recordings."
-other = "Audio materials that aren't primarily music."
+other = "Non-music audio available for streaming, download, or in-person use."
 
 [PoolThesisName]
 desc = "The display name for the pool of Solr search results designated as thesis."
@@ -76,7 +76,7 @@ other = "Video"
 
 [PoolVideoDescription]
 desc = "The detailed description for the Solr pool designated as video."
-other = "Documentaries, Films, Television shows, and much more. While many of these materials can be checked for home viewing, others may be accessed online."
+other = "Documentaries, films, television shows, and more; for check out or streaming access."
 
 [FacetAuthor]
 desc = "The display name for the Author facet."
