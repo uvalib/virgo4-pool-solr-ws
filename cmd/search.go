@@ -256,7 +256,7 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	// single-term keyword search special handling
 
 	if parsedQuery.isSingleKeywordSearch == true {
-		return s.performSpeculativeKeywordSearch(firstElementOf(parsedQuery.parser.Keywords))
+		return s.performSpeculativeKeywordSearch(firstElementOf(parsedQuery.keywords))
 	}
 
 	// fallthrough: just return original query

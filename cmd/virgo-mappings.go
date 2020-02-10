@@ -585,7 +585,7 @@ func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
 	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
 		firstTitleResult := firstElementOf(doc.Title)
 
-		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
+		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.titles)
 
 		if titlesAreEqual(titleQueried, firstTitleResult) {
 			return true
@@ -612,7 +612,7 @@ func (s *searchContext) searchIsExactMatch() bool {
 
 	// case 1: title searches must have multiple words, otherwise exactness determination is too aggressive
 	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
-		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.parser.Titles)
+		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.titles)
 
 		if strings.Contains(titleQueried, " ") == false {
 			return false

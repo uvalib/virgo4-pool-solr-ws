@@ -20,10 +20,13 @@ func virgoQueryConvertToSolr(virgoQuery string) (*solrParserInfo, error) {
 
 	// just checking for single-term searches so this approach is sufficient:
 
-	total := len(sp.parser.Titles) + len(sp.parser.Authors) + len(sp.parser.Subjects) + len(sp.parser.Keywords) + len(sp.parser.Identifiers)
+	total := len(sp.parser.FieldValues)
 
-	sp.isSingleTitleSearch = total == 1 && len(sp.parser.Titles) == 1
-	sp.isSingleKeywordSearch = total == 1 && len(sp.parser.Keywords) == 1
+	sp.titles = sp.parser.FieldValues["title"]
+	sp.keywords = sp.parser.FieldValues["keyword"]
+
+	sp.isSingleTitleSearch = total == 1 && len(sp.titles) == 1
+	sp.isSingleKeywordSearch = total == 1 && len(sp.keywords) == 1
 
 	return &sp, nil
 }

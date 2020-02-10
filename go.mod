@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/antlr/antlr4 v0.0.0-20200124162019-2d7f727a00b7 // indirect
+	github.com/antlr/antlr4 v0.0.0-20200209180723-1177c0b58d07 // indirect
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
@@ -15,8 +15,8 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
-	github.com/prometheus/client_golang v1.4.0
-	github.com/uvalib/virgo4-parser v0.0.0-20200128004226-f00aff4dd7f3
+	github.com/prometheus/client_golang v1.4.1
+	github.com/uvalib/virgo4-parser v0.0.0-20200210232429-840aa60f76a5
 	github.com/zsais/go-gin-prometheus v0.1.0
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	golang.org/x/text v0.3.2

@@ -10,6 +10,8 @@ type solrParserInfo struct {
 	// convenience flags based on parser results
 	isSingleTitleSearch   bool
 	isSingleKeywordSearch bool
+	titles                []string
+	keywords              []string
 }
 
 /*
