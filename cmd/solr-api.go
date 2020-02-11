@@ -46,6 +46,7 @@ type solrRequestFacet struct {
 	Sort          string `json:"sort,omitempty"`
 	Offset        int    `json:"offset,omitempty"`
 	Limit         int    `json:"limit,omitempty"`
+	name          string
 	exposedValues []string
 }
 

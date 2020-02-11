@@ -72,7 +72,7 @@ func (s *solrRequest) buildFacets(availableFacets map[string]solrRequestFacet) {
 	}
 }
 
-func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet) {
+func (s *solrRequest) buildFilters(poolName string, filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet) {
 	if filterGroups == nil {
 		return
 	}
@@ -89,6 +89,32 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 
 	for _, filter := range filterGroup.Facets {
 		solrFacet, ok := availableFacets[filter.FacetID]
+
+		// FIXME: hard-coded special case; needs to be generalized
+
+		// for the musical scores pool, if the selection map (of requested filters)
+		// has a selection for subject, but NOT for any of the composer, composition
+		// era, instrument, or region, then remove the subject from the filters
+
+		s.meta.client.log("buildFilters(): %s  (%s)", poolName, solrFacet.name)
+
+		if poolName == "PoolMusicalScoresName" && solrFacet.name == "FacetSubject" {
+			facets := []string{"FacetComposer", "FacetCompostionEra", "FacetInstrument", "FacetRegion"}
+
+			numSelected := 0
+			for _, facet := range facets {
+				n := len(s.meta.selectionMap[facet])
+				s.meta.client.log("buildFilters(): %d selected filters for %s", n, facet)
+				numSelected += n
+			}
+
+			if numSelected == 0 {
+				s.meta.client.log("buildFilters(): omitting filter %s due to lack of selected dependent filters", solrFacet.name)
+				continue
+			}
+
+			s.meta.client.log("buildFilters(): including filter %s due to %d selected dependent filters", solrFacet.name, numSelected)
+		}
 
 		// this should never happen due to up-front validations, perhaps this can be removed
 		if ok == false {
@@ -129,6 +155,7 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 			Sort:          facet.Sort,
 			Offset:        facet.Offset,
 			Limit:         facet.Limit,
+			name:          facet.Name,
 			exposedValues: facet.ExposedValues,
 		}
 
@@ -173,7 +200,7 @@ func (s *searchContext) solrRequestWithDefaults() {
 		solrReq.buildFacets(availableFacets)
 	}
 
-	solrReq.buildFilters(s.virgoReq.Filters, availableFacets)
+	solrReq.buildFilters(s.pool.config.poolName, s.virgoReq.Filters, availableFacets)
 
 	if s.client.opts.grouped == true {
 		solrReq.buildGrouping(s.pool.config.solrGroupField)
