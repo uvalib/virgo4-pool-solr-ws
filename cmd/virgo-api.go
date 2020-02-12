@@ -29,10 +29,18 @@ type VirgoPoolResultDebug struct {
 	MaxScore  float32 `json:"max_score"`
 }
 
+// VirgoPoolAttribute holds attributes that this pool does or does not support
+type VirgoPoolAttribute struct {
+	Name      string `json:"name"`
+	Supported bool   `json:"supported"`
+	Value     string `json:"value,omitempty"`
+}
+
 // VirgoPoolIdentity holds localized information about this pool (same as returned by /identify endpoint)
 type VirgoPoolIdentity struct {
-	Name        string `json:"name,omitempty"`        // localized pool name
-	Description string `json:"description,omitempty"` // localized pool description (detailed information about what the pool contains)
+	Name        string               `json:"name,omitempty"`        // localized pool name
+	Description string               `json:"description,omitempty"` // localized pool description (detailed information about what the pool contains)
+	Attributes  []VirgoPoolAttribute `json:"attributes,omitempty"`
 }
 
 // VirgoPoolResult contains the full response to a search request
