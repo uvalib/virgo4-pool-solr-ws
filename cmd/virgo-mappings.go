@@ -412,8 +412,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// cover image url
 
-	if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
-		r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-url").setDisplay("optional"))
+	if s.pool.attributes["cover_images"].Supported == true {
+		if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
+			r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-url").setDisplay("optional"))
+		}
 	}
 
 	// add exact designator if applicable

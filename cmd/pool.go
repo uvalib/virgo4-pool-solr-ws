@@ -52,6 +52,7 @@ type poolContext struct {
 	identity     VirgoPoolIdentity
 	version      poolVersion
 	solr         poolSolr
+	attributes   map[string]VirgoPoolAttribute
 }
 
 // NOTE: this struct is a superset of solrRequestFacet, and is separate so that extra fields are not sent to Solr
@@ -117,16 +118,22 @@ func (p *poolContext) initIdentity() {
 		Description: p.config.poolDescription,
 	}
 
-	p.identity.Attributes = append(p.identity.Attributes, VirgoPoolAttribute{Name: "logo_url", Supported: false})
-	p.identity.Attributes = append(p.identity.Attributes, VirgoPoolAttribute{Name: "external_url", Supported: false})
-	p.identity.Attributes = append(p.identity.Attributes, VirgoPoolAttribute{Name: "uva_ils", Supported: true})
-	p.identity.Attributes = append(p.identity.Attributes, VirgoPoolAttribute{Name: "facets", Supported: true})
-	p.identity.Attributes = append(p.identity.Attributes, VirgoPoolAttribute{Name: "cover_images", Supported: true})
-	p.identity.Attributes = append(p.identity.Attributes, VirgoPoolAttribute{Name: "course_reserves", Supported: true})
+	// read in all defined attributes, and convert to a map
+	if err := json.Unmarshal([]byte(p.config.poolAttributes), &p.identity.Attributes); err != nil {
+		log.Printf("error parsing pool attributes json: %s", err.Error())
+		os.Exit(1)
+	}
+
+	p.attributes = make(map[string]VirgoPoolAttribute)
+
+	for _, attribute := range p.identity.Attributes {
+		p.attributes[attribute.Name] = attribute
+	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
 	log.Printf("[POOL] identity.Attributes       = [%v]", p.identity.Attributes)
+	log.Printf("[POOL] attributes                = [%v]", p.attributes)
 }
 
 func (p *poolContext) initVersion() {
