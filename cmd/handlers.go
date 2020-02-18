@@ -77,7 +77,7 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	s.init(p, &cl)
 
 	// fill out Solr query directly, bypassing query syntax parser
-	s.virgoReq.meta.solrQuery = fmt.Sprintf("id:%s", c.Param("id"))
+	s.virgoReq.meta.solrQuery = fmt.Sprintf(`id:"%s"`, c.Param("id"))
 
 	virgoRes, err := s.handleRecordRequest()
 
