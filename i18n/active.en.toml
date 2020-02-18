@@ -14,6 +14,14 @@ other = "Catalog (Broad)"
 desc = "The detailed description for the Solr pool designated as the broad catalog."
 other = "(EXPERIMENTAL) All of the content from the Catalog plus some odds and ends that don't fit neatly into any particular category."
 
+[PoolImagesName]
+desc = "The display name for the pool of Solr search results designated as images."
+other = "Images"
+
+[PoolImagesDescription]
+desc = "The detailed description for the Solr pool designated as images."
+other = " "
+
 [PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
 other = "Books"
@@ -138,45 +146,17 @@ other = "Subject"
 desc = "The display name for the Video Format facet."
 other = "Video Format"
 
-[FieldIdentifier]
-desc = "The display name for the Identifier field in a single item record."
-other = "Identifier"
-
-[FieldTitle]
-desc = "The display name for the Title field in a single item record."
-other = "Title"
-
-[FieldSubtitle]
-desc = "The display name for the Subtitle field in a single item record."
-other = "Subtitle"
+[FieldAccessURL]
+desc = "The display name for the field that contains a link to an external URL for online access."
+other = "Online Access"
 
 [FieldAuthor]
 desc = "The display name for the Author field in a single item record."
 other = "Author"
 
-[FieldDirector]
-desc = "The display name for the Director field in a single item record."
-other = "Director"
-
-[FieldSubject]
-desc = "The display name for the Subject field in a single item record."
-other = "Subject"
-
-[FieldLanguage]
-desc = "The display name for the Language field in a single item record."
-other = "Language"
-
-[FieldFormat]
-desc = "The display name for the Format field in a single item record."
-other = "Format"
-
-[FieldLibrary]
-desc = "The display name for the Library field in a single item record."
-other = "Library"
-
-[FieldLocation]
-desc = "The display name for the Location field in a single item record."
-other = "Location"
+[FieldAvailability]
+desc = "The display name for the Availability field in a single item record."
+other = "Availability"
 
 [FieldCallNumber]
 desc = "The display name for the Call Number field in a single item record."
@@ -190,17 +170,45 @@ other = "Call Number (Broad)"
 desc = "The display name for the Call Number (Narrow) field in a single item record."
 other = "Call Number (Narrow)"
 
-[FieldAvailability]
-desc = "The display name for the Availability field in a single item record."
-other = "Availability"
+[FieldCollection]
+desc = "The display name for the Collection field in an image record."
+other = "Collection"
 
-[FieldSeries]
-desc = "The display name for the Series field in a single item record."
-other = "Series"
+[FieldDetailsURL]
+desc = "The display name for the field that contains a link to an external URL with more details."
+other = "More"
+
+[FieldDirector]
+desc = "The display name for the Director field in a single item record."
+other = "Director"
+
+[FieldFormat]
+desc = "The display name for the Format field in a single item record."
+other = "Format"
 
 [FieldGenre]
 desc = "The display name for the Genre field in a single item record."
 other = "Genre"
+
+[FieldIdentifier]
+desc = "The display name for the Identifier field in a single item record."
+other = "Identifier"
+
+[FieldLanguage]
+desc = "The display name for the Language field in a single item record."
+other = "Language"
+
+[FieldLibrary]
+desc = "The display name for the Library field in a single item record."
+other = "Library"
+
+[FieldLocation]
+desc = "The display name for the Location field in a single item record."
+other = "Location"
+
+[FieldNote]
+desc = "The display name for the Note field in an image record."
+other = "Notes"
 
 [FieldPublicationDate]
 desc = "The display name for the Publication Date field in a single item record."
@@ -210,10 +218,38 @@ other = "Publication Date"
 desc = "The display name for the Published field in a single item record."
 other = "Published"
 
-[FieldAccessURL]
-desc = "The display name for the field that contains a link to an external URL for online access."
-other = "Online Access"
+[FieldSeries]
+desc = "The display name for the Series field in a single item record."
+other = "Series"
 
-[FieldDetailsURL]
-desc = "The display name for the field that contains a link to an external URL with more details."
-other = "More"
+[FieldSubject]
+desc = "The display name for the Subject field in a single item record."
+other = "Subject"
+
+[FieldSubjectSummary]
+desc = "The display name for the Subject Summary field in an image record."
+other = "Summary"
+
+[FieldSubtitle]
+desc = "The display name for the Subtitle field in a single item record."
+other = "Subtitle"
+
+[FieldTitle]
+desc = "The display name for the Title field in a single item record."
+other = "Title"
+
+[FieldWorkIdentifier]
+desc = "The display name for the Work Identifier field in an image record."
+other = "Work Identifier"
+
+[FieldWorkLocation]
+desc = "The display name for the Work Location field in an image record."
+other = "Work Location"
+
+[FieldWorkPhysicalDetails]
+desc = "The display name for the Work Physical Details field in an image record."
+other = "Work Physical Details"
+
+[FieldWorkType]
+desc = "The display name for the Work Type field in an image record."
+other = "Work Type"

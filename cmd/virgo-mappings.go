@@ -259,7 +259,7 @@ func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value 
 	return false
 }
 
-func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
+func (s *searchContext) virgoPopulateRecordModeRecords(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important, primarily for generic "text" fields
@@ -372,36 +372,6 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		r.addDetailedField(newField("genre", s.client.localize("FieldGenre"), item))
 	}
 
-	/*
-		for _, item := range doc.CallNumberBroad {
-			r.addDetailedField(newField("call_number_broad", s.client.localize("FieldCallNumberBroad"), item))
-		}
-
-		for _, item := range doc.CallNumberNarrow {
-			r.addDetailedField(newField("call_number_narrow", s.client.localize("FieldCallNumberNarrow"), item))
-		}
-
-		for _, item := range doc.ISBN {
-			r.addDetailedField(newField("isbn", "ISBN", item).setDisplay("optional"))
-		}
-
-		for _, item := range doc.ISSN {
-			r.addDetailedField(newField("issn", "ISSN", item).setDisplay("optional"))
-		}
-
-		for _, item := range doc.OCLC {
-			r.addDetailedField(newField("oclc", "OCLC", item).setDisplay("optional"))
-		}
-
-		for _, item := range doc.LCCN {
-			r.addDetailedField(newField("lccn", "LCCN", item).setDisplay("optional"))
-		}
-
-		for _, item := range doc.UPC {
-			r.addDetailedField(newField("upc", "UPC", item).setDisplay("optional"))
-		}
-	*/
-
 	/**************************************** [ special fields ] ****************************************/
 
 	// virgo classic url
@@ -418,22 +388,80 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		}
 	}
 
-	// add exact designator if applicable
+	return &r
+}
 
-	if s.itemIsExactMatch(doc) {
-		r.Exact = true
+func (s *searchContext) virgoPopulateRecordModeImages(doc *solrDocument) *VirgoRecord {
+	var r VirgoRecord
+
+	/**************************************** [ basic fields ] ****************************************/
+
+	r.addBasicField(newField("id", s.client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
+
+	// title / subtitle
+	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
+
+	// iiif manifest/image
+	r.addBasicField(newField("iiif_manifest", "", doc.URLIIIFManifest).setType("iiif-manifest"))
+	r.addBasicField(newField("iiif_image", "", doc.URLIIIFImage).setType("iiif-image"))
+
+	// authors (principal and additional)
+	for _, item := range s.getAuthorFieldValue(doc) {
+		r.addBasicField(newField("author", s.client.localize(s.pool.config.solrAuthorLabel), item).setType("author"))
+	}
+
+	/**************************************** [ detailed fields ] ****************************************/
+
+	for _, item := range doc.Collection {
+		r.addDetailedField(newField("collection", s.client.localize("FieldCollection"), item))
+	}
+
+	for _, item := range doc.Note {
+		r.addDetailedField(newField("note", s.client.localize("FieldNote"), item))
+	}
+
+	for _, item := range doc.SubjectSummary {
+		r.addDetailedField(newField("subject_summary", s.client.localize("FieldSubjectSummary"), item))
+	}
+
+	for _, item := range doc.WorkIdentifier {
+		r.addDetailedField(newField("work_identifier", s.client.localize("FieldWorkIdentifier"), item))
+	}
+
+	for _, item := range doc.WorkLocation {
+		r.addDetailedField(newField("work_location", s.client.localize("FieldWorkLocation"), item))
+	}
+
+	for _, item := range doc.WorkPhysicalDetails {
+		r.addDetailedField(newField("work_physical_details", s.client.localize("FieldWorkPhysicalDetails"), item))
+	}
+
+	for _, item := range doc.WorkType {
+		r.addDetailedField(newField("work_type", s.client.localize("FieldWorkType"), item))
+	}
+
+	return &r
+}
+
+func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
+	var record *VirgoRecord
+
+	if s.pool.config.poolMode == "images" {
+		record = s.virgoPopulateRecordModeImages(doc)
+	} else {
+		record = s.virgoPopulateRecordModeRecords(doc)
 	}
 
 	// add internal info
 
-	r.groupValue = s.getSolrGroupFieldValue(doc)
+	record.groupValue = s.getSolrGroupFieldValue(doc)
 
 	// add debug info?
 	if s.client.opts.debug == true {
-		r.Debug = s.virgoPopulateRecordDebug(doc)
+		record.Debug = s.virgoPopulateRecordDebug(doc)
 	}
 
-	return &r
+	return record
 }
 
 func (s *searchContext) virgoPopulatePagination(start, rows, total int) *VirgoPagination {

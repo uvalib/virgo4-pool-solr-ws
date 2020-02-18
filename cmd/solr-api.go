@@ -83,36 +83,51 @@ type solrResponseHeader struct {
 
 type solrDocument struct {
 	// for performance reasons, pools should be configured to only request the fields below
-	Score             float32  `json:"score,omitempty"`
+
+	/* common to all pool modes (records, images) */
+	Author            []string `json:"author_facet_a,omitempty"`
 	ID                string   `json:"id,omitempty"`
 	Pool              []string `json:"pool_a,omitempty"`
-	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
-	WorkTitle3KeySort string   `json:"work_title3_key_sort,omitempty"`
+	PublicationDate   []string `json:"published_daterange,omitempty"`
+	Score             float32  `json:"score,omitempty"`
 	Title             []string `json:"title_a,omitempty"`
-	Subtitle          []string `json:"title_sub_a,omitempty"`
-	Author            []string `json:"author_facet_a,omitempty"`
-	Director          []string `json:"author_director_a,omitempty"`
-	Subject           []string `json:"subject_a,omitempty"`
-	Language          []string `json:"language_a,omitempty"`
-	Format            []string `json:"format_a,omitempty"`
-	Library           []string `json:"library_a,omitempty"`
-	Location          []string `json:"location2_a,omitempty"`
+	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
+
+	/* common to record mode pools */
+	AnonAvailability  []string `json:"anon_availability_a,omitempty"`
 	CallNumber        []string `json:"call_number_a,omitempty"`
 	CallNumberBroad   []string `json:"call_number_broad_a,omitempty"`
 	CallNumberNarrow  []string `json:"call_number_narrow_a,omitempty"`
-	AnonAvailability  []string `json:"anon_availability_a,omitempty"`
-	UVAAvailability   []string `json:"uva_availability_a,omitempty"`
+	Director          []string `json:"author_director_a,omitempty"`
+	Format            []string `json:"format_a,omitempty"`
 	ISBN              []string `json:"isbn_a,omitempty"`
 	ISSN              []string `json:"issn_a,omitempty"`
-	OCLC              []string `json:"oclc_a,omitempty"`
 	LCCN              []string `json:"lccn_a,omitempty"`
-	UPC               []string `json:"upc_a,omitempty"`
-	Series            []string `json:"title_series_a,omitempty"`
-	VideoGenre        []string `json:"video_genre_a,omitempty"`
-	ThumbnailURL      []string `json:"thumbnail_url_a,omitempty"`
-	PublicationDate   []string `json:"published_daterange,omitempty"`
+	Language          []string `json:"language_a,omitempty"`
+	Library           []string `json:"library_a,omitempty"`
+	Location          []string `json:"location2_a,omitempty"`
+	OCLC              []string `json:"oclc_a,omitempty"`
 	Published         []string `json:"published_a,omitempty"`
+	Series            []string `json:"title_series_a,omitempty"`
+	Subject           []string `json:"subject_a,omitempty"`
+	Subtitle          []string `json:"title_sub_a,omitempty"`
+	ThumbnailURL      []string `json:"thumbnail_url_a,omitempty"`
+	UPC               []string `json:"upc_a,omitempty"`
 	URL               []string `json:"url_a,omitempty"`
+	UVAAvailability   []string `json:"uva_availability_a,omitempty"`
+	VideoGenre        []string `json:"video_genre_a,omitempty"`
+	WorkTitle3KeySort string   `json:"work_title3_key_sort,omitempty"`
+
+	/* common to image mode pools */
+	Collection          []string `json:"collection_a,omitempty"`
+	Note                []string `json:"note_a,omitempty"`
+	SubjectSummary      []string `json:"subject_summary_a,omitempty"`
+	URLIIIFImage        string   `json:"url_iiif_image_stored,omitempty"`
+	URLIIIFManifest     string   `json:"url_iiif_manifest_stored,omitempty"`
+	WorkIdentifier      []string `json:"workIdentifier_a,omitempty"`
+	WorkLocation        []string `json:"workLocation_a,omitempty"`
+	WorkPhysicalDetails []string `json:"workPhysicalDetails_a,omitempty"`
+	WorkType            []string `json:"workType_a,omitempty"`
 }
 
 type solrBucket struct {

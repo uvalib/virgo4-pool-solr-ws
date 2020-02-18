@@ -22,6 +22,14 @@ other = "Libros"
 desc = "The detailed description for the Solr pool designated as the main catalog."
 other = " "
 
+[PoolImagesName]
+desc = "The display name for the pool of Solr search results designated as images."
+other = "Imágenes"
+
+[PoolImagesDescription]
+desc = "The detailed description for the Solr pool designated as images."
+other = " "
+
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Grabaciones Musicales"
@@ -138,45 +146,17 @@ other = "Sujeto"
 desc = "The display name for the Video Format facet."
 other = "Formato de Video"
 
-[FieldIdentifier]
-desc = "The display name for the Identifier field in a single item record."
-other = "Identificador"
-
-[FieldTitle]
-desc = "The display name for the Title field in a single item record."
-other = "Título"
-
-[FieldSubtitle]
-desc = "The display name for the Subtitle field in a single item record."
-other = "Subtítulo"
+[FieldAccessURL]
+desc = "The display name for the field that contains a link to an external URL for online access."
+other = "Acceda en Línea"
 
 [FieldAuthor]
 desc = "The display name for the Author field in a single item record."
 other = "Autor"
 
-[FieldDirector]
-desc = "The display name for the Director field in a single item record."
-other = "Director"
-
-[FieldSubject]
-desc = "The display name for the Subject field in a single item record."
-other = "Tema"
-
-[FieldLanguage]
-desc = "The display name for the Language field in a single item record."
-other = "Idioma"
-
-[FieldFormat]
-desc = "The display name for the Format field in a single item record."
-other = "Formato"
-
-[FieldLibrary]
-desc = "The display name for the Library field in a single item record."
-other = "Biblioteca"
-
-[FieldLocation]
-desc = "The display name for the Location field in a single item record."
-other = "Ubicación"
+[FieldAvailability]
+desc = "The display name for the Availability field in a single item record."
+other = "Disponibilidad"
 
 [FieldCallNumber]
 desc = "The display name for the Call Number field in a single item record."
@@ -190,17 +170,45 @@ other = "Número de Llamada (Amplio)"
 desc = "The display name for the Call Number (Narrow) field in a single item record."
 other = "Número de Llamada (Estrecho)"
 
-[FieldAvailability]
-desc = "The display name for the Availability field in a single item record."
-other = "Disponibilidad"
+[FieldCollection]
+desc = "The display name for the Collection field in an image record."
+other = "Colección"
 
-[FieldSeries]
-desc = "The display name for the Series field in a single item record."
-other = "Serie"
+[FieldDetailsURL]
+desc = "The display name for the field that contains a link to an external URL with more details."
+other = "Más"
+
+[FieldDirector]
+desc = "The display name for the Director field in a single item record."
+other = "Director"
+
+[FieldFormat]
+desc = "The display name for the Format field in a single item record."
+other = "Formato"
 
 [FieldGenre]
 desc = "The display name for the Genre field in a single item record."
 other = "Género"
+
+[FieldIdentifier]
+desc = "The display name for the Identifier field in a single item record."
+other = "Identificador"
+
+[FieldLanguage]
+desc = "The display name for the Language field in a single item record."
+other = "Idioma"
+
+[FieldLibrary]
+desc = "The display name for the Library field in a single item record."
+other = "Biblioteca"
+
+[FieldLocation]
+desc = "The display name for the Location field in a single item record."
+other = "Ubicación"
+
+[FieldNote]
+desc = "The display name for the Note field in an image record."
+other = "Notas"
 
 [FieldPublicationDate]
 desc = "The display name for the Publication Date field in a single item record."
@@ -210,10 +218,38 @@ other = "Fecha de Publicación"
 desc = "The display name for the Published field in a single item record."
 other = "Publicado"
 
-[FieldAccessURL]
-desc = "The display name for the field that contains a link to an external URL for online access."
-other = "Acceda en Línea"
+[FieldSeries]
+desc = "The display name for the Series field in a single item record."
+other = "Serie"
 
-[FieldDetailsURL]
-desc = "The display name for the field that contains a link to an external URL with more details."
-other = "Más"
+[FieldSubject]
+desc = "The display name for the Subject field in a single item record."
+other = "Tema"
+
+[FieldSubjectSummary]
+desc = "The display name for the Subject Summary field in an image record."
+other = "Resumen"
+
+[FieldSubtitle]
+desc = "The display name for the Subtitle field in a single item record."
+other = "Subtítulo"
+
+[FieldTitle]
+desc = "The display name for the Title field in a single item record."
+other = "Título"
+
+[FieldWorkIdentifier]
+desc = "The display name for the Work Identifier field in an image record."
+other = "Identificador de Trabajo"
+
+[FieldWorkLocation]
+desc = "The display name for the Work Location field in an image record."
+other = "Ubicación de Trabajo"
+
+[FieldWorkPhysicalDetails]
+desc = "The display name for the Work Physical Details field in an image record."
+other = "Detalles Físicos del Trabajo"
+
+[FieldWorkType]
+desc = "The display name for the Work Type field in an image record."
+other = "Tipo de Trabajo"
