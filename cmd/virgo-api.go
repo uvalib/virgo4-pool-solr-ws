@@ -40,7 +40,8 @@ type VirgoPoolAttribute struct {
 type VirgoPoolIdentity struct {
 	Name        string               `json:"name,omitempty"`        // localized pool name
 	Description string               `json:"description,omitempty"` // localized pool description (detailed information about what the pool contains)
-	Attributes  []VirgoPoolAttribute `json:"attributes,omitempty"`
+	Mode        string               `json:"mode,omitempty"`        // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Attributes  []VirgoPoolAttribute `json:"attributes,omitempty"`  // pool attributes (what it supports)
 }
 
 // VirgoPoolResult contains the full response to a search request

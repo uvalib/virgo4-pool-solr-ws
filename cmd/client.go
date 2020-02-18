@@ -114,6 +114,7 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	id := VirgoPoolIdentity{
 		Name:        c.localize(p.identity.Name),
 		Description: c.localize(p.identity.Description),
+		Mode:        p.identity.Mode,
 		Attributes:  p.identity.Attributes,
 	}
 

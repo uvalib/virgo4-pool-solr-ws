@@ -259,7 +259,7 @@ func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value 
 	return false
 }
 
-func (s *searchContext) virgoPopulateRecordModeRecords(doc *solrDocument) *VirgoRecord {
+func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
 	// new style records -- order is important, primarily for generic "text" fields
@@ -391,7 +391,7 @@ func (s *searchContext) virgoPopulateRecordModeRecords(doc *solrDocument) *Virgo
 	return &r
 }
 
-func (s *searchContext) virgoPopulateRecordModeImages(doc *solrDocument) *VirgoRecord {
+func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
 	/**************************************** [ basic fields ] ****************************************/
@@ -402,8 +402,8 @@ func (s *searchContext) virgoPopulateRecordModeImages(doc *solrDocument) *VirgoR
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 
 	// iiif manifest/image
-	r.addBasicField(newField("iiif_manifest", "", doc.URLIIIFManifest).setType("iiif-manifest"))
-	r.addBasicField(newField("iiif_image", "", doc.URLIIIFImage).setType("iiif-image"))
+	r.addBasicField(newField("iiif_manifest_url", "", doc.URLIIIFManifest).setType("iiif-manifest-url"))
+	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
 
 	// authors (principal and additional)
 	for _, item := range s.getAuthorFieldValue(doc) {
@@ -446,10 +446,10 @@ func (s *searchContext) virgoPopulateRecordModeImages(doc *solrDocument) *VirgoR
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	var record *VirgoRecord
 
-	if s.pool.config.poolMode == "images" {
-		record = s.virgoPopulateRecordModeImages(doc)
+	if s.pool.config.poolMode == "image" {
+		record = s.virgoPopulateRecordModeImage(doc)
 	} else {
-		record = s.virgoPopulateRecordModeRecords(doc)
+		record = s.virgoPopulateRecordModeRecord(doc)
 	}
 
 	// add internal info

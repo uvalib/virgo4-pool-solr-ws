@@ -84,7 +84,7 @@ type solrResponseHeader struct {
 type solrDocument struct {
 	// for performance reasons, pools should be configured to only request the fields below
 
-	/* common to all pool modes (records, images) */
+	/* common to all pool modes (record, image) */
 	Author            []string `json:"author_facet_a,omitempty"`
 	ID                string   `json:"id,omitempty"`
 	Pool              []string `json:"pool_a,omitempty"`

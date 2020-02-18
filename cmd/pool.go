@@ -116,6 +116,7 @@ func (p *poolContext) initIdentity() {
 	p.identity = VirgoPoolIdentity{
 		Name:        p.config.poolName,
 		Description: p.config.poolDescription,
+		Mode:        p.config.poolMode,
 	}
 
 	// read in all defined attributes, and convert to a map
@@ -132,6 +133,7 @@ func (p *poolContext) initIdentity() {
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
+	log.Printf("[POOL] identity.Mode             = [%s]", p.identity.Mode)
 	log.Printf("[POOL] identity.Attributes       = [%v]", p.identity.Attributes)
 	log.Printf("[POOL] attributes                = [%v]", p.attributes)
 }
