@@ -285,16 +285,47 @@ func (s *searchContext) newSearchWithRecordListForGroups(groups []string) (*sear
 	return c, nil
 }
 
+func (s *searchContext) wrapRecordsInGroups() {
+	// non-grouped results with no records don't need wrapping
+	if s.virgoPoolRes.RecordList == nil {
+		return
+	}
+
+	var groups VirgoGroups
+
+	for _, record := range *s.virgoPoolRes.RecordList {
+		group := VirgoGroup{
+			Value:      "",
+			Count:      1,
+			RecordList: []VirgoRecord{record},
+		}
+
+		groups = append(groups, group)
+	}
+
+	s.virgoPoolRes.GroupList = &groups
+
+	// remove record list, as results are now in groups
+	s.virgoPoolRes.RecordList = nil
+}
+
 func (s *searchContext) populateGroups() error {
 	// populate record list for each group (i.e. entry in initial record list)
 	// by querying for all group records in one request, and sorting the results to the correct groups
 
-	if s.client.opts.grouped == false || s.solrRes.meta.numGroups == 0 {
+	// no need to group facet endpoint results
+	if s.virgoReq.meta.requestFacets == true {
 		return nil
 	}
 
-	// no need to group facet endpoint results
-	if s.virgoReq.meta.requestFacets == true {
+	// non-grouped results need to be wrapped in groups
+	if s.client.opts.grouped == false {
+		s.wrapRecordsInGroups()
+		return nil
+	}
+
+	// grouped results with no results don't need populating
+	if s.solrRes.meta.numGroups == 0 {
 		return nil
 	}
 

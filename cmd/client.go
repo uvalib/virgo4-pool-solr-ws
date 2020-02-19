@@ -74,7 +74,10 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.opts.intuit = false
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
-	c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
+
+	if p.config.solrGroupField != "" {
+		c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
+	}
 
 	query := ""
 	if ctx.Request.URL.RawQuery != "" {

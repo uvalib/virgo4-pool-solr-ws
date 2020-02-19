@@ -163,10 +163,22 @@ func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 	return f
 }
 
-func (s *searchContext) getSirsiURL(id string) string {
-	url := strings.Replace(s.pool.config.sirsiURLTemplate, "__identifier__", id, -1)
+func getGenericURL(template string, id string) string {
+	idPlaceholder := "__identifier__"
 
-	return url
+	if strings.Contains(template, idPlaceholder) == false {
+		return ""
+	}
+
+	return strings.Replace(template, idPlaceholder, id, -1)
+}
+
+func (s *searchContext) getSirsiURL(id string) string {
+	return getGenericURL(s.pool.config.sirsiURLTemplate, id)
+}
+
+func (s *searchContext) getIiifURL(id string) string {
+	return getGenericURL(s.pool.config.iiifURLTemplate, id)
 }
 
 func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
@@ -178,7 +190,11 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 	// otherwise, compose a url to the cover image service
 
-	url := strings.Replace(s.pool.config.coverImageURLTemplate, "__identifier__", doc.ID, -1)
+	url := getGenericURL(s.pool.config.coverImageURLTemplate, doc.ID)
+
+	if url == "" {
+		return ""
+	}
 
 	// also add query parameters:
 	// doc_type: music or non_music
@@ -243,12 +259,6 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	req.URL.RawQuery = qp.Encode()
 
 	return req.URL.String()
-}
-
-func (s *searchContext) getIiifURL(id string) string {
-	url := strings.Replace(s.pool.config.iiifURLTemplate, "__identifier__", id, -1)
-
-	return url
 }
 
 func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value string) bool {
@@ -383,14 +393,16 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 	// virgo classic url
 
 	if strings.HasPrefix(doc.ID, "u") {
-		r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), s.getSirsiURL(doc.ID[1:])).setType("url"))
+		if url := s.getSirsiURL(doc.ID[1:]); url != "" {
+			r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), url).setType("url"))
+		}
 	}
 
 	// cover image url
 
 	if s.pool.attributes["cover_images"].Supported == true {
-		if coverImageURL := s.getCoverImageURL(doc); coverImageURL != "" {
-			r.addBasicField(newField("cover_image", "", coverImageURL).setType("image-url").setDisplay("optional"))
+		if url := s.getCoverImageURL(doc); url != "" {
+			r.addBasicField(newField("cover_image", "", url).setType("image-url").setDisplay("optional"))
 		}
 	}
 
@@ -414,8 +426,10 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 	// construct iiif image from known image identifier prefixes
 	for _, item := range doc.Identifier {
 		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-			r.addBasicField(newField("iiif_base_url", "", s.getIiifURL(item)).setType("iiif-base-url"))
-			break
+			if url := s.getIiifURL(item); url != "" {
+				r.addBasicField(newField("iiif_base_url", "", url).setType("iiif-base-url"))
+				break
+			}
 		}
 	}
 

@@ -120,15 +120,17 @@ func (p *poolContext) initIdentity() {
 	}
 
 	// read in all defined attributes, and convert to a map
-	if err := json.Unmarshal([]byte(p.config.poolAttributes), &p.identity.Attributes); err != nil {
-		log.Printf("error parsing pool attributes json: %s", err.Error())
-		os.Exit(1)
-	}
-
 	p.attributes = make(map[string]VirgoPoolAttribute)
 
-	for _, attribute := range p.identity.Attributes {
-		p.attributes[attribute.Name] = attribute
+	if p.config.poolAttributes != "" {
+		if err := json.Unmarshal([]byte(p.config.poolAttributes), &p.identity.Attributes); err != nil {
+			log.Printf("error parsing pool attributes json: %s", err.Error())
+			os.Exit(1)
+		}
+
+		for _, attribute := range p.identity.Attributes {
+			p.attributes[attribute.Name] = attribute
+		}
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
@@ -178,31 +180,33 @@ func (p *poolContext) initSolr() {
 	var facetManifest facetInfo
 
 	// read in all defined facets, and convert to a map
-	if err := json.Unmarshal([]byte(p.config.solrFacetManifest), &facetManifest); err != nil {
-		log.Printf("error parsing facets manifest json: %s", err.Error())
-		os.Exit(1)
-	}
-
 	facetManifestMap := make(map[string]poolFacetDefinition)
-
-	for _, facet := range facetManifest.Facets {
-		facetManifestMap[facet.Name] = facet
-	}
-
-	// now select the facets from the manifest that are defined for this pool
 	availableFacets := make(map[string]poolFacetDefinition)
 	var virgoAvailableFacets []string
 
-	for _, f := range strings.Split(p.config.poolFacets, ",") {
-		facet, ok := facetManifestMap[f]
-
-		if ok == false {
-			continue
+	if p.config.solrFacetManifest != "" {
+		if err := json.Unmarshal([]byte(p.config.solrFacetManifest), &facetManifest); err != nil {
+			log.Printf("error parsing facets manifest json: %s", err.Error())
+			os.Exit(1)
 		}
 
-		// add this facet
-		virgoAvailableFacets = append(virgoAvailableFacets, f)
-		availableFacets[f] = facet
+		for _, facet := range facetManifest.Facets {
+			facetManifestMap[facet.Name] = facet
+		}
+
+		// now select the facets from the manifest that are defined for this pool
+
+		for _, f := range strings.Split(p.config.poolFacets, ",") {
+			facet, ok := facetManifestMap[f]
+
+			if ok == false {
+				continue
+			}
+
+			// add this facet
+			virgoAvailableFacets = append(virgoAvailableFacets, f)
+			availableFacets[f] = facet
+		}
 	}
 
 	// set score thresholds
@@ -354,14 +358,23 @@ func (p *poolContext) sanityChecks() {
 		WorkTitle3KeySort: "test",
 	}
 
-	if group := doc.getStringValueByTag(p.config.solrGroupField); group == "" {
-		log.Printf("[SANITY] grouping field not found in struct tags: [%s]", p.config.solrGroupField)
-		os.Exit(1)
+	if tag := p.config.solrGroupField; tag != "" {
+		if group := doc.getStringValueByTag(tag); group == "" {
+			log.Printf("[SANITY] grouping field not found in struct tags: [%s]", tag)
+			os.Exit(1)
+		}
 	}
 
-	if author := doc.getStringSliceValueByTag(p.config.solrAuthorField); len(author) == 0 {
-		log.Printf("[SANITY] author field not found in struct tags: [%s]", p.config.solrAuthorField)
-		os.Exit(1)
+	if tag := p.config.solrAuthorField; tag != "" {
+		if author := doc.getStringSliceValueByTag(tag); len(author) == 0 {
+			log.Printf("[SANITY] author field not found in struct tags: [%s]", tag)
+			os.Exit(1)
+		}
+
+		if p.config.solrAuthorLabel == "" {
+			log.Printf("[SANITY] author label not defined for author field: [%s]", tag)
+			os.Exit(1)
+		}
 	}
 }
 
