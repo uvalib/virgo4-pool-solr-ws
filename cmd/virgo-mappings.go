@@ -245,6 +245,12 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	return req.URL.String()
 }
 
+func (s *searchContext) getIiifURL(id string) string {
+	url := strings.Replace(s.pool.config.iiifURLTemplate, "__identifier__", id, -1)
+
+	return url
+}
+
 func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value string) bool {
 	if len(facetDef.ExposedValues) == 0 {
 		return true
@@ -403,7 +409,15 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 
 	// iiif manifest/image
 	r.addBasicField(newField("iiif_manifest_url", "", doc.URLIIIFManifest).setType("iiif-manifest-url"))
-	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
+	//	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
+
+	// construct iiif image from known image identifier prefixes
+	for _, item := range doc.Identifier {
+		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
+			r.addBasicField(newField("iiif_base_url", "", s.getIiifURL(item)).setType("iiif-base-url"))
+			break
+		}
+	}
 
 	// authors (principal and additional)
 	for _, item := range s.getAuthorFieldValue(doc) {
@@ -418,6 +432,10 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 
 	for _, item := range doc.Note {
 		r.addDetailedField(newField("note", s.client.localize("FieldNote"), item))
+	}
+
+	for _, item := range doc.Region {
+		r.addDetailedField(newField("region", s.client.localize("FieldRegion"), item))
 	}
 
 	for _, item := range doc.SubjectSummary {

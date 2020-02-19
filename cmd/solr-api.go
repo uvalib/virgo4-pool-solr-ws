@@ -120,7 +120,9 @@ type solrDocument struct {
 
 	/* common to image mode pools */
 	Collection          []string `json:"collection_a,omitempty"`
+	Identifier          []string `json:"identifier_a,omitempty"`
 	Note                []string `json:"note_a,omitempty"`
+	Region              []string `json:"region_a,omitempty"`
 	SubjectSummary      []string `json:"subject_summary_a,omitempty"`
 	URLIIIFImage        string   `json:"url_iiif_image_stored,omitempty"`
 	URLIIIFManifest     string   `json:"url_iiif_manifest_stored,omitempty"`

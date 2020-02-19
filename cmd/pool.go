@@ -297,6 +297,7 @@ func (p *poolContext) initTranslations() {
 		"FieldNote",
 		"FieldPublicationDate",
 		"FieldPublished",
+		"FieldRegion",
 		"FieldSeries",
 		"FieldSubject",
 		"FieldSubjectSummary",

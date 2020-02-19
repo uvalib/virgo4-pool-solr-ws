@@ -218,6 +218,10 @@ other = "Fecha de Publicación"
 desc = "The display name for the Published field in a single item record."
 other = "Publicado"
 
+[FieldRegion]
+desc = "The display name for the Region field in a single item record."
+other = "Región"
+
 [FieldSeries]
 desc = "The display name for the Series field in a single item record."
 other = "Serie"
