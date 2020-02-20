@@ -16,7 +16,6 @@ type poolConfig struct {
 	clientHost            string
 	sirsiURLTemplate      string
 	coverImageURLTemplate string
-	iiifURLTemplate       string
 	scoreThresholdMedium  string
 	scoreThresholdHigh    string
 	solrHost              string
@@ -69,7 +68,6 @@ func loadConfig() *poolConfig {
 	cfg.clientHost = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_CLIENT_HOST")
 	cfg.sirsiURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_SIRSI_URL_TEMPLATE")
 	cfg.coverImageURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_COVER_IMAGE_URL_TEMPLATE")
-	cfg.iiifURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_IIIF_URL_TEMPLATE")
 	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
 	cfg.scoreThresholdHigh = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
 	cfg.solrHost = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_HOST")
@@ -96,7 +94,6 @@ func loadConfig() *poolConfig {
 	log.Printf("[CONFIG] clientHost            = [%s]", cfg.clientHost)
 	log.Printf("[CONFIG] sirsiURLTemplate      = [%s]", cfg.sirsiURLTemplate)
 	log.Printf("[CONFIG] coverImageURLTemplate = [%s]", cfg.coverImageURLTemplate)
-	log.Printf("[CONFIG] iiifURLTemplate       = [%s]", cfg.iiifURLTemplate)
 	log.Printf("[CONFIG] scoreThresholdMedium  = [%s]", cfg.scoreThresholdMedium)
 	log.Printf("[CONFIG] scoreThresholdHigh    = [%s]", cfg.scoreThresholdHigh)
 	log.Printf("[CONFIG] solrHost              = [%s]", cfg.solrHost)

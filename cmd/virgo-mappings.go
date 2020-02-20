@@ -177,10 +177,6 @@ func (s *searchContext) getSirsiURL(id string) string {
 	return getGenericURL(s.pool.config.sirsiURLTemplate, id)
 }
 
-func (s *searchContext) getIiifURL(id string) string {
-	return getGenericURL(s.pool.config.iiifURLTemplate, id)
-}
-
 func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	// use solr-provided url if present
 
@@ -419,17 +415,18 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 	// title / subtitle
 	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
 
-	// iiif manifest/image
+	// iiif manifest url
 	r.addBasicField(newField("iiif_manifest_url", "", doc.URLIIIFManifest).setType("iiif-manifest-url"))
-	//	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
 
+	// iiif image url
+	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
+
+	// FIXME: remove after iiif_image_url above is correct
 	// construct iiif image base url from known image identifier prefixes
 	for _, item := range doc.Identifier {
 		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-			if url := s.getIiifURL(item); url != "" {
-				r.addBasicField(newField("iiif_base_url", "", url).setType("iiif-base-url"))
-				break
-			}
+			r.addBasicField(newField("iiif_base_url", "", fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)).setType("iiif-base-url"))
+			break
 		}
 	}
 
