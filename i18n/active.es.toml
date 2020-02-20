@@ -102,6 +102,10 @@ other = "Número de Llamada (Amplio)"
 desc = "The display name for the Call Number (Narrow) facet."
 other = "Número de Llamada (Estrecho)"
 
+[FacetCollection]
+desc = "The display name for the Collection facet."
+other = "Colección"
+
 [FacetComposer]
 desc = "The display name for the Composer facet."
 other = "Compositor"

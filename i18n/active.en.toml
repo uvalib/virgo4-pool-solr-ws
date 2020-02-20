@@ -102,6 +102,10 @@ other = "Call Number (Broad)"
 desc = "The display name for the Call Number (Narrow) facet."
 other = "Call Number (Narrow)"
 
+[FacetCollection]
+desc = "The display name for the Collection facet."
+other = "Collection"
+
 [FacetComposer]
 desc = "The display name for the Composer facet."
 other = "Composer"

@@ -423,7 +423,7 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 	r.addBasicField(newField("iiif_manifest_url", "", doc.URLIIIFManifest).setType("iiif-manifest-url"))
 	//	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
 
-	// construct iiif image from known image identifier prefixes
+	// construct iiif image base url from known image identifier prefixes
 	for _, item := range doc.Identifier {
 		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
 			if url := s.getIiifURL(item); url != "" {
