@@ -272,6 +272,7 @@ func (p *poolContext) initTranslations() {
 		"FacetAvailability",
 		"FacetCallNumberBroad",
 		"FacetCallNumberNarrow",
+		"FacetCollection",
 		"FacetComposer",
 		"FacetCompositionEra",
 		"FacetFormat",
