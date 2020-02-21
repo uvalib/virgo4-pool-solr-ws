@@ -83,12 +83,33 @@ type VirgoNuancedField struct {
 // VirgoNuancedFields is a slice of VirgoNuancedField structs
 type VirgoNuancedFields []VirgoNuancedField
 
+/*
+// VirgoRelatedRecord contains basic info for records with the same group value
+type VirgoRelatedRecord struct {
+	Name   string   `json:"name"`
+	Type   string   `json:"type"`
+	Values []string `json:"values,omitempty"`
+}
+*/
+
+// VirgoRelatedRecord contains basic info for records with the same group value
+type VirgoRelatedRecord struct {
+	ID              string `json:"id,omitempty"`
+	IIIFManifestURL string `json:"iiif_manifest_url,omitempty"`
+	IIIFImageURL    string `json:"iiif_image_url,omitempty"`
+	IIIFBaseURL     string `json:"iiif_base_url,omitempty"`
+}
+
+// VirgoRelatedRecords is a slice of VirgoRelatedRecord structs
+type VirgoRelatedRecords []VirgoRelatedRecord
+
 // VirgoRecord contains the fields for a single record in a search result set.
 type VirgoRecord struct {
-	Fields     VirgoNuancedFields `json:"fields,omitempty"`
-	Exact      bool               `json:"exact,omitempty"`
-	Debug      *VirgoRecordDebug  `json:"debug,omitempty"`
-	groupValue string             // used internally
+	Fields     VirgoNuancedFields   `json:"fields,omitempty"`
+	Related    *VirgoRelatedRecords `json:"related,omitempty"`
+	Exact      bool                 `json:"exact,omitempty"`
+	Debug      *VirgoRecordDebug    `json:"debug,omitempty"`
+	groupValue string               // used internally
 }
 
 // VirgoRecords is a slice of VirgoRecord structs

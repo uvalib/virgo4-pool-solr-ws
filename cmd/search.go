@@ -264,7 +264,7 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	return s, nil
 }
 
-func (s *searchContext) newSearchWithRecordListForGroups(groups []string) (*searchContext, error) {
+func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, groups []string) (*searchContext, error) {
 	// NOTE: groups passed in are quoted strings
 
 	c := s.copySearchContext()
@@ -272,7 +272,16 @@ func (s *searchContext) newSearchWithRecordListForGroups(groups []string) (*sear
 	// just want records
 	c.client.opts.grouped = false
 
-	c.virgoReq.meta.solrQuery = fmt.Sprintf(`%s AND %s:(%s)`, c.virgoReq.meta.solrQuery, s.pool.config.solrGroupField, strings.Join(groups, " OR "))
+	// build group-restricted query from initial query
+	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.solrGroupField, strings.Join(groups, " OR "))
+
+	newQuery := groupClause
+	if initialQuery != "" {
+		newQuery = fmt.Sprintf(`%s AND %s`, initialQuery, groupClause)
+	}
+
+	c.virgoReq.Query = ""
+	c.virgoReq.meta.solrQuery = newQuery
 	c.virgoReq.meta.requestFacets = false
 
 	// get everything!  even bible (5000+)
@@ -343,7 +352,7 @@ func (s *searchContext) populateGroups() error {
 		groups = append(groups, VirgoGroup{Value: groupValue, RecordList: records})
 	}
 
-	r, err := s.newSearchWithRecordListForGroups(groupValues)
+	r, err := s.newSearchWithRecordListForGroups(s.virgoReq.meta.solrQuery, groupValues)
 	if err != nil {
 		return err
 	}
@@ -526,6 +535,7 @@ func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
 	}
 
 	s.virgoPoolRes.FacetList = nil
+
 	return s.virgoPoolRes, nil
 }
 
@@ -556,6 +566,100 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 	if err := s.getRecordQueryResults(); err != nil {
 		return nil, err
 	}
+
+	if s.pool.config.poolMode != "image" {
+		return s.virgoRecordRes, nil
+	}
+
+	// FIXME: image-type pool special logic
+
+	record := &s.solrRes.Response.Docs[0]
+
+	group := s.getSolrGroupFieldValue(record)
+	groupValues := []string{fmt.Sprintf(`"%s"`, group)}
+
+	r, err := s.newSearchWithRecordListForGroups("", groupValues)
+	if err != nil {
+		return s.virgoRecordRes, nil
+	}
+
+	// FIXME:
+
+	/*
+		// method 1: append related values to existing record list
+		for _, doc := range r.solrRes.Response.Docs {
+			if doc.ID == record.ID {
+				continue
+			}
+
+			s.virgoRecordRes.addBasicField(newField("iiif_manifest_url", "", doc.URLIIIFManifest).setType("iiif-manifest-url"))
+			s.virgoRecordRes.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
+
+			// FIXME: remove after iiif_image_url above is correct
+			// construct iiif image base url from known image identifier prefixes
+			for _, item := range doc.Identifier {
+				if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
+					s.virgoRecordRes.addBasicField(newField("iiif_base_url", "", fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)).setType("iiif-base-url"))
+					break
+				}
+			}
+		}
+	*/
+
+	/*
+		// method 2: put related values in a separate section of the record response
+
+		ids := VirgoRelatedRecord{Name: "identifier", Type: "identifier"}
+		imu := VirgoRelatedRecord{Name: "iiif_manifest_url", Type: "iiif-manifest-url"}
+		iiu := VirgoRelatedRecord{Name: "iiif_image_url", Type: "iiif-image-url"}
+		ibu := VirgoRelatedRecord{Name: "iiif_base_url", Type: "iiif-base-url"}
+
+		for _, doc := range r.solrRes.Response.Docs {
+			// FIXME: remove after iiif_image_url is correct
+			baseURL := ""
+			for _, item := range doc.Identifier {
+				if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
+					baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
+					break
+				}
+			}
+
+			ids.Values = append(ids.Values, doc.ID)
+			imu.Values = append(imu.Values, doc.URLIIIFManifest)
+			iiu.Values = append(iiu.Values, doc.URLIIIFImage)
+			ibu.Values = append(ibu.Values, baseURL)
+		}
+
+		related := VirgoRelatedRecords{ids, imu, iiu, ibu}
+
+		s.virgoRecordRes.Related = &related
+	*/
+
+	// method 3: put related values in a separate section of the record response
+
+	var related VirgoRelatedRecords
+
+	for _, doc := range r.solrRes.Response.Docs {
+		// FIXME: remove after iiif_image_url is correct
+		baseURL := ""
+		for _, item := range doc.Identifier {
+			if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
+				baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
+				break
+			}
+		}
+
+		rr := VirgoRelatedRecord{
+			ID:              doc.ID,
+			IIIFManifestURL: doc.URLIIIFManifest,
+			IIIFImageURL:    doc.URLIIIFImage,
+			IIIFBaseURL:     baseURL,
+		}
+
+		related = append(related, rr)
+	}
+
+	s.virgoRecordRes.Related = &related
 
 	return s.virgoRecordRes, nil
 }
