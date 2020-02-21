@@ -356,9 +356,6 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 		r.addDetailedField(newField("language", s.client.localize("FieldLanguage"), item))
 	}
 
-	// FIXME
-	// editions
-
 	// identifier(s)
 	r.addDetailedField(newField("id", s.client.localize("FieldIdentifier"), doc.ID))
 
