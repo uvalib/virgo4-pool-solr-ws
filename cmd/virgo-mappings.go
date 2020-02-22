@@ -420,12 +420,14 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 
 	// FIXME: remove after iiif_image_url above is correct
 	// construct iiif image base url from known image identifier prefixes
+	baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
 	for _, item := range doc.Identifier {
 		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-			r.addBasicField(newField("iiif_base_url", "", fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)).setType("iiif-base-url"))
+			baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
 			break
 		}
 	}
+	r.addBasicField(newField("iiif_base_url", "", baseURL).setType("iiif-base-url"))
 
 	// authors (principal and additional)
 	for _, item := range s.getAuthorFieldValue(doc) {

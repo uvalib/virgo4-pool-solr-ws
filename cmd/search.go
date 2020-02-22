@@ -597,7 +597,7 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 
 	for _, doc := range r.solrRes.Response.Docs {
 		// FIXME: remove after iiif_image_url is correct
-		baseURL := ""
+		baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
 		for _, item := range doc.Identifier {
 			if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
 				baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
