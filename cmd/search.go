@@ -272,9 +272,17 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	// just want records
 	c.client.opts.grouped = false
 
-	// build group-restricted query from initial query
-	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.solrGroupField, strings.Join(groups, " OR "))
+	// wrap groups for safer querying
+	var safeGroups []string
 
+	for _, group := range groups {
+		safeGroups = append(safeGroups, strconv.Quote(group))
+	}
+
+	// build group-restricted query from initial query
+	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.solrGroupField, strings.Join(safeGroups, " OR "))
+
+	// prepend existing query, if defined
 	newQuery := groupClause
 	if initialQuery != "" {
 		newQuery = fmt.Sprintf(`%s AND %s`, initialQuery, groupClause)
@@ -346,7 +354,7 @@ func (s *searchContext) populateGroups() error {
 
 	for i, groupRecord := range s.solrRes.Response.Docs {
 		groupValue := s.getSolrGroupFieldValue(&groupRecord)
-		groupValues = append(groupValues, fmt.Sprintf(`"%s"`, groupValue))
+		groupValues = append(groupValues, groupValue)
 		groupValueMap[groupValue] = i
 		var records VirgoRecords
 		groups = append(groups, VirgoGroup{Value: groupValue, RecordList: records})
@@ -576,7 +584,7 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 	record := &s.solrRes.Response.Docs[0]
 
 	group := s.getSolrGroupFieldValue(record)
-	groupValues := []string{fmt.Sprintf(`"%s"`, group)}
+	groupValues := []string{group}
 
 	r, err := s.newSearchWithRecordListForGroups("", groupValues)
 	if err != nil {
