@@ -405,6 +405,12 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 		}
 	}
 
+	// full MARC record
+
+	if s.itemDetails == true && doc.FullRecord != "" {
+		r.addDetailedField(newField("full_record", "", doc.FullRecord).setType("marc-xml").setDisplay("optional"))
+	}
+
 	return &r
 }
 
@@ -472,6 +478,12 @@ func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRe
 
 	for _, item := range doc.WorkType {
 		r.addDetailedField(newField("work_type", s.client.localize("FieldWorkType"), item))
+	}
+
+	// full MARC record
+
+	if s.itemDetails == true && doc.FullRecord != "" {
+		r.addDetailedField(newField("full_record", "", doc.FullRecord).setType("marc-xml").setDisplay("optional"))
 	}
 
 	return &r
@@ -746,6 +758,7 @@ func (s *searchContext) virgoRecordResponse() error {
 		return fmt.Errorf("Item not found")
 
 	case 1:
+		s.itemDetails = true
 		v = s.virgoPopulateRecord(s.solrRes.meta.firstDoc)
 
 	default:

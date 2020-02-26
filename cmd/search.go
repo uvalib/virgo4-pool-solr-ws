@@ -24,6 +24,7 @@ type searchContext struct {
 	solrReq        *solrRequest
 	solrRes        *solrResponse
 	confidence     string
+	itemDetails    bool
 }
 
 func confidenceIndex(s string) int {
