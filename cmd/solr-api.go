@@ -86,6 +86,7 @@ type solrDocument struct {
 
 	/* common to all pool modes (record, image) */
 	Author            []string `json:"author_facet_a,omitempty"`
+	DataSource        []string `json:"data_source_a,omitempty"`
 	ID                string   `json:"id,omitempty"`
 	Pool              []string `json:"pool_a,omitempty"`
 	PublicationDate   []string `json:"published_daterange,omitempty"`

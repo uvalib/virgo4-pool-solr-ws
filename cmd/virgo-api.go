@@ -78,19 +78,11 @@ type VirgoNuancedField struct {
 	Value      string `json:"value"`
 	Visibility string `json:"visibility,omitempty"` // e.g. "basic" (or empty) as opposed to "detailed"
 	Display    string `json:"display,omitempty"`    // e.g. "optional" (or empty)
+	Provider   string `json:"provider,omitempty"`   // for URLs (e.g. "hathitrust", "proquest")
 }
 
 // VirgoNuancedFields is a slice of VirgoNuancedField structs
 type VirgoNuancedFields []VirgoNuancedField
-
-/*
-// VirgoRelatedRecord contains basic info for records with the same group value
-type VirgoRelatedRecord struct {
-	Name   string   `json:"name"`
-	Type   string   `json:"type"`
-	Values []string `json:"values,omitempty"`
-}
-*/
 
 // VirgoRelatedRecord contains basic info for records with the same group value
 type VirgoRelatedRecord struct {

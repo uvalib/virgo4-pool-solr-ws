@@ -128,6 +128,7 @@ func newField(name, label, value string) *VirgoNuancedField {
 		Value:      value,
 		Visibility: "", // implies "basic"
 		Display:    "", // implies not optional
+		Provider:   "",
 	}
 
 	return &field
@@ -160,6 +161,11 @@ func (f *VirgoNuancedField) setVisibility(s string) *VirgoNuancedField {
 
 func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 	f.Display = s
+	return f
+}
+
+func (f *VirgoNuancedField) setProvider(s string) *VirgoNuancedField {
+	f.Provider = s
 	return f
 }
 
@@ -343,9 +349,9 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 
 	if isAvailableOnline == true {
 		// urls
+		provider := firstElementOf(doc.DataSource)
 		for _, item := range doc.URL {
-			pieces := strings.Split(item, "||")
-			r.addBasicField(newField("access_url", s.client.localize("FieldAccessURL"), pieces[0]).setType("url"))
+			r.addBasicField(newField("access_url", s.client.localize("FieldAccessURL"), item).setType("url").setProvider(provider))
 		}
 	}
 
@@ -387,7 +393,7 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 
 	if strings.HasPrefix(doc.ID, "u") {
 		if url := s.getSirsiURL(doc.ID[1:]); url != "" {
-			r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), url).setType("url"))
+			r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), url).setType("url").setProvider("sirsi"))
 		}
 	}
 
