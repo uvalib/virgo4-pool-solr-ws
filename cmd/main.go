@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -56,6 +57,8 @@ func main() {
 		api.POST("/search/facets", pool.authenticateHandler, pool.facetsHandler)
 		api.GET("/resource/:id", pool.authenticateHandler, pool.resourceHandler)
 	}
+
+	router.Use(static.Serve("/assets", static.LocalFile("./assets", true)))
 
 	portStr := fmt.Sprintf(":%s", pool.config.listenPort)
 	log.Printf("Start service on %s", portStr)

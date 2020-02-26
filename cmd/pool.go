@@ -145,28 +145,28 @@ func (p *poolContext) initProviders() {
 	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
 		Provider:    "getty",
 		Label:       "Getty Publications Virtual Library",
-		LogoURL:     "",
+		LogoURL:     "/assets/getty/getty_logo_og_72px.jpg",
 		HomepageURL: "https://www.getty.edu/",
 	})
 
 	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
 		Provider:    "hathitrust",
 		Label:       "Hathi Trust Digital Library",
-		LogoURL:     "",
+		LogoURL:     "/assets/hathitrust/hXUrRNqC_400x400.png",
 		HomepageURL: "https://www.hathitrust.org/",
 	})
 
 	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
 		Provider:    "kanopy",
 		Label:       "Kanopy Online Video Collection",
-		LogoURL:     "",
+		LogoURL:     "/assets/kanopy/rgGlMOWf_400x400.jpg",
 		HomepageURL: "https://www.kanopy.com/",
 	})
 
 	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
 		Provider:    "law",
 		Label:       "ProQuest U.S. Congressional Hearings Digital Collection",
-		LogoURL:     "",
+		LogoURL:     "/assets/law/28fyrU5y_400x400.jpg",
 		HomepageURL: "https://www.proquest.com/",
 	})
 
@@ -187,7 +187,7 @@ func (p *poolContext) initProviders() {
 	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
 		Provider:    "swank",
 		Label:       "SWANK Streaming Film Database",
-		LogoURL:     "",
+		LogoURL:     "/assets/swank/swank-motion-pictures-squarelogo-1534884148653.png",
 		HomepageURL: "https://www.swank.com/",
 	})
 
@@ -201,7 +201,7 @@ func (p *poolContext) initProviders() {
 	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
 		Provider:    "viva_dda",
 		Label:       "VIVA Demand Driven Acquisition",
-		LogoURL:     "",
+		LogoURL:     "/assets/viva_dda/tp-logo.png",
 		HomepageURL: "https://ebookcentral.proquest.com/",
 	})
 
