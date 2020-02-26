@@ -58,7 +58,7 @@ func main() {
 		api.GET("/resource/:id", pool.authenticateHandler, pool.resourceHandler)
 	}
 
-	router.Use(static.Serve("/assets", static.LocalFile("./assets", true)))
+	router.Use(static.Serve("/assets", static.LocalFile("./assets", false)))
 
 	portStr := fmt.Sprintf(":%s", pool.config.listenPort)
 	log.Printf("Start service on %s", portStr)
