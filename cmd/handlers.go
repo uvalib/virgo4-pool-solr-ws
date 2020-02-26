@@ -109,6 +109,13 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, localizedIdentity)
 }
 
+func (p *poolContext) providersHandler(c *gin.Context) {
+	cl := clientContext{}
+	cl.init(p, c)
+
+	c.JSON(http.StatusOK, p.providers)
+}
+
 func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)

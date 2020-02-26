@@ -36,6 +36,22 @@ type VirgoPoolAttribute struct {
 	Value     string `json:"value,omitempty"`
 }
 
+// VirgoProvider contains the attributes for a single provider
+type VirgoProvider struct {
+	Provider    string `json:"provider"`
+	Label       string `json:"label,omitempty"`
+	HomepageURL string `json:"homepage_url,omitempty"`
+	LogoURL     string `json:"logo_url,omitempty"`
+}
+
+// VirgoProviders is a slice of VirgoProvider structs
+type VirgoProviders []VirgoProvider
+
+// VirgoPoolProviders holds information about any provider this pool may return
+type VirgoPoolProviders struct {
+	Providers VirgoProviders `json:"providers"`
+}
+
 // VirgoPoolIdentity holds localized information about this pool (same as returned by /identify endpoint)
 type VirgoPoolIdentity struct {
 	Name        string               `json:"name,omitempty"`        // localized pool name

@@ -50,6 +50,7 @@ type poolContext struct {
 	config       *poolConfig
 	translations poolTranslations
 	identity     VirgoPoolIdentity
+	providers    VirgoPoolProviders
 	version      poolVersion
 	solr         poolSolr
 	attributes   map[string]VirgoPoolAttribute
@@ -138,6 +139,73 @@ func (p *poolContext) initIdentity() {
 	log.Printf("[POOL] identity.Mode             = [%s]", p.identity.Mode)
 	log.Printf("[POOL] identity.Attributes       = [%v]", p.identity.Attributes)
 	log.Printf("[POOL] attributes                = [%v]", p.attributes)
+}
+
+func (p *poolContext) initProviders() {
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "getty",
+		Label:       "Getty Publications Virtual Library",
+		LogoURL:     "",
+		HomepageURL: "https://www.getty.edu/",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "hathitrust",
+		Label:       "Hathi Trust Digital Library",
+		LogoURL:     "",
+		HomepageURL: "https://www.hathitrust.org/",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "kanopy",
+		Label:       "Kanopy Online Video Collection",
+		LogoURL:     "",
+		HomepageURL: "https://www.kanopy.com/",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "law",
+		Label:       "ProQuest U.S. Congressional Hearings Digital Collection",
+		LogoURL:     "",
+		HomepageURL: "https://www.proquest.com/",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "libraetd",
+		Label:       "Libra Repository",
+		LogoURL:     "",
+		HomepageURL: "https://libraetd.lib.virginia.edu/",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "sirsi",
+		Label:       "Library Catalog",
+		LogoURL:     "",
+		HomepageURL: "",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "swank",
+		Label:       "SWANK Streaming Film Database",
+		LogoURL:     "",
+		HomepageURL: "https://www.swank.com/",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "virgoclassic",
+		Label:       "Virgo Classic",
+		LogoURL:     "",
+		HomepageURL: "",
+	})
+
+	p.providers.Providers = append(p.providers.Providers, VirgoProvider{
+		Provider:    "viva_dda",
+		Label:       "VIVA Demand Driven Acquisition",
+		LogoURL:     "",
+		HomepageURL: "https://ebookcentral.proquest.com/",
+	})
+
+	log.Printf("[POOL] providers                 = [%v]", p.providers.Providers)
 }
 
 func (p *poolContext) initVersion() {
@@ -387,6 +455,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 
 	p.initTranslations()
 	p.initIdentity()
+	p.initProviders()
 	p.initVersion()
 	p.initSolr()
 

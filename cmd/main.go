@@ -48,6 +48,7 @@ func main() {
 
 	router.GET("/version", pool.versionHandler)
 	router.GET("/identify", pool.identifyHandler)
+	router.GET("/providers", pool.providersHandler)
 	router.GET("/healthcheck", pool.healthCheckHandler)
 
 	if api := router.Group("/api"); api != nil {
