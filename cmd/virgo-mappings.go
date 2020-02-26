@@ -393,7 +393,7 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 
 	if strings.HasPrefix(doc.ID, "u") {
 		if url := s.getSirsiURL(doc.ID[1:]); url != "" {
-			r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), url).setType("url").setProvider("sirsi"))
+			r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), url).setType("url").setProvider("virgoclassic"))
 		}
 	}
 
