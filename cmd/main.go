@@ -49,13 +49,13 @@ func main() {
 
 	router.GET("/version", pool.versionHandler)
 	router.GET("/identify", pool.identifyHandler)
-	router.GET("/providers", pool.providersHandler)
 	router.GET("/healthcheck", pool.healthCheckHandler)
 
 	if api := router.Group("/api"); api != nil {
 		api.POST("/search", pool.authenticateHandler, pool.searchHandler)
 		api.POST("/search/facets", pool.authenticateHandler, pool.facetsHandler)
 		api.GET("/resource/:id", pool.authenticateHandler, pool.resourceHandler)
+		api.GET("/providers", pool.authenticateHandler, pool.providersHandler)
 	}
 
 	router.Use(static.Serve("/assets", static.LocalFile("./assets", false)))
