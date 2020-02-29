@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"path"
 	"reflect"
 	"sort"
 	"strings"
@@ -129,6 +130,7 @@ func newField(name, label, value string) *VirgoNuancedField {
 		Visibility: "", // implies "basic"
 		Display:    "", // implies not optional
 		Provider:   "",
+		Item:       "",
 	}
 
 	return &field
@@ -166,6 +168,11 @@ func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
 
 func (f *VirgoNuancedField) setProvider(s string) *VirgoNuancedField {
 	f.Provider = s
+	return f
+}
+
+func (f *VirgoNuancedField) setItem(s string) *VirgoNuancedField {
+	f.Item = s
 	return f
 }
 
@@ -350,8 +357,17 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 	if isAvailableOnline == true {
 		// urls
 		provider := firstElementOf(doc.DataSource)
+
+		fieldMap, fieldMapErr := getSubFieldCodeForDataFieldTagAndSubfieldCode(doc.FullRecord, "z", "974", "u")
+
 		for _, item := range doc.URL {
-			r.addBasicField(newField("access_url", s.client.localize("FieldAccessURL"), item).setType("url").setProvider(provider))
+			accessURL := newField("access_url", s.client.localize("FieldAccessURL"), item).setType("url").setProvider(provider)
+
+			if fieldMapErr == nil {
+				accessURL.setItem(fieldMap[path.Base(item)])
+			}
+
+			r.addBasicField(accessURL)
 		}
 	}
 

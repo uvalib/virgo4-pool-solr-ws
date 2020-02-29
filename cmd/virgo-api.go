@@ -95,6 +95,7 @@ type VirgoNuancedField struct {
 	Visibility string `json:"visibility,omitempty"` // e.g. "basic" (or empty) as opposed to "detailed"
 	Display    string `json:"display,omitempty"`    // e.g. "optional" (or empty)
 	Provider   string `json:"provider,omitempty"`   // for URLs (e.g. "hathitrust", "proquest")
+	Item       string `json:"item,omitempty"`       // for certain URLs (currently hathitrust)
 }
 
 // VirgoNuancedFields is a slice of VirgoNuancedField structs
