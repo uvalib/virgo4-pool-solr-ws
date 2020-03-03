@@ -353,6 +353,7 @@ func (p *poolContext) initTranslations() {
 		"FacetSubject",
 		"FacetVideoFormat",
 		"FieldAccessURL",
+		"FieldAccessURLDefaultItemLabelPrefix",
 		"FieldAuthor",
 		"FieldAvailability",
 		"FieldCallNumber",

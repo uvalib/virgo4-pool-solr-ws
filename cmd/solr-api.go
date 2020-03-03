@@ -116,6 +116,7 @@ type solrDocument struct {
 	ThumbnailURL      []string `json:"thumbnail_url_a,omitempty"`
 	UPC               []string `json:"upc_a,omitempty"`
 	URL               []string `json:"url_a,omitempty"`
+	URLLabel          []string `json:"url_label_a,omitempty"`
 	UVAAvailability   []string `json:"uva_availability_a,omitempty"`
 	VideoGenre        []string `json:"video_genre_a,omitempty"`
 	WorkTitle3KeySort string   `json:"work_title3_key_sort,omitempty"`

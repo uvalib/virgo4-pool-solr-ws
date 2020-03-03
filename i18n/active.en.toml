@@ -154,6 +154,10 @@ other = "Video Format"
 desc = "The display name for the field that contains a link to an external URL for online access."
 other = "Online Access"
 
+[FieldAccessURLDefaultItemLabelPrefix]
+desc = "The default display label prefix for AccessURL items when the label is otherwise not known."
+other = "Copy"
+
 [FieldAuthor]
 desc = "The display name for the Author field in a single item record."
 other = "Author"

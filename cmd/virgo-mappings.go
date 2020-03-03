@@ -357,11 +357,26 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 		// urls
 		provider := firstElementOf(doc.DataSource)
 
+		useLabels := false
+		if len(doc.URLLabel) == len(doc.URL) {
+			useLabels = true
+		}
+
 		for i, item := range doc.URL {
 			accessURL := newField("access_url", s.client.localize("FieldAccessURL"), item).setType("url").setProvider(provider)
 
-			// FIXME: localize this
-			accessURL.setItem(fmt.Sprintf("Copy %d", i+1))
+			itemLabel := ""
+
+			if useLabels == true {
+				itemLabel = doc.URLLabel[i]
+			}
+
+			// if not using labels, or this label is not defined, fall back to generic item label
+			if itemLabel == "" {
+				itemLabel = fmt.Sprintf("%s %d", s.client.localize("FieldAccessURLDefaultItemLabelPrefix"), i+1)
+			}
+
+			accessURL.setItem(itemLabel)
 
 			r.addBasicField(accessURL)
 		}
