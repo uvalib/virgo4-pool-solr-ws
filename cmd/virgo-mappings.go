@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"path"
 	"reflect"
 	"sort"
 	"strings"
@@ -358,14 +357,11 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 		// urls
 		provider := firstElementOf(doc.DataSource)
 
-		fieldMap, fieldMapErr := getSubFieldCodeForDataFieldTagAndSubfieldCode(doc.FullRecord, "z", "974", "u")
-
-		for _, item := range doc.URL {
+		for i, item := range doc.URL {
 			accessURL := newField("access_url", s.client.localize("FieldAccessURL"), item).setType("url").setProvider(provider)
 
-			if fieldMapErr == nil {
-				accessURL.setItem(fieldMap[path.Base(item)])
-			}
+			// FIXME: localize this
+			accessURL.setItem(fmt.Sprintf("Copy %d", i+1))
 
 			r.addBasicField(accessURL)
 		}
