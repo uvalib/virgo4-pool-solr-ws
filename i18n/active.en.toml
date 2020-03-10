@@ -20,7 +20,7 @@ other = "Images"
 
 [PoolImagesDescription]
 desc = "The detailed description for the Solr pool designated as images."
-other = " "
+other = "Imagery that the UVA Library has curated, collected, and described."
 
 [PoolCatalogName]
 desc = "The display name for the pool of Solr search results designated as the main catalog."
@@ -76,7 +76,7 @@ other = "Theses"
 
 [PoolThesisDescription]
 desc = "The detailed description for the Solr pool designated as thesis."
-other = " "
+other = "Theses and dissertations completed at the University of Virginia."
 
 [PoolVideoName]
 desc = "The display name for the pool of Solr search results designated as video."
