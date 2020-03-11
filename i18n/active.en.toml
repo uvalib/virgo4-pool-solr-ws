@@ -1,6 +1,6 @@
 [PoolArchivalName]
 desc = "The display name for the pool of Solr search results designated as archival."
-other = "Manuscripts & Archival Material
+other = "Manuscripts & Archival Material"
 
 [PoolArchivalDescription]
 desc = "The detailed description for the Solr pool designated as archival."
