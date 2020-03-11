@@ -1,10 +1,10 @@
 [PoolArchivalName]
 desc = "The display name for the pool of Solr search results designated as archival."
-other = "The Archives"
+other = "Manuscripts & Archival Material
 
 [PoolArchivalDescription]
 desc = "The detailed description for the Solr pool designated as archival."
-other = "(UNDER CONSTRUCTION) Rare and unique materials that may be explored in a peaceful and elegant reading room environment. Treasures of all sorts, including manuscripts, business records, maps, correspondence, and so much more."
+other = "Published and unpublished manuscripts, business records, maps, correspondence, and more. <a href='https://virginia.aeon.atlas-sys.com/logon' target='_blank'>Items may be requested for access in the Clifton Waller Barrett Reading Room</a> and cannot leave the premises."
 
 [PoolCatalogBroadName]
 desc = "The display name for the pool of Solr search results designated as the broad catalog."
