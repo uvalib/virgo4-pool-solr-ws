@@ -6,13 +6,13 @@ other = "Manuscripts & Archival Material"
 desc = "The detailed description for the Solr pool designated as archival."
 other = "Published and unpublished manuscripts, business records, maps, correspondence, and more. <a href='https://virginia.aeon.atlas-sys.com/logon' target='_blank'>Items may be requested for access in the Clifton Waller Barrett Reading Room</a> and cannot leave the premises."
 
-[PoolCatalogBroadName]
-desc = "The display name for the pool of Solr search results designated as the broad catalog."
-other = "Catalog (Broad)"
+[PoolCatalogName]
+desc = "The display name for the pool of Solr search results designated as the main catalog."
+other = "Books"
 
-[PoolCatalogBroadDescription]
-desc = "The detailed description for the Solr pool designated as the broad catalog."
-other = "(EXPERIMENTAL) All of the content from the Catalog plus some odds and ends that don't fit neatly into any particular category."
+[PoolCatalogDescription]
+desc = "The detailed description for the Solr pool designated as the main catalog."
+other = "Physical and electronic books from UVA’s collection."
 
 [PoolImagesName]
 desc = "The display name for the pool of Solr search results designated as images."
@@ -21,14 +21,6 @@ other = "Images"
 [PoolImagesDescription]
 desc = "The detailed description for the Solr pool designated as images."
 other = "Imagery that the UVA Library has curated, collected, and described."
-
-[PoolCatalogName]
-desc = "The display name for the pool of Solr search results designated as the main catalog."
-other = "Books"
-
-[PoolCatalogDescription]
-desc = "The detailed description for the Solr pool designated as the main catalog."
-other = "Physical and electronic books from UVA’s collection."
 
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
@@ -45,14 +37,6 @@ other = "Musical Scores"
 [PoolMusicalScoresDescription]
 desc = "The detailed description for the Solr pool designated as musical scores."
 other = "Sheet music and other musical notation."
-
-[PoolRareBooksName]
-desc = "The display name for the pool of Solr search results designated as rare books."
-other = "Rare Books"
-
-[PoolRareBooksDescription]
-desc = "The detailed description for the Solr pool designated as rare books."
-other = "The “Rare Books” collection includes manuscripts, business records, maps, correspondence, and more. Items may be requested for access in the Clifton Waller Barrett Reading Room and cannot leave the premises."
 
 [PoolSerialsName]
 desc = "The display name for the pool of Solr search results designated as serials."

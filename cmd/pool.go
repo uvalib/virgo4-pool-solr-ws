@@ -316,8 +316,6 @@ func (p *poolContext) initTranslations() {
 	messageIDs := []string{
 		"PoolArchivalName",
 		"PoolArchivalDescription",
-		"PoolCatalogBroadName",
-		"PoolCatalogBroadDescription",
 		"PoolImagesName",
 		"PoolImagesDescription",
 		"PoolCatalogName",
@@ -326,8 +324,6 @@ func (p *poolContext) initTranslations() {
 		"PoolMusicRecordingsDescription",
 		"PoolMusicalScoresName",
 		"PoolMusicalScoresDescription",
-		"PoolRareBooksName",
-		"PoolRareBooksDescription",
 		"PoolSerialsName",
 		"PoolSerialsDescription",
 		"PoolSoundRecordingsName",
