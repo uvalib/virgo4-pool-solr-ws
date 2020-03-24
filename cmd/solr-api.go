@@ -31,6 +31,7 @@ type solrRequestParams struct {
 	Debug   bool     `json:"debug,omitempty"`
 	DefType string   `json:"defType,omitempty"`
 	Qt      string   `json:"qt,omitempty"`
+	Sort    string   `json:"sort,omitempty"`
 	Start   int      `json:"start"`
 	Rows    int      `json:"rows"`
 	Fl      []string `json:"fl,omitempty"`

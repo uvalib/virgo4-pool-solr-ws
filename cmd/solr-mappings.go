@@ -50,6 +50,27 @@ func (s *solrRequest) buildParameterQt(qt string) {
 	s.json.Params.Qt = qt
 }
 
+func (s *solrRequest) buildParameterSort(sort *VirgoSort, fields map[string]string) {
+	if sort == nil {
+		return
+	}
+
+	sortField := fields[sort.SortID]
+
+	if sortField == "" {
+		return
+	}
+
+	switch sort.Order {
+		case "asc":
+		case "desc":
+		default:
+			return
+	}
+
+	s.json.Params.Sort = fmt.Sprintf("%s %s", sortField, sort.Order)
+}
+
 func (s *solrRequest) buildParameterDefType(defType string) {
 	s.json.Params.DefType = defType
 }
@@ -185,6 +206,7 @@ func (s *searchContext) solrRequestWithDefaults() {
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
 	solrReq.buildParameterQt(s.pool.config.solrParameterQt)
+	solrReq.buildParameterSort(s.virgoReq.Sort, s.pool.sortFields)
 	solrReq.buildParameterDefType(s.pool.config.solrParameterDefType)
 	solrReq.buildParameterFq(s.pool.config.solrParameterFq, s.pool.config.poolDefinition)
 	solrReq.buildParameterFl(s.pool.config.solrParameterFl)

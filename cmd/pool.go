@@ -52,6 +52,7 @@ type poolContext struct {
 	identity     VirgoPoolIdentity
 	providers    VirgoPoolProviders
 	sortOptions  VirgoSortOptions
+	sortFields   map[string]string
 	version      poolVersion
 	solr         poolSolr
 	attributes   map[string]VirgoPoolAttribute
@@ -221,6 +222,12 @@ func (p *poolContext) initSortOptions() {
 			ID: "SortDateReceived",
 		},
 	}
+
+	p.sortFields = make(map[string]string)
+
+	p.sortFields["SortRelevance"] = "score"
+	p.sortFields["SortDatePublished"] = "published_date"
+	p.sortFields["SortDateReceived"] = "date_received_a"
 }
 
 func (p *poolContext) initVersion() {
