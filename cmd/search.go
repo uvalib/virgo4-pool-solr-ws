@@ -533,6 +533,20 @@ func (s *searchContext) handleSearchOrFacetsRequest() error {
 		s.virgoPoolRes.Confidence = top.confidence
 	}
 
+	// add localized sort options
+
+	sortOptions := s.pool.sortOptions
+
+	for i, _ := range sortOptions {
+		opt := &sortOptions[i]
+
+		opt.Label = s.client.localize(opt.ID)
+	}
+
+	s.virgoPoolRes.SortOptions = &sortOptions
+
+	// finally fill out elapsed time
+
 	s.virgoPoolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
 	return nil

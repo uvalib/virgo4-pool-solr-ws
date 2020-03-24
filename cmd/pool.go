@@ -51,6 +51,7 @@ type poolContext struct {
 	translations poolTranslations
 	identity     VirgoPoolIdentity
 	providers    VirgoPoolProviders
+	sortOptions  VirgoSortOptions
 	version      poolVersion
 	solr         poolSolr
 	attributes   map[string]VirgoPoolAttribute
@@ -206,6 +207,20 @@ func (p *poolContext) initProviders() {
 	})
 
 	log.Printf("[POOL] providers                 = [%v]", p.providers.Providers)
+}
+
+func (p *poolContext) initSortOptions() {
+	p.sortOptions = VirgoSortOptions{
+		VirgoSortOption{
+			ID: "SortRelevance",
+		},
+		VirgoSortOption{
+			ID: "SortDatePublished",
+		},
+		VirgoSortOption{
+			ID: "SortDateReceived",
+		},
+	}
 }
 
 func (p *poolContext) initVersion() {
@@ -378,6 +393,9 @@ func (p *poolContext) initTranslations() {
 		"FieldWorkLocation",
 		"FieldWorkPhysicalDetails",
 		"FieldWorkType",
+		"SortDatePublished",
+		"SortDateReceived",
+		"SortRelevance",
 	}
 
 	langs := []string{}
@@ -454,6 +472,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initTranslations()
 	p.initIdentity()
 	p.initProviders()
+	p.initSortOptions()
 	p.initVersion()
 	p.initSolr()
 

@@ -253,3 +253,15 @@ other = "Work Physical Details"
 [FieldWorkType]
 desc = "The display name for the Work Type field in an image record."
 other = "Work Type"
+
+[SortDatePublished]
+desc = "The display name for this sorting option."
+other = "Date Published"
+
+[SortDateReceived]
+desc = "The display name for this sorting option."
+other = "Date Received"
+
+[SortRelevance]
+desc = "The display name for this sorting option."
+other = "Relevance"

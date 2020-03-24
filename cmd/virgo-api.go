@@ -17,6 +17,7 @@ type virgoSearchMeta struct {
 type VirgoSearchRequest struct {
 	Query      string          `json:"query"`
 	Pagination VirgoPagination `json:"pagination"`
+	Sort       *VirgoSort      `json:"sort,omitempty"`
 	Filters    *VirgoFilters   `json:"filters,omitempty"`
 	meta       virgoSearchMeta // used internally
 }
@@ -62,15 +63,16 @@ type VirgoPoolIdentity struct {
 
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
-	Identity   VirgoPoolIdentity     `json:"identity"`              // localized identity
-	Pagination *VirgoPagination      `json:"pagination,omitempty"`  // pagination info for results
-	RecordList *VirgoRecords         `json:"record_list,omitempty"` // ungrouped records
-	GroupList  *VirgoGroups          `json:"group_list,omitempty"`  // grouped records
-	FacetList  *VirgoFacets          `json:"facet_list,omitempty"`  // facet values for client-requested facets
-	Confidence string                `json:"confidence,omitempty"`  // required; i.e. low, medium, high, exact
-	ElapsedMS  int64                 `json:"elapsed_ms,omitempty"`  // total round-trip time for this request
-	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
-	Warn       *[]string             `json:"warn,omitempty"`
+	Identity    VirgoPoolIdentity     `json:"identity"`               // localized identity
+	Pagination  *VirgoPagination      `json:"pagination,omitempty"`   // pagination info for results
+	SortOptions *VirgoSortOptions     `json:"sort_options,omitempty"` // available sort options for these results
+	RecordList  *VirgoRecords         `json:"record_list,omitempty"`  // ungrouped records
+	GroupList   *VirgoGroups          `json:"group_list,omitempty"`   // grouped records
+	FacetList   *VirgoFacets          `json:"facet_list,omitempty"`   // facet values for client-requested facets
+	Confidence  string                `json:"confidence,omitempty"`   // required; i.e. low, medium, high, exact
+	ElapsedMS   int64                 `json:"elapsed_ms,omitempty"`   // total round-trip time for this request
+	Debug       *VirgoPoolResultDebug `json:"debug,omitempty"`
+	Warn        *[]string             `json:"warn,omitempty"`
 }
 
 // VirgoFacetsResult contains the full response to a facets request
@@ -178,3 +180,18 @@ type VirgoPagination struct {
 	Rows  int `json:"rows"`
 	Total int `json:"total"`
 }
+
+// VirgoSort specifies sort options for a given search.
+type VirgoSort struct {
+	SortID string `json:"sort_id"`
+	Order  string `json:"order"`
+}
+
+// VirgoSortOption defines an available sort option.
+type VirgoSortOption struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+}
+
+// VirgoSortOptions is a slice of VirgoSortOption structs
+type VirgoSortOptions []VirgoSortOption
