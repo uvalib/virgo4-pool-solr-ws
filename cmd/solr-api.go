@@ -92,6 +92,7 @@ type solrDocument struct {
 	Pool              []string `json:"pool_a,omitempty"`
 	PublicationDate   []string `json:"published_daterange,omitempty"`
 	Score             float32  `json:"score,omitempty"`
+	SubjectSummary    []string `json:"subject_summary_a,omitempty"`
 	Title             []string `json:"title_a,omitempty"`
 	WorkTitle2KeySort string   `json:"work_title2_key_sort,omitempty"`
 
@@ -110,6 +111,7 @@ type solrDocument struct {
 	Location          []string `json:"location2_a,omitempty"`
 	OCLC              []string `json:"oclc_a,omitempty"`
 	Published         []string `json:"published_a,omitempty"`
+	ReleaseDate       []string `json:"release_a,omitempty"`
 	Series            []string `json:"title_series_a,omitempty"`
 	Subject           []string `json:"subject_a,omitempty"`
 	Subtitle          []string `json:"title_sub_a,omitempty"`
@@ -126,7 +128,6 @@ type solrDocument struct {
 	Identifier          []string `json:"identifier_a,omitempty"`
 	Note                []string `json:"note_a,omitempty"`
 	Region              []string `json:"region_a,omitempty"`
-	SubjectSummary      []string `json:"subject_summary_a,omitempty"`
 	URLIIIFImage        string   `json:"url_iiif_image_stored,omitempty"`
 	URLIIIFManifest     string   `json:"url_iiif_manifest_stored,omitempty"`
 	WorkIdentifier      []string `json:"workIdentifier_a,omitempty"`

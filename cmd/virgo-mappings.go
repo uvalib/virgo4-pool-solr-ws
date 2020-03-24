@@ -384,6 +384,16 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 
 	/**************************************** [ detailed fields ] ****************************************/
 
+	// summary
+	for _, item := range doc.SubjectSummary {
+		r.addDetailedField(newField("subject_summary", s.client.localize("FieldSubjectSummary"), item))
+	}
+
+	// release date
+	for _, item := range doc.ReleaseDate {
+		r.addDetailedField(newField("release_date", s.client.localize("FieldReleaseDate"), item))
+	}
+
 	// languages
 	for _, item := range doc.Language {
 		r.addDetailedField(newField("language", s.client.localize("FieldLanguage"), item))

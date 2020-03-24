@@ -214,6 +214,10 @@ other = "Published"
 desc = "The display name for the Region field in a single item record."
 other = "Region"
 
+[FieldReleaseDate]
+desc = "The display name for the Release Date field in a single item record."
+other = "Release Date"
+
 [FieldSeries]
 desc = "The display name for the Series field in a single item record."
 other = "Series"
