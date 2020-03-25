@@ -65,7 +65,8 @@ type VirgoPoolIdentity struct {
 type VirgoPoolResult struct {
 	Identity    VirgoPoolIdentity     `json:"identity"`               // localized identity
 	Pagination  *VirgoPagination      `json:"pagination,omitempty"`   // pagination info for results
-	SortOptions *VirgoSortOptions     `json:"sort_options,omitempty"` // available sort options for these results
+	Sort        *VirgoSort            `json:"sort,omitempty"`         // sort info for results
+	SortOptions *VirgoSortOptions     `json:"sort_options,omitempty"` // available sort options
 	RecordList  *VirgoRecords         `json:"record_list,omitempty"`  // ungrouped records
 	GroupList   *VirgoGroups          `json:"group_list,omitempty"`   // grouped records
 	FacetList   *VirgoFacets          `json:"facet_list,omitempty"`   // facet values for client-requested facets

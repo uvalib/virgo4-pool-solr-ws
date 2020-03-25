@@ -70,6 +70,7 @@ type solrMeta struct {
 	numRows      int                        // for client pagination -- numGroups or numRecords
 	totalRows    int                        // for client pagination -- totalGroups or totalRecords
 	selectionMap map[string]map[string]bool // to track what filters have been applied by the client
+	sort         VirgoSort                  // to hold requested (or defaulted) sort info
 }
 
 type solrRequest struct {

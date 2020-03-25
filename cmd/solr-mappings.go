@@ -50,25 +50,8 @@ func (s *solrRequest) buildParameterQt(qt string) {
 	s.json.Params.Qt = qt
 }
 
-func (s *solrRequest) buildParameterSort(sort *VirgoSort, fields map[string]string) {
-	if sort == nil {
-		return
-	}
-
-	sortField := fields[sort.SortID]
-
-	if sortField == "" {
-		return
-	}
-
-	switch sort.Order {
-		case "asc":
-		case "desc":
-		default:
-			return
-	}
-
-	s.json.Params.Sort = fmt.Sprintf("%s %s", sortField, sort.Order)
+func (s *solrRequest) buildParameterSort(fields map[string]string) {
+	s.json.Params.Sort = fmt.Sprintf("%s %s", fields[s.meta.sort.SortID], s.meta.sort.Order)
 }
 
 func (s *solrRequest) buildParameterDefType(defType string) {
@@ -203,10 +186,33 @@ func (s *searchContext) solrRequestWithDefaults() {
 
 	solrReq.meta.selectionMap = make(map[string]map[string]bool)
 
+	// fill out requested/defaulted sort info
+
+	sort := VirgoSort{
+		SortID: "SortRelevance",
+		Order:  "desc",
+	}
+
+	if s.virgoReq.Sort != nil {
+		// sort was specified
+
+		if s.pool.sortFields[s.virgoReq.Sort.SortID] != "" {
+			// sort id is valid
+
+			if s.virgoReq.Sort.Order == "asc" || s.virgoReq.Sort.Order == "desc" {
+				// sort order is valid
+
+				sort = *s.virgoReq.Sort
+			}
+		}
+	}
+
+	solrReq.meta.sort = sort
+
 	// fill out as much as we can for a generic request
 	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
 	solrReq.buildParameterQt(s.pool.config.solrParameterQt)
-	solrReq.buildParameterSort(s.virgoReq.Sort, s.pool.sortFields)
+	solrReq.buildParameterSort(s.pool.sortFields)
 	solrReq.buildParameterDefType(s.pool.config.solrParameterDefType)
 	solrReq.buildParameterFq(s.pool.config.solrParameterFq, s.pool.config.poolDefinition)
 	solrReq.buildParameterFl(s.pool.config.solrParameterFl)

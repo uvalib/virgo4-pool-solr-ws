@@ -533,6 +533,10 @@ func (s *searchContext) handleSearchOrFacetsRequest() error {
 		s.virgoPoolRes.Confidence = top.confidence
 	}
 
+	// add sort info for these results
+
+	s.virgoPoolRes.Sort = &s.solrReq.meta.sort
+
 	// add localized sort options
 
 	sortOptions := s.pool.sortOptions
