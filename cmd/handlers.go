@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uvalib/virgo4-jwt/v4jwt"
 )
 
 func (p *poolContext) searchHandler(c *gin.Context) {
@@ -143,19 +145,36 @@ func (p *poolContext) getBearerToken(authorization string) (string, error) {
 		return "", fmt.Errorf("Invalid Authorization header: [%s]", authorization)
 	}
 
-	return components[1], nil
+	token := components[1]
+
+	if token == "undefined" {
+		return "", errors.New("bearer token is undefined")
+	}
+
+	return token, nil
 }
 
 func (p *poolContext) authenticateHandler(c *gin.Context) {
 	token, err := p.getBearerToken(c.GetHeader("Authorization"))
-
 	if err != nil {
 		log.Printf("Authentication failed: [%s]", err.Error())
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	// save token to context
+	claims, err := v4jwt.Validate(token, p.config.jwtKey)
 
-	c.Set("token", token)
+	if err != nil {
+		log.Printf("JWT signature for %s is invalid: %s", token, err.Error())
+		log.Printf("continuing with no claims")
+		//c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	// save token and claims to context
+
+	c.Set("jwt", token)
+	c.Set("claims", claims)
+
+	log.Printf("got bearer token: [%s]: %+v", token, claims)
 }

@@ -2,15 +2,14 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/uvalib/virgo4-jwt/v4jwt"
 )
 
 type clientOpts struct {
@@ -20,18 +19,11 @@ type clientOpts struct {
 	grouped bool // controls whether Solr results are grouped
 }
 
-type clientAuth struct {
-	token         string // from client headers
-	url           string // url for client authentication checks
-	checked       bool   // whether we have checked if this token is authenticated
-	authenticated bool   // whether this token is authenticated
-}
-
 type clientContext struct {
 	reqID     string          // internally generated
 	start     time.Time       // internally set
 	opts      clientOpts      // options set by client
-	auth      clientAuth      // authentication-related variables
+	claims    v4jwt.V4Claims  // information about this user
 	nolog     bool            // internally set
 	localizer *i18n.Localizer // per-request localization
 }
@@ -51,10 +43,9 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.start = time.Now()
 	c.reqID = fmt.Sprintf("%016x", p.randomSource.Uint64())
 
-	// get authentication token, if any
-	if val, ok := ctx.Get("token"); ok == true {
-		c.auth.token = val.(string)
-		c.auth.url = fmt.Sprintf("%s/api/authenticated/%s", p.config.clientHost, c.auth.token)
+	// get claims, if any
+	if val, ok := ctx.Get("claims"); ok == true {
+		c.claims = val.(v4jwt.V4Claims)
 	}
 
 	// determine client preferred language
@@ -122,58 +113,6 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	return id
 }
 
-func (c *clientContext) checkAuthentication() error {
-	req, reqErr := http.NewRequest("GET", c.auth.url, nil)
-	if reqErr != nil {
-		c.log("NewRequest() failed: %s", reqErr.Error())
-		return fmt.Errorf("Failed to create client authentication check request")
-	}
-
-	client := &http.Client{Timeout: 10 * time.Second}
-
-	res, resErr := client.Do(req)
-
-	if resErr != nil {
-		c.log("client.Do() failed: %s", resErr.Error())
-		return fmt.Errorf("Failed to receive client authentication check response")
-	}
-
-	defer res.Body.Close()
-
-	buf, _ := ioutil.ReadAll(res.Body)
-
-	c.log("authentication check returned: %d (%s)", res.StatusCode, buf)
-
-	switch res.StatusCode {
-	case http.StatusOK:
-		c.auth.authenticated = true
-		c.auth.checked = true
-	case http.StatusNotFound:
-		c.auth.authenticated = false
-		c.auth.checked = true
-	default:
-		return fmt.Errorf("Unexpected status code for client authentication check response: %d", res.StatusCode)
-	}
-
-	return nil
-}
-
 func (c *clientContext) isAuthenticated() bool {
-	if c.auth.token == "" {
-		return false
-	}
-
-	if strings.HasPrefix(c.auth.url, "http") == false {
-		return false
-	}
-
-	if c.auth.checked {
-		return c.auth.authenticated
-	}
-
-	if err := c.checkAuthentication(); err != nil {
-		return false
-	}
-
-	return c.auth.authenticated
+	return c.claims.IsUVA
 }

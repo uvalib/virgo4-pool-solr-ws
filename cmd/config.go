@@ -13,7 +13,7 @@ type poolConfig struct {
 	poolAttributes        string
 	poolFacets            string
 	listenPort            string
-	clientHost            string
+	jwtKey                string
 	sirsiURLTemplate      string
 	coverImageURLTemplate string
 	scoreThresholdMedium  string
@@ -65,7 +65,7 @@ func loadConfig() *poolConfig {
 	cfg.poolAttributes = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_ATTRIBUTES")
 	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
 	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
-	cfg.clientHost = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_CLIENT_HOST")
+	cfg.jwtKey = ensureSet("VIRGO4_SOLR_POOL_WS_JWT_KEY")
 	cfg.sirsiURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_SIRSI_URL_TEMPLATE")
 	cfg.coverImageURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_COVER_IMAGE_URL_TEMPLATE")
 	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
@@ -91,7 +91,7 @@ func loadConfig() *poolConfig {
 	log.Printf("[CONFIG] poolAttributes        = [%s]", cfg.poolAttributes)
 	log.Printf("[CONFIG] poolFacets            = [%s]", cfg.poolFacets)
 	log.Printf("[CONFIG] listenPort            = [%s]", cfg.listenPort)
-	log.Printf("[CONFIG] clientHost            = [%s]", cfg.clientHost)
+	log.Printf("[CONFIG] jwtKey                = [%s]", cfg.jwtKey)
 	log.Printf("[CONFIG] sirsiURLTemplate      = [%s]", cfg.sirsiURLTemplate)
 	log.Printf("[CONFIG] coverImageURLTemplate = [%s]", cfg.coverImageURLTemplate)
 	log.Printf("[CONFIG] scoreThresholdMedium  = [%s]", cfg.scoreThresholdMedium)
