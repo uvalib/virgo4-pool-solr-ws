@@ -283,6 +283,24 @@ func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value 
 	return false
 }
 
+func (s *searchContext) availabilityForField(availabilityField []string) (bool, bool) {
+	isAvailableOnShelf := false
+	isAvailableOnline := false
+
+	for _, item := range availabilityField {
+		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
+			switch {
+			case strings.EqualFold(item, "On shelf") == true:
+				isAvailableOnShelf = true
+			case strings.EqualFold(item, "Online") == true:
+				isAvailableOnline = true
+			}
+		}
+	}
+
+	return isAvailableOnShelf, isAvailableOnline
+}
+
 func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
@@ -312,24 +330,33 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 	}
 
 	// availability
+
+	anonOnShelf, anonOnline := s.availabilityForField(doc.AnonAvailability)
+	uvaOnShelf, uvaOnline := s.availabilityForField(doc.UVAAvailability)
+
+	// determine which availability field to use
+
 	availability := doc.AnonAvailability
+	isAvailableOnShelf := anonOnShelf
+	anonRequest := true
+
 	if s.client.isAuthenticated() == true {
 		availability = doc.UVAAvailability
+		isAvailableOnShelf = uvaOnShelf
+		anonRequest = false
 	}
 
-	isAvailableOnShelf := false
-	isAvailableOnline := false
+	// flag requests that may need authentication to access this resource
+
+	if anonRequest == true && anonOnline == false && uvaOnline == true {
+		r.addBasicField(newField("authenticate", "", "true").setType("boolean"))
+	}
+
+	// now add availability for the user as things currently stand
 
 	for _, item := range availability {
 		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
 			r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
-
-			switch {
-			case strings.EqualFold(item, "On shelf") == true:
-				isAvailableOnShelf = true
-			case strings.EqualFold(item, "Online") == true:
-				isAvailableOnline = true
-			}
 		}
 	}
 
@@ -353,7 +380,7 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 		}
 	}
 
-	if isAvailableOnline == true {
+	if anonOnline == true || uvaOnline == true {
 		// urls
 		provider := firstElementOf(doc.DataSource)
 
