@@ -218,16 +218,16 @@ func (p *poolContext) initSortOptions() {
 		VirgoSortOption{
 			ID: "SortDatePublished",
 		},
-		VirgoSortOption{
-			ID: "SortDateReceived",
-		},
+//		VirgoSortOption{
+//			ID: "SortDateReceived",
+//		},
 	}
 
 	p.sortFields = make(map[string]string)
 
 	p.sortFields["SortRelevance"] = "score"
 	p.sortFields["SortDatePublished"] = "published_date"
-	p.sortFields["SortDateReceived"] = "date_received_a"
+//	p.sortFields["SortDateReceived"] = "date_received_a"
 }
 
 func (p *poolContext) initVersion() {
@@ -401,7 +401,7 @@ func (p *poolContext) initTranslations() {
 		"FieldWorkPhysicalDetails",
 		"FieldWorkType",
 		"SortDatePublished",
-		"SortDateReceived",
+//		"SortDateReceived",
 		"SortRelevance",
 	}
 
