@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 )
 
@@ -178,7 +180,7 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 	return availableFacets
 }
 
-func (s *searchContext) solrRequestWithDefaults() {
+func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	var solrReq solrRequest
 
 	solrReq.meta.client = s.virgoReq.meta.client
@@ -196,14 +198,21 @@ func (s *searchContext) solrRequestWithDefaults() {
 	if s.virgoReq.Sort != nil {
 		// sort was specified
 
+		sortValid := false
+
 		if s.pool.sortFields[s.virgoReq.Sort.SortID] != "" {
 			// sort id is valid
 
 			if s.virgoReq.Sort.Order == "asc" || s.virgoReq.Sort.Order == "desc" {
 				// sort order is valid
 
+				sortValid = true
 				sort = *s.virgoReq.Sort
 			}
+		}
+
+		if sortValid == false {
+			return searchResponse{status: http.StatusBadRequest, err: errors.New("Invalid sort")}
 		}
 	}
 
@@ -235,9 +244,11 @@ func (s *searchContext) solrRequestWithDefaults() {
 	}
 
 	s.solrReq = &solrReq
+
+	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) solrSearchRequest() error {
+func (s *searchContext) solrSearchRequest() searchResponse {
 	var err error
 
 	var p *solrParserInfo
@@ -245,14 +256,16 @@ func (s *searchContext) solrSearchRequest() error {
 	// caller might have already supplied a Solr query
 	if s.virgoReq.meta.solrQuery == "" {
 		if p, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
-			return fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())
+			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())}
 		}
 
 		s.virgoReq.meta.solrQuery = p.query
 		s.virgoReq.meta.parserInfo = p
 	}
 
-	s.solrRequestWithDefaults()
+	if resp := s.solrRequestWithDefaults(); resp.err != nil {
+		return resp
+	}
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }

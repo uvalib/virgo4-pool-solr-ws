@@ -17,24 +17,16 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
-	if err := c.BindJSON(&s.virgoReq); err != nil {
-		s.err("searchHandler: invalid request: %s", err.Error())
-		c.String(http.StatusBadRequest, "Invalid request")
-		return
-	}
+	resp := s.handleSearchRequest(c)
 
-	s.log("query: [%s]", s.virgoReq.Query)
-
-	virgoRes, err := s.handleSearchRequest()
-
-	if err != nil {
-		s.err("searchHandler: error: %s", err.Error())
-		c.String(http.StatusInternalServerError, err.Error())
+	if resp.err != nil {
+		s.err("searchHandler: error: %s", resp.err.Error())
+		c.String(resp.status, resp.err.Error())
 		return
 	}
 
 	start := time.Now()
-	c.JSON(http.StatusOK, virgoRes)
+	c.JSON(resp.status, resp.data)
 	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
 }
 
@@ -45,24 +37,16 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
-	if err := c.BindJSON(&s.virgoReq); err != nil {
-		s.err("facetsHandler: invalid request: %s", err.Error())
-		c.String(http.StatusBadRequest, "Invalid request")
-		return
-	}
+	resp := s.handleFacetsRequest(c)
 
-	s.log("query: [%s]", s.virgoReq.Query)
-
-	virgoRes, err := s.handleFacetsRequest()
-
-	if err != nil {
-		s.err("facetsHandler: error: %s", err.Error())
-		c.String(http.StatusInternalServerError, err.Error())
+	if resp.err != nil {
+		s.err("facetsHandler: error: %s", resp.err.Error())
+		c.String(resp.status, resp.err.Error())
 		return
 	}
 
 	start := time.Now()
-	c.JSON(http.StatusOK, virgoRes)
+	c.JSON(resp.status, resp.data)
 	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
 }
 
@@ -79,15 +63,15 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = fmt.Sprintf(`id:"%s"`, c.Param("id"))
 
-	virgoRes, err := s.handleRecordRequest()
+	resp := s.handleRecordRequest()
 
-	if err != nil {
-		s.err("resourceHandler: error: %s", err.Error())
-		c.String(http.StatusInternalServerError, err.Error())
+	if resp.err != nil {
+		s.err("resourceHandler: error: %s", resp.err.Error())
+		c.String(resp.status, resp.err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, virgoRes)
+	c.JSON(resp.status, resp.data)
 }
 
 func (p *poolContext) ignoreHandler(c *gin.Context) {
@@ -130,26 +114,25 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = "id:pingtest"
 
+	ping := s.handlePingRequest()
+
+	// build response
+
 	type hcResp struct {
 		Healthy bool   `json:"healthy"`
 		Message string `json:"message,omitempty"`
 	}
 
-	hcMap := make(map[string]hcResp)
-
-	hcSolr := hcResp{}
-
-	status := http.StatusOK
-	hcSolr = hcResp{Healthy: true}
-
-	if err := s.handlePingRequest(); err != nil {
-		status = http.StatusInternalServerError
-		hcSolr = hcResp{Healthy: false, Message: err.Error()}
+	hcSolr := hcResp{Healthy: true}
+	if ping.err != nil {
+		hcSolr = hcResp{Healthy: false, Message: ping.err.Error()}
 	}
+
+	hcMap := make(map[string]hcResp)
 
 	hcMap["solr"] = hcSolr
 
-	c.JSON(status, hcMap)
+	c.JSON(ping.status, hcMap)
 }
 
 func (p *poolContext) getBearerToken(authorization string) (string, error) {

@@ -3,10 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 const defaultStart = 0
@@ -25,6 +28,12 @@ type searchContext struct {
 	solrRes        *solrResponse
 	confidence     string
 	itemDetails    bool
+}
+
+type searchResponse struct {
+	status int         // http status code
+	data   interface{} // data to return as JSON
+	err    error       // error, if any
 }
 
 func confidenceIndex(s string) int {
@@ -75,52 +84,48 @@ func (s *searchContext) err(format string, args ...interface{}) {
 	s.client.err(format, args...)
 }
 
-func (s *searchContext) performQuery() error {
-	var err error
-
-	if err = s.solrSearchRequest(); err != nil {
-		s.err("query creation error: %s", err.Error())
-		return err
+func (s *searchContext) performQuery() searchResponse {
+	if resp := s.solrSearchRequest(); resp.err != nil {
+		s.err("query creation error: %s", resp.err.Error())
+		return resp
 	}
 
-	if err = s.solrQuery(); err != nil {
+	if err := s.solrQuery(); err != nil {
 		s.err("query execution error: %s", err.Error())
-		return err
+		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) getPoolQueryResults() error {
-	var err error
-
-	if err = s.performQuery(); err != nil {
-		return err
+func (s *searchContext) getPoolQueryResults() searchResponse {
+	if resp := s.performQuery(); resp.err != nil {
+		return resp
 	}
 
-	if err = s.virgoSearchResponse(); err != nil {
+	if err := s.virgoSearchResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
-		return err
+		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
 	s.confidence = s.virgoPoolRes.Confidence
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) getRecordQueryResults() error {
+func (s *searchContext) getRecordQueryResults() searchResponse {
 	var err error
 
-	if err = s.performQuery(); err != nil {
-		return err
+	if resp := s.performQuery(); resp.err != nil {
+		return resp
 	}
 
 	if err = s.virgoRecordResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
-		return err
+		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }
 
 func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, error) {
@@ -134,8 +139,8 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	top.virgoReq.meta.solrQuery = ""
 	top.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 1}
 
-	if err := top.getPoolQueryResults(); err != nil {
-		return nil, err
+	if resp := top.getPoolQueryResults(); resp.err != nil {
+		return nil, resp.err
 	}
 
 	return top, nil
@@ -296,8 +301,8 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	// get everything!  even bible (5000+)
 	c.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 100000}
 
-	if err := c.getPoolQueryResults(); err != nil {
-		return nil, err
+	if resp := c.getPoolQueryResults(); resp.err != nil {
+		return nil, resp.err
 	}
 
 	return c, nil
@@ -496,19 +501,26 @@ func (s *searchContext) validateSearchRequest() error {
 	return nil
 }
 
-func (s *searchContext) handleSearchOrFacetsRequest() error {
+func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchResponse {
 	var err error
 	var top *searchContext
 
+	if err = c.BindJSON(&s.virgoReq); err != nil {
+		// "Invalid Request" instead?
+		return searchResponse{status: http.StatusBadRequest, err: err}
+	}
+
+	s.log("query: [%s]", s.virgoReq.Query)
+
 	if err = s.validateSearchRequest(); err != nil {
-		return err
+		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
 	// save original facet request flag
 	requestFacets := s.virgoReq.meta.requestFacets
 
 	if top, err = s.performSpeculativeSearches(); err != nil {
-		return err
+		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
 	// use query syntax from chosen search
@@ -518,13 +530,13 @@ func (s *searchContext) handleSearchOrFacetsRequest() error {
 	s.virgoReq.meta.requestFacets = requestFacets
 
 	// now do the search
-	if err = s.getPoolQueryResults(); err != nil {
-		return err
+	if resp := s.getPoolQueryResults(); resp.err != nil {
+		return resp
 	}
 
 	// populate group list, if this is a grouped request
 	if err = s.populateGroups(); err != nil {
-		return err
+		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
 	// restore actual confidence
@@ -553,28 +565,28 @@ func (s *searchContext) handleSearchOrFacetsRequest() error {
 
 	s.virgoPoolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) handleSearchRequest() (*VirgoPoolResult, error) {
-	if err := s.handleSearchOrFacetsRequest(); err != nil {
-		return nil, err
+func (s *searchContext) handleSearchRequest(c *gin.Context) searchResponse {
+	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
+		return resp
 	}
 
 	s.virgoPoolRes.FacetList = nil
 
-	return s.virgoPoolRes, nil
+	return searchResponse{status: http.StatusOK, data: s.virgoPoolRes}
 }
 
-func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
+func (s *searchContext) handleFacetsRequest(c *gin.Context) searchResponse {
 	// override these values from the original search query, since we are
 	// only interested in facets, not records
 	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 0}
 
 	s.virgoReq.meta.requestFacets = true
 
-	if err := s.handleSearchOrFacetsRequest(); err != nil {
-		return nil, err
+	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
+		return resp
 	}
 
 	virgoFacetsRes := VirgoFacetsResult{
@@ -582,22 +594,22 @@ func (s *searchContext) handleFacetsRequest() (*VirgoFacetsResult, error) {
 		ElapsedMS: s.virgoPoolRes.ElapsedMS,
 	}
 
-	return &virgoFacetsRes, nil
+	return searchResponse{status: http.StatusOK, data: virgoFacetsRes}
 }
 
-func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
+func (s *searchContext) handleRecordRequest() searchResponse {
 	// override these values from defaults.  specify two rows to catch
 	// the (impossible?) scenario of multiple records with the same id
 	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 2}
 
-	if err := s.getRecordQueryResults(); err != nil {
-		return nil, err
+	if resp := s.getRecordQueryResults(); resp.err != nil {
+		return resp
 	}
 
 	// FIXME: hard-coded special case; needs to be generalized
 
 	if s.pool.config.poolMode != "image" {
-		return s.virgoRecordRes, nil
+		return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
 	}
 
 	record := &s.solrRes.Response.Docs[0]
@@ -607,7 +619,7 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 
 	r, err := s.newSearchWithRecordListForGroups("", groupValues)
 	if err != nil {
-		return s.virgoRecordRes, nil
+		return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
 	}
 
 	// put related values in a separate section of the record response
@@ -636,17 +648,17 @@ func (s *searchContext) handleRecordRequest() (*VirgoRecord, error) {
 
 	s.virgoRecordRes.Related = &related
 
-	return s.virgoRecordRes, nil
+	return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
 }
 
-func (s *searchContext) handlePingRequest() error {
+func (s *searchContext) handlePingRequest() searchResponse {
 	// override these values from defaults.  we are not interested
 	// in records, just connectivity
 	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 0}
 
-	if err := s.performQuery(); err != nil {
-		return err
+	if resp := s.performQuery(); resp.err != nil {
+		return resp
 	}
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }
