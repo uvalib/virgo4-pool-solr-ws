@@ -23,7 +23,7 @@ type clientContext struct {
 	reqID     string          // internally generated
 	start     time.Time       // internally set
 	opts      clientOpts      // options set by client
-	claims    v4jwt.V4Claims  // information about this user
+	claims    *v4jwt.V4Claims  // information about this user
 	nolog     bool            // internally set
 	localizer *i18n.Localizer // per-request localization
 }
@@ -45,7 +45,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 
 	// get claims, if any
 	if val, ok := ctx.Get("claims"); ok == true {
-		c.claims = val.(v4jwt.V4Claims)
+		c.claims = val.(*v4jwt.V4Claims)
 	}
 
 	// determine client preferred language
@@ -114,5 +114,9 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 }
 
 func (c *clientContext) isAuthenticated() bool {
+	if c.claims == nil {
+		return false
+	}
+
 	return c.claims.IsUVA
 }
