@@ -195,7 +195,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		Order:  "desc",
 	}
 
-	if s.virgoReq.Sort != nil {
+	if s.virgoReq.Sort != nil && (s.virgoReq.Sort.SortID != "" || s.virgoReq.Sort.Order != "") {
 		// sort was specified
 
 		sortValid := false
