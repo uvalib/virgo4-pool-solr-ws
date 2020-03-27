@@ -137,7 +137,7 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	c.JSON(ping.status, hcMap)
 }
 
-func (p *poolContext) getBearerToken(authorization string) (string, error) {
+func getBearerToken(authorization string) (string, error) {
 	components := strings.Split(strings.Join(strings.Fields(authorization), " "), " ")
 
 	// must have two components, the first of which is "Bearer", and the second a non-empty token
@@ -155,7 +155,7 @@ func (p *poolContext) getBearerToken(authorization string) (string, error) {
 }
 
 func (p *poolContext) authenticateHandler(c *gin.Context) {
-	token, err := p.getBearerToken(c.GetHeader("Authorization"))
+	token, err := getBearerToken(c.GetHeader("Authorization"))
 	if err != nil {
 		log.Printf("Authentication failed: [%s]", err.Error())
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -166,15 +166,11 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("JWT signature for %s is invalid: %s", token, err.Error())
-		log.Printf("continuing with no claims")
-		//c.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	// save token and claims to context
-
-	c.Set("jwt", token)
 	c.Set("claims", claims)
 
-	log.Printf("got bearer token: [%s]: %+v", token, claims)
+	log.Printf("got valid bearer token with claims: %+v", claims)
 }

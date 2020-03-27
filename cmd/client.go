@@ -23,7 +23,7 @@ type clientContext struct {
 	reqID     string          // internally generated
 	start     time.Time       // internally set
 	opts      clientOpts      // options set by client
-	claims    *v4jwt.V4Claims  // information about this user
+	claims    *v4jwt.V4Claims // information about this user
 	nolog     bool            // internally set
 	localizer *i18n.Localizer // per-request localization
 }
