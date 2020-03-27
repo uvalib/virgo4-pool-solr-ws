@@ -349,7 +349,7 @@ func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoR
 	// flag requests that may need authentication to access this resource
 
 	if anonRequest == true && anonOnline == false && uvaOnline == true {
-		r.addBasicField(newField("authenticate", "", "true").setType("boolean"))
+		r.addBasicField(newField("authenticate", "", "true").setType("boolean").setDisplay("optional"))
 	}
 
 	// now add availability for the user as things currently stand
