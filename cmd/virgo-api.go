@@ -37,6 +37,9 @@ type VirgoPoolAttribute struct {
 	Value     string `json:"value,omitempty"`
 }
 
+// VirgoPoolAttributes is a slice of VirgoPoolAttribute structs
+type VirgoPoolAttributes []VirgoPoolAttribute
+
 // VirgoProvider contains the attributes for a single provider
 type VirgoProvider struct {
 	Provider    string `json:"provider"`
@@ -55,25 +58,25 @@ type VirgoPoolProviders struct {
 
 // VirgoPoolIdentity holds localized information about this pool (same as returned by /identify endpoint)
 type VirgoPoolIdentity struct {
-	Name        string               `json:"name,omitempty"`        // localized pool name
-	Description string               `json:"description,omitempty"` // localized pool description (detailed information about what the pool contains)
-	Mode        string               `json:"mode,omitempty"`        // pool mode (what it is, e.g. "record" (default), "image", etc.)
-	Attributes  []VirgoPoolAttribute `json:"attributes,omitempty"`  // pool attributes (what it supports)
+	Name        string              `json:"name,omitempty"`         // localized pool name
+	Description string              `json:"description,omitempty"`  // localized pool description (detailed information about what the pool contains)
+	Mode        string              `json:"mode,omitempty"`         // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Attributes  VirgoPoolAttributes `json:"attributes,omitempty"`   // pool attributes (what it supports)
+	SortOptions VirgoSortOptions    `json:"sort_options,omitempty"` // available sort options
 }
 
 // VirgoPoolResult contains the full response to a search request
 type VirgoPoolResult struct {
-	Identity    VirgoPoolIdentity     `json:"identity"`               // localized identity
-	Pagination  *VirgoPagination      `json:"pagination,omitempty"`   // pagination info for results
-	Sort        *VirgoSort            `json:"sort,omitempty"`         // sort info for results
-	SortOptions *VirgoSortOptions     `json:"sort_options,omitempty"` // available sort options
-	RecordList  *VirgoRecords         `json:"record_list,omitempty"`  // ungrouped records
-	GroupList   *VirgoGroups          `json:"group_list,omitempty"`   // grouped records
-	FacetList   *VirgoFacets          `json:"facet_list,omitempty"`   // facet values for client-requested facets
-	Confidence  string                `json:"confidence,omitempty"`   // required; i.e. low, medium, high, exact
-	ElapsedMS   int64                 `json:"elapsed_ms,omitempty"`   // total round-trip time for this request
-	Debug       *VirgoPoolResultDebug `json:"debug,omitempty"`
-	Warn        *[]string             `json:"warn,omitempty"`
+	Identity   VirgoPoolIdentity     `json:"identity"`              // localized identity
+	Pagination *VirgoPagination      `json:"pagination,omitempty"`  // pagination info for results
+	Sort       *VirgoSort            `json:"sort,omitempty"`        // sort info for results
+	RecordList *VirgoRecords         `json:"record_list,omitempty"` // ungrouped records
+	GroupList  *VirgoGroups          `json:"group_list,omitempty"`  // grouped records
+	FacetList  *VirgoFacets          `json:"facet_list,omitempty"`  // facet values for client-requested facets
+	Confidence string                `json:"confidence,omitempty"`  // required; i.e. low, medium, high, exact
+	ElapsedMS  int64                 `json:"elapsed_ms,omitempty"`  // total round-trip time for this request
+	Debug      *VirgoPoolResultDebug `json:"debug,omitempty"`
+	Warn       *[]string             `json:"warn,omitempty"`
 }
 
 // VirgoFacetsResult contains the full response to a facets request

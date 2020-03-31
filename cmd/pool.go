@@ -51,7 +51,6 @@ type poolContext struct {
 	translations poolTranslations
 	identity     VirgoPoolIdentity
 	providers    VirgoPoolProviders
-	sortOptions  VirgoSortOptions
 	sortFields   map[string]string
 	version      poolVersion
 	solr         poolSolr
@@ -136,11 +135,27 @@ func (p *poolContext) initIdentity() {
 		}
 	}
 
+	// hard-coded sort options
+	p.identity.SortOptions = VirgoSortOptions{
+		VirgoSortOption{
+			ID: "SortRelevance",
+		},
+		VirgoSortOption{
+			ID: "SortDatePublished",
+		},
+	}
+
+	p.sortFields = make(map[string]string)
+
+	p.sortFields["SortRelevance"] = "score"
+	p.sortFields["SortDatePublished"] = "published_date"
+
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
 	log.Printf("[POOL] identity.Mode             = [%s]", p.identity.Mode)
 	log.Printf("[POOL] identity.Attributes       = [%v]", p.identity.Attributes)
-	log.Printf("[POOL] attributes                = [%v]", p.attributes)
+	log.Printf("[POOL] attribute map             = [%v]", p.attributes)
+	log.Printf("[POOL] sort field map            = [%v]", p.sortFields)
 }
 
 func (p *poolContext) initProviders() {
@@ -208,22 +223,6 @@ func (p *poolContext) initProviders() {
 	})
 
 	log.Printf("[POOL] providers                 = [%v]", p.providers.Providers)
-}
-
-func (p *poolContext) initSortOptions() {
-	p.sortOptions = VirgoSortOptions{
-		VirgoSortOption{
-			ID: "SortRelevance",
-		},
-		VirgoSortOption{
-			ID: "SortDatePublished",
-		},
-	}
-
-	p.sortFields = make(map[string]string)
-
-	p.sortFields["SortRelevance"] = "score"
-	p.sortFields["SortDatePublished"] = "published_date"
 }
 
 func (p *poolContext) initVersion() {
@@ -474,7 +473,6 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initTranslations()
 	p.initIdentity()
 	p.initProviders()
-	p.initSortOptions()
 	p.initVersion()
 	p.initSolr()
 
