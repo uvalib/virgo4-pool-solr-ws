@@ -26,7 +26,6 @@ type clientContext struct {
 	claims    *v4jwt.V4Claims // information about this user
 	nolog     bool            // internally set
 	localizer *i18n.Localizer // per-request localization
-	resource  bool            // true for item display requests
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {

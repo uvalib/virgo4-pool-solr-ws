@@ -211,7 +211,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	// field loop
 
 	for _, field := range s.pool.config.Fields {
-		if field.DetailsOnly && s.client.resource == false {
+		if field.DetailsOnly && s.itemDetails == false {
 			continue
 		}
 
@@ -248,13 +248,18 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 					continue
 				}
 
+				// save for later use (e.g. cover image url)
 				if field.Name == "author" {
 					authorField = v
 				}
 
-				for _, item := range v {
+				for i, item := range v {
 					f.Value = item
 					r.addField(f)
+
+					if field.Limit > 0 && i+1 >= field.Limit {
+						break
+					}
 				}
 			}
 		} else {
@@ -300,17 +305,35 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 					}
 				}
 
-			case "sirsi_url":
-				if strings.HasPrefix(doc.ID, "u") {
-					if url := s.getSirsiURL(doc.ID[1:]); url != "" {
+			case "cover_image":
+				if s.pool.maps.attributes["cover_images"].Supported == true {
+					if url := s.getCoverImageURL(doc, authorField); url != "" {
 						f.Value = url
 						r.addField(f)
 					}
 				}
 
-			case "cover_image":
-				if s.pool.maps.attributes["cover_images"].Supported == true {
-					if url := s.getCoverImageURL(doc, authorField); url != "" {
+			case "iiif_base_url":
+				// FIXME: remove after iiif_image_url is correct
+				// construct iiif image base url from known image identifier prefixes.
+				// this fallback url conveniently points to an "orginial image missing" image
+				baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
+
+				identifierField := doc.getStringSliceValueByTag(field.IdentifierField)
+
+				for _, item := range identifierField {
+					if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
+						baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
+						break
+					}
+				}
+
+				f.Value = baseURL
+				r.addField(f)
+
+			case "sirsi_url":
+				if strings.HasPrefix(doc.ID, "u") {
+					if url := s.getSirsiURL(doc.ID[1:]); url != "" {
 						f.Value = url
 						r.addField(f)
 					}

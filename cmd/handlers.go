@@ -56,9 +56,6 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)
 
-	// this is an item display request
-	cl.resource = true
-
 	// this is a single item, no grouping needed
 	cl.opts.grouped = false
 

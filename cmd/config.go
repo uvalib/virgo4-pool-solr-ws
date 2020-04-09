@@ -42,19 +42,20 @@ type poolConfigSolr struct {
 }
 
 type poolConfigField struct {
-	XID           string `json:"xid,omitempty"`
-	Field         string `json:"field,omitempty"`
-	Name          string `json:"name,omitempty"`
-	Type          string `json:"type,omitempty"`
-	Display       string `json:"display,omitempty"`
-	Visibility    string `json:"visibility,omitempty"`
-	Limit         int    `json:"limit,omitempty"`
-	OnShelfOnly   bool   `json:"onshelf_only,omitempty"`
-	DetailsOnly   bool   `json:"details_only,omitempty"`
-	Provider      string `json:"provider,omitempty"`
-	URLField      string `json:"url_field,omitempty"`
-	LabelField    string `json:"label_field,omitempty"`
-	ProviderField string `json:"provider_field,omitempty"`
+	XID             string `json:"xid,omitempty"`
+	Field           string `json:"field,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Type            string `json:"type,omitempty"`
+	Display         string `json:"display,omitempty"`
+	Visibility      string `json:"visibility,omitempty"`
+	Limit           int    `json:"limit,omitempty"`
+	OnShelfOnly     bool   `json:"onshelf_only,omitempty"`
+	DetailsOnly     bool   `json:"details_only,omitempty"`
+	Provider        string `json:"provider,omitempty"`
+	URLField        string `json:"url_field,omitempty"`
+	LabelField      string `json:"label_field,omitempty"`
+	ProviderField   string `json:"provider_field,omitempty"`
+	IdentifierField string `json:"identifier_field,omitempty"`
 }
 
 type poolConfigAvailability struct {
