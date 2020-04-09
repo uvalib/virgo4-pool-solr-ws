@@ -11,8 +11,12 @@ It supports the following endpoints:
 * GET /identify : returns pool information
 * GET /healthcheck : returns health check information
 * GET /metrics : returns Prometheus metrics
-* POST /api/search : returns search results for a Solr pool
+* POST /api/search : returns search results for a given query
+* POST /api/search/facets : returns facets for a given query
 * GET /api/resource/{id} : returns detailed information for a single Solr record
+* GET /api/providers : returns external URL provider information
+
+All endpoints under /api require authentication.
 
 ### System Requirements
 
