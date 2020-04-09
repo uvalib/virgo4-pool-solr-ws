@@ -1,114 +1,139 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 )
 
+type poolConfigURLTemplate struct {
+	Pattern  string `json:"pattern,omitempty"`
+	Template string `json:"template,omitempty"`
+}
+
+type poolConfigURLTemplates struct {
+	Sirsi       poolConfigURLTemplate `json:"sirsi,omitempty"`
+	CoverImages poolConfigURLTemplate `json:"cover_images,omitempty"`
+}
+
+type poolConfigMain struct {
+	Port         string                 `json:"port,omitempty"`
+	JWTKey       string                 `json:"jwt_key,omitempty"`
+	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
+}
+
+type poolConfigSolrParams struct {
+	Qt      string   `json:"qt,omitempty"`
+	DefType string   `json:"deftype,omitempty"`
+	Fq      []string `json:"fq,omitempty"` // pool definition should go here
+	Fl      []string `json:"fl,omitempty"`
+}
+
+type poolConfigSolr struct {
+	Host                 string               `json:"host,omitempty"`
+	Core                 string               `json:"core,omitempty"`
+	Handler              string               `json:"handler,omitempty"`
+	ConnTimeout          string               `json:"conn_timeout,omitempty"`
+	ReadTimeout          string               `json:"read_timeout,omitempty"`
+	GroupField           string               `json:"group_field,omitempty"`
+	ScoreThresholdMedium float32              `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh   float32              `json:"score_threshold_high,omitempty"`
+	Params               poolConfigSolrParams `json:"params,omitempty"`
+}
+
+type poolConfigField struct {
+	XID           string `json:"xid,omitempty"`
+	Field         string `json:"field,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Type          string `json:"type,omitempty"`
+	Display       string `json:"display,omitempty"`
+	Visibility    string `json:"visibility,omitempty"`
+	Limit         int    `json:"limit,omitempty"`
+	OnShelfOnly   bool   `json:"onshelf_only,omitempty"`
+	DetailsOnly   bool   `json:"details_only,omitempty"`
+	Provider      string `json:"provider,omitempty"`
+	URLField      string `json:"url_field,omitempty"`
+	LabelField    string `json:"label_field,omitempty"`
+	ProviderField string `json:"provider_field,omitempty"`
+}
+
+type poolConfigAvailability struct {
+	Field         string   `json:"field,omitempty"`
+	FieldAuth     string   `json:"field_auth,omitempty"` // used instead if defined, and IsUVA
+	Facet         string   `json:"facet,omitempty"`
+	FacetAuth     string   `json:"facet_auth,omitempty"` // used instead if defined, and IsUVA
+	ValuesOnShelf []string `json:"values_onshelf,omitempty"`
+	ValuesOnline  []string `json:"values_online,omitempty"`
+	ValuesOther   []string `json:"values_other,omitempty"`
+	ExposedValues []string // derived from above values
+}
+
+type poolConfigFacet struct {
+	XID                string   `json:"xid,omitempty"` // translation ID
+	Field              string   `json:"field,omitempty"`
+	FieldAuth          string   `json:"field_auth,omitempty"`
+	Type               string   `json:"type,omitempty"`
+	Sort               string   `json:"sort,omitempty"`
+	Limit              int      `json:"limit,omitempty"`
+	Offset             int      `json:"offset,omitempty"`
+	ExposedValues      []string `json:"exposed_values,omitempty"`
+	DependentFacetXIDs []string `json:"dependent_facets,omitempty"`
+	IsAvailability     bool     `json:"is_availability,omitempty"`
+}
+
+type poolConfigSortOptions struct {
+	XID   string `json:"xid,omitempty"` // translation ID
+	Field string `json:"field,omitempty"`
+}
+
+type poolConfigIdentity struct {
+	NameXID     string                  `json:"name_xid,omitempty"`     // translation ID
+	DescXID     string                  `json:"desc_xid,omitempty"`     // translation ID
+	Mode        string                  `json:"mode,omitempty"`         // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Attributes  VirgoPoolAttributes     `json:"attributes,omitempty"`   // pool attributes (what it supports)
+	SortOptions []poolConfigSortOptions `json:"sort_options,omitempty"` // available sort options
+}
+
+type poolConfigProvider struct {
+	Name string `json:"name,omitempty"`
+	XID  string `json:"xid,omitempty"` // translation ID
+	URL  string `json:"url,omitempty"`
+	Logo string `json:"logo,omitempty"`
+}
+
 type poolConfig struct {
-	poolName              string
-	poolDescription       string
-	poolDefinition        string
-	poolMode              string
-	poolAttributes        string
-	poolFacets            string
-	listenPort            string
-	jwtKey                string
-	sirsiURLTemplate      string
-	coverImageURLTemplate string
-	scoreThresholdMedium  string
-	scoreThresholdHigh    string
-	solrHost              string
-	solrCore              string
-	solrHandler           string
-	solrConnTimeout       string
-	solrReadTimeout       string
-	solrParameterQt       string
-	solrParameterDefType  string
-	solrParameterFq       string
-	solrParameterFl       string
-	solrGroupField        string
-	solrAuthorField       string
-	solrAuthorLabel       string
-	solrFacetManifest     string
-}
-
-func ensureSet(env string) string {
-	val, set := os.LookupEnv(env)
-
-	if set == false {
-		log.Printf("environment variable not set: [%s]", env)
-		os.Exit(1)
-	}
-
-	return val
-}
-
-func ensureSetAndNonEmpty(env string) string {
-	val := ensureSet(env)
-
-	if val == "" {
-		log.Printf("environment variable set but empty: [%s]", env)
-		os.Exit(1)
-	}
-
-	return val
+	Identity     poolConfigIdentity     `json:"identity,omitempty"`
+	Main         poolConfigMain         `json:"main,omitempty"`
+	Solr         poolConfigSolr         `json:"solr,omitempty"`
+	Providers    []poolConfigProvider   `json:"providers,omitempty"`
+	Fields       []poolConfigField      `json:"fields,omitempty"`
+	Facets       []poolConfigFacet      `json:"facets,omitempty"`
+	Availability poolConfigAvailability `json:"availability,omitempty"`
 }
 
 func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
-	cfg.poolName = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_NAME")
-	cfg.poolDescription = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_DESCRIPTION")
-	cfg.poolDefinition = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_DEFINITION")
-	cfg.poolMode = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_POOL_MODE")
-	cfg.poolAttributes = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_ATTRIBUTES")
-	cfg.poolFacets = ensureSet("VIRGO4_SOLR_POOL_WS_POOL_FACETS")
-	cfg.listenPort = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_LISTEN_PORT")
-	cfg.jwtKey = ensureSet("VIRGO4_SOLR_POOL_WS_JWT_KEY")
-	cfg.sirsiURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_SIRSI_URL_TEMPLATE")
-	cfg.coverImageURLTemplate = ensureSet("VIRGO4_SOLR_POOL_WS_COVER_IMAGE_URL_TEMPLATE")
-	cfg.scoreThresholdMedium = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_MEDIUM")
-	cfg.scoreThresholdHigh = ensureSet("VIRGO4_SOLR_POOL_WS_SCORE_THRESHOLD_HIGH")
-	cfg.solrHost = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_HOST")
-	cfg.solrCore = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_CORE")
-	cfg.solrHandler = ensureSetAndNonEmpty("VIRGO4_SOLR_POOL_WS_SOLR_HANDLER")
-	cfg.solrConnTimeout = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_CONN_TIMEOUT")
-	cfg.solrReadTimeout = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_READ_TIMEOUT")
-	cfg.solrParameterQt = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_QT")
-	cfg.solrParameterDefType = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_DEFTYPE")
-	cfg.solrParameterFq = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FQ")
-	cfg.solrParameterFl = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_PARAMETER_FL")
-	cfg.solrGroupField = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_GROUP_FIELD")
-	cfg.solrAuthorField = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_AUTHOR_FIELD")
-	cfg.solrAuthorLabel = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_AUTHOR_LABEL")
-	cfg.solrFacetManifest = ensureSet("VIRGO4_SOLR_POOL_WS_SOLR_FACET_MANIFEST")
+	// main config
 
-	log.Printf("[CONFIG] poolName              = [%s]", cfg.poolName)
-	log.Printf("[CONFIG] poolDescription       = [%s]", cfg.poolDescription)
-	log.Printf("[CONFIG] poolDefinition        = [%s]", cfg.poolDefinition)
-	log.Printf("[CONFIG] poolMode              = [%s]", cfg.poolMode)
-	log.Printf("[CONFIG] poolAttributes        = [%s]", cfg.poolAttributes)
-	log.Printf("[CONFIG] poolFacets            = [%s]", cfg.poolFacets)
-	log.Printf("[CONFIG] listenPort            = [%s]", cfg.listenPort)
-	log.Printf("[CONFIG] jwtKey                = [%s]", cfg.jwtKey)
-	log.Printf("[CONFIG] sirsiURLTemplate      = [%s]", cfg.sirsiURLTemplate)
-	log.Printf("[CONFIG] coverImageURLTemplate = [%s]", cfg.coverImageURLTemplate)
-	log.Printf("[CONFIG] scoreThresholdMedium  = [%s]", cfg.scoreThresholdMedium)
-	log.Printf("[CONFIG] scoreThresholdHigh    = [%s]", cfg.scoreThresholdHigh)
-	log.Printf("[CONFIG] solrHost              = [%s]", cfg.solrHost)
-	log.Printf("[CONFIG] solrCore              = [%s]", cfg.solrCore)
-	log.Printf("[CONFIG] solrHandler           = [%s]", cfg.solrHandler)
-	log.Printf("[CONFIG] solrConnTimeout       = [%s]", cfg.solrConnTimeout)
-	log.Printf("[CONFIG] solrReadTimeout       = [%s]", cfg.solrReadTimeout)
-	log.Printf("[CONFIG] solrParameterQt       = [%s]", cfg.solrParameterQt)
-	log.Printf("[CONFIG] solrParameterDefType  = [%s]", cfg.solrParameterDefType)
-	log.Printf("[CONFIG] solrParameterFq       = [%s]", cfg.solrParameterFq)
-	log.Printf("[CONFIG] solrParameterFl       = [%s]", cfg.solrParameterFl)
-	log.Printf("[CONFIG] solrGroupField        = [%s]", cfg.solrGroupField)
-	log.Printf("[CONFIG] solrAuthorField       = [%s]", cfg.solrAuthorField)
-	log.Printf("[CONFIG] solrAuthorLabel       = [%s]", cfg.solrAuthorLabel)
-	log.Printf("[CONFIG] solrFacetManifest     = [%s]", cfg.solrFacetManifest)
+	if err := json.Unmarshal([]byte(os.Getenv("VIRGO4_SOLR_POOL_WS_CONFIG")), &cfg); err != nil {
+		log.Printf("error parsing pool config json: %s", err.Error())
+		os.Exit(1)
+	}
+
+	// overrides
+	if host := os.Getenv("VIRGO4_SOLR_POOL_WS_SOLR_HOST"); host != "" {
+		cfg.Solr.Host = host
+	}
+
+	bytes, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		log.Printf("error regenerating pool config json: %s", err.Error())
+		os.Exit(1)
+	}
+
+	log.Printf("[CONFIG] json:")
+	log.Printf("\n%s", string(bytes))
 
 	return &cfg
 }

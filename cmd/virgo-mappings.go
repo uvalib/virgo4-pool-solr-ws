@@ -11,27 +11,6 @@ import (
 
 // functions that map solr data into virgo data
 
-func firstElementOf(s []string) string {
-	// return first element of slice, or blank string if empty
-	val := ""
-
-	if len(s) > 0 {
-		val = s[0]
-	}
-
-	return val
-}
-
-func sliceContainsString(list []string, val string) bool {
-	for _, i := range list {
-		if i == val {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (s *solrDocument) getFieldValueByTag(tag string) interface{} {
 	rt := reflect.TypeOf(*s)
 
@@ -73,11 +52,7 @@ func (s *solrDocument) getStringSliceValueByTag(tag string) []string {
 }
 
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	return doc.getStringValueByTag(s.pool.config.solrGroupField)
-}
-
-func (s *searchContext) getAuthorFieldValue(doc *solrDocument) []string {
-	return doc.getStringSliceValueByTag(s.pool.config.solrAuthorField)
+	return doc.getStringValueByTag(s.pool.config.Solr.GroupField)
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
@@ -96,14 +71,6 @@ func (r *VirgoRecord) addField(f *VirgoNuancedField) {
 	r.Fields = append(r.Fields, *f)
 }
 
-func (r *VirgoRecord) addBasicField(f *VirgoNuancedField) {
-	r.addField(f.setVisibility("")) // empty implies "basic"
-}
-
-func (r *VirgoRecord) addDetailedField(f *VirgoNuancedField) {
-	r.addField(f.setVisibility("detailed"))
-}
-
 func (g *VirgoGroup) addField(f *VirgoNuancedField) {
 	if f.Name == "" {
 		return
@@ -112,84 +79,19 @@ func (g *VirgoGroup) addField(f *VirgoNuancedField) {
 	g.Fields = append(g.Fields, *f)
 }
 
-func (g *VirgoGroup) addBasicField(f *VirgoNuancedField) {
-	g.addField(f.setVisibility("")) // empty implies "basic"
-}
-
-func (g *VirgoGroup) addDetailedField(f *VirgoNuancedField) {
-	g.addField(f.setVisibility("detailed"))
-}
-
-func newField(name, label, value string) *VirgoNuancedField {
-	field := VirgoNuancedField{
-		Name:       name,
-		Type:       "", // implies "text"
-		Label:      label,
-		Value:      value,
-		Visibility: "", // implies "basic"
-		Display:    "", // implies not optional
-		Provider:   "",
-		Item:       "",
-	}
-
-	return &field
-}
-
-func (f *VirgoNuancedField) setName(s string) *VirgoNuancedField {
-	f.Name = s
-	return f
-}
-
-func (f *VirgoNuancedField) setType(s string) *VirgoNuancedField {
-	f.Type = s
-	return f
-}
-
-func (f *VirgoNuancedField) setLabel(s string) *VirgoNuancedField {
-	f.Label = s
-	return f
-}
-
-func (f *VirgoNuancedField) setValue(s string) *VirgoNuancedField {
-	f.Value = s
-	return f
-}
-
-func (f *VirgoNuancedField) setVisibility(s string) *VirgoNuancedField {
-	f.Visibility = s
-	return f
-}
-
-func (f *VirgoNuancedField) setDisplay(s string) *VirgoNuancedField {
-	f.Display = s
-	return f
-}
-
-func (f *VirgoNuancedField) setProvider(s string) *VirgoNuancedField {
-	f.Provider = s
-	return f
-}
-
-func (f *VirgoNuancedField) setItem(s string) *VirgoNuancedField {
-	f.Item = s
-	return f
-}
-
-func getGenericURL(template string, id string) string {
-	idPlaceholder := "__identifier__"
-
-	if strings.Contains(template, idPlaceholder) == false {
+func getGenericURL(t poolConfigURLTemplate, id string) string {
+	if strings.Contains(t.Template, t.Pattern) == false {
 		return ""
 	}
 
-	return strings.Replace(template, idPlaceholder, id, -1)
+	return strings.Replace(t.Template, t.Pattern, id, -1)
 }
 
 func (s *searchContext) getSirsiURL(id string) string {
-	return getGenericURL(s.pool.config.sirsiURLTemplate, id)
+	return getGenericURL(s.pool.config.Main.URLTemplates.Sirsi, id)
 }
 
-func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
+func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []string) string {
 	// use solr-provided url if present
 
 	if thumbnailURL := firstElementOf(doc.ThumbnailURL); thumbnailURL != "" {
@@ -198,7 +100,7 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 
 	// otherwise, compose a url to the cover image service
 
-	url := getGenericURL(s.pool.config.coverImageURLTemplate, doc.ID)
+	url := getGenericURL(s.pool.config.Main.URLTemplates.CoverImages, doc.ID)
 
 	if url == "" {
 		return ""
@@ -217,8 +119,6 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	}
 
 	qp := req.URL.Query()
-
-	authorValues := s.getAuthorFieldValue(doc)
 
 	// remove extraneous dates from author
 	author := strings.Trim(strings.Split(firstElementOf(authorValues), "[")[0], " ")
@@ -269,309 +169,169 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument) string {
 	return req.URL.String()
 }
 
-func (s *searchContext) isExposedFacetValue(facetDef poolFacetDefinition, value string) bool {
-	if len(facetDef.ExposedValues) == 0 {
-		return true
-	}
-
-	for _, exposedValue := range facetDef.ExposedValues {
-		if strings.EqualFold(value, exposedValue) == true {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (s *searchContext) availabilityForField(availabilityField []string) (bool, bool) {
-	isAvailableOnShelf := false
-	isAvailableOnline := false
-
-	for _, item := range availabilityField {
-		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
-			switch {
-			case strings.EqualFold(item, "On shelf") == true:
-				isAvailableOnShelf = true
-			case strings.EqualFold(item, "Online") == true:
-				isAvailableOnline = true
-			}
-		}
-	}
-
-	return isAvailableOnShelf, isAvailableOnline
-}
-
-func (s *searchContext) virgoPopulateRecordModeRecord(doc *solrDocument) *VirgoRecord {
+func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
-	// new style records -- order is important, primarily for generic "text" fields
+	var authorField []string
 
-	/**************************************** [ basic fields ] ****************************************/
+	// availability setup
 
-	r.addBasicField(newField("id", s.client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
+	anonField := doc.getStringSliceValueByTag(s.pool.config.Availability.Field)
+	anonOnShelf := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.ValuesOnShelf)
+	anonOnline := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.ValuesOnline)
 
-	// title / subtitle
-	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
-	r.addBasicField(newField("subtitle", s.client.localize("FieldSubtitle"), firstElementOf(doc.Subtitle)).setType("subtitle"))
-
-	// authors (principal and additional)
-	for _, item := range s.getAuthorFieldValue(doc) {
-		r.addBasicField(newField("author", s.client.localize(s.pool.config.solrAuthorLabel), item).setType("author"))
-	}
-
-	// publication date
-	for _, item := range doc.PublicationDate {
-		r.addBasicField(newField("publication_date", s.client.localize("FieldPublicationDate"), item))
-	}
-
-	// format
-	for _, item := range doc.Format {
-		r.addBasicField(newField("format", s.client.localize("FieldFormat"), item))
-	}
-
-	// availability
-
-	anonOnShelf, anonOnline := s.availabilityForField(doc.AnonAvailability)
-	uvaOnShelf, uvaOnline := s.availabilityForField(doc.UVAAvailability)
+	authField := doc.getStringSliceValueByTag(s.pool.config.Availability.FieldAuth)
+	authOnShelf := sliceContainsValueFromSlice(authField, s.pool.config.Availability.ValuesOnShelf)
+	authOnline := sliceContainsValueFromSlice(authField, s.pool.config.Availability.ValuesOnline)
 
 	// determine which availability field to use
 
-	availability := doc.AnonAvailability
+	availability := anonField
 	isAvailableOnShelf := anonOnShelf
 	anonRequest := true
 
 	if s.client.isAuthenticated() == true {
-		availability = doc.UVAAvailability
-		isAvailableOnShelf = uvaOnShelf
+		availability = authField
+		isAvailableOnShelf = authOnShelf
 		anonRequest = false
 	}
 
 	// flag requests that may need authentication to access this resource
 
-	if anonRequest == true && anonOnline == false && uvaOnline == true {
-		r.addBasicField(newField("authenticate", "", "true").setType("boolean").setDisplay("optional"))
+	if anonRequest == true && anonOnline == false && authOnline == true {
+		f := &VirgoNuancedField{
+			Name:    "authenticate",
+			Type:    "boolean",
+			Display: "optional",
+		}
+
+		r.addField(f)
 	}
 
-	// now add availability for the user as things currently stand
+	// field loop
 
-	for _, item := range availability {
-		if s.isExposedFacetValue(s.pool.solr.availableFacets["FacetAvailability"], item) {
-			r.addBasicField(newField("availability", s.client.localize("FieldAvailability"), item).setType("availability"))
-		}
-	}
-
-	// access info:
-
-	if isAvailableOnShelf == true {
-		// locations
-		for _, item := range doc.Library {
-			r.addBasicField(newField("library", s.client.localize("FieldLibrary"), item))
+	for _, field := range s.pool.config.Fields {
+		if field.DetailsOnly && s.client.resource == false {
+			continue
 		}
 
-		// sublocations
-		for _, item := range doc.Location {
-			r.addBasicField(newField("location", s.client.localize("FieldLocation"), item))
+		if field.OnShelfOnly && isAvailableOnShelf == false {
+			continue
 		}
 
-		// NOTE: this might require client to determine availability... always returning it for now
-		// call numbers (if physical and available)
-		for _, item := range doc.CallNumber {
-			r.addBasicField(newField("call_number", s.client.localize("FieldCallNumber"), item))
-		}
-	}
-
-	if anonOnline == true || uvaOnline == true {
-		// urls
-		provider := firstElementOf(doc.DataSource)
-
-		useLabels := false
-		if len(doc.URLLabel) == len(doc.URL) {
-			useLabels = true
+		f := &VirgoNuancedField{
+			Name:       field.Name,
+			Type:       field.Type,
+			Visibility: field.Visibility,
+			Display:    field.Display,
+			Provider:   field.Provider,
 		}
 
-		for i, item := range doc.URL {
-			accessURL := newField("access_url", s.client.localize("FieldAccessURL"), item).setType("url").setProvider(provider)
+		if field.XID != "" {
+			f.Label = s.client.localize(field.XID)
+		}
 
-			itemLabel := ""
+		if field.Field != "" {
+			value := doc.getFieldValueByTag(field.Field)
 
-			if useLabels == true {
-				itemLabel = doc.URLLabel[i]
+			switch v := value.(type) {
+			case string:
+				if v == "" {
+					continue
+				}
+
+				f.Value = v
+				r.addField(f)
+
+			case []string:
+				if len(v) == 0 {
+					continue
+				}
+
+				if field.Name == "author" {
+					authorField = v
+				}
+
+				for _, item := range v {
+					f.Value = item
+					r.addField(f)
+				}
 			}
+		} else {
+			switch field.Name {
+			case "access_url":
+				if anonOnline == true || authOnline == true {
+					urlField := doc.getStringSliceValueByTag(field.URLField)
+					labelField := doc.getStringSliceValueByTag(field.LabelField)
+					providerField := doc.getStringSliceValueByTag(field.ProviderField)
 
-			// if not using labels, or this label is not defined, fall back to generic item label
-			if itemLabel == "" {
-				itemLabel = fmt.Sprintf("%s %d", s.client.localize("FieldAccessURLDefaultItemLabelPrefix"), i+1)
+					f.Provider = firstElementOf(providerField)
+
+					useLabels := false
+					if len(labelField) == len(urlField) {
+						useLabels = true
+					}
+
+					for i, item := range urlField {
+						f.Value = item
+
+						itemLabel := ""
+
+						if useLabels == true {
+							itemLabel = labelField[i]
+						}
+
+						// if not using labels, or this label is not defined, fall back to generic item label
+						if itemLabel == "" {
+							itemLabel = fmt.Sprintf("%s %d", s.client.localize("FieldAccessURLDefaultItemLabelPrefix"), i+1)
+						}
+
+						f.Item = itemLabel
+
+						r.addField(f)
+					}
+				}
+
+			case "availability":
+				for _, item := range availability {
+					if sliceContainsString(s.pool.config.Availability.ExposedValues, item) {
+						f.Value = item
+						r.addField(f)
+					}
+				}
+
+			case "sirsi_url":
+				if strings.HasPrefix(doc.ID, "u") {
+					if url := s.getSirsiURL(doc.ID[1:]); url != "" {
+						f.Value = url
+						r.addField(f)
+					}
+				}
+
+			case "cover_image":
+				if s.pool.maps.attributes["cover_images"].Supported == true {
+					if url := s.getCoverImageURL(doc, authorField); url != "" {
+						f.Value = url
+						r.addField(f)
+					}
+				}
+
+			default:
+				s.log("WARNING: unhandled field: %s", field.Name)
 			}
-
-			accessURL.setItem(itemLabel)
-
-			r.addBasicField(accessURL)
 		}
-	}
-
-	/**************************************** [ detailed fields ] ****************************************/
-
-	// summary
-	for _, item := range doc.SubjectSummary {
-		r.addDetailedField(newField("subject_summary", s.client.localize("FieldSubjectSummary"), item))
-	}
-
-	// release date
-	for _, item := range doc.ReleaseDate {
-		r.addDetailedField(newField("release_date", s.client.localize("FieldReleaseDate"), item))
-	}
-
-	// languages
-	for _, item := range doc.Language {
-		r.addDetailedField(newField("language", s.client.localize("FieldLanguage"), item))
-	}
-
-	// identifier(s)
-	r.addDetailedField(newField("id", s.client.localize("FieldIdentifier"), doc.ID))
-
-	// publication info
-	for _, item := range doc.Published {
-		r.addDetailedField(newField("published", s.client.localize("FieldPublished"), item))
-	}
-
-	// subject
-	for _, item := range doc.Subject {
-		r.addDetailedField(newField("subject", s.client.localize("FieldSubject"), item).setType("subject"))
-	}
-
-	// pool-specific detailed fields follow
-
-	// series
-	for _, item := range doc.Series {
-		r.addDetailedField(newField("series", s.client.localize("FieldSeries"), item))
-	}
-
-	// genres
-	for _, item := range doc.VideoGenre {
-		r.addDetailedField(newField("genre", s.client.localize("FieldGenre"), item))
-	}
-
-	/**************************************** [ special fields ] ****************************************/
-
-	// virgo classic url
-
-	if strings.HasPrefix(doc.ID, "u") {
-		if url := s.getSirsiURL(doc.ID[1:]); url != "" {
-			r.addDetailedField(newField("sirsi_url", s.client.localize("FieldDetailsURL"), url).setType("url").setProvider("virgoclassic"))
-		}
-	}
-
-	// cover image url
-
-	if s.pool.attributes["cover_images"].Supported == true {
-		if url := s.getCoverImageURL(doc); url != "" {
-			r.addBasicField(newField("cover_image", "", url).setType("image-url").setDisplay("optional"))
-		}
-	}
-
-	// full MARC record
-
-	if s.itemDetails == true && doc.FullRecord != "" {
-		r.addDetailedField(newField("full_record", "", doc.FullRecord).setType("marc-xml").setDisplay("optional"))
-	}
-
-	return &r
-}
-
-func (s *searchContext) virgoPopulateRecordModeImage(doc *solrDocument) *VirgoRecord {
-	var r VirgoRecord
-
-	/**************************************** [ basic fields ] ****************************************/
-
-	r.addBasicField(newField("id", s.client.localize("FieldIdentifier"), doc.ID).setType("identifier").setDisplay("optional"))
-
-	// title / subtitle
-	r.addBasicField(newField("title", s.client.localize("FieldTitle"), firstElementOf(doc.Title)).setType("title"))
-
-	// iiif manifest url
-	r.addBasicField(newField("iiif_manifest_url", "", doc.URLIIIFManifest).setType("iiif-manifest-url"))
-
-	// iiif image url
-	r.addBasicField(newField("iiif_image_url", "", doc.URLIIIFImage).setType("iiif-image-url"))
-
-	// FIXME: remove after iiif_image_url above is correct
-	// construct iiif image base url from known image identifier prefixes
-	baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
-	for _, item := range doc.Identifier {
-		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-			baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
-			break
-		}
-	}
-	r.addBasicField(newField("iiif_base_url", "", baseURL).setType("iiif-base-url"))
-
-	// authors (principal and additional)
-	for _, item := range s.getAuthorFieldValue(doc) {
-		r.addBasicField(newField("author", s.client.localize(s.pool.config.solrAuthorLabel), item).setType("author"))
-	}
-
-	/**************************************** [ detailed fields ] ****************************************/
-
-	for _, item := range doc.Collection {
-		r.addDetailedField(newField("collection", s.client.localize("FieldCollection"), item))
-	}
-
-	for _, item := range doc.Note {
-		r.addDetailedField(newField("note", s.client.localize("FieldNote"), item))
-	}
-
-	for _, item := range doc.Region {
-		r.addDetailedField(newField("region", s.client.localize("FieldRegion"), item))
-	}
-
-	for _, item := range doc.SubjectSummary {
-		r.addDetailedField(newField("subject_summary", s.client.localize("FieldSubjectSummary"), item))
-	}
-
-	for _, item := range doc.WorkIdentifier {
-		r.addDetailedField(newField("work_identifier", s.client.localize("FieldWorkIdentifier"), item))
-	}
-
-	for _, item := range doc.WorkLocation {
-		r.addDetailedField(newField("work_location", s.client.localize("FieldWorkLocation"), item))
-	}
-
-	for _, item := range doc.WorkPhysicalDetails {
-		r.addDetailedField(newField("work_physical_details", s.client.localize("FieldWorkPhysicalDetails"), item))
-	}
-
-	for _, item := range doc.WorkType {
-		r.addDetailedField(newField("work_type", s.client.localize("FieldWorkType"), item))
-	}
-
-	// full MARC record
-
-	if s.itemDetails == true && doc.FullRecord != "" {
-		r.addDetailedField(newField("full_record", "", doc.FullRecord).setType("marc-xml").setDisplay("optional"))
-	}
-
-	return &r
-}
-
-func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
-	var record *VirgoRecord
-
-	if s.pool.config.poolMode == "image" {
-		record = s.virgoPopulateRecordModeImage(doc)
-	} else {
-		record = s.virgoPopulateRecordModeRecord(doc)
 	}
 
 	// add internal info
 
-	record.groupValue = s.getSolrGroupFieldValue(doc)
+	r.groupValue = s.getSolrGroupFieldValue(doc)
 
 	// add debug info?
 	if s.client.opts.debug == true {
-		record.Debug = s.virgoPopulateRecordDebug(doc)
+		r.Debug = s.virgoPopulateRecordDebug(doc)
 	}
 
-	return record
+	return &r
 }
 
 func (s *searchContext) virgoPopulatePagination(start, rows, total int) *VirgoPagination {
@@ -591,21 +351,6 @@ func (s *searchContext) virgoPopulatePoolResultDebug(solrRes *solrResponse) *Vir
 	debug.MaxScore = solrRes.meta.maxScore
 
 	return &debug
-}
-
-func titlesAreEqual(t1, t2 string) bool {
-	// case-insensitive match.  titles must be nonempty
-	var s1, s2 string
-
-	if s1 = strings.Trim(t1, " "); s1 == "" {
-		return false
-	}
-
-	if s2 = strings.Trim(t2, " "); s2 == "" {
-		return false
-	}
-
-	return strings.EqualFold(s1, s2)
 }
 
 func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocuments) *VirgoRecords {
@@ -630,18 +375,18 @@ func (s *searchContext) virgoPopulateFacetBucket(name string, value solrBucket) 
 	return &bucket
 }
 
-func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value solrResponseFacet) *VirgoFacet {
+func (s *searchContext) virgoPopulateFacet(facetDef poolConfigFacet, value solrResponseFacet) *VirgoFacet {
 	var facet VirgoFacet
 
-	facet.ID = facetDef.Name
+	facet.ID = facetDef.XID
 	facet.Name = s.client.localize(facet.ID)
 
 	var buckets VirgoFacetBuckets
 
 	for _, b := range value.Buckets {
-		bucket := s.virgoPopulateFacetBucket(facetDef.Name, b)
+		bucket := s.virgoPopulateFacetBucket(facetDef.XID, b)
 
-		if s.isExposedFacetValue(facetDef, bucket.Value) {
+		if sliceContainsString(facetDef.ExposedValues, bucket.Value) {
 			buckets = append(buckets, *bucket)
 		}
 	}
@@ -657,38 +402,31 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolFacetDefinition, value s
 	return &facet
 }
 
-func (s *searchContext) virgoPopulateFacetList(facetDefs map[string]poolFacetDefinition, solrFacets solrResponseFacets) *VirgoFacets {
+func (s *searchContext) virgoPopulateFacetList(solrFacets solrResponseFacets) *VirgoFacets {
 	var facetList VirgoFacets
 	gotFacet := false
 
 	for key, val := range solrFacets {
 		if len(val.Buckets) > 0 {
-			facetDef := facetDefs[key]
+			facetDef := s.pool.maps.availableFacets[key]
 
-			// FIXME: hard-coded special case; needs to be generalized
+			// add this facet to the response as long as one of its dependent facets is selected
 
-			// for the musical scores pool, if the selection map (of requested filters)
-			// has selections for composer, composition era, instrument, or region,
-			// then add the subject facet values; otherwise, omit
-
-			s.log("virgoPopulateFacetList(): %s  (%s)", s.pool.config.poolName, facetDef.Name)
-
-			if s.pool.config.poolName == "PoolMusicalScoresName" && facetDef.Name == "FacetSubject" {
-				facets := []string{"FacetComposer", "FacetCompostionEra", "FacetInstrument", "FacetRegion"}
-
+			if len(facetDef.DependentFacetXIDs) > 0 {
 				numSelected := 0
-				for _, facet := range facets {
+
+				for _, facet := range facetDef.DependentFacetXIDs {
 					n := len(s.solrReq.meta.selectionMap[facet])
-					s.log("virgoPopulateFacetList(): %d selected filters for %s", n, facet)
+					s.log("virgoPopulateFacetList(): [%s] %d selected filters for %s", facetDef.XID, n, facet)
 					numSelected += n
 				}
 
 				if numSelected == 0 {
-					s.log("virgoPopulateFacetList(): omitting facet %s due to lack of selected dependent filters", facetDef.Name)
+					s.log("virgoPopulateFacetList(): [%s] omitting facet due to lack of selected dependent filters", facetDef.XID)
 					continue
 				}
 
-				s.log("virgoPopulateFacetList(): including facet %s due to %d selected dependent filters", facetDef.Name, numSelected)
+				s.log("virgoPopulateFacetList(): [%s] including facet due to %d selected dependent filters", facetDef.XID, numSelected)
 			}
 
 			gotFacet = true
@@ -792,7 +530,7 @@ func (s *searchContext) virgoPopulatePoolResult() {
 	}
 
 	if len(s.solrRes.Facets) > 0 {
-		poolResult.FacetList = s.virgoPopulateFacetList(s.pool.solr.availableFacets, s.solrRes.Facets)
+		poolResult.FacetList = s.virgoPopulateFacetList(s.solrRes.Facets)
 	}
 
 	if len(s.solrRes.meta.warnings) > 0 {

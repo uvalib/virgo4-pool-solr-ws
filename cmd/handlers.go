@@ -56,6 +56,9 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)
 
+	// this is an item display request
+	cl.resource = true
+
 	// this is a single item, no grouping needed
 	cl.opts.grouped = false
 
@@ -99,7 +102,9 @@ func (p *poolContext) providersHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)
 
-	c.JSON(http.StatusOK, p.providers)
+	localizedProviders := cl.localizedProviders(p)
+
+	c.JSON(http.StatusOK, localizedProviders)
 }
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {
@@ -162,7 +167,7 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 		return
 	}
 
-	claims, err := v4jwt.Validate(token, p.config.jwtKey)
+	claims, err := v4jwt.Validate(token, p.config.Main.JWTKey)
 
 	if err != nil {
 		log.Printf("JWT signature for %s is invalid: %s", token, err.Error())

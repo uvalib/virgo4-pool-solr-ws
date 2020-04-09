@@ -4,81 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) restrictValue(field string, val int, min int, fallback int) int {
-	// default, if requested value isn't large enough
-	res := fallback
-
-	if val >= min {
-		res = val
-	} else {
-		warning := fmt.Sprintf(`value for "%s" is less than the minimum allowed value %d; defaulting to %d`, field, min, fallback)
-		s.meta.client.log(warning)
-		s.meta.warnings = append(s.meta.warnings, warning)
-	}
-
-	return res
-}
-
-func nonemptyValues(val []string) []string {
-	res := []string{}
-
-	for _, s := range val {
-		if s != "" {
-			res = append(res, s)
-		}
-	}
-
-	return res
-}
-
-func (s *solrRequest) buildParameterQ(query string) {
-	s.json.Params.Q = query
-}
-
-func (s *solrRequest) buildParameterStart(n int) {
-	s.json.Params.Start = s.restrictValue("start", n, minimumStart, defaultStart)
-}
-
-func (s *solrRequest) buildParameterRows(n int) {
-	s.json.Params.Rows = s.restrictValue("rows", n, minimumRows, defaultRows)
-}
-
-func (s *solrRequest) buildParameterQt(qt string) {
-	s.json.Params.Qt = qt
-}
-
-func (s *solrRequest) buildParameterSort(fields map[string]string) {
-	s.json.Params.Sort = fmt.Sprintf("%s %s", fields[s.meta.sort.SortID], s.meta.sort.Order)
-}
-
-func (s *solrRequest) buildParameterDefType(defType string) {
-	s.json.Params.DefType = defType
-}
-
-func (s *solrRequest) buildParameterFq(fq string, poolDefinition string) {
-	fqall := []string{fq, poolDefinition}
-
-	s.json.Params.Fq = nonemptyValues(fqall)
-}
-
-func (s *solrRequest) buildParameterFl(fl string) {
-	flall := strings.Split(fl, ",")
-
-	s.json.Params.Fl = nonemptyValues(flall)
-}
-
-func (s *solrRequest) buildFacets(availableFacets map[string]solrRequestFacet) {
-	if len(availableFacets) > 0 {
-		s.json.Facets = availableFacets
-	}
-}
-
-func (s *solrRequest) buildFilters(poolName string, filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet) {
+func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet) {
 	if filterGroups == nil {
 		return
 	}
@@ -96,38 +26,31 @@ func (s *solrRequest) buildFilters(poolName string, filterGroups *VirgoFilters, 
 	for _, filter := range filterGroup.Facets {
 		solrFacet, ok := availableFacets[filter.FacetID]
 
-		// FIXME: hard-coded special case; needs to be generalized
-
-		// for the musical scores pool, if the selection map (of requested filters)
-		// has a selection for subject, but NOT for any of the composer, composition
-		// era, instrument, or region, then remove the subject from the filters
-
-		s.meta.client.log("buildFilters(): %s  (%s)", poolName, solrFacet.name)
-
-		if poolName == "PoolMusicalScoresName" && solrFacet.name == "FacetSubject" {
-			facets := []string{"FacetComposer", "FacetCompostionEra", "FacetInstrument", "FacetRegion"}
-
-			numSelected := 0
-			for _, facet := range facets {
-				n := len(s.meta.selectionMap[facet])
-				s.meta.client.log("buildFilters(): %d selected filters for %s", n, facet)
-				numSelected += n
-			}
-
-			if numSelected == 0 {
-				s.meta.client.log("buildFilters(): omitting filter %s due to lack of selected dependent filters", solrFacet.name)
-				continue
-			}
-
-			s.meta.client.log("buildFilters(): including filter %s due to %d selected dependent filters", solrFacet.name, numSelected)
-		}
-
 		// this should never happen due to up-front validations, perhaps this can be removed
 		if ok == false {
 			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.FacetID)
 			s.meta.client.log(warning)
 			s.meta.warnings = append(s.meta.warnings, warning)
 			continue
+		}
+
+		// remove this selected filter if it depends on other filters, none of which are selected
+
+		if len(solrFacet.config.DependentFacetXIDs) > 0 {
+			numSelected := 0
+
+			for _, facet := range solrFacet.config.DependentFacetXIDs {
+				n := len(s.meta.selectionMap[facet])
+				s.meta.client.log("buildFilters(): [%s] %d selected filters for %s", filter.FacetID, n, facet)
+				numSelected += n
+			}
+
+			if numSelected == 0 {
+				s.meta.client.log("buildFilters(): [%s] omitting filter due to lack of selected dependent filters", filter.FacetID)
+				continue
+			}
+
+			s.meta.client.log("buildFilters(): [%s] including filter due to %d selected dependent filters", filter.FacetID, numSelected)
 		}
 
 		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
@@ -143,30 +66,25 @@ func (s *solrRequest) buildFilters(poolName string, filterGroups *VirgoFilters, 
 	}
 }
 
-func (s *solrRequest) buildGrouping(groupField string) {
-	// groups take 2:
-	grouping := fmt.Sprintf("{!collapse field=%s}", groupField)
-	s.json.Params.Fq = append(s.json.Params.Fq, grouping)
-}
-
 func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 	// build customized/personalized available facets from facets definition
 
 	availableFacets := make(map[string]solrRequestFacet)
 
-	for _, facet := range s.pool.solr.availableFacets {
+	auth := s.virgoReq.meta.client.isAuthenticated()
+
+	for _, facet := range s.pool.maps.availableFacets {
 		f := solrRequestFacet{
-			Type:          facet.Type,
-			Field:         facet.Field,
-			Sort:          facet.Sort,
-			Offset:        facet.Offset,
-			Limit:         facet.Limit,
-			name:          facet.Name,
-			exposedValues: facet.ExposedValues,
+			Type:   facet.Type,
+			Field:  facet.Field,
+			Sort:   facet.Sort,
+			Offset: facet.Offset,
+			Limit:  facet.Limit,
+			config: &facet,
 		}
 
 		if facet.FieldAuth != "" {
-			if s.virgoReq.meta.client.isAuthenticated() == true {
+			if auth == true {
 				f.Field = facet.FieldAuth
 				s.log("[FACET] authenticated session using facet: [%s]", f.Field)
 			} else {
@@ -174,7 +92,7 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 			}
 		}
 
-		availableFacets[facet.Name] = f
+		availableFacets[facet.XID] = f
 	}
 
 	return availableFacets
@@ -200,7 +118,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 		sortValid := false
 
-		if s.pool.sortFields[s.virgoReq.Sort.SortID] != "" {
+		if s.pool.maps.sortFields[s.virgoReq.Sort.SortID] != "" {
 			// sort id is valid
 
 			if s.virgoReq.Sort.Order == "asc" || s.virgoReq.Sort.Order == "desc" {
@@ -219,29 +137,30 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	solrReq.meta.sort = sort
 
 	// fill out as much as we can for a generic request
-	solrReq.buildParameterQ(s.virgoReq.meta.solrQuery)
-	solrReq.buildParameterQt(s.pool.config.solrParameterQt)
-	solrReq.buildParameterSort(s.pool.sortFields)
-	solrReq.buildParameterDefType(s.pool.config.solrParameterDefType)
-	solrReq.buildParameterFq(s.pool.config.solrParameterFq, s.pool.config.poolDefinition)
-	solrReq.buildParameterFl(s.pool.config.solrParameterFl)
 
-	solrReq.buildParameterStart(s.virgoReq.Pagination.Start)
-	solrReq.buildParameterRows(s.virgoReq.Pagination.Rows)
+	solrReq.json.Params.Q = s.virgoReq.meta.solrQuery
+	solrReq.json.Params.Qt = s.pool.config.Solr.Params.Qt
+	solrReq.json.Params.DefType = s.pool.config.Solr.Params.DefType
+	solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Solr.Params.Fq)
+	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Solr.Params.Fl)
+	solrReq.json.Params.Start = restrictValue("start", s.virgoReq.Pagination.Start, 0, 0)
+	solrReq.json.Params.Rows = restrictValue("rows", s.virgoReq.Pagination.Rows, 0, 0)
+	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID], solrReq.meta.sort.Order)
+
+	if s.client.opts.grouped == true {
+		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Solr.GroupField)
+		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
+	}
 
 	// add facets/filters
 
 	availableFacets := s.solrAvailableFacets()
 
-	if s.virgoReq.meta.requestFacets == true {
-		solrReq.buildFacets(availableFacets)
+	if s.virgoReq.meta.requestFacets == true && len(availableFacets) > 0 {
+		solrReq.json.Facets = availableFacets
 	}
 
-	solrReq.buildFilters(s.pool.config.poolName, s.virgoReq.Filters, availableFacets)
-
-	if s.client.opts.grouped == true {
-		solrReq.buildGrouping(s.pool.config.solrGroupField)
-	}
+	solrReq.buildFilters(s.virgoReq.Filters, availableFacets)
 
 	s.solrReq = &solrReq
 

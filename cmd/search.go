@@ -12,12 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const defaultStart = 0
-const minimumStart = 0
-
-const defaultRows = 0
-const minimumRows = 0
-
 type searchContext struct {
 	pool           *poolContext
 	client         *clientContext
@@ -52,8 +46,6 @@ func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.client = c
 
 	s.virgoReq.meta.client = s.client
-	s.virgoReq.Pagination.Start = defaultStart
-	s.virgoReq.Pagination.Rows = defaultRows
 }
 
 func (s *searchContext) copySearchContext() *searchContext {
@@ -286,7 +278,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	}
 
 	// build group-restricted query from initial query
-	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.solrGroupField, strings.Join(safeGroups, " OR "))
+	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Solr.GroupField, strings.Join(safeGroups, " OR "))
 
 	// prepend existing query, if defined
 	newQuery := groupClause
@@ -388,26 +380,6 @@ func (s *searchContext) populateGroups() error {
 
 		group.Count = len(group.RecordList)
 
-		// FIXME: old way (client keys off of field types to generate labels from first record)
-
-		parts := strings.Split(group.Value, "/")
-
-		title := parts[0]
-		author := parts[1]
-		format := parts[2]
-
-		if title != "" {
-			group.addBasicField(newField("title", s.client.localize("FieldTitle"), title).setType("title"))
-		}
-
-		if author != "" {
-			group.addBasicField(newField("author", s.client.localize(s.pool.config.solrAuthorLabel), author).setType("author"))
-		}
-
-		if format != "" {
-			group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
-		}
-
 		// cover image url
 		// just use url from first grouped result that has one
 		// (they all will for now, but we check properly anyway)
@@ -417,7 +389,7 @@ func (s *searchContext) populateGroups() error {
 		for _, r := range group.RecordList {
 			for _, f := range r.Fields {
 				if f.Name == "cover_image" {
-					group.addBasicField(&f)
+					group.addField(&f)
 					gotCover = true
 					break
 				}
@@ -428,37 +400,6 @@ func (s *searchContext) populateGroups() error {
 			}
 		}
 
-		/*
-			// FIXME: new way (client uses these fields as-is)
-
-			// set most group fields based on first result
-
-			for _, f := range group.RecordList[0].Fields {
-				switch f.Name {
-				case "title":
-					fallthrough
-				case "subtitle":
-					fallthrough
-				case "author":
-					fallthrough
-				case "cover_image":
-					group.addBasicField(&f)
-				}
-			}
-
-			// set group format based on solr grouping field
-			// (or intersection of all records?)
-
-			parts := strings.Split(group.Value, "/")
-
-			if len(parts) >= 2 {
-				format := strings.Title(parts[2])
-
-				if format != "" {
-					group.addBasicField(newField("format", s.client.localize("FieldFormat"), format))
-				}
-			}
-		*/
 	}
 	s.log("[GROUP] group vals: %5d ms", int64(time.Since(start)/time.Millisecond))
 
@@ -596,7 +537,7 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 
 	// FIXME: hard-coded special case; needs to be generalized
 
-	if s.pool.config.poolMode != "image" {
+	if s.pool.config.Identity.Mode != "image" {
 		return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
 	}
 

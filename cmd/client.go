@@ -26,6 +26,7 @@ type clientContext struct {
 	claims    *v4jwt.V4Claims // information about this user
 	nolog     bool            // internally set
 	localizer *i18n.Localizer // per-request localization
+	resource  bool            // true for item display requests
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -57,7 +58,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.localizer = i18n.NewLocalizer(p.translations.bundle, acceptLang)
 
 	// kludge to get the response language by checking the tag value returned for a known message ID
-	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.translations.messageIDs[0]})
+	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.config.Identity.NameXID})
 	contentLang := tag.String()
 
 	ctx.Header("Content-Language", contentLang)
@@ -66,7 +67,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.intuit = false
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 
-	if p.config.solrGroupField != "" {
+	if p.config.Solr.GroupField != "" {
 		c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
 	}
 
@@ -117,6 +118,20 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	}
 
 	return id
+}
+
+func (c *clientContext) localizedProviders(p *poolContext) VirgoPoolProviders {
+	providers := VirgoPoolProviders{}
+
+	for _, val := range p.providers.Providers {
+		opt := val
+
+		opt.Label = c.localize(opt.Label)
+
+		providers.Providers = append(providers.Providers, opt)
+	}
+
+	return providers
 }
 
 func (c *clientContext) isAuthenticated() bool {

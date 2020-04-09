@@ -254,6 +254,42 @@ other = "Work Physical Details"
 desc = "The display name for the Work Type field in an image record."
 other = "Work Type"
 
+[ProviderGetty]
+desc = "The display name for this URL provider."
+other = "Getty Publications Virtual Library"
+
+[ProviderHathiTrust]
+desc = "The display name for this URL provider."
+other = "Hathi Trust Digital Library"
+
+[ProviderKanopy]
+desc = "The display name for this URL provider."
+other = "Kanopy Online Video Collection"
+
+[ProviderLibraETD]
+desc = "The display name for this URL provider."
+other = "Libra Repository"
+
+[ProviderProQuest]
+desc = "The display name for this URL provider."
+other = "ProQuest U.S. Congressional Hearings Digital Collection"
+
+[ProviderSWANK]
+desc = "The display name for this URL provider."
+other = "SWANK Streaming Film Database"
+
+[ProviderSirsi]
+desc = "The display name for this URL provider."
+other = "Library Catalog"
+
+[ProviderVIVADDA]
+desc = "The display name for this URL provider."
+other = "VIVA Demand Driven Acquisition"
+
+[ProviderVirgoClassic]
+desc = "The display name for this URL provider."
+other = "Virgo Classic"
+
 [SortDatePublished]
 desc = "The display name for this sorting option."
 other = "Date Published"
