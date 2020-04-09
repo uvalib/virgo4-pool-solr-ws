@@ -134,9 +134,9 @@ func (p *poolContext) initSolr() {
 	p.maps.availableFacets = make(map[string]poolConfigFacet)
 
 	p.config.Availability.ExposedValues = []string{}
-	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.ValuesOnShelf...)
-	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.ValuesOnline...)
-	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.ValuesOther...)
+	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.OnShelf...)
+	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.Online...)
+	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.Other...)
 
 	for i, _ := range p.config.Facets {
 		f := &p.config.Facets[i]
@@ -145,8 +145,8 @@ func (p *poolContext) initSolr() {
 
 		// configure availability facet while we're here
 		if f.IsAvailability == true {
-			f.Field = p.config.Availability.Facet
-			f.FieldAuth = p.config.Availability.FacetAuth
+			f.Field = p.config.Availability.Anon.Facet
+			f.FieldAuth = p.config.Availability.Auth.Facet
 			f.ExposedValues = p.config.Availability.ExposedValues
 		}
 	}
@@ -244,8 +244,12 @@ func (p *poolContext) validateFields() {
 	fields := []string{}
 
 	fields = append(fields, p.config.Solr.GroupField)
-	fields = append(fields, p.config.Availability.Field)
-	fields = append(fields, p.config.Availability.FieldAuth)
+	fields = append(fields, p.config.Availability.Anon.Field)
+	fields = append(fields, p.config.Availability.Auth.Field)
+	fields = append(fields, p.config.Related.Image.IDField)
+	fields = append(fields, p.config.Related.Image.IdentifierField)
+	fields = append(fields, p.config.Related.Image.IIIFManifestField)
+	fields = append(fields, p.config.Related.Image.IIIFImageField)
 
 	for _, val := range p.config.Identity.SortOptions {
 		fields = append(fields, val.Field)

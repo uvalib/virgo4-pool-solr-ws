@@ -88,7 +88,7 @@ func getGenericURL(t poolConfigURLTemplate, id string) string {
 }
 
 func (s *searchContext) getSirsiURL(id string) string {
-	return getGenericURL(s.pool.config.Main.URLTemplates.Sirsi, id)
+	return getGenericURL(s.pool.config.Service.URLTemplates.Sirsi, id)
 }
 
 func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []string) string {
@@ -100,7 +100,7 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []strin
 
 	// otherwise, compose a url to the cover image service
 
-	url := getGenericURL(s.pool.config.Main.URLTemplates.CoverImages, doc.ID)
+	url := getGenericURL(s.pool.config.Service.URLTemplates.CoverImages, doc.ID)
 
 	if url == "" {
 		return ""
@@ -176,13 +176,13 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// availability setup
 
-	anonField := doc.getStringSliceValueByTag(s.pool.config.Availability.Field)
-	anonOnShelf := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.ValuesOnShelf)
-	anonOnline := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.ValuesOnline)
+	anonField := doc.getStringSliceValueByTag(s.pool.config.Availability.Anon.Field)
+	anonOnShelf := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.Values.OnShelf)
+	anonOnline := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.Values.Online)
 
-	authField := doc.getStringSliceValueByTag(s.pool.config.Availability.FieldAuth)
-	authOnShelf := sliceContainsValueFromSlice(authField, s.pool.config.Availability.ValuesOnShelf)
-	authOnline := sliceContainsValueFromSlice(authField, s.pool.config.Availability.ValuesOnline)
+	authField := doc.getStringSliceValueByTag(s.pool.config.Availability.Auth.Field)
+	authOnShelf := sliceContainsValueFromSlice(authField, s.pool.config.Availability.Values.OnShelf)
+	authOnline := sliceContainsValueFromSlice(authField, s.pool.config.Availability.Values.Online)
 
 	// determine which availability field to use
 
@@ -314,21 +314,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 				}
 
 			case "iiif_base_url":
-				// FIXME: remove after iiif_image_url is correct
-				// construct iiif image base url from known image identifier prefixes.
-				// this fallback url conveniently points to an "orginial image missing" image
-				baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
-
-				identifierField := doc.getStringSliceValueByTag(field.IdentifierField)
-
-				for _, item := range identifierField {
-					if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-						baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
-						break
-					}
-				}
-
-				f.Value = baseURL
+				f.Value = getIIIFBaseURL(doc, field.IdentifierField)
 				r.addField(f)
 
 			case "sirsi_url":

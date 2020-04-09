@@ -164,7 +164,7 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 		return
 	}
 
-	claims, err := v4jwt.Validate(token, p.config.Main.JWTKey)
+	claims, err := v4jwt.Validate(token, p.config.Service.JWTKey)
 
 	if err != nil {
 		log.Printf("JWT signature for %s is invalid: %s", token, err.Error())

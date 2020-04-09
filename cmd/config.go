@@ -16,7 +16,7 @@ type poolConfigURLTemplates struct {
 	CoverImages poolConfigURLTemplate `json:"cover_images,omitempty"`
 }
 
-type poolConfigMain struct {
+type poolConfigService struct {
 	Port         string                 `json:"port,omitempty"`
 	JWTKey       string                 `json:"jwt_key,omitempty"`
 	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
@@ -58,15 +58,22 @@ type poolConfigField struct {
 	IdentifierField string `json:"identifier_field,omitempty"`
 }
 
+type poolConfigAvailabilityFields struct {
+	Field string `json:"field,omitempty"`
+	Facet string `json:"facet,omitempty"`
+}
+
+type poolConfigAvailabilityValues struct {
+	OnShelf []string `json:"onshelf,omitempty"`
+	Online  []string `json:"online,omitempty"`
+	Other   []string `json:"other,omitempty"`
+}
+
 type poolConfigAvailability struct {
-	Field         string   `json:"field,omitempty"`
-	FieldAuth     string   `json:"field_auth,omitempty"` // used instead if defined, and IsUVA
-	Facet         string   `json:"facet,omitempty"`
-	FacetAuth     string   `json:"facet_auth,omitempty"` // used instead if defined, and IsUVA
-	ValuesOnShelf []string `json:"values_onshelf,omitempty"`
-	ValuesOnline  []string `json:"values_online,omitempty"`
-	ValuesOther   []string `json:"values_other,omitempty"`
-	ExposedValues []string // derived from above values
+	Anon          poolConfigAvailabilityFields `json:"anon,omitempty"`
+	Auth          poolConfigAvailabilityFields `json:"auth,omitempty"`
+	Values        poolConfigAvailabilityValues `json:"values,omitempty"`
+	ExposedValues []string                     // derived from above values
 }
 
 type poolConfigFacet struct {
@@ -102,27 +109,52 @@ type poolConfigProvider struct {
 	Logo string `json:"logo,omitempty"`
 }
 
+type poolConfigRelatedImage struct {
+	IDField           string `json:"id_field,omitempty"`
+	IdentifierField   string `json:"identifier_field,omitempty"`
+	IIIFManifestField string `json:"iiif_manifest_field,omitempty"`
+	IIIFImageField    string `json:"iiif_image_field,omitempty"`
+}
+
+type poolConfigRelated struct {
+	Image poolConfigRelatedImage `json:"image,omitempty"`
+}
+
 type poolConfig struct {
 	Identity     poolConfigIdentity     `json:"identity,omitempty"`
-	Main         poolConfigMain         `json:"main,omitempty"`
+	Service      poolConfigService      `json:"service,omitempty"`
 	Solr         poolConfigSolr         `json:"solr,omitempty"`
 	Providers    []poolConfigProvider   `json:"providers,omitempty"`
 	Fields       []poolConfigField      `json:"fields,omitempty"`
 	Facets       []poolConfigFacet      `json:"facets,omitempty"`
 	Availability poolConfigAvailability `json:"availability,omitempty"`
+	Related      poolConfigRelated      `json:"related,omitempty"`
 }
 
 func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
-	// main config
+	// json configs
 
-	if err := json.Unmarshal([]byte(os.Getenv("VIRGO4_SOLR_POOL_WS_CONFIG")), &cfg); err != nil {
-		log.Printf("error parsing pool config json: %s", err.Error())
-		os.Exit(1)
+	// load IDENTITY last as it will contain pool-specific data, and can
+	// override any of the static data within the other config vars
+	envs := []string{
+		"VIRGO4_SOLR_POOL_WS_JSON_AVAILABILITY",
+		"VIRGO4_SOLR_POOL_WS_JSON_PROVIDERS",
+		"VIRGO4_SOLR_POOL_WS_JSON_SERVICE",
+		"VIRGO4_SOLR_POOL_WS_JSON_IDENTITY",
 	}
 
-	// overrides
+	for _, env := range envs {
+		if val := os.Getenv(env); val != "" {
+			if err := json.Unmarshal([]byte(val), &cfg); err != nil {
+				log.Printf("error parsing %s config json: %s", env, err.Error())
+				os.Exit(1)
+			}
+		}
+	}
+
+	// optional convenience override to simplify terraform config
 	if host := os.Getenv("VIRGO4_SOLR_POOL_WS_SOLR_HOST"); host != "" {
 		cfg.Solr.Host = host
 	}

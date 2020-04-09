@@ -535,47 +535,36 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 		return resp
 	}
 
-	// FIXME: hard-coded special case; needs to be generalized
+	// per-mode tweaks to this record
+	switch s.pool.config.Identity.Mode {
+	case "image":
+		record := &s.solrRes.Response.Docs[0]
 
-	if s.pool.config.Identity.Mode != "image" {
-		return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
-	}
+		group := s.getSolrGroupFieldValue(record)
+		groupValues := []string{group}
 
-	record := &s.solrRes.Response.Docs[0]
+		r, err := s.newSearchWithRecordListForGroups("", groupValues)
+		if err != nil {
+			break
+		}
 
-	group := s.getSolrGroupFieldValue(record)
-	groupValues := []string{group}
+		// put related values in a separate section of the record response
 
-	r, err := s.newSearchWithRecordListForGroups("", groupValues)
-	if err != nil {
-		return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
-	}
+		var related VirgoRelatedRecords
 
-	// put related values in a separate section of the record response
-
-	var related VirgoRelatedRecords
-
-	for _, doc := range r.solrRes.Response.Docs {
-		// FIXME: remove after iiif_image_url is correct
-		baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
-		for _, item := range doc.Identifier {
-			if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-				baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
-				break
+		for _, doc := range r.solrRes.Response.Docs {
+			rr := VirgoRelatedRecord{
+				ID:              doc.getStringValueByTag(s.pool.config.Related.Image.IDField),
+				IIIFManifestURL: doc.getStringValueByTag(s.pool.config.Related.Image.IIIFManifestField),
+				IIIFImageURL:    doc.getStringValueByTag(s.pool.config.Related.Image.IIIFImageField),
+				IIIFBaseURL:     getIIIFBaseURL(&doc, s.pool.config.Related.Image.IdentifierField),
 			}
+
+			related = append(related, rr)
 		}
 
-		rr := VirgoRelatedRecord{
-			ID:              doc.ID,
-			IIIFManifestURL: doc.URLIIIFManifest,
-			IIIFImageURL:    doc.URLIIIFImage,
-			IIIFBaseURL:     baseURL,
-		}
-
-		related = append(related, rr)
+		s.virgoRecordRes.Related = &related
 	}
-
-	s.virgoRecordRes.Related = &related
 
 	return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
 }
