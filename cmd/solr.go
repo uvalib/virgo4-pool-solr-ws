@@ -189,9 +189,7 @@ func (s *searchContext) solrQuery() error {
 
 	s.solrRes = &solrRes
 
-	start = time.Now()
 	s.convertFacets()
-	s.log("[SOLR] conv fac: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	// log abbreviated results
 
@@ -203,9 +201,7 @@ func (s *searchContext) solrQuery() error {
 		return fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
 	}
 
-	start = time.Now()
 	s.populateMetaFields()
-	s.log("[SOLR] pop meta: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
 

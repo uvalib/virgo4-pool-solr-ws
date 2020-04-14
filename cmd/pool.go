@@ -141,14 +141,14 @@ func (p *poolContext) initSolr() {
 	for i, _ := range p.config.Facets {
 		f := &p.config.Facets[i]
 
-		p.maps.availableFacets[f.XID] = *f
-
 		// configure availability facet while we're here
 		if f.IsAvailability == true {
 			f.Field = p.config.Availability.Anon.Facet
 			f.FieldAuth = p.config.Availability.Auth.Facet
 			f.ExposedValues = p.config.Availability.ExposedValues
 		}
+
+		p.maps.availableFacets[f.XID] = *f
 	}
 
 	p.solr = poolSolr{
@@ -271,7 +271,7 @@ func (p *poolContext) validateFields() {
 	missingFields := false
 
 	for _, tag := range fields {
-		if val := doc.getFieldValueByTag(tag); val == nil {
+		if val := doc.getFieldByTag(tag); val == nil {
 			log.Printf("[FIELDS] field not found in struct tags: [%s]", tag)
 			missingFields = true
 		}

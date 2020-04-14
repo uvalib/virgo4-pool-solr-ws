@@ -97,11 +97,12 @@ func getIIIFBaseURL(doc *solrDocument, field string) string {
 	// this fallback url conveniently points to an "orginial image missing" image
 	baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
 
-	identifierField := doc.getStringSliceValueByTag(field)
+	ids := doc.getValuesByTag(field)
 
-	for _, item := range identifierField {
-		if strings.HasPrefix(item, "tsm:") || strings.HasPrefix(item, "uva-lib:") {
-			baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", item)
+	for _, id := range ids {
+		if strings.HasPrefix(id, "tsm:") || strings.HasPrefix(id, "uva-lib:") {
+			// FIXME: move this prefix to config
+			baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", id)
 			break
 		}
 	}

@@ -41,6 +41,39 @@ type poolConfigSolr struct {
 	Params               poolConfigSolrParams `json:"params,omitempty"`
 }
 
+/*
+type poolConfigFieldProperties struct {
+	XID        string `json:"xid,omitempty"`
+	Field      string `json:"field,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Type       string `json:"type,omitempty"`
+	Display    string `json:"display,omitempty"`
+	Visibility string `json:"visibility,omitempty"`
+	Provider   string `json:"provider,omitempty"`
+}
+
+type poolConfigFieldTypeAccessURL struct {
+	URLField      string `json:"url_field,omitempty"`
+	LabelField    string `json:"label_field,omitempty"`
+	ProviderField string `json:"provider_field,omitempty"`
+}
+
+type poolConfigFieldTypeIIIF struct {
+	IdentifierField string `json:"identifier_field,omitempty"`
+}
+
+type poolConfigField struct {
+	Properties  poolConfigFieldProperties      `json:"properties,omitempty"`
+	Type        string                         `json:"type,omitempty"` // controlled vocabulary; drives special handling
+	Limit       int                            `json:"limit,omitempty"`
+	OnShelfOnly bool                           `json:"onshelf_only,omitempty"`
+	DetailsOnly bool                           `json:"details_only,omitempty"`
+	// config options for specific types
+	AccessURL   poolConfigFieldTypeAccessURL   `json:"access_url,omitempty"`    // if type == "access_url"
+	IIIFBaseURL poolConfigFieldTypeIIIFBaseURL `json:"iiif_base_url,omitempty"` // if type == "iiif_base_url"
+}
+*/
+
 type poolConfigField struct {
 	XID             string `json:"xid,omitempty"`
 	Field           string `json:"field,omitempty"`
@@ -126,9 +159,11 @@ type poolConfig struct {
 	Solr         poolConfigSolr         `json:"solr,omitempty"`
 	Providers    []poolConfigProvider   `json:"providers,omitempty"`
 	Fields       []poolConfigField      `json:"fields,omitempty"`
-	Facets       []poolConfigFacet      `json:"facets,omitempty"`
+	GlobalFacets []poolConfigFacet      `json:"global_facets,omitempty"`
+	LocalFacets  []poolConfigFacet      `json:"local_facets,omitempty"`
 	Availability poolConfigAvailability `json:"availability,omitempty"`
 	Related      poolConfigRelated      `json:"related,omitempty"`
+	Facets       []poolConfigFacet      // global + local, for convenience
 }
 
 func loadConfig() *poolConfig {
@@ -142,6 +177,7 @@ func loadConfig() *poolConfig {
 		"VIRGO4_SOLR_POOL_WS_JSON_AVAILABILITY",
 		"VIRGO4_SOLR_POOL_WS_JSON_PROVIDERS",
 		"VIRGO4_SOLR_POOL_WS_JSON_SERVICE",
+		"VIRGO4_SOLR_POOL_WS_JSON_FACETS",
 		"VIRGO4_SOLR_POOL_WS_JSON_IDENTITY",
 	}
 
@@ -167,6 +203,8 @@ func loadConfig() *poolConfig {
 
 	log.Printf("[CONFIG] json:")
 	log.Printf("\n%s", string(bytes))
+
+	cfg.Facets = append(cfg.GlobalFacets, cfg.LocalFacets...)
 
 	return &cfg
 }

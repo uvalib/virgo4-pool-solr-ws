@@ -11,7 +11,7 @@ import (
 
 // functions that map solr data into virgo data
 
-func (s *solrDocument) getFieldValueByTag(tag string) interface{} {
+func (s *solrDocument) getFieldByTag(tag string) interface{} {
 	rt := reflect.TypeOf(*s)
 
 	if rt.Kind() != reflect.Struct {
@@ -29,30 +29,29 @@ func (s *solrDocument) getFieldValueByTag(tag string) interface{} {
 	return nil
 }
 
-func (s *solrDocument) getStringValueByTag(tag string) string {
-	v := s.getFieldValueByTag(tag)
+func (s *solrDocument) getValuesByTag(tag string) []string {
+	// turn all potential values into string slices
 
-	switch t := v.(type) {
-	case string:
-		return t
-	}
-
-	return ""
-}
-
-func (s *solrDocument) getStringSliceValueByTag(tag string) []string {
-	v := s.getFieldValueByTag(tag)
+	v := s.getFieldByTag(tag)
 
 	switch t := v.(type) {
 	case []string:
 		return t
-	}
 
-	return []string{}
+	case string:
+		return []string{t}
+
+	case float32:
+		// in case this is ever called for fields such as 'score'
+		return []string{fmt.Sprintf("%0.8f", t)}
+
+	default:
+		return []string{}
+	}
 }
 
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	return doc.getStringValueByTag(s.pool.config.Solr.GroupField)
+	return firstElementOf(doc.getValuesByTag(s.pool.config.Solr.GroupField))
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
@@ -176,11 +175,11 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// availability setup
 
-	anonField := doc.getStringSliceValueByTag(s.pool.config.Availability.Anon.Field)
+	anonField := doc.getValuesByTag(s.pool.config.Availability.Anon.Field)
 	anonOnShelf := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.Values.OnShelf)
 	anonOnline := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.Values.Online)
 
-	authField := doc.getStringSliceValueByTag(s.pool.config.Availability.Auth.Field)
+	authField := doc.getValuesByTag(s.pool.config.Availability.Auth.Field)
 	authOnShelf := sliceContainsValueFromSlice(authField, s.pool.config.Availability.Values.OnShelf)
 	authOnline := sliceContainsValueFromSlice(authField, s.pool.config.Availability.Values.Online)
 
@@ -232,43 +231,32 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		}
 
 		if field.Field != "" {
-			value := doc.getFieldValueByTag(field.Field)
+			value := doc.getValuesByTag(field.Field)
 
-			switch v := value.(type) {
-			case string:
-				if v == "" {
-					continue
-				}
+			if len(value) == 0 {
+				continue
+			}
 
-				f.Value = v
+			// save for later use (e.g. cover image url)
+			if field.Name == "author" {
+				authorField = value
+			}
+
+			for i, item := range value {
+				f.Value = item
 				r.addField(f)
 
-			case []string:
-				if len(v) == 0 {
-					continue
-				}
-
-				// save for later use (e.g. cover image url)
-				if field.Name == "author" {
-					authorField = v
-				}
-
-				for i, item := range v {
-					f.Value = item
-					r.addField(f)
-
-					if field.Limit > 0 && i+1 >= field.Limit {
-						break
-					}
+				if field.Limit > 0 && i+1 >= field.Limit {
+					break
 				}
 			}
 		} else {
 			switch field.Name {
 			case "access_url":
 				if anonOnline == true || authOnline == true {
-					urlField := doc.getStringSliceValueByTag(field.URLField)
-					labelField := doc.getStringSliceValueByTag(field.LabelField)
-					providerField := doc.getStringSliceValueByTag(field.ProviderField)
+					urlField := doc.getValuesByTag(field.URLField)
+					labelField := doc.getValuesByTag(field.LabelField)
+					providerField := doc.getValuesByTag(field.ProviderField)
 
 					f.Provider = firstElementOf(providerField)
 
@@ -395,7 +383,7 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolConfigFacet, value solrR
 	for _, b := range value.Buckets {
 		bucket := s.virgoPopulateFacetBucket(facetDef.XID, b)
 
-		if sliceContainsString(facetDef.ExposedValues, bucket.Value) {
+		if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, bucket.Value) {
 			buckets = append(buckets, *bucket)
 		}
 	}

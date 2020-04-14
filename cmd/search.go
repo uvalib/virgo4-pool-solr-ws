@@ -326,7 +326,7 @@ func (s *searchContext) wrapRecordsInGroups() {
 
 func (s *searchContext) populateGroups() error {
 	// populate record list for each group (i.e. entry in initial record list)
-	// by querying for all group records in one request, and sorting the results to the correct groups
+	// by querying for all group records in one request, and plinko'ing the results to the correct groups
 
 	// no need to group facet endpoint results
 	if s.virgoReq.meta.requestFacets == true {
@@ -554,9 +554,9 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 
 		for _, doc := range r.solrRes.Response.Docs {
 			rr := VirgoRelatedRecord{
-				ID:              doc.getStringValueByTag(s.pool.config.Related.Image.IDField),
-				IIIFManifestURL: doc.getStringValueByTag(s.pool.config.Related.Image.IIIFManifestField),
-				IIIFImageURL:    doc.getStringValueByTag(s.pool.config.Related.Image.IIIFImageField),
+				ID:              firstElementOf(doc.getValuesByTag(s.pool.config.Related.Image.IDField)),
+				IIIFManifestURL: firstElementOf(doc.getValuesByTag(s.pool.config.Related.Image.IIIFManifestField)),
+				IIIFImageURL:    firstElementOf(doc.getValuesByTag(s.pool.config.Related.Image.IIIFImageField)),
 				IIIFBaseURL:     getIIIFBaseURL(&doc, s.pool.config.Related.Image.IdentifierField),
 			}
 
