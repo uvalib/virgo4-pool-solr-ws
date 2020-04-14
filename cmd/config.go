@@ -109,17 +109,22 @@ type poolConfigAvailability struct {
 	ExposedValues []string                     // derived from above values
 }
 
+type poolConfigFacetSolr struct {
+	Field     string `json:"field,omitempty"`
+	FieldAuth string `json:"field_auth,omitempty"`
+	Type      string `json:"type,omitempty"`
+	Sort      string `json:"sort,omitempty"`
+	Limit     int    `json:"limit,omitempty"`
+	Offset    int    `json:"offset,omitempty"`
+}
+
 type poolConfigFacet struct {
-	XID                string   `json:"xid,omitempty"` // translation ID
-	Field              string   `json:"field,omitempty"`
-	FieldAuth          string   `json:"field_auth,omitempty"`
-	Type               string   `json:"type,omitempty"`
-	Sort               string   `json:"sort,omitempty"`
-	Limit              int      `json:"limit,omitempty"`
-	Offset             int      `json:"offset,omitempty"`
-	ExposedValues      []string `json:"exposed_values,omitempty"`
-	DependentFacetXIDs []string `json:"dependent_facets,omitempty"`
-	IsAvailability     bool     `json:"is_availability,omitempty"`
+	XID                string              `json:"xid,omitempty"` // translation ID
+	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
+	Type               string              `json:"type,omitempty"`
+	ExposedValues      []string            `json:"exposed_values,omitempty"`
+	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
+	IsAvailability     bool                `json:"is_availability,omitempty"`
 }
 
 type poolConfigSortOptions struct {

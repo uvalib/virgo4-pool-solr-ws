@@ -75,17 +75,17 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 
 	for _, facet := range s.pool.maps.availableFacets {
 		f := solrRequestFacet{
-			Type:   facet.Type,
-			Field:  facet.Field,
-			Sort:   facet.Sort,
-			Offset: facet.Offset,
-			Limit:  facet.Limit,
+			Type:   facet.Solr.Type,
+			Field:  facet.Solr.Field,
+			Sort:   facet.Solr.Sort,
+			Offset: facet.Solr.Offset,
+			Limit:  facet.Solr.Limit,
 			config: &facet,
 		}
 
-		if facet.FieldAuth != "" {
+		if facet.Solr.FieldAuth != "" {
 			if auth == true {
-				f.Field = facet.FieldAuth
+				f.Field = facet.Solr.FieldAuth
 				s.log("[FACET] authenticated session using facet: [%s]", f.Field)
 			} else {
 				s.log("[FACET] unauthenticated session using facet: [%s]", f.Field)

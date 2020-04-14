@@ -377,6 +377,7 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolConfigFacet, value solrR
 
 	facet.ID = facetDef.XID
 	facet.Name = s.client.localize(facet.ID)
+	facet.Type = facetDef.Type
 
 	var buckets VirgoFacetBuckets
 

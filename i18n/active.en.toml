@@ -86,6 +86,10 @@ other = "Call Number (Broad)"
 desc = "The display name for the Call Number (Narrow) facet."
 other = "Call Number (Narrow)"
 
+[FacetCirculating]
+desc = "The display name for the Circulating facet."
+other = "Hide items limited to in-Library use"
+
 [FacetCollection]
 desc = "The display name for the Collection facet."
 other = "Collection"

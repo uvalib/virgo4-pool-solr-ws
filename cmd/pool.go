@@ -143,8 +143,8 @@ func (p *poolContext) initSolr() {
 
 		// configure availability facet while we're here
 		if f.IsAvailability == true {
-			f.Field = p.config.Availability.Anon.Facet
-			f.FieldAuth = p.config.Availability.Auth.Facet
+			f.Solr.Field = p.config.Availability.Anon.Facet
+			f.Solr.FieldAuth = p.config.Availability.Auth.Facet
 			f.ExposedValues = p.config.Availability.ExposedValues
 		}
 
