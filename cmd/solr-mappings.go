@@ -21,8 +21,6 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 
 	filterGroup := (*filterGroups)[0]
 
-	s.meta.client.log("filter group: [%s]", filterGroup.PoolID)
-
 	for _, filter := range filterGroup.Facets {
 		solrFacet, ok := availableFacets[filter.FacetID]
 
@@ -53,7 +51,17 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 			s.meta.client.log("buildFilters(): [%s] including filter due to %d selected dependent filters", filter.FacetID, numSelected)
 		}
 
-		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filter.Value)
+		var filterValue string
+
+		switch solrFacet.config.Type {
+		case "boolean":
+			filterValue = solrFacet.config.Solr.Value
+
+		default:
+			filterValue = filter.Value
+		}
+
+		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 
 		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
 
@@ -62,7 +70,7 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 			s.meta.selectionMap[filter.FacetID] = make(map[string]bool)
 		}
 
-		s.meta.selectionMap[filter.FacetID][filter.Value] = true
+		s.meta.selectionMap[filter.FacetID][filterValue] = true
 	}
 }
 
@@ -73,7 +81,9 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 
 	auth := s.virgoReq.meta.client.isAuthenticated()
 
-	for _, facet := range s.pool.maps.availableFacets {
+	for i, _ := range s.pool.maps.availableFacets {
+		facet := s.pool.maps.availableFacets[i]
+
 		f := solrRequestFacet{
 			Type:   facet.Solr.Type,
 			Field:  facet.Solr.Field,

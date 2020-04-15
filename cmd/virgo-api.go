@@ -143,8 +143,8 @@ type VirgoGroups []VirgoGroup
 
 // VirgoFacetBucket contains the fields for an individual bucket for a facet.
 type VirgoFacetBucket struct {
-	Value    string `json:"value"`
-	Count    int    `json:"count"`
+	Value    string `json:"value,omitempty"`
+	Count    int    `json:"count,omitempty"`
 	Selected bool   `json:"selected"`
 }
 

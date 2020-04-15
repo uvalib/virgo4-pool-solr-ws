@@ -381,19 +381,29 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolConfigFacet, value solrR
 
 	var buckets VirgoFacetBuckets
 
-	for _, b := range value.Buckets {
-		bucket := s.virgoPopulateFacetBucket(facetDef.XID, b)
-
-		if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, bucket.Value) {
-			buckets = append(buckets, *bucket)
+	switch facetDef.Type {
+	case "boolean":
+		bucket := VirgoFacetBucket{
+			Selected: s.solrReq.meta.selectionMap[facetDef.XID][facetDef.Solr.Value],
 		}
+
+		buckets = append(buckets, bucket)
+
+	default:
+		for _, b := range value.Buckets {
+			bucket := s.virgoPopulateFacetBucket(facetDef.XID, b)
+
+			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, bucket.Value) {
+				buckets = append(buckets, *bucket)
+			}
+		}
+
+		// sort facet values alphabetically (they are queried by count, but we want to present a-z)
+
+		sort.Slice(buckets, func(i, j int) bool {
+			return buckets[i].Value < buckets[j].Value
+		})
 	}
-
-	// sort facet values alphabetically (they are queried by count, but we want to present a-z)
-
-	sort.Slice(buckets, func(i, j int) bool {
-		return buckets[i].Value < buckets[j].Value
-	})
 
 	facet.Buckets = buckets
 
