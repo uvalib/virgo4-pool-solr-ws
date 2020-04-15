@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uvalib/virgo4-jwt/v4jwt"
@@ -27,9 +26,7 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 		return
 	}
 
-	start := time.Now()
 	c.JSON(resp.status, resp.data)
-	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
 }
 
 func (p *poolContext) facetsHandler(c *gin.Context) {
@@ -47,9 +44,7 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 		return
 	}
 
-	start := time.Now()
 	c.JSON(resp.status, resp.data)
-	cl.log("[CLIENT] response: %5d ms", int64(time.Since(start)/time.Millisecond))
 }
 
 func (p *poolContext) resourceHandler(c *gin.Context) {

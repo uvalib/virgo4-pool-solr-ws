@@ -243,7 +243,7 @@ func (p *poolContext) validateFields() {
 
 	fields := []string{}
 
-	fields = append(fields, p.config.Solr.GroupField)
+	fields = append(fields, p.config.Solr.Grouping.Field)
 	fields = append(fields, p.config.Availability.Anon.Field)
 	fields = append(fields, p.config.Availability.Auth.Field)
 	fields = append(fields, p.config.Related.Image.IDField)

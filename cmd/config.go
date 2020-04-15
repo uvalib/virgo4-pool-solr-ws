@@ -29,16 +29,22 @@ type poolConfigSolrParams struct {
 	Fl      []string `json:"fl,omitempty"`
 }
 
+type poolConfigSolrGrouping struct {
+	Field     string `json:"field,omitempty"`
+	SortXID   string `json:"sort_xid,omitempty"`
+	SortOrder string `json:"sort_order,omitempty"`
+}
+
 type poolConfigSolr struct {
-	Host                 string               `json:"host,omitempty"`
-	Core                 string               `json:"core,omitempty"`
-	Handler              string               `json:"handler,omitempty"`
-	ConnTimeout          string               `json:"conn_timeout,omitempty"`
-	ReadTimeout          string               `json:"read_timeout,omitempty"`
-	GroupField           string               `json:"group_field,omitempty"`
-	ScoreThresholdMedium float32              `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh   float32              `json:"score_threshold_high,omitempty"`
-	Params               poolConfigSolrParams `json:"params,omitempty"`
+	Host                 string                 `json:"host,omitempty"`
+	Core                 string                 `json:"core,omitempty"`
+	Handler              string                 `json:"handler,omitempty"`
+	ConnTimeout          string                 `json:"conn_timeout,omitempty"`
+	ReadTimeout          string                 `json:"read_timeout,omitempty"`
+	ScoreThresholdMedium float32                `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh   float32                `json:"score_threshold_high,omitempty"`
+	Params               poolConfigSolrParams   `json:"params,omitempty"`
+	Grouping             poolConfigSolrGrouping `json:"grouping,omitempty"`
 }
 
 /*
@@ -112,6 +118,7 @@ type poolConfigAvailability struct {
 type poolConfigFacetSolr struct {
 	Field     string `json:"field,omitempty"`
 	FieldAuth string `json:"field_auth,omitempty"`
+	Value     string `json:"value,omitempty"`
 	Type      string `json:"type,omitempty"`
 	Sort      string `json:"sort,omitempty"`
 	Limit     int    `json:"limit,omitempty"`
@@ -121,7 +128,7 @@ type poolConfigFacetSolr struct {
 type poolConfigFacet struct {
 	XID                string              `json:"xid,omitempty"` // translation ID
 	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
-	Type               string              `json:"type,omitempty"`
+	Type               string              `json:"type,omitempty"` // "checkbox" implies a filter value will be applied if checked, otherwise nothing
 	ExposedValues      []string            `json:"exposed_values,omitempty"`
 	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
 	IsAvailability     bool                `json:"is_availability,omitempty"`

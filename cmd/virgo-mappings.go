@@ -51,7 +51,7 @@ func (s *solrDocument) getValuesByTag(tag string) []string {
 }
 
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	return firstElementOf(doc.getValuesByTag(s.pool.config.Solr.GroupField))
+	return firstElementOf(doc.getValuesByTag(s.pool.config.Solr.Grouping.Field))
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {

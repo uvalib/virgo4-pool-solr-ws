@@ -148,7 +148,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID], solrReq.meta.sort.Order)
 
 	if s.client.opts.grouped == true {
-		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Solr.GroupField)
+		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Solr.Grouping.Field)
 		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
 	}
 

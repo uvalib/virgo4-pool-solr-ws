@@ -278,7 +278,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	}
 
 	// build group-restricted query from initial query
-	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Solr.GroupField, strings.Join(safeGroups, " OR "))
+	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Solr.Grouping.Field, strings.Join(safeGroups, " OR "))
 
 	// prepend existing query, if defined
 	newQuery := groupClause
@@ -292,6 +292,12 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	// get everything!  even bible (5000+)
 	c.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 100000}
+
+	// intra-group sorting
+	c.virgoReq.Sort = &VirgoSort{
+		SortID: s.pool.config.Solr.Grouping.SortXID,
+		Order:  s.pool.config.Solr.Grouping.SortOrder,
+	}
 
 	if resp := c.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
