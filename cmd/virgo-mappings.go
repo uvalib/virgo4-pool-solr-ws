@@ -171,40 +171,36 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []strin
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
-	var authorField []string
+	var authorValues []string
 
 	// availability setup
 
-	anonField := doc.getValuesByTag(s.pool.config.Availability.Anon.Field)
-	anonOnShelf := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.Values.OnShelf)
-	anonOnline := sliceContainsValueFromSlice(anonField, s.pool.config.Availability.Values.Online)
+	anonValues := doc.getValuesByTag(s.pool.config.Availability.Anon.Field)
+	anonOnShelf := sliceContainsValueFromSlice(anonValues, s.pool.config.Availability.Values.OnShelf)
+	anonOnline := sliceContainsValueFromSlice(anonValues, s.pool.config.Availability.Values.Online)
 
-	authField := doc.getValuesByTag(s.pool.config.Availability.Auth.Field)
-	authOnShelf := sliceContainsValueFromSlice(authField, s.pool.config.Availability.Values.OnShelf)
-	authOnline := sliceContainsValueFromSlice(authField, s.pool.config.Availability.Values.Online)
+	authValues := doc.getValuesByTag(s.pool.config.Availability.Auth.Field)
+	authOnShelf := sliceContainsValueFromSlice(authValues, s.pool.config.Availability.Values.OnShelf)
+	authOnline := sliceContainsValueFromSlice(authValues, s.pool.config.Availability.Values.Online)
 
 	// determine which availability field to use
 
-	availability := anonField
+	availability := anonValues
 	isAvailableOnShelf := anonOnShelf
 	anonRequest := true
 
 	if s.client.isAuthenticated() == true {
-		availability = authField
+		availability = authValues
 		isAvailableOnShelf = authOnShelf
 		anonRequest = false
 	}
 
-	// flag requests that may need authentication to access this resource
+	// field loop (preprocessing)
 
-	if anonRequest == true && anonOnline == false && authOnline == true {
-		f := &VirgoNuancedField{
-			Name:    "authenticate",
-			Type:    "boolean",
-			Display: "optional",
+	for _, field := range s.pool.config.Fields {
+		if field.Field != "" && field.Properties.Name == "author" {
+			authorValues = doc.getValuesByTag(field.Field)
 		}
-
-		r.addField(f)
 	}
 
 	// field loop
@@ -219,27 +215,99 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		}
 
 		f := &VirgoNuancedField{
-			Name:       field.Name,
-			Type:       field.Type,
-			Visibility: field.Visibility,
-			Display:    field.Display,
-			Provider:   field.Provider,
+			Name:       field.Properties.Name,
+			Type:       field.Properties.Type,
+			Visibility: field.Properties.Visibility,
+			Display:    field.Properties.Display,
+			Provider:   field.Properties.Provider,
 		}
 
 		if field.XID != "" {
 			f.Label = s.client.localize(field.XID)
 		}
 
-		if field.Field != "" {
+		switch field.Format {
+		case "access_url":
+			if anonOnline == true || authOnline == true {
+				urlValues := doc.getValuesByTag(field.AccessURL.URLField)
+				labelValues := doc.getValuesByTag(field.AccessURL.LabelField)
+				providerValues := doc.getValuesByTag(field.AccessURL.ProviderField)
+
+				f.Provider = firstElementOf(providerValues)
+
+				useLabels := false
+				if len(labelValues) == len(urlValues) {
+					useLabels = true
+				}
+
+				for i, item := range urlValues {
+					f.Value = item
+
+					itemLabel := ""
+
+					if useLabels == true {
+						itemLabel = labelValues[i]
+					}
+
+					// if not using labels, or this label is not defined, fall back to generic item label
+					if itemLabel == "" {
+						itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.AccessURL.DefaultItemXID), i+1)
+					}
+
+					f.Item = itemLabel
+
+					r.addField(f)
+				}
+			}
+
+		case "authentication_prompt":
+			if anonRequest == true && anonOnline == false && authOnline == true {
+				r.addField(f)
+			}
+
+		case "availability":
+			for _, item := range availability {
+				if sliceContainsString(s.pool.config.Availability.ExposedValues, item) {
+					f.Value = item
+					r.addField(f)
+				}
+			}
+
+		case "cover_image_url":
+			if s.pool.maps.attributes["cover_images"].Supported == true {
+				if url := s.getCoverImageURL(doc, authorValues); url != "" {
+					f.Value = url
+					r.addField(f)
+				}
+			}
+
+		case "iiif_base_url":
+			f.Value = getIIIFBaseURL(doc, field.IIIFBaseURL.IdentifierField)
+			r.addField(f)
+
+		case "sirsi_url":
+			if strings.HasPrefix(doc.ID, "u") {
+				if url := s.getSirsiURL(doc.ID[1:]); url != "" {
+					f.Value = url
+					r.addField(f)
+				}
+			}
+
+		default:
+			if field.Format != "" {
+				s.log("skipping field with unhandled format: [%s]", field.Format)
+				continue
+			}
+
+			if field.Field == "" {
+				s.log("skipping field with no format or solr field")
+				continue
+			}
+
 			value := doc.getValuesByTag(field.Field)
 
 			if len(value) == 0 {
 				continue
-			}
-
-			// save for later use (e.g. cover image url)
-			if field.Name == "author" {
-				authorField = value
 			}
 
 			for i, item := range value {
@@ -249,72 +317,6 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 				if field.Limit > 0 && i+1 >= field.Limit {
 					break
 				}
-			}
-		} else {
-			switch field.Name {
-			case "access_url":
-				if anonOnline == true || authOnline == true {
-					urlField := doc.getValuesByTag(field.URLField)
-					labelField := doc.getValuesByTag(field.LabelField)
-					providerField := doc.getValuesByTag(field.ProviderField)
-
-					f.Provider = firstElementOf(providerField)
-
-					useLabels := false
-					if len(labelField) == len(urlField) {
-						useLabels = true
-					}
-
-					for i, item := range urlField {
-						f.Value = item
-
-						itemLabel := ""
-
-						if useLabels == true {
-							itemLabel = labelField[i]
-						}
-
-						// if not using labels, or this label is not defined, fall back to generic item label
-						if itemLabel == "" {
-							itemLabel = fmt.Sprintf("%s %d", s.client.localize("FieldAccessURLDefaultItemLabelPrefix"), i+1)
-						}
-
-						f.Item = itemLabel
-
-						r.addField(f)
-					}
-				}
-
-			case "availability":
-				for _, item := range availability {
-					if sliceContainsString(s.pool.config.Availability.ExposedValues, item) {
-						f.Value = item
-						r.addField(f)
-					}
-				}
-
-			case "cover_image":
-				if s.pool.maps.attributes["cover_images"].Supported == true {
-					if url := s.getCoverImageURL(doc, authorField); url != "" {
-						f.Value = url
-						r.addField(f)
-					}
-				}
-
-			case "iiif_base_url":
-				f.Value = getIIIFBaseURL(doc, field.IdentifierField)
-				r.addField(f)
-
-			case "sirsi_url":
-				if strings.HasPrefix(doc.ID, "u") {
-					if url := s.getSirsiURL(doc.ID[1:]); url != "" {
-						f.Value = url
-						r.addField(f)
-					}
-				}
-
-			default:
-				s.log("WARNING: unhandled field: %s", field.Name)
 			}
 		}
 	}

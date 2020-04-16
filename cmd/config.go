@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 	"os"
+	"sort"
+	"strings"
 )
 
 type poolConfigURLTemplate struct {
@@ -47,10 +50,7 @@ type poolConfigSolr struct {
 	Grouping             poolConfigSolrGrouping `json:"grouping,omitempty"`
 }
 
-/*
 type poolConfigFieldProperties struct {
-	XID        string `json:"xid,omitempty"`
-	Field      string `json:"field,omitempty"`
 	Name       string `json:"name,omitempty"`
 	Type       string `json:"type,omitempty"`
 	Display    string `json:"display,omitempty"`
@@ -59,42 +59,28 @@ type poolConfigFieldProperties struct {
 }
 
 type poolConfigFieldTypeAccessURL struct {
-	URLField      string `json:"url_field,omitempty"`
-	LabelField    string `json:"label_field,omitempty"`
-	ProviderField string `json:"provider_field,omitempty"`
+	URLField       string `json:"url_field,omitempty"`
+	LabelField     string `json:"label_field,omitempty"`
+	ProviderField  string `json:"provider_field,omitempty"`
+	DefaultItemXID string `json:"default_item_xid,omitempty"`
 }
 
-type poolConfigFieldTypeIIIF struct {
+type poolConfigFieldTypeIIIFBaseURL struct {
 	IdentifierField string `json:"identifier_field,omitempty"`
+	BaseURL         string `json:"base_url,omitempty"`
+	FallbackID      string `json:"fallback_id,omitempty"`
 }
 
 type poolConfigField struct {
+	XID         string                         `json:"xid,omitempty"`
+	Field       string                         `json:"field,omitempty"`
 	Properties  poolConfigFieldProperties      `json:"properties,omitempty"`
-	Type        string                         `json:"type,omitempty"` // controlled vocabulary; drives special handling
+	Format      string                         `json:"format,omitempty"` // controlled vocabulary; drives special handling
 	Limit       int                            `json:"limit,omitempty"`
 	OnShelfOnly bool                           `json:"onshelf_only,omitempty"`
 	DetailsOnly bool                           `json:"details_only,omitempty"`
-	// config options for specific types
 	AccessURL   poolConfigFieldTypeAccessURL   `json:"access_url,omitempty"`    // if type == "access_url"
 	IIIFBaseURL poolConfigFieldTypeIIIFBaseURL `json:"iiif_base_url,omitempty"` // if type == "iiif_base_url"
-}
-*/
-
-type poolConfigField struct {
-	XID             string `json:"xid,omitempty"`
-	Field           string `json:"field,omitempty"`
-	Name            string `json:"name,omitempty"`
-	Type            string `json:"type,omitempty"`
-	Display         string `json:"display,omitempty"`
-	Visibility      string `json:"visibility,omitempty"`
-	Limit           int    `json:"limit,omitempty"`
-	OnShelfOnly     bool   `json:"onshelf_only,omitempty"`
-	DetailsOnly     bool   `json:"details_only,omitempty"`
-	Provider        string `json:"provider,omitempty"`
-	URLField        string `json:"url_field,omitempty"`
-	LabelField      string `json:"label_field,omitempty"`
-	ProviderField   string `json:"provider_field,omitempty"`
-	IdentifierField string `json:"identifier_field,omitempty"`
 }
 
 type poolConfigAvailabilityFields struct {
@@ -178,28 +164,46 @@ type poolConfig struct {
 	Facets       []poolConfigFacet      // global + local, for convenience
 }
 
+func getSortedJSONEnvVars() []string {
+	var keys []string
+
+	for _, keyval := range os.Environ() {
+		key := strings.Split(keyval, "=")[0]
+		if strings.HasPrefix(key, "VIRGO4_SOLR_POOL_WS_JSON_") {
+			keys = append(keys, key)
+		}
+	}
+
+	sort.Strings(keys)
+
+	return keys
+}
+
 func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
 	// json configs
 
-	// load IDENTITY last as it will contain pool-specific data, and can
-	// override any of the static data within the other config vars
-	envs := []string{
-		"VIRGO4_SOLR_POOL_WS_JSON_AVAILABILITY",
-		"VIRGO4_SOLR_POOL_WS_JSON_PROVIDERS",
-		"VIRGO4_SOLR_POOL_WS_JSON_SERVICE",
-		"VIRGO4_SOLR_POOL_WS_JSON_FACETS",
-		"VIRGO4_SOLR_POOL_WS_JSON_IDENTITY",
-	}
+	envs := getSortedJSONEnvVars()
+
+	valid := true
 
 	for _, env := range envs {
+		log.Printf("[CONFIG] loading %s ...", env)
 		if val := os.Getenv(env); val != "" {
-			if err := json.Unmarshal([]byte(val), &cfg); err != nil {
-				log.Printf("error parsing %s config json: %s", env, err.Error())
-				os.Exit(1)
+			dec := json.NewDecoder(bytes.NewReader([]byte(val)))
+			dec.DisallowUnknownFields()
+
+			if err := dec.Decode(&cfg); err != nil {
+				log.Printf("error decoding %s: %s", env, err.Error())
+				valid = false
 			}
 		}
+	}
+
+	if valid == false {
+		log.Printf("exiting due to json decode error(s) above")
+		os.Exit(1)
 	}
 
 	// optional convenience override to simplify terraform config
@@ -207,13 +211,14 @@ func loadConfig() *poolConfig {
 		cfg.Solr.Host = host
 	}
 
-	bytes, err := json.MarshalIndent(cfg, "", "  ")
+	//bytes, err := json.MarshalIndent(cfg, "", "  ")
+	bytes, err := json.Marshal(cfg)
 	if err != nil {
-		log.Printf("error regenerating pool config json: %s", err.Error())
+		log.Printf("error encoding pool config json: %s", err.Error())
 		os.Exit(1)
 	}
 
-	log.Printf("[CONFIG] json:")
+	log.Printf("[CONFIG] composite json:")
 	log.Printf("\n%s", string(bytes))
 
 	cfg.Facets = append(cfg.GlobalFacets, cfg.LocalFacets...)

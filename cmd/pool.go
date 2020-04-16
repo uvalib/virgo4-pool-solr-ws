@@ -54,6 +54,35 @@ type poolContext struct {
 	maps         poolMaps
 }
 
+type stringValidator struct {
+	values  []string
+	invalid bool
+}
+
+func (v *stringValidator) addValue(value string) {
+	if value != "" {
+		v.values = append(v.values, value)
+	}
+}
+
+func (v *stringValidator) requireValue(value string, label string) {
+	if value == "" {
+		log.Printf("[VALIDATE] missing %s", label)
+		v.invalid = true
+		return
+	}
+
+	v.addValue(value)
+}
+
+func (v *stringValidator) Values() []string {
+	return v.values
+}
+
+func (v *stringValidator) Invalid() bool {
+	return v.invalid
+}
+
 func (p *poolContext) initIdentity() {
 	p.identity = VirgoPoolIdentity{
 		Name:        p.config.Identity.NameXID,
@@ -179,106 +208,129 @@ func (p *poolContext) initTranslations() {
 	}
 }
 
-func (p *poolContext) validateTranslations() {
-	// collect all translation IDs (XIDs) provided in pool config
+func (p *poolContext) validateConfig() {
+	// ensure the existence and validity of required variables/solr fields/translation ids
 
-	messageIDs := []string{}
+	invalid := false
 
-	messageIDs = append(messageIDs, p.config.Identity.NameXID)
-	messageIDs = append(messageIDs, p.config.Identity.DescXID)
+	var solrFields stringValidator
+	var messageIDs stringValidator
+	var miscValues stringValidator
 
-	for _, val := range p.config.Identity.SortOptions {
-		messageIDs = append(messageIDs, val.XID)
+	miscValues.requireValue(p.config.Identity.Mode, "pool mode")
+
+	miscValues.requireValue(p.config.Solr.Host, "solr host")
+	miscValues.requireValue(p.config.Solr.Core, "solr core")
+	miscValues.requireValue(p.config.Solr.Handler, "solr handler")
+	miscValues.requireValue(p.config.Solr.Params.Qt, "solr param qt")
+	miscValues.requireValue(p.config.Solr.Params.DefType, "solr param deftype")
+
+	if len(p.config.Solr.Params.Fq) == 0 {
+		log.Printf("[VALIDATE] solr param fq is empty")
+		invalid = true
 	}
 
-	for _, val := range p.config.Providers {
-		messageIDs = append(messageIDs, val.XID)
+	miscValues.requireValue(p.config.Solr.Grouping.SortOrder, "solr grouping sort order")
+
+	solrFields.requireValue(p.config.Solr.Grouping.Field, "solr grouping field")
+	solrFields.requireValue(p.config.Availability.Anon.Field, "anon availability field")
+	solrFields.requireValue(p.config.Availability.Auth.Field, "auth availability field")
+
+	messageIDs.requireValue(p.config.Identity.NameXID, "identity name xid")
+	messageIDs.requireValue(p.config.Identity.DescXID, "identity description xid")
+	messageIDs.requireValue(p.config.Solr.Grouping.SortXID, "solr grouping sort xid")
+
+	if p.config.Identity.Mode == "image" {
+		solrFields.requireValue(p.config.Related.Image.IDField, "iiif id field")
+		solrFields.requireValue(p.config.Related.Image.IdentifierField, "iiif identifier field")
+		solrFields.requireValue(p.config.Related.Image.IIIFManifestField, "iiif manifest field")
+		solrFields.requireValue(p.config.Related.Image.IIIFImageField, "iiif image field")
 	}
 
-	for _, val := range p.config.Fields {
-		messageIDs = append(messageIDs, val.XID)
+	for i, val := range p.config.Identity.SortOptions {
+		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d field", i))
+		messageIDs.requireValue(val.XID, fmt.Sprintf("sort option %d xid", i))
 	}
 
-	for _, val := range p.config.Facets {
-		messageIDs = append(messageIDs, val.XID)
-		messageIDs = append(messageIDs, val.DependentFacetXIDs...)
+	for i, val := range p.config.Providers {
+		messageIDs.requireValue(val.XID, fmt.Sprintf("provider %d xid", i))
 	}
 
-	messageIDs = nonemptyValues(messageIDs)
+	for i, val := range p.config.Facets {
+		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
+		for j, depval := range val.DependentFacetXIDs {
+			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
+		}
+	}
+	for i, field := range p.config.Fields {
+		messageIDs.addValue(field.XID)
 
-	// ensure each XID has a translation for all loaded languages
+		miscValues.requireValue(field.Properties.Name, fmt.Sprintf("field %d properties name", i))
+
+		switch field.Format {
+		case "access_url":
+			solrFields.requireValue(field.AccessURL.URLField, fmt.Sprintf("field %d %s url field", i, field.Format))
+			solrFields.requireValue(field.AccessURL.LabelField, fmt.Sprintf("field %d %s label field", i, field.Format))
+			solrFields.requireValue(field.AccessURL.ProviderField, fmt.Sprintf("field %d %s provider field", i, field.Format))
+			messageIDs.requireValue(field.AccessURL.DefaultItemXID, fmt.Sprintf("field %d %s default item xid", i, field.Format))
+
+		case "authentication_prompt":
+
+		case "availability":
+
+		case "cover_image_url":
+
+		case "iiif_base_url":
+			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("field %d %s identifier field", i, field.Format))
+
+		case "sirsi_url":
+
+		default:
+			if field.Format != "" {
+				log.Printf("[VALIDATE] field %d: unhandled format: [%s]", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			solrFields.requireValue(field.Field, fmt.Sprintf("field %d field", i))
+		}
+	}
+
+	// validate solr fields can actually be found in a solr document
+
+	doc := solrDocument{}
+
+	for _, tag := range solrFields.Values() {
+		if val := doc.getFieldByTag(tag); val == nil {
+			log.Printf("[VALIDATE] tag not found in Solr document struct tags: [%s]", tag)
+			invalid = true
+		}
+	}
+
+	// validate xids can actually be translated
 
 	langs := []string{}
-
 	tags := p.translations.bundle.LanguageTags()
-	missingTranslations := false
 
 	for _, tag := range tags {
 		lang := tag.String()
-
 		log.Printf("[LANG] [%s] validating translations...", lang)
-
 		langs = append(langs, lang)
-
 		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-
-		for _, id := range messageIDs {
+		for _, id := range messageIDs.Values() {
 			if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: id}); err != nil {
 				log.Printf("[LANG] [%s] missing translation for message ID: [%s]  (%s)", lang, id, err.Error())
-				missingTranslations = true
+				invalid = true
 			}
 		}
 	}
 
-	if missingTranslations == true {
-		log.Printf("[LANG] exiting due to missing translation(s) above")
-		os.Exit(1)
-	}
-
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
-}
 
-func (p *poolContext) validateFields() {
-	// ensure certain pool-specific field mappings exist by extracting values from a fake solr document
+	// check if anything went wrong anywhere
 
-	fields := []string{}
-
-	fields = append(fields, p.config.Solr.Grouping.Field)
-	fields = append(fields, p.config.Availability.Anon.Field)
-	fields = append(fields, p.config.Availability.Auth.Field)
-	fields = append(fields, p.config.Related.Image.IDField)
-	fields = append(fields, p.config.Related.Image.IdentifierField)
-	fields = append(fields, p.config.Related.Image.IIIFManifestField)
-	fields = append(fields, p.config.Related.Image.IIIFImageField)
-
-	for _, val := range p.config.Identity.SortOptions {
-		fields = append(fields, val.Field)
-	}
-
-	for _, val := range p.config.Fields {
-		fields = append(fields, val.Field)
-		fields = append(fields, val.URLField)
-		fields = append(fields, val.LabelField)
-		fields = append(fields, val.ProviderField)
-	}
-
-	fields = nonemptyValues(fields)
-
-	doc := solrDocument{}
-
-	log.Printf("[FIELDS] validating solr fields...")
-
-	missingFields := false
-
-	for _, tag := range fields {
-		if val := doc.getFieldByTag(tag); val == nil {
-			log.Printf("[FIELDS] field not found in struct tags: [%s]", tag)
-			missingFields = true
-		}
-	}
-
-	if missingFields == true {
-		log.Printf("[FIELDS] exiting due to missing field(s) above")
+	if invalid || solrFields.Invalid() || messageIDs.Invalid() || miscValues.Invalid() {
+		log.Printf("[VALIDATE] exiting due to missing/incorrect field value(s) above")
 		os.Exit(1)
 	}
 }
@@ -295,8 +347,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initVersion()
 	p.initSolr()
 
-	p.validateTranslations()
-	p.validateFields()
+	p.validateConfig()
 
 	return &p
 }
