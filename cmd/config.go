@@ -10,13 +10,16 @@ import (
 )
 
 type poolConfigURLTemplate struct {
-	Pattern  string `json:"pattern,omitempty"`
-	Template string `json:"template,omitempty"`
+	Pattern  string   `json:"pattern,omitempty"`
+	Template string   `json:"template,omitempty"`
+	Fallback string   `json:"fallback,omitempty"`
+	Prefixes []string `json:"prefixes,omitempty"`
 }
 
 type poolConfigURLTemplates struct {
 	Sirsi       poolConfigURLTemplate `json:"sirsi,omitempty"`
 	CoverImages poolConfigURLTemplate `json:"cover_images,omitempty"`
+	IIIF        poolConfigURLTemplate `json:"iiif,omitempty"`
 }
 
 type poolConfigService struct {
@@ -68,8 +71,6 @@ type poolConfigFieldTypeAccessURL struct {
 
 type poolConfigFieldTypeIIIFBaseURL struct {
 	IdentifierField string `json:"identifier_field,omitempty"`
-	BaseURL         string `json:"base_url,omitempty"`
-	FallbackID      string `json:"fallback_id,omitempty"`
 }
 
 type poolConfigFieldTypeCoverImageURL struct {

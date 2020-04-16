@@ -179,6 +179,28 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, 
 	return req.URL.String()
 }
 
+func (s *searchContext) getIIIFBaseURL(doc *solrDocument, idField string) string {
+	// FIXME: update after iiif_image_url is correct
+
+	// construct iiif image base url from known image identifier prefixes.
+	// this fallback url conveniently points to an "orginial image missing" image
+
+	pid := s.pool.config.Service.URLTemplates.IIIF.Fallback
+
+	idValues := doc.getValuesByTag(idField)
+
+	for _, id := range idValues {
+		for _, prefix := range s.pool.config.Service.URLTemplates.IIIF.Prefixes {
+			if strings.HasPrefix(id, prefix) {
+				pid = id
+				break
+			}
+		}
+	}
+
+	return getGenericURL(s.pool.config.Service.URLTemplates.IIIF, pid)
+}
+
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
@@ -293,8 +315,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			}
 
 		case "iiif_base_url":
-			f.Value = getIIIFBaseURL(doc, field.IIIFBaseURL.IdentifierField)
-			r.addField(f)
+			if url := s.getIIIFBaseURL(doc, field.IIIFBaseURL.IdentifierField); url != "" {
+				f.Value = url
+				r.addField(f)
+			}
 
 		case "sirsi_url":
 			idValue := firstElementOf(doc.getValuesByTag(field.SirsiURL.IDField))
@@ -479,15 +503,18 @@ func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
 	// encapsulates document-level exact-match logic for a given search
 
 	// resource requests are not exact matches
-	// FIXME: should find or create a better way to check for this
+	if s.itemDetails == true {
+		return false
+	}
+
+	// this should be defined, but check just in case
 	if s.solrRes.meta.parserInfo == nil {
 		return false
 	}
 
 	// case 1: a single title search query matches the first title in this document
 	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
-		titleValues := doc.getValuesByTag(s.pool.config.Solr.ExactMatchTitleField)
-		firstTitleResult := firstElementOf(titleValues)
+		firstTitleResult := firstElementOf(doc.getValuesByTag(s.pool.config.Solr.ExactMatchTitleField))
 
 		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.titles)
 
@@ -586,7 +613,6 @@ func (s *searchContext) virgoRecordResponse() error {
 		return fmt.Errorf("Item not found")
 
 	case 1:
-		s.itemDetails = true
 		v = s.virgoPopulateRecord(s.solrRes.meta.firstDoc)
 
 	default:

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -89,23 +88,4 @@ func titlesAreEqual(t1, t2 string) bool {
 	}
 
 	return strings.EqualFold(s1, s2)
-}
-
-func getIIIFBaseURL(doc *solrDocument, field string) string {
-	// FIXME: remove after iiif_image_url is correct
-	// construct iiif image base url from known image identifier prefixes.
-	// this fallback url conveniently points to an "orginial image missing" image
-	baseURL := "https://iiif.lib.virginia.edu/iiif/uva-lib:1043352"
-
-	ids := doc.getValuesByTag(field)
-
-	for _, id := range ids {
-		if strings.HasPrefix(id, "tsm:") || strings.HasPrefix(id, "uva-lib:") {
-			// FIXME: move this prefix to config
-			baseURL = fmt.Sprintf("https://iiif.lib.virginia.edu/iiif/%s", id)
-			break
-		}
-	}
-
-	return baseURL
 }

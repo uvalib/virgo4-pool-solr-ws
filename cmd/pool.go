@@ -250,6 +250,9 @@ func (p *poolContext) validateConfig() {
 			solrFields.requireValue(p.config.Related.Image.IdentifierField, "iiif identifier field")
 			solrFields.requireValue(p.config.Related.Image.IIIFManifestField, "iiif manifest field")
 			solrFields.requireValue(p.config.Related.Image.IIIFImageField, "iiif image field")
+
+			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Template, "iiif template url")
+			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 		}
 	}
 
@@ -307,6 +310,9 @@ func (p *poolContext) validateConfig() {
 			solrFields.addValue(field.CoverImageURL.LCCNField)
 			solrFields.addValue(field.CoverImageURL.UPCField)
 
+			miscValues.requireValue(p.config.Service.URLTemplates.CoverImages.Template, "cover images template url")
+			miscValues.requireValue(p.config.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
+
 		case "iiif_base_url":
 			if field.IIIFBaseURL == nil {
 				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
@@ -315,6 +321,9 @@ func (p *poolContext) validateConfig() {
 			}
 
 			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("field %d %s identifier field", i, field.Format))
+
+			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Template, "iiif template url")
+			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 
 		case "sirsi_url":
 			if field.SirsiURL == nil {
@@ -325,6 +334,9 @@ func (p *poolContext) validateConfig() {
 
 			solrFields.requireValue(field.SirsiURL.IDField, fmt.Sprintf("field %d %s id field", i, field.Format))
 			miscValues.requireValue(field.SirsiURL.IDPrefix, fmt.Sprintf("field %d %s id prefix", i, field.Format))
+
+			miscValues.requireValue(p.config.Service.URLTemplates.Sirsi.Template, "sirsi template url")
+			miscValues.requireValue(p.config.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
 
 		default:
 			if field.Format != "" {
