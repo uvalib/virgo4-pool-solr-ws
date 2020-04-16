@@ -90,16 +90,20 @@ func (s *searchContext) getSirsiURL(id string) string {
 	return getGenericURL(s.pool.config.Service.URLTemplates.Sirsi, id)
 }
 
-func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []string) string {
+func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, doc *solrDocument, authorValues []string) string {
 	// use solr-provided url if present
 
-	if thumbnailURL := firstElementOf(doc.ThumbnailURL); thumbnailURL != "" {
+	thumbnailValues := doc.getValuesByTag(cfg.ThumbnailField)
+
+	if thumbnailURL := firstElementOf(thumbnailValues); thumbnailURL != "" {
 		return thumbnailURL
 	}
 
 	// otherwise, compose a url to the cover image service
 
-	url := getGenericURL(s.pool.config.Service.URLTemplates.CoverImages, doc.ID)
+	idValues := doc.getValuesByTag(cfg.IDField)
+
+	url := getGenericURL(s.pool.config.Service.URLTemplates.CoverImages, firstElementOf(idValues))
 
 	if url == "" {
 		return ""
@@ -119,11 +123,14 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []strin
 
 	qp := req.URL.Query()
 
+	titleValues := doc.getValuesByTag(cfg.TitleField)
+	poolValues := doc.getValuesByTag(cfg.PoolField)
+
 	// remove extraneous dates from author
 	author := strings.Trim(strings.Split(firstElementOf(authorValues), "[")[0], " ")
-	title := firstElementOf(doc.Title)
+	title := firstElementOf(titleValues)
 
-	if sliceContainsString(doc.Pool, "music_recordings") == true {
+	if sliceContainsString(poolValues, "music_recordings") == true {
 		// music
 
 		qp.Add("doc_type", "music")
@@ -132,7 +139,7 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []strin
 			qp.Add("artist_name", author)
 		}
 
-		if len(doc.Title) > 0 {
+		if len(title) > 0 {
 			qp.Add("album_name", title)
 		}
 	} else {
@@ -140,27 +147,31 @@ func (s *searchContext) getCoverImageURL(doc *solrDocument, authorValues []strin
 
 		qp.Add("doc_type", "non_music")
 
-		if len(doc.Title) > 0 {
+		if len(title) > 0 {
 			qp.Add("title", title)
 		}
 	}
 
-	// always throw these values at the cover image service
+	// always throw these optional values at the cover image service
 
-	if len(doc.ISBN) > 0 {
-		qp.Add("isbn", strings.Join(doc.ISBN, ","))
+	isbnValues := doc.getValuesByTag(cfg.ISBNField)
+	if len(isbnValues) > 0 {
+		qp.Add("isbn", strings.Join(isbnValues, ","))
 	}
 
-	if len(doc.OCLC) > 0 {
-		qp.Add("oclc", strings.Join(doc.OCLC, ","))
+	oclcValues := doc.getValuesByTag(cfg.OCLCField)
+	if len(oclcValues) > 0 {
+		qp.Add("oclc", strings.Join(oclcValues, ","))
 	}
 
-	if len(doc.LCCN) > 0 {
-		qp.Add("lccn", strings.Join(doc.LCCN, ","))
+	lccnValues := doc.getValuesByTag(cfg.LCCNField)
+	if len(lccnValues) > 0 {
+		qp.Add("lccn", strings.Join(lccnValues, ","))
 	}
 
-	if len(doc.UPC) > 0 {
-		qp.Add("upc", strings.Join(doc.UPC, ","))
+	upcValues := doc.getValuesByTag(cfg.UPCField)
+	if len(upcValues) > 0 {
+		qp.Add("upc", strings.Join(upcValues, ","))
 	}
 
 	req.URL.RawQuery = qp.Encode()
@@ -275,7 +286,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 		case "cover_image_url":
 			if s.pool.maps.attributes["cover_images"].Supported == true {
-				if url := s.getCoverImageURL(doc, authorValues); url != "" {
+				if url := s.getCoverImageURL(field.CoverImageURL, doc, authorValues); url != "" {
 					f.Value = url
 					r.addField(f)
 				}
@@ -286,8 +297,12 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			r.addField(f)
 
 		case "sirsi_url":
-			if strings.HasPrefix(doc.ID, "u") {
-				if url := s.getSirsiURL(doc.ID[1:]); url != "" {
+			idValue := firstElementOf(doc.getValuesByTag(field.SirsiURL.IDField))
+			idPrefix := field.SirsiURL.IDPrefix
+
+			if strings.HasPrefix(idValue, idPrefix) {
+				sirsiID := idValue[len(idPrefix):]
+				if url := s.getSirsiURL(sirsiID); url != "" {
 					f.Value = url
 					r.addField(f)
 				}
@@ -471,7 +486,8 @@ func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
 
 	// case 1: a single title search query matches the first title in this document
 	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
-		firstTitleResult := firstElementOf(doc.Title)
+		titleValues := doc.getValuesByTag(s.pool.config.Solr.ExactMatchTitleField)
+		firstTitleResult := firstElementOf(titleValues)
 
 		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.titles)
 

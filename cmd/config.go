@@ -48,6 +48,7 @@ type poolConfigSolr struct {
 	ScoreThresholdHigh   float32                `json:"score_threshold_high,omitempty"`
 	Params               poolConfigSolrParams   `json:"params,omitempty"`
 	Grouping             poolConfigSolrGrouping `json:"grouping,omitempty"`
+	ExactMatchTitleField string                 `json:"exact_match_title_field,omitempty"`
 }
 
 type poolConfigFieldProperties struct {
@@ -71,16 +72,34 @@ type poolConfigFieldTypeIIIFBaseURL struct {
 	FallbackID      string `json:"fallback_id,omitempty"`
 }
 
+type poolConfigFieldTypeCoverImageURL struct {
+	ThumbnailField string `json:"thumbnail_field,omitempty"`
+	IDField        string `json:"id_field,omitempty"`
+	TitleField     string `json:"title_field,omitempty"`
+	PoolField      string `json:"pool_field,omitempty"`
+	ISBNField      string `json:"isbn_field,omitempty"`
+	OCLCField      string `json:"oclc_field,omitempty"`
+	LCCNField      string `json:"lccn_field,omitempty"`
+	UPCField       string `json:"upc_field,omitempty"`
+}
+
+type poolConfigFieldTypeSirsiURL struct {
+	IDField  string `json:"id_field,omitempty"`
+	IDPrefix string `json:"id_prefix,omitempty"`
+}
+
 type poolConfigField struct {
-	XID         string                          `json:"xid,omitempty"`
-	Field       string                          `json:"field,omitempty"`
-	Properties  poolConfigFieldProperties       `json:"properties,omitempty"`
-	Format      string                          `json:"format,omitempty"` // controlled vocabulary; drives special handling
-	Limit       int                             `json:"limit,omitempty"`
-	OnShelfOnly bool                            `json:"onshelf_only,omitempty"`
-	DetailsOnly bool                            `json:"details_only,omitempty"`
-	AccessURL   *poolConfigFieldTypeAccessURL   `json:"access_url,omitempty"`    // if format == "access_url"
-	IIIFBaseURL *poolConfigFieldTypeIIIFBaseURL `json:"iiif_base_url,omitempty"` // if format == "iiif_base_url"
+	XID           string                            `json:"xid,omitempty"`
+	Field         string                            `json:"field,omitempty"`
+	Properties    poolConfigFieldProperties         `json:"properties,omitempty"`
+	Limit         int                               `json:"limit,omitempty"`
+	OnShelfOnly   bool                              `json:"onshelf_only,omitempty"`
+	DetailsOnly   bool                              `json:"details_only,omitempty"`
+	Format        string                            `json:"format,omitempty"` // controlled vocabulary; drives special handling
+	AccessURL     *poolConfigFieldTypeAccessURL     `json:"access_url,omitempty"`
+	IIIFBaseURL   *poolConfigFieldTypeIIIFBaseURL   `json:"iiif_base_url,omitempty"`
+	CoverImageURL *poolConfigFieldTypeCoverImageURL `json:"cover_image_url,omitempty"`
+	SirsiURL      *poolConfigFieldTypeSirsiURL      `json:"sirsi_url,omitempty"`
 }
 
 type poolConfigAvailabilityFields struct {

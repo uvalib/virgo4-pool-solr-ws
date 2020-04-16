@@ -233,6 +233,7 @@ func (p *poolContext) validateConfig() {
 	miscValues.requireValue(p.config.Solr.Grouping.SortOrder, "solr grouping sort order")
 
 	solrFields.requireValue(p.config.Solr.Grouping.Field, "solr grouping field")
+	solrFields.requireValue(p.config.Solr.ExactMatchTitleField, "solr exact match title field")
 	solrFields.requireValue(p.config.Availability.Anon.Field, "anon availability field")
 	solrFields.requireValue(p.config.Availability.Auth.Field, "auth availability field")
 
@@ -290,6 +291,21 @@ func (p *poolContext) validateConfig() {
 		case "availability":
 
 		case "cover_image_url":
+			if field.CoverImageURL == nil {
+				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			solrFields.requireValue(field.CoverImageURL.ThumbnailField, fmt.Sprintf("field %d %s thumbnail url field", i, field.Format))
+			solrFields.requireValue(field.CoverImageURL.IDField, fmt.Sprintf("field %d %s id field", i, field.Format))
+			solrFields.requireValue(field.CoverImageURL.TitleField, fmt.Sprintf("field %d %s title field", i, field.Format))
+			solrFields.requireValue(field.CoverImageURL.PoolField, fmt.Sprintf("field %d %s pool field", i, field.Format))
+
+			solrFields.addValue(field.CoverImageURL.ISBNField)
+			solrFields.addValue(field.CoverImageURL.OCLCField)
+			solrFields.addValue(field.CoverImageURL.LCCNField)
+			solrFields.addValue(field.CoverImageURL.UPCField)
 
 		case "iiif_base_url":
 			if field.IIIFBaseURL == nil {
@@ -301,6 +317,14 @@ func (p *poolContext) validateConfig() {
 			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("field %d %s identifier field", i, field.Format))
 
 		case "sirsi_url":
+			if field.SirsiURL == nil {
+				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			solrFields.requireValue(field.SirsiURL.IDField, fmt.Sprintf("field %d %s id field", i, field.Format))
+			miscValues.requireValue(field.SirsiURL.IDPrefix, fmt.Sprintf("field %d %s id prefix", i, field.Format))
 
 		default:
 			if field.Format != "" {
@@ -331,18 +355,15 @@ func (p *poolContext) validateConfig() {
 
 	for _, tag := range tags {
 		lang := tag.String()
-		log.Printf("[LANG] [%s] validating translations...", lang)
 		langs = append(langs, lang)
 		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
 		for _, id := range messageIDs.Values() {
 			if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: id}); err != nil {
-				log.Printf("[LANG] [%s] missing translation for message ID: [%s]  (%s)", lang, id, err.Error())
+				log.Printf("[VALIDATE] [%s] missing translation for message ID: [%s]  (%s)", lang, id, err.Error())
 				invalid = true
 			}
 		}
 	}
-
-	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 
 	// check if anything went wrong anywhere
 
@@ -350,6 +371,8 @@ func (p *poolContext) validateConfig() {
 		log.Printf("[VALIDATE] exiting due to missing/incorrect field value(s) above")
 		os.Exit(1)
 	}
+
+	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
 func initializePool(cfg *poolConfig) *poolContext {
