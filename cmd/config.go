@@ -72,15 +72,15 @@ type poolConfigFieldTypeIIIFBaseURL struct {
 }
 
 type poolConfigField struct {
-	XID         string                         `json:"xid,omitempty"`
-	Field       string                         `json:"field,omitempty"`
-	Properties  poolConfigFieldProperties      `json:"properties,omitempty"`
-	Format      string                         `json:"format,omitempty"` // controlled vocabulary; drives special handling
-	Limit       int                            `json:"limit,omitempty"`
-	OnShelfOnly bool                           `json:"onshelf_only,omitempty"`
-	DetailsOnly bool                           `json:"details_only,omitempty"`
-	AccessURL   poolConfigFieldTypeAccessURL   `json:"access_url,omitempty"`    // if type == "access_url"
-	IIIFBaseURL poolConfigFieldTypeIIIFBaseURL `json:"iiif_base_url,omitempty"` // if type == "iiif_base_url"
+	XID         string                          `json:"xid,omitempty"`
+	Field       string                          `json:"field,omitempty"`
+	Properties  poolConfigFieldProperties       `json:"properties,omitempty"`
+	Format      string                          `json:"format,omitempty"` // controlled vocabulary; drives special handling
+	Limit       int                             `json:"limit,omitempty"`
+	OnShelfOnly bool                            `json:"onshelf_only,omitempty"`
+	DetailsOnly bool                            `json:"details_only,omitempty"`
+	AccessURL   *poolConfigFieldTypeAccessURL   `json:"access_url,omitempty"`    // if format == "access_url"
+	IIIFBaseURL *poolConfigFieldTypeIIIFBaseURL `json:"iiif_base_url,omitempty"` // if format == "iiif_base_url"
 }
 
 type poolConfigAvailabilityFields struct {
@@ -98,7 +98,7 @@ type poolConfigAvailability struct {
 	Anon          poolConfigAvailabilityFields `json:"anon,omitempty"`
 	Auth          poolConfigAvailabilityFields `json:"auth,omitempty"`
 	Values        poolConfigAvailabilityValues `json:"values,omitempty"`
-	ExposedValues []string                     // derived from above values
+	ExposedValues []string                     `json:"-"` // derived from above values
 }
 
 type poolConfigFacetSolr struct {
@@ -148,7 +148,7 @@ type poolConfigRelatedImage struct {
 }
 
 type poolConfigRelated struct {
-	Image poolConfigRelatedImage `json:"image,omitempty"`
+	Image *poolConfigRelatedImage `json:"image,omitempty"`
 }
 
 type poolConfig struct {
@@ -161,7 +161,7 @@ type poolConfig struct {
 	LocalFacets  []poolConfigFacet      `json:"local_facets,omitempty"`
 	Availability poolConfigAvailability `json:"availability,omitempty"`
 	Related      poolConfigRelated      `json:"related,omitempty"`
-	Facets       []poolConfigFacet      // global + local, for convenience
+	Facets       []poolConfigFacet      `json:"-"` // global + local, for convenience
 }
 
 func getSortedJSONEnvVars() []string {

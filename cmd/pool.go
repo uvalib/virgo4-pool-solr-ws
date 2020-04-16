@@ -241,10 +241,15 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Solr.Grouping.SortXID, "solr grouping sort xid")
 
 	if p.config.Identity.Mode == "image" {
-		solrFields.requireValue(p.config.Related.Image.IDField, "iiif id field")
-		solrFields.requireValue(p.config.Related.Image.IdentifierField, "iiif identifier field")
-		solrFields.requireValue(p.config.Related.Image.IIIFManifestField, "iiif manifest field")
-		solrFields.requireValue(p.config.Related.Image.IIIFImageField, "iiif image field")
+		if p.config.Related.Image == nil {
+			log.Printf("[VALIDATE] missing related image section")
+			invalid = true
+		} else {
+			solrFields.requireValue(p.config.Related.Image.IDField, "iiif id field")
+			solrFields.requireValue(p.config.Related.Image.IdentifierField, "iiif identifier field")
+			solrFields.requireValue(p.config.Related.Image.IIIFManifestField, "iiif manifest field")
+			solrFields.requireValue(p.config.Related.Image.IIIFImageField, "iiif image field")
+		}
 	}
 
 	for i, val := range p.config.Identity.SortOptions {
@@ -269,6 +274,12 @@ func (p *poolContext) validateConfig() {
 
 		switch field.Format {
 		case "access_url":
+			if field.AccessURL == nil {
+				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				invalid = true
+				continue
+			}
+
 			solrFields.requireValue(field.AccessURL.URLField, fmt.Sprintf("field %d %s url field", i, field.Format))
 			solrFields.requireValue(field.AccessURL.LabelField, fmt.Sprintf("field %d %s label field", i, field.Format))
 			solrFields.requireValue(field.AccessURL.ProviderField, fmt.Sprintf("field %d %s provider field", i, field.Format))
@@ -281,6 +292,12 @@ func (p *poolContext) validateConfig() {
 		case "cover_image_url":
 
 		case "iiif_base_url":
+			if field.IIIFBaseURL == nil {
+				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				invalid = true
+				continue
+			}
+
 			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("field %d %s identifier field", i, field.Format))
 
 		case "sirsi_url":
