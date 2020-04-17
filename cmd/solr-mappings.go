@@ -93,13 +93,8 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 			config: &facet,
 		}
 
-		if facet.Solr.FieldAuth != "" {
-			if auth == true {
-				f.Field = facet.Solr.FieldAuth
-				s.log("[FACET] authenticated session using facet: [%s]", f.Field)
-			} else {
-				s.log("[FACET] unauthenticated session using facet: [%s]", f.Field)
-			}
+		if facet.Solr.FieldAuth != "" && auth == true {
+			f.Field = facet.Solr.FieldAuth
 		}
 
 		availableFacets[facet.XID] = f

@@ -147,41 +147,19 @@ func (s *searchContext) solrQuery() error {
 		return fmt.Errorf("Failed to receive Solr response")
 	}
 
-	s.log("[SOLR] http res: %5d ms", int64(time.Since(start)/time.Millisecond))
-
 	defer res.Body.Close()
 
 	var solrRes solrResponse
-
-	/*
-		// read entire response, then parse it (causing issues for large responses?)
-
-		buf, _ := ioutil.ReadAll(res.Body)
-
-		if s.client.opts.verbose == true {
-			s.log("[SOLR] raw: [%s]", buf)
-		}
-
-		if jErr := json.Unmarshal(buf, &solrRes); jErr != nil {
-			s.log("unexpected Solr response: [%s]", buf)
-			s.log("Unmarshal() failed: %s", jErr.Error())
-			return fmt.Errorf("Failed to unmarshal Solr response")
-		}
-	*/
-
-	// parse response from stream
 
 	decoder := json.NewDecoder(res.Body)
 
 	// external service failure logging (scenario 2)
 
-	start = time.Now()
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
 		s.log("Decode() failed: %s", decErr.Error())
 		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("Failed to decode Solr response")
 	}
-	s.log("[SOLR] json dec: %5d ms", int64(time.Since(start)/time.Millisecond))
 
 	// external service success logging
 

@@ -171,6 +171,4 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 	}
 
 	c.Set("claims", claims)
-
-	log.Printf("got valid bearer token with claims: %+v", claims)
 }

@@ -75,7 +75,9 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 		query = fmt.Sprintf("?%s", ctx.Request.URL.RawQuery)
 	}
 
-	c.log("%s %s%s  (%s) => (%s)", ctx.Request.Method, ctx.Request.URL.Path, query, acceptLang, contentLang)
+	c.log("%s %s%s  (%s) => (%s)  [%s; %s; %s; %v]",
+		ctx.Request.Method, ctx.Request.URL.Path, query, acceptLang, contentLang,
+		c.claims.UserID, c.claims.Role, c.claims.AuthMethod, c.claims.IsUVA)
 }
 
 func (c *clientContext) printf(prefix, format string, args ...interface{}) {

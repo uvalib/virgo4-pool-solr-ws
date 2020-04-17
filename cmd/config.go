@@ -243,8 +243,7 @@ func loadConfig() *poolConfig {
 		os.Exit(1)
 	}
 
-	log.Printf("[CONFIG] composite json:")
-	log.Printf("\n%s", string(bytes))
+	log.Printf("[CONFIG] composite json:\n%s", string(bytes))
 
 	cfg.Facets = append(cfg.GlobalFacets, cfg.LocalFacets...)
 

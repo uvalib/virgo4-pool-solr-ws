@@ -7,8 +7,8 @@ github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/antlr/antlr4 v0.0.0-20200119161855-7a3f40bc341d h1:YyyukUZiej+hTJINHjowi57xLQE9SN2KOJ7kYMKhr7I=
 github.com/antlr/antlr4 v0.0.0-20200119161855-7a3f40bc341d/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
-github.com/antlr/antlr4 v0.0.0-20200412020049-7a11432ede99 h1:P4ECkcS0cgYSFRZ7EpNAglYtrarwkFUhQ8KTNXIEuZ4=
-github.com/antlr/antlr4 v0.0.0-20200412020049-7a11432ede99/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
+github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0 h1:j7MyDjg6pb7A2ziow17FDZ2Oj5vGnJsLyDmjpN4Jkcg=
+github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0 h1:HWo1m869IqiPhD389kmkxeTalrjNbbJTC8LXupb+sl0=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
