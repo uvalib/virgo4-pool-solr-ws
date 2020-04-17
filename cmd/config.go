@@ -65,6 +65,7 @@ type poolConfigFieldProperties struct {
 	Display    string `json:"display,omitempty"`
 	Visibility string `json:"visibility,omitempty"`
 	Provider   string `json:"provider,omitempty"`
+	RISCode    string `json:"ris_code,omitempty"`
 }
 
 type poolConfigFieldTypeAccessURL struct {

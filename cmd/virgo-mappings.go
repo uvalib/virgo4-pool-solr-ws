@@ -253,6 +253,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			Visibility: field.Properties.Visibility,
 			Display:    field.Properties.Display,
 			Provider:   field.Properties.Provider,
+			RISCode:    field.Properties.RISCode,
 		}
 
 		if field.XID != "" {
