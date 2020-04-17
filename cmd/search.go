@@ -173,7 +173,7 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 	// accurate confidence level in the original query's results.
 
 	if s.virgoReq.Pagination.Start != 0 {
-		s.log("TITLE SEARCH: determining true confidence level")
+		s.log("[SEARCH] determining true confidence level for title search")
 
 		return s.newSearchWithTopResult(s.virgoReq.Query)
 	}
@@ -427,11 +427,13 @@ func (s *searchContext) validateSearchRequest() error {
 			return errors.New("received too many filter groups")
 
 		case numFilterGroups == 1:
-			availableFacets := s.solrAvailableFacets()
+			// the pool id in the filter group is not associated with anything
+			// in our config, so the best we can do is ensure just one filter
+			// group was passed, and that it contains filters that we know about
 
 			filterGroup := (*s.virgoReq.Filters)[0]
 
-			s.log("received filter group: [%s]", filterGroup.PoolID)
+			availableFacets := s.solrAvailableFacets()
 
 			for _, filter := range filterGroup.Facets {
 				if _, ok := availableFacets[filter.FacetID]; ok == false {
@@ -453,7 +455,7 @@ func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchRespon
 		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
-	s.log("query: [%s]", s.virgoReq.Query)
+	s.log("[SEARCH] query: [%s]", s.virgoReq.Query)
 
 	if err = s.validateSearchRequest(); err != nil {
 		return searchResponse{status: http.StatusBadRequest, err: err}
@@ -484,7 +486,7 @@ func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchRespon
 
 	// restore actual confidence
 	if confidenceIndex(top.confidence) > confidenceIndex(s.virgoPoolRes.Confidence) {
-		s.log("overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
+		s.log("[SEARCH] overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
 		s.virgoPoolRes.Confidence = top.confidence
 	}
 

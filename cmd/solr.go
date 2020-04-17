@@ -44,7 +44,7 @@ func (s *searchContext) convertFacets() error {
 	dec, _ := mapstructure.NewDecoder(cfg)
 
 	if mapDecErr := dec.Decode(facetsRaw); mapDecErr != nil {
-		s.log("mapstructure.Decode() failed: %s", mapDecErr.Error())
+		s.log("[SOLR] mapstructure.Decode() failed: %s", mapDecErr.Error())
 		return fmt.Errorf("Failed to decode Solr facet map")
 	}
 
@@ -101,13 +101,13 @@ func (s *searchContext) populateMetaFields() {
 func (s *searchContext) solrQuery() error {
 	jsonBytes, jsonErr := json.Marshal(s.solrReq.json)
 	if jsonErr != nil {
-		s.log("Marshal() failed: %s", jsonErr.Error())
+		s.log("[SOLR] Marshal() failed: %s", jsonErr.Error())
 		return fmt.Errorf("Failed to marshal Solr JSON")
 	}
 
-	req, reqErr := http.NewRequest("GET", s.pool.solr.url, bytes.NewBuffer(jsonBytes))
+	req, reqErr := http.NewRequest("POST", s.pool.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
-		s.log("NewRequest() failed: %s", reqErr.Error())
+		s.log("[SOLR] NewRequest() failed: %s", reqErr.Error())
 		return fmt.Errorf("Failed to create Solr request")
 	}
 
@@ -142,8 +142,8 @@ func (s *searchContext) solrQuery() error {
 			errMsg = fmt.Sprintf("%s refused connection", s.pool.solr.url)
 		}
 
-		s.log("client.Do() failed: %s", resErr.Error())
-		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, status, errMsg, elapsedMS)
+		s.log("[SOLR] client.Do() failed: %s", resErr.Error())
+		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, status, errMsg, elapsedMS)
 		return fmt.Errorf("Failed to receive Solr response")
 	}
 
@@ -156,14 +156,14 @@ func (s *searchContext) solrQuery() error {
 	// external service failure logging (scenario 2)
 
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
-		s.log("Decode() failed: %s", decErr.Error())
-		s.log("ERROR: Failed response from GET %s - %d:%s. Elapsed Time: %d (ms)", s.pool.solr.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
+		s.log("[SOLR] Decode() failed: %s", decErr.Error())
+		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("Failed to decode Solr response")
 	}
 
 	// external service success logging
 
-	s.log("Successful Solr response from GET %s. Elapsed Time: %d (ms)", s.pool.solr.url, elapsedMS)
+	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, elapsedMS)
 
 	s.solrRes = &solrRes
 

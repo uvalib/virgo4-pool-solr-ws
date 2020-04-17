@@ -218,12 +218,12 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// determine which availability field to use
 
-	availability := anonValues
+	availabilityValues := anonValues
 	isAvailableOnShelf := anonOnShelf
 	anonRequest := true
 
 	if s.client.isAuthenticated() == true {
-		availability = authValues
+		availabilityValues = authValues
 		isAvailableOnShelf = authOnShelf
 		anonRequest = false
 	}
@@ -299,9 +299,9 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			}
 
 		case "availability":
-			for _, item := range availability {
-				if sliceContainsString(s.pool.config.Availability.ExposedValues, item) {
-					f.Value = item
+			for _, availabilityValue := range availabilityValues {
+				if sliceContainsString(s.pool.config.Availability.ExposedValues, availabilityValue) {
+					f.Value = availabilityValue
 					r.addField(f)
 				}
 			}
@@ -333,24 +333,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			}
 
 		default:
-			if field.Format != "" {
-				s.log("skipping field with unhandled format: [%s]", field.Format)
-				continue
-			}
+			fieldValues := doc.getValuesByTag(field.Field)
 
-			if field.Field == "" {
-				s.log("skipping field with no format or solr field")
-				continue
-			}
-
-			value := doc.getValuesByTag(field.Field)
-
-			if len(value) == 0 {
-				continue
-			}
-
-			for i, item := range value {
-				f.Value = item
+			for i, fieldValue := range fieldValues {
+				f.Value = fieldValue
 				r.addField(f)
 
 				if field.Limit > 0 && i+1 >= field.Limit {
@@ -466,16 +452,15 @@ func (s *searchContext) virgoPopulateFacetList(solrFacets solrResponseFacets) *V
 
 				for _, facet := range facetDef.DependentFacetXIDs {
 					n := len(s.solrReq.meta.selectionMap[facet])
-					s.log("virgoPopulateFacetList(): [%s] %d selected filters for %s", facetDef.XID, n, facet)
 					numSelected += n
 				}
 
 				if numSelected == 0 {
-					s.log("virgoPopulateFacetList(): [%s] omitting facet due to lack of selected dependent filters", facetDef.XID)
+					s.log("[FACET] omitting facet [%s] due to lack of selected dependent filters", facetDef.XID)
 					continue
 				}
 
-				s.log("virgoPopulateFacetList(): [%s] including facet due to %d selected dependent filters", facetDef.XID, numSelected)
+				s.log("[FACET] including facet [%s] due to %d selected dependent filters", facetDef.XID, numSelected)
 			}
 
 			gotFacet = true

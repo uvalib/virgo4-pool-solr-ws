@@ -22,15 +22,7 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 	filterGroup := (*filterGroups)[0]
 
 	for _, filter := range filterGroup.Facets {
-		solrFacet, ok := availableFacets[filter.FacetID]
-
-		// this should never happen due to up-front validations, perhaps this can be removed
-		if ok == false {
-			warning := fmt.Sprintf("ignoring unrecognized filter: [%s]", filter.FacetID)
-			s.meta.client.log(warning)
-			s.meta.warnings = append(s.meta.warnings, warning)
-			continue
-		}
+		solrFacet := availableFacets[filter.FacetID]
 
 		// remove this selected filter if it depends on other filters, none of which are selected
 
@@ -39,16 +31,15 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 
 			for _, facet := range solrFacet.config.DependentFacetXIDs {
 				n := len(s.meta.selectionMap[facet])
-				s.meta.client.log("buildFilters(): [%s] %d selected filters for %s", filter.FacetID, n, facet)
 				numSelected += n
 			}
 
 			if numSelected == 0 {
-				s.meta.client.log("buildFilters(): [%s] omitting filter due to lack of selected dependent filters", filter.FacetID)
+				s.meta.client.log("[FILTER] omitting filter [%s] due to lack of selected dependent filters", filter.FacetID)
 				continue
 			}
 
-			s.meta.client.log("buildFilters(): [%s] including filter due to %d selected dependent filters", filter.FacetID, numSelected)
+			s.meta.client.log("[FILTER] including filter [%s] due to %d selected dependent filters", filter.FacetID, numSelected)
 		}
 
 		var filterValue string
