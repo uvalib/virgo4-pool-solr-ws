@@ -295,8 +295,8 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	// intra-group sorting
 	c.virgoReq.Sort = &VirgoSort{
-		SortID: s.pool.config.Solr.Grouping.SortXID,
-		Order:  s.pool.config.Solr.Grouping.SortOrder,
+		SortID: s.pool.config.Solr.Grouping.Sort.XID,
+		Order:  s.pool.config.Solr.Grouping.Sort.Order,
 	}
 
 	if resp := c.getPoolQueryResults(); resp.err != nil {

@@ -217,6 +217,26 @@ func (p *poolContext) validateConfig() {
 	var messageIDs stringValidator
 	var miscValues stringValidator
 
+	miscValues.requireValue(p.config.Service.DefaultSort.XID, "default sort xid")
+	miscValues.requireValue(p.config.Service.DefaultSort.Order, "default sort order")
+
+	if p.config.Service.DefaultSort.XID != "" && p.maps.sortFields[p.config.Service.DefaultSort.XID] == "" {
+		log.Printf("[VALIDATE] default sort xid not found in sort options list")
+		invalid = true
+	}
+
+	if p.config.Service.DefaultSort.Order != "asc" && p.config.Service.DefaultSort.Order != "desc" {
+		log.Printf("[VALIDATE] default sort order not valid")
+		invalid = true
+	}
+
+	miscValues.requireValue(p.config.Solr.Grouping.Sort.Order, "solr grouping sort order")
+
+	if p.config.Solr.Grouping.Sort.Order != "asc" && p.config.Solr.Grouping.Sort.Order != "desc" {
+		log.Printf("[VALIDATE] solr grouping sort order not valid")
+		invalid = true
+	}
+
 	miscValues.requireValue(p.config.Identity.Mode, "pool mode")
 
 	miscValues.requireValue(p.config.Solr.Host, "solr host")
@@ -230,7 +250,7 @@ func (p *poolContext) validateConfig() {
 		invalid = true
 	}
 
-	miscValues.requireValue(p.config.Solr.Grouping.SortOrder, "solr grouping sort order")
+	miscValues.requireValue(p.config.Solr.Grouping.Sort.Order, "solr grouping sort order")
 
 	solrFields.requireValue(p.config.Solr.Grouping.Field, "solr grouping field")
 	solrFields.requireValue(p.config.Solr.ExactMatchTitleField, "solr exact match title field")
@@ -239,7 +259,7 @@ func (p *poolContext) validateConfig() {
 
 	messageIDs.requireValue(p.config.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Identity.DescXID, "identity description xid")
-	messageIDs.requireValue(p.config.Solr.Grouping.SortXID, "solr grouping sort xid")
+	messageIDs.requireValue(p.config.Solr.Grouping.Sort.XID, "solr grouping sort xid")
 
 	if p.config.Identity.Mode == "image" {
 		if p.config.Related.Image == nil {

@@ -119,8 +119,8 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	// fill out requested/defaulted sort info
 
 	sort := VirgoSort{
-		SortID: "SortRelevance",
-		Order:  "desc",
+		SortID: s.pool.config.Service.DefaultSort.XID,
+		Order:  s.pool.config.Service.DefaultSort.Order,
 	}
 
 	if s.virgoReq.Sort != nil && (s.virgoReq.Sort.SortID != "" || s.virgoReq.Sort.Order != "") {

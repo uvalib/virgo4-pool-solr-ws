@@ -25,6 +25,7 @@ type poolConfigURLTemplates struct {
 type poolConfigService struct {
 	Port         string                 `json:"port,omitempty"`
 	JWTKey       string                 `json:"jwt_key,omitempty"`
+	DefaultSort  poolConfigSort         `json:"default_sort,omitempty"`
 	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
 }
 
@@ -35,10 +36,14 @@ type poolConfigSolrParams struct {
 	Fl      []string `json:"fl,omitempty"`
 }
 
+type poolConfigSort struct {
+	XID   string `json:"xid,omitempty"`
+	Order string `json:"order,omitempty"`
+}
+
 type poolConfigSolrGrouping struct {
-	Field     string `json:"field,omitempty"`
-	SortXID   string `json:"sort_xid,omitempty"`
-	SortOrder string `json:"sort_order,omitempty"`
+	Field string         `json:"field,omitempty"`
+	Sort  poolConfigSort `json:"sort,omitempty"`
 }
 
 type poolConfigSolr struct {
