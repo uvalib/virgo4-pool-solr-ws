@@ -65,7 +65,7 @@ type poolConfigFieldProperties struct {
 	Display    string `json:"display,omitempty"`
 	Visibility string `json:"visibility,omitempty"`
 	Provider   string `json:"provider,omitempty"`
-	RISCode    string `json:"ris_code,omitempty"`
+	RISCode    string `json:"ris_code,omitempty"` // can override mapping
 }
 
 type poolConfigFieldTypeAccessURL struct {
@@ -177,6 +177,11 @@ type poolConfigRelated struct {
 	Image *poolConfigRelatedImage `json:"image,omitempty"`
 }
 
+type poolConfigRISCode struct {
+	Field string `json:"field,omitempty"`
+	Code  string `json:"code,omitempty"`
+}
+
 type poolConfig struct {
 	Identity     poolConfigIdentity     `json:"identity,omitempty"`
 	Service      poolConfigService      `json:"service,omitempty"`
@@ -185,9 +190,10 @@ type poolConfig struct {
 	Fields       []poolConfigField      `json:"fields,omitempty"`
 	GlobalFacets []poolConfigFacet      `json:"global_facets,omitempty"`
 	LocalFacets  []poolConfigFacet      `json:"local_facets,omitempty"`
+	Facets       []poolConfigFacet      `json:"-"` // global + local, for convenience
 	Availability poolConfigAvailability `json:"availability,omitempty"`
 	Related      poolConfigRelated      `json:"related,omitempty"`
-	Facets       []poolConfigFacet      `json:"-"` // global + local, for convenience
+	RISCodes     []poolConfigRISCode    `json:"ris_codes,omitempty"`
 }
 
 func getSortedJSONEnvVars() []string {

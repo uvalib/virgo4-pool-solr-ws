@@ -260,6 +260,10 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			f.Label = s.client.localize(field.XID)
 		}
 
+		if field.Properties.RISCode == "" && field.Field != "" {
+			f.RISCode = s.pool.maps.risCodes[field.Field]
+		}
+
 		switch field.Format {
 		case "access_url":
 			if anonOnline == true || authOnline == true {

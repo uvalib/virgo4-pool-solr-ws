@@ -186,6 +186,10 @@ other = "Format"
 desc = "The display name for the Genre field in a single item record."
 other = "Genre"
 
+[FieldISBN]
+desc = "The display name for the ISBN field in a single item record."
+other = "ISBN"
+
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
 other = "Identifier"
