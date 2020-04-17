@@ -105,6 +105,12 @@ func (s *searchContext) solrQuery() error {
 		return fmt.Errorf("Failed to marshal Solr JSON")
 	}
 
+	// we cannot use query parameters for the request due to the
+	// possibility of triggering a 414 response (URI Too Long).
+
+	// instead, write the json to the body of the request.
+	// NOTE: Solr is lenient; GET or POST works fine for this.
+
 	req, reqErr := http.NewRequest("POST", s.pool.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
 		s.log("[SOLR] NewRequest() failed: %s", reqErr.Error())
