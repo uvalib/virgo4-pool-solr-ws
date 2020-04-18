@@ -231,7 +231,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	// field loop (preprocessing)
 
 	for _, field := range s.pool.config.Fields {
-		if field.Field != "" && field.Properties.Name == "author" {
+		if field.Field != "" && field.Properties.Type == "author" {
 			authorValues = doc.getValuesByTag(field.Field)
 		}
 	}
@@ -248,7 +248,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		}
 
 		f := &VirgoNuancedField{
-			Name:       field.Properties.Name,
+			Name:       field.Name,
 			Type:       field.Properties.Type,
 			Visibility: field.Properties.Visibility,
 			Display:    field.Properties.Display,

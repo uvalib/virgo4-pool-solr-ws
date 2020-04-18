@@ -301,7 +301,7 @@ func (p *poolContext) validateConfig() {
 	for i, field := range p.config.Fields {
 		messageIDs.addValue(field.XID)
 
-		miscValues.requireValue(field.Properties.Name, fmt.Sprintf("field %d properties name", i))
+		miscValues.requireValue(field.Name, fmt.Sprintf("field %d properties name", i))
 
 		switch field.Format {
 		case "access_url":
@@ -414,12 +414,36 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
+func (p *poolContext) initFacetsAndFields() {
+	// facets
+
+	p.config.Facets = append(p.config.GlobalFacets, p.config.PoolFacets...)
+
+	// fields
+
+	commonFieldMap := make(map[string]*poolConfigField)
+
+	for i, _ := range p.config.CommonFields {
+		f := &p.config.CommonFields[i]
+		commonFieldMap[f.Name] = f
+	}
+
+	for _, field := range p.config.PoolFields {
+		if cf := commonFieldMap[field.Name]; cf != nil {
+			p.config.Fields = append(p.config.Fields, *cf)
+		} else {
+			p.config.Fields = append(p.config.Fields, field)
+		}
+	}
+}
+
 func initializePool(cfg *poolConfig) *poolContext {
 	p := poolContext{}
 
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+	p.initFacetsAndFields()
 	p.initTranslations()
 	p.initIdentity()
 	p.initProviders()

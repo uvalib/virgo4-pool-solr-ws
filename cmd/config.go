@@ -96,6 +96,7 @@ type poolConfigFieldTypeSirsiURL struct {
 }
 
 type poolConfigField struct {
+	Name          string                            `json:"name,omitempty"` // required; v4 field name, and key for common fields
 	XID           string                            `json:"xid,omitempty"`
 	Field         string                            `json:"field,omitempty"`
 	Properties    poolConfigFieldProperties         `json:"properties,omitempty"`
@@ -187,10 +188,12 @@ type poolConfig struct {
 	Service      poolConfigService      `json:"service,omitempty"`
 	Solr         poolConfigSolr         `json:"solr,omitempty"`
 	Providers    []poolConfigProvider   `json:"providers,omitempty"`
-	Fields       []poolConfigField      `json:"fields,omitempty"`
+	CommonFields []poolConfigField      `json:"common_fields,omitempty"`
+	PoolFields   []poolConfigField      `json:"pool_fields,omitempty"`
+	Fields       []poolConfigField      `json:"-"` // built from pool fields, pulling in common fields as needed
 	GlobalFacets []poolConfigFacet      `json:"global_facets,omitempty"`
-	LocalFacets  []poolConfigFacet      `json:"local_facets,omitempty"`
-	Facets       []poolConfigFacet      `json:"-"` // global + local, for convenience
+	PoolFacets   []poolConfigFacet      `json:"pool_facets,omitempty"`
+	Facets       []poolConfigFacet      `json:"-"` // concatenation of global and local facets
 	Availability poolConfigAvailability `json:"availability,omitempty"`
 	Related      poolConfigRelated      `json:"related,omitempty"`
 	RISCodes     []poolConfigRISCode    `json:"ris_codes,omitempty"`
@@ -251,8 +254,6 @@ func loadConfig() *poolConfig {
 	}
 
 	log.Printf("[CONFIG] composite json:\n%s", string(bytes))
-
-	cfg.Facets = append(cfg.GlobalFacets, cfg.LocalFacets...)
 
 	return &cfg
 }
