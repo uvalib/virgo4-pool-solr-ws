@@ -58,6 +58,8 @@ type poolContext struct {
 type stringValidator struct {
 	values  []string
 	invalid bool
+	prefix  string
+	postfix string
 }
 
 func (v *stringValidator) addValue(value string) {
@@ -66,9 +68,17 @@ func (v *stringValidator) addValue(value string) {
 	}
 }
 
+func (v *stringValidator) setPrefix(prefix string) {
+	v.prefix = prefix
+}
+
+func (v *stringValidator) setPostfix(postfix string) {
+	v.postfix = postfix
+}
+
 func (v *stringValidator) requireValue(value string, label string) {
 	if value == "" {
-		log.Printf("[VALIDATE] missing %s", label)
+		log.Printf("[VALIDATE] %smissing %s%s", v.prefix, label, v.postfix)
 		v.invalid = true
 		return
 	}
@@ -298,23 +308,37 @@ func (p *poolContext) validateConfig() {
 			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
 		}
 	}
+
 	for i, field := range p.config.Fields {
+		prefix := fmt.Sprintf("field index %d: ", i)
+		postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
+
+		solrFields.setPrefix(prefix)
+		messageIDs.setPrefix(prefix)
+		miscValues.setPrefix(prefix)
+
+		solrFields.setPostfix(postfix)
+		messageIDs.setPostfix(postfix)
+		miscValues.setPostfix(postfix)
+
+		// start validating
+
 		messageIDs.addValue(field.XID)
 
-		miscValues.requireValue(field.Name, fmt.Sprintf("field %d properties name", i))
+		miscValues.requireValue(field.Name, "name")
 
 		switch field.Format {
 		case "access_url":
 			if field.AccessURL == nil {
-				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.AccessURL.URLField, fmt.Sprintf("field %d %s url field", i, field.Format))
-			solrFields.requireValue(field.AccessURL.LabelField, fmt.Sprintf("field %d %s label field", i, field.Format))
-			solrFields.requireValue(field.AccessURL.ProviderField, fmt.Sprintf("field %d %s provider field", i, field.Format))
-			messageIDs.requireValue(field.AccessURL.DefaultItemXID, fmt.Sprintf("field %d %s default item xid", i, field.Format))
+			solrFields.requireValue(field.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Format))
+			solrFields.requireValue(field.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Format))
+			solrFields.requireValue(field.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Format))
+			messageIDs.requireValue(field.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Format))
 
 		case "authentication_prompt":
 
@@ -322,15 +346,15 @@ func (p *poolContext) validateConfig() {
 
 		case "cover_image_url":
 			if field.CoverImageURL == nil {
-				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.CoverImageURL.ThumbnailField, fmt.Sprintf("field %d %s thumbnail url field", i, field.Format))
-			solrFields.requireValue(field.CoverImageURL.IDField, fmt.Sprintf("field %d %s id field", i, field.Format))
-			solrFields.requireValue(field.CoverImageURL.TitleField, fmt.Sprintf("field %d %s title field", i, field.Format))
-			solrFields.requireValue(field.CoverImageURL.PoolField, fmt.Sprintf("field %d %s pool field", i, field.Format))
+			solrFields.requireValue(field.CoverImageURL.ThumbnailField, fmt.Sprintf("%s section thumbnail url field", field.Format))
+			solrFields.requireValue(field.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Format))
+			solrFields.requireValue(field.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Format))
+			solrFields.requireValue(field.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Format))
 
 			solrFields.addValue(field.CoverImageURL.ISBNField)
 			solrFields.addValue(field.CoverImageURL.OCLCField)
@@ -342,25 +366,25 @@ func (p *poolContext) validateConfig() {
 
 		case "iiif_base_url":
 			if field.IIIFBaseURL == nil {
-				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("field %d %s identifier field", i, field.Format))
+			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("%s section identifier field", field.Format))
 
 			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Template, "iiif template url")
 			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 
 		case "sirsi_url":
 			if field.SirsiURL == nil {
-				log.Printf("[VALIDATE] missing field %d %s section", i, field.Format)
+				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.SirsiURL.IDField, fmt.Sprintf("field %d %s id field", i, field.Format))
-			miscValues.requireValue(field.SirsiURL.IDPrefix, fmt.Sprintf("field %d %s id prefix", i, field.Format))
+			solrFields.requireValue(field.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Format))
+			miscValues.requireValue(field.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Format))
 
 			miscValues.requireValue(p.config.Service.URLTemplates.Sirsi.Template, "sirsi template url")
 			miscValues.requireValue(p.config.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
@@ -372,7 +396,8 @@ func (p *poolContext) validateConfig() {
 				continue
 			}
 
-			solrFields.requireValue(field.Field, fmt.Sprintf("field %d field", i))
+			// if not a specially handled field format, the source solr field must be defined
+			solrFields.requireValue(field.Field, "solr field")
 		}
 	}
 
@@ -382,7 +407,7 @@ func (p *poolContext) validateConfig() {
 
 	for _, tag := range solrFields.Values() {
 		if val := doc.getFieldByTag(tag); val == nil {
-			log.Printf("[VALIDATE] tag not found in Solr document struct tags: [%s]", tag)
+			log.Printf("[VALIDATE] field not found in Solr document struct tags: [%s]", tag)
 			invalid = true
 		}
 	}
@@ -398,7 +423,7 @@ func (p *poolContext) validateConfig() {
 		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
 		for _, id := range messageIDs.Values() {
 			if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: id}); err != nil {
-				log.Printf("[VALIDATE] [%s] missing translation for message ID: [%s]  (%s)", lang, id, err.Error())
+				log.Printf("[VALIDATE] [%s] missing translation for message ID: [%s] (%s)", lang, id, err.Error())
 				invalid = true
 			}
 		}
@@ -415,14 +440,17 @@ func (p *poolContext) validateConfig() {
 }
 
 func (p *poolContext) initFacetsAndFields() {
-	// facets
+	// facets are just the global facets combined with our pool-specific ones
 
 	p.config.Facets = append(p.config.GlobalFacets, p.config.PoolFacets...)
 
-	// fields
+	// fields are populated as follows:
+	// * if the field name matches one in the common fields list:
+	//   * if the common field is a special format, use common field as-is;
+	//   * otherwise allow overrides to the basic values (xid, field, properties, limit)
+	// * otherwise treat this as a new field definition and allow all values to be set
 
 	commonFieldMap := make(map[string]*poolConfigField)
-
 	for i, _ := range p.config.CommonFields {
 		f := &p.config.CommonFields[i]
 		commonFieldMap[f.Name] = f
@@ -430,8 +458,53 @@ func (p *poolContext) initFacetsAndFields() {
 
 	for _, field := range p.config.PoolFields {
 		if cf := commonFieldMap[field.Name]; cf != nil {
-			p.config.Fields = append(p.config.Fields, *cf)
+			// this field is in the common field list
+
+			f := *cf
+
+			if cf.Format == "" {
+				// non-special-format field; allow some value overrides
+
+				if field.XID != "" && field.XID != f.XID {
+					f.XID = field.XID
+				}
+
+				if field.Field != "" && field.Field != f.Field {
+					f.Field = field.Field
+				}
+
+				if field.Limit != 0 && field.XID != f.XID {
+					f.XID = field.XID
+				}
+
+				if field.Properties.Name != "" && field.Properties.Name != f.Properties.Name {
+					f.Properties.Name = field.Properties.Name
+				}
+
+				if field.Properties.Type != "" && field.Properties.Type != f.Properties.Type {
+					f.Properties.Type = field.Properties.Type
+				}
+
+				if field.Properties.Display != "" && field.Properties.Display != f.Properties.Display {
+					f.Properties.Display = field.Properties.Display
+				}
+
+				if field.Properties.Visibility != "" && field.Properties.Visibility != f.Properties.Visibility {
+					f.Properties.Visibility = field.Properties.Visibility
+				}
+
+				if field.Properties.Provider != "" && field.Properties.Provider != f.Properties.Provider {
+					f.Properties.Provider = field.Properties.Provider
+				}
+
+				if field.Properties.RISCode != "" && field.Properties.RISCode != f.Properties.RISCode {
+					f.Properties.RISCode = field.Properties.RISCode
+				}
+			}
+
+			p.config.Fields = append(p.config.Fields, f)
 		} else {
+			// new pool-specific field definition
 			p.config.Fields = append(p.config.Fields, field)
 		}
 	}
