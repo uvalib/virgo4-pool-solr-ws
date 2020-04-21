@@ -57,7 +57,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.localizer = i18n.NewLocalizer(p.translations.bundle, acceptLang)
 
 	// kludge to get the response language by checking the tag value returned for a known message ID
-	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.config.Identity.NameXID})
+	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.config.Local.Identity.NameXID})
 	contentLang := tag.String()
 
 	ctx.Header("Content-Language", contentLang)
@@ -66,7 +66,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.intuit = false
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 
-	if p.config.Solr.Grouping.Field != "" {
+	if p.config.Local.Solr.Grouping.Field != "" {
 		c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
 	}
 

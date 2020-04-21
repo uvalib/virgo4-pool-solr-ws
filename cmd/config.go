@@ -60,7 +60,6 @@ type poolConfigSolr struct {
 }
 
 type poolConfigFieldProperties struct {
-	Name       string `json:"name,omitempty"`
 	Type       string `json:"type,omitempty"`
 	Display    string `json:"display,omitempty"`
 	Visibility string `json:"visibility,omitempty"`
@@ -95,19 +94,23 @@ type poolConfigFieldTypeSirsiURL struct {
 	IDPrefix string `json:"id_prefix,omitempty"`
 }
 
-type poolConfigField struct {
-	Name          string                            `json:"name,omitempty"` // required; v4 field name, and key for common fields
-	XID           string                            `json:"xid,omitempty"`
-	Field         string                            `json:"field,omitempty"`
-	Properties    poolConfigFieldProperties         `json:"properties,omitempty"`
-	Limit         int                               `json:"limit,omitempty"`
-	OnShelfOnly   bool                              `json:"onshelf_only,omitempty"`
-	DetailsOnly   bool                              `json:"details_only,omitempty"`
-	Format        string                            `json:"format,omitempty"` // controlled vocabulary; drives special handling
+type poolConfigFieldFormatInfo struct {
 	AccessURL     *poolConfigFieldTypeAccessURL     `json:"access_url,omitempty"`
 	IIIFBaseURL   *poolConfigFieldTypeIIIFBaseURL   `json:"iiif_base_url,omitempty"`
 	CoverImageURL *poolConfigFieldTypeCoverImageURL `json:"cover_image_url,omitempty"`
 	SirsiURL      *poolConfigFieldTypeSirsiURL      `json:"sirsi_url,omitempty"`
+}
+
+type poolConfigField struct {
+	Name        string                     `json:"name,omitempty"` // required; v4 field name, and key for common fields
+	XID         string                     `json:"xid,omitempty"`
+	Field       string                     `json:"field,omitempty"`
+	Properties  poolConfigFieldProperties  `json:"properties,omitempty"`
+	Limit       int                        `json:"limit,omitempty"`
+	OnShelfOnly bool                       `json:"onshelf_only,omitempty"`
+	DetailsOnly bool                       `json:"details_only,omitempty"`
+	Format      string                     `json:"format,omitempty"`      // controlled vocabulary; drives special handling
+	FormatInfo  *poolConfigFieldFormatInfo `json:"format_info,omitempty"` // extra info for certain formats
 }
 
 type poolConfigAvailabilityFields struct {
@@ -183,20 +186,32 @@ type poolConfigRISCode struct {
 	Code  string `json:"code,omitempty"`
 }
 
-type poolConfig struct {
-	Identity     poolConfigIdentity     `json:"identity,omitempty"`
+type poolConfigMappings struct {
+	Fields     []poolConfigField `json:"fields,omitempty"`
+	FieldNames []string          `json:"field_names,omitempty"`
+	Facets     []poolConfigFacet `json:"facets,omitempty"`
+	FacetXIDs  []string          `json:"facet_xids,omitempty"`
+}
+
+type poolConfigGlobal struct {
 	Service      poolConfigService      `json:"service,omitempty"`
-	Solr         poolConfigSolr         `json:"solr,omitempty"`
 	Providers    []poolConfigProvider   `json:"providers,omitempty"`
-	CommonFields []poolConfigField      `json:"common_fields,omitempty"`
-	PoolFields   []poolConfigField      `json:"pool_fields,omitempty"`
-	Fields       []poolConfigField      `json:"-"` // built from pool fields, pulling in common fields as needed
-	GlobalFacets []poolConfigFacet      `json:"global_facets,omitempty"`
-	PoolFacets   []poolConfigFacet      `json:"pool_facets,omitempty"`
-	Facets       []poolConfigFacet      `json:"-"` // concatenation of global and local facets
 	Availability poolConfigAvailability `json:"availability,omitempty"`
-	Related      poolConfigRelated      `json:"related,omitempty"`
+	Mappings     poolConfigMappings     `json:"mappings,omitempty"`
 	RISCodes     []poolConfigRISCode    `json:"ris_codes,omitempty"`
+}
+
+type poolConfigLocal struct {
+	Identity poolConfigIdentity `json:"identity,omitempty"`
+	Solr     poolConfigSolr     `json:"solr,omitempty"`
+	Mappings poolConfigMappings `json:"mappings,omitempty"`
+	Related  *poolConfigRelated `json:"related,omitempty"`
+}
+
+type poolConfig struct {
+	Global   poolConfigGlobal   `json:"global,omitempty"`
+	Local    poolConfigLocal    `json:"local,omitempty"`
+	Mappings poolConfigMappings `json:"-"` // built from global/local mappings
 }
 
 func getSortedJSONEnvVars() []string {
@@ -243,7 +258,7 @@ func loadConfig() *poolConfig {
 
 	// optional convenience override to simplify terraform config
 	if host := os.Getenv("VIRGO4_SOLR_POOL_WS_SOLR_HOST"); host != "" {
-		cfg.Solr.Host = host
+		cfg.Local.Solr.Host = host
 	}
 
 	//bytes, err := json.MarshalIndent(cfg, "", "  ")

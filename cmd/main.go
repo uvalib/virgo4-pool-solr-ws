@@ -60,7 +60,7 @@ func main() {
 
 	router.Use(static.Serve("/assets", static.LocalFile("./assets", false)))
 
-	portStr := fmt.Sprintf(":%s", pool.config.Service.Port)
+	portStr := fmt.Sprintf(":%s", pool.config.Global.Service.Port)
 	log.Printf("[MAIN] listening on %s", portStr)
 
 	log.Fatal(router.Run(portStr))

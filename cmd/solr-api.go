@@ -70,8 +70,10 @@ type solrResponseHeader struct {
 
 type solrDocument struct {
 	// for performance reasons, pools should be configured to only request the fields below
+	AlternateID          []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability     []string `json:"anon_availability_a,omitempty"`
 	Author               []string `json:"author_facet_a,omitempty"`
+	Barcode              []string `json:"barcode_a,omitempty"`
 	CallNumber           []string `json:"call_number_a,omitempty"`
 	CallNumberBroad      []string `json:"call_number_broad_a,omitempty"`
 	CallNumberNarrow     []string `json:"call_number_narrow_a,omitempty"`
@@ -84,18 +86,21 @@ type solrDocument struct {
 	ISBN                 []string `json:"isbn_a,omitempty"`
 	ISSN                 []string `json:"issn_a,omitempty"`
 	Identifier           []string `json:"identifier_a,omitempty"`
+	IndividualCallNumber []string `json:"individual_call_number_a,omitempty"`
 	LCCN                 []string `json:"lccn_a,omitempty"`
 	Language             []string `json:"language_a,omitempty"`
 	Library              []string `json:"library_a,omitempty"`
 	Location             []string `json:"location2_a,omitempty"`
 	Note                 []string `json:"note_a,omitempty"`
 	OCLC                 []string `json:"oclc_a,omitempty"`
+	PDFURL               []string `json:"pdf_url_a,omitempty"`
 	Pool                 []string `json:"pool_a,omitempty"`
 	PublicationDate      string   `json:"published_date,omitempty"`
 	PublicationDateRange []string `json:"published_daterange,omitempty"`
 	Published            []string `json:"published_a,omitempty"`
 	Region               []string `json:"region_a,omitempty"`
 	ReleaseDate          []string `json:"release_a,omitempty"`
+	RightsWrapperURL     []string `json:"rights_wrapper_url_a,omitempty"`
 	Score                float32  `json:"score,omitempty"`
 	Series               []string `json:"title_series_a,omitempty"`
 	Subject              []string `json:"subject_a,omitempty"`

@@ -105,8 +105,8 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	// fill out requested/defaulted sort info
 
 	sort := VirgoSort{
-		SortID: s.pool.config.Service.DefaultSort.XID,
-		Order:  s.pool.config.Service.DefaultSort.Order,
+		SortID: s.pool.config.Global.Service.DefaultSort.XID,
+		Order:  s.pool.config.Global.Service.DefaultSort.Order,
 	}
 
 	if s.virgoReq.Sort != nil && (s.virgoReq.Sort.SortID != "" || s.virgoReq.Sort.Order != "") {
@@ -135,16 +135,16 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	// fill out as much as we can for a generic request
 
 	solrReq.json.Params.Q = s.virgoReq.meta.solrQuery
-	solrReq.json.Params.Qt = s.pool.config.Solr.Params.Qt
-	solrReq.json.Params.DefType = s.pool.config.Solr.Params.DefType
-	solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Solr.Params.Fq)
-	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Solr.Params.Fl)
+	solrReq.json.Params.Qt = s.pool.config.Local.Solr.Params.Qt
+	solrReq.json.Params.DefType = s.pool.config.Local.Solr.Params.DefType
+	solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
+	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
 	solrReq.json.Params.Start = restrictValue("start", s.virgoReq.Pagination.Start, 0, 0)
 	solrReq.json.Params.Rows = restrictValue("rows", s.virgoReq.Pagination.Rows, 0, 0)
 	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID], solrReq.meta.sort.Order)
 
 	if s.client.opts.grouped == true {
-		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Solr.Grouping.Field)
+		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.Grouping.Field)
 		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
 	}
 

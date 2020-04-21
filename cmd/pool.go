@@ -96,15 +96,15 @@ func (v *stringValidator) Invalid() bool {
 
 func (p *poolContext) initIdentity() {
 	p.identity = VirgoPoolIdentity{
-		Name:        p.config.Identity.NameXID,
-		Description: p.config.Identity.DescXID,
-		Mode:        p.config.Identity.Mode,
-		Attributes:  p.config.Identity.Attributes,
+		Name:        p.config.Local.Identity.NameXID,
+		Description: p.config.Local.Identity.DescXID,
+		Mode:        p.config.Local.Identity.Mode,
+		Attributes:  p.config.Local.Identity.Attributes,
 	}
 
 	// create sort field map
 	p.maps.sortFields = make(map[string]string)
-	for _, val := range p.config.Identity.SortOptions {
+	for _, val := range p.config.Local.Identity.SortOptions {
 		p.identity.SortOptions = append(p.identity.SortOptions, VirgoSortOption{ID: val.XID})
 		p.maps.sortFields[val.XID] = val.Field
 	}
@@ -121,7 +121,7 @@ func (p *poolContext) initIdentity() {
 }
 
 func (p *poolContext) initProviders() {
-	for _, val := range p.config.Providers {
+	for _, val := range p.config.Global.Providers {
 		provider := VirgoProvider{
 			Provider:    val.Name,
 			Label:       val.XID,
@@ -154,8 +154,8 @@ func (p *poolContext) initVersion() {
 func (p *poolContext) initSolr() {
 	// client setup
 
-	connTimeout := timeoutWithMinimum(p.config.Solr.ConnTimeout, 5)
-	readTimeout := timeoutWithMinimum(p.config.Solr.ReadTimeout, 5)
+	connTimeout := timeoutWithMinimum(p.config.Local.Solr.ConnTimeout, 5)
+	readTimeout := timeoutWithMinimum(p.config.Local.Solr.ReadTimeout, 5)
 
 	solrClient := &http.Client{
 		Timeout: time.Duration(readTimeout) * time.Second,
@@ -173,34 +173,34 @@ func (p *poolContext) initSolr() {
 	// create facet map
 	p.maps.availableFacets = make(map[string]poolConfigFacet)
 
-	p.config.Availability.ExposedValues = []string{}
-	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.OnShelf...)
-	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.Online...)
-	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.Other...)
+	p.config.Global.Availability.ExposedValues = []string{}
+	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
+	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
+	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
 
-	for i := range p.config.Facets {
-		f := &p.config.Facets[i]
+	for i := range p.config.Mappings.Facets {
+		f := &p.config.Mappings.Facets[i]
 
 		// configure availability facet while we're here
 		if f.IsAvailability == true {
-			f.Solr.Field = p.config.Availability.Anon.Facet
-			f.Solr.FieldAuth = p.config.Availability.Auth.Facet
-			f.ExposedValues = p.config.Availability.ExposedValues
+			f.Solr.Field = p.config.Global.Availability.Anon.Facet
+			f.Solr.FieldAuth = p.config.Global.Availability.Auth.Facet
+			f.ExposedValues = p.config.Global.Availability.ExposedValues
 		}
 
 		p.maps.availableFacets[f.XID] = *f
 	}
 
 	p.solr = poolSolr{
-		url:                  fmt.Sprintf("%s/%s/%s", p.config.Solr.Host, p.config.Solr.Core, p.config.Solr.Handler),
+		url:                  fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Handler),
 		client:               solrClient,
-		scoreThresholdMedium: p.config.Solr.ScoreThresholdMedium,
-		scoreThresholdHigh:   p.config.Solr.ScoreThresholdHigh,
+		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,
+		scoreThresholdHigh:   p.config.Local.Solr.ScoreThresholdHigh,
 	}
 
 	// create RIS code map
 	p.maps.risCodes = make(map[string]string)
-	for _, code := range p.config.RISCodes {
+	for _, code := range p.config.Global.RISCodes {
 		p.maps.risCodes[code.Field] = code.Code
 	}
 
@@ -234,82 +234,85 @@ func (p *poolContext) validateConfig() {
 	var messageIDs stringValidator
 	var miscValues stringValidator
 
-	miscValues.requireValue(p.config.Service.DefaultSort.XID, "default sort xid")
-	miscValues.requireValue(p.config.Service.DefaultSort.Order, "default sort order")
+	miscValues.requireValue(p.config.Global.Service.DefaultSort.XID, "default sort xid")
+	miscValues.requireValue(p.config.Global.Service.DefaultSort.Order, "default sort order")
 
-	if p.config.Service.DefaultSort.XID != "" && p.maps.sortFields[p.config.Service.DefaultSort.XID] == "" {
+	if p.config.Global.Service.DefaultSort.XID != "" && p.maps.sortFields[p.config.Global.Service.DefaultSort.XID] == "" {
 		log.Printf("[VALIDATE] default sort xid not found in sort options list")
 		invalid = true
 	}
 
-	if p.config.Service.DefaultSort.Order != "asc" && p.config.Service.DefaultSort.Order != "desc" {
+	if p.config.Global.Service.DefaultSort.Order != "asc" && p.config.Global.Service.DefaultSort.Order != "desc" {
 		log.Printf("[VALIDATE] default sort order not valid")
 		invalid = true
 	}
 
-	miscValues.requireValue(p.config.Solr.Grouping.Sort.Order, "solr grouping sort order")
+	miscValues.requireValue(p.config.Local.Solr.Grouping.Sort.Order, "solr grouping sort order")
 
-	if p.config.Solr.Grouping.Sort.Order != "asc" && p.config.Solr.Grouping.Sort.Order != "desc" {
+	if p.config.Local.Solr.Grouping.Sort.Order != "asc" && p.config.Local.Solr.Grouping.Sort.Order != "desc" {
 		log.Printf("[VALIDATE] solr grouping sort order not valid")
 		invalid = true
 	}
 
-	miscValues.requireValue(p.config.Identity.Mode, "pool mode")
+	miscValues.requireValue(p.config.Local.Identity.Mode, "pool mode")
 
-	miscValues.requireValue(p.config.Solr.Host, "solr host")
-	miscValues.requireValue(p.config.Solr.Core, "solr core")
-	miscValues.requireValue(p.config.Solr.Handler, "solr handler")
-	miscValues.requireValue(p.config.Solr.Params.Qt, "solr param qt")
-	miscValues.requireValue(p.config.Solr.Params.DefType, "solr param deftype")
+	miscValues.requireValue(p.config.Local.Solr.Host, "solr host")
+	miscValues.requireValue(p.config.Local.Solr.Core, "solr core")
+	miscValues.requireValue(p.config.Local.Solr.Handler, "solr handler")
+	miscValues.requireValue(p.config.Local.Solr.Params.Qt, "solr param qt")
+	miscValues.requireValue(p.config.Local.Solr.Params.DefType, "solr param deftype")
 
-	if len(p.config.Solr.Params.Fq) == 0 {
+	if len(p.config.Local.Solr.Params.Fq) == 0 {
 		log.Printf("[VALIDATE] solr param fq is empty")
 		invalid = true
 	}
 
-	miscValues.requireValue(p.config.Solr.Grouping.Sort.Order, "solr grouping sort order")
+	miscValues.requireValue(p.config.Local.Solr.Grouping.Sort.Order, "solr grouping sort order")
 
-	solrFields.requireValue(p.config.Solr.Grouping.Field, "solr grouping field")
-	solrFields.requireValue(p.config.Solr.ExactMatchTitleField, "solr exact match title field")
-	solrFields.requireValue(p.config.Availability.Anon.Field, "anon availability field")
-	solrFields.requireValue(p.config.Availability.Auth.Field, "auth availability field")
+	solrFields.requireValue(p.config.Local.Solr.Grouping.Field, "solr grouping field")
+	solrFields.requireValue(p.config.Local.Solr.ExactMatchTitleField, "solr exact match title field")
+	solrFields.requireValue(p.config.Global.Availability.Anon.Field, "anon availability field")
+	solrFields.requireValue(p.config.Global.Availability.Auth.Field, "auth availability field")
 
-	messageIDs.requireValue(p.config.Identity.NameXID, "identity name xid")
-	messageIDs.requireValue(p.config.Identity.DescXID, "identity description xid")
-	messageIDs.requireValue(p.config.Solr.Grouping.Sort.XID, "solr grouping sort xid")
+	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
+	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
+	messageIDs.requireValue(p.config.Local.Solr.Grouping.Sort.XID, "solr grouping sort xid")
 
-	if p.config.Identity.Mode == "image" {
-		if p.config.Related.Image == nil {
+	if p.config.Local.Identity.Mode == "image" {
+		if p.config.Local.Related == nil {
+			log.Printf("[VALIDATE] missing related section")
+			invalid = true
+		} else if p.config.Local.Related.Image == nil {
 			log.Printf("[VALIDATE] missing related image section")
 			invalid = true
 		} else {
-			solrFields.requireValue(p.config.Related.Image.IDField, "iiif id field")
-			solrFields.requireValue(p.config.Related.Image.IdentifierField, "iiif identifier field")
-			solrFields.requireValue(p.config.Related.Image.IIIFManifestField, "iiif manifest field")
-			solrFields.requireValue(p.config.Related.Image.IIIFImageField, "iiif image field")
+			solrFields.requireValue(p.config.Local.Related.Image.IDField, "iiif id field")
+			solrFields.requireValue(p.config.Local.Related.Image.IdentifierField, "iiif identifier field")
+			solrFields.requireValue(p.config.Local.Related.Image.IIIFManifestField, "iiif manifest field")
+			solrFields.requireValue(p.config.Local.Related.Image.IIIFImageField, "iiif image field")
 
-			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Template, "iiif template url")
-			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 		}
 	}
 
-	for i, val := range p.config.Identity.SortOptions {
+	for i, val := range p.config.Local.Identity.SortOptions {
 		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d field", i))
 		messageIDs.requireValue(val.XID, fmt.Sprintf("sort option %d xid", i))
 	}
 
-	for i, val := range p.config.Providers {
+	for i, val := range p.config.Global.Providers {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("provider %d xid", i))
 	}
 
-	for i, val := range p.config.Facets {
+	for i, val := range p.config.Mappings.Facets {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
 		for j, depval := range val.DependentFacetXIDs {
 			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
 		}
 	}
 
-	for i, field := range p.config.Fields {
+	for i, field := range p.config.Mappings.Fields {
 		prefix := fmt.Sprintf("field index %d: ", i)
 		postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
 
@@ -329,65 +332,89 @@ func (p *poolContext) validateConfig() {
 
 		switch field.Format {
 		case "access_url":
-			if field.AccessURL == nil {
+			if field.FormatInfo == nil {
+				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			if field.FormatInfo.AccessURL == nil {
 				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Format))
-			solrFields.requireValue(field.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Format))
-			solrFields.requireValue(field.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Format))
-			messageIDs.requireValue(field.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Format))
+			solrFields.requireValue(field.FormatInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Format))
+			solrFields.requireValue(field.FormatInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Format))
+			solrFields.requireValue(field.FormatInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Format))
+			messageIDs.requireValue(field.FormatInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Format))
 
 		case "authentication_prompt":
 
 		case "availability":
 
 		case "cover_image_url":
-			if field.CoverImageURL == nil {
+			if field.FormatInfo == nil {
+				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			if field.FormatInfo.CoverImageURL == nil {
 				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.CoverImageURL.ThumbnailField, fmt.Sprintf("%s section thumbnail url field", field.Format))
-			solrFields.requireValue(field.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Format))
-			solrFields.requireValue(field.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Format))
-			solrFields.requireValue(field.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Format))
+			solrFields.requireValue(field.FormatInfo.CoverImageURL.ThumbnailField, fmt.Sprintf("%s section thumbnail url field", field.Format))
+			solrFields.requireValue(field.FormatInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Format))
+			solrFields.requireValue(field.FormatInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Format))
+			solrFields.requireValue(field.FormatInfo.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Format))
 
-			solrFields.addValue(field.CoverImageURL.ISBNField)
-			solrFields.addValue(field.CoverImageURL.OCLCField)
-			solrFields.addValue(field.CoverImageURL.LCCNField)
-			solrFields.addValue(field.CoverImageURL.UPCField)
+			solrFields.addValue(field.FormatInfo.CoverImageURL.ISBNField)
+			solrFields.addValue(field.FormatInfo.CoverImageURL.OCLCField)
+			solrFields.addValue(field.FormatInfo.CoverImageURL.LCCNField)
+			solrFields.addValue(field.FormatInfo.CoverImageURL.UPCField)
 
-			miscValues.requireValue(p.config.Service.URLTemplates.CoverImages.Template, "cover images template url")
-			miscValues.requireValue(p.config.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Template, "cover images template url")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
 
 		case "iiif_base_url":
-			if field.IIIFBaseURL == nil {
+			if field.FormatInfo == nil {
+				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			if field.FormatInfo.IIIFBaseURL == nil {
 				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.IIIFBaseURL.IdentifierField, fmt.Sprintf("%s section identifier field", field.Format))
+			solrFields.requireValue(field.FormatInfo.IIIFBaseURL.IdentifierField, fmt.Sprintf("%s section identifier field", field.Format))
 
-			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Template, "iiif template url")
-			miscValues.requireValue(p.config.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 
 		case "sirsi_url":
-			if field.SirsiURL == nil {
+			if field.FormatInfo == nil {
+				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
+				invalid = true
+				continue
+			}
+
+			if field.FormatInfo.SirsiURL == nil {
 				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
 				invalid = true
 				continue
 			}
 
-			solrFields.requireValue(field.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Format))
-			miscValues.requireValue(field.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Format))
+			solrFields.requireValue(field.FormatInfo.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Format))
+			miscValues.requireValue(field.FormatInfo.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Format))
 
-			miscValues.requireValue(p.config.Service.URLTemplates.Sirsi.Template, "sirsi template url")
-			miscValues.requireValue(p.config.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Template, "sirsi template url")
+			miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
 
 		default:
 			if field.Format != "" {
@@ -432,7 +459,7 @@ func (p *poolContext) validateConfig() {
 	// check if anything went wrong anywhere
 
 	if invalid || solrFields.Invalid() || messageIDs.Invalid() || miscValues.Invalid() {
-		log.Printf("[VALIDATE] exiting due to missing/incorrect field value(s) above")
+		log.Printf("[VALIDATE] exiting due to error(s) above")
 		os.Exit(1)
 	}
 
@@ -440,73 +467,67 @@ func (p *poolContext) validateConfig() {
 }
 
 func (p *poolContext) initFacetsAndFields() {
-	// facets are just the global facets combined with our pool-specific ones
+	invalid := false
 
-	p.config.Facets = append(p.config.GlobalFacets, p.config.PoolFacets...)
-
-	// fields are populated as follows:
-	// * if the field name matches one in the common fields list:
-	//   * if the common field is a special format, use common field as-is;
-	//   * otherwise allow overrides to the basic values (xid, field, properties, limit)
-	// * otherwise treat this as a new field definition and allow all values to be set
-
-	commonFieldMap := make(map[string]*poolConfigField)
-	for i := range p.config.CommonFields {
-		f := &p.config.CommonFields[i]
-		commonFieldMap[f.Name] = f
+	// create mapping from facet XIDs to facet definitions, allowing local overrides
+	facetList := append(p.config.Global.Mappings.Facets, p.config.Local.Mappings.Facets...)
+	facetMap := make(map[string]*poolConfigFacet)
+	for i := range facetList {
+		facet := &facetList[i]
+		facetMap[facet.XID] = facet
 	}
 
-	for _, field := range p.config.PoolFields {
-		if cf := commonFieldMap[field.Name]; cf != nil {
-			// this field is in the common field list
-
-			f := *cf
-
-			if cf.Format == "" {
-				// non-special-format field; allow some value overrides
-
-				if field.XID != "" && field.XID != f.XID {
-					f.XID = field.XID
-				}
-
-				if field.Field != "" && field.Field != f.Field {
-					f.Field = field.Field
-				}
-
-				if field.Limit != 0 && field.XID != f.XID {
-					f.XID = field.XID
-				}
-
-				if field.Properties.Name != "" && field.Properties.Name != f.Properties.Name {
-					f.Properties.Name = field.Properties.Name
-				}
-
-				if field.Properties.Type != "" && field.Properties.Type != f.Properties.Type {
-					f.Properties.Type = field.Properties.Type
-				}
-
-				if field.Properties.Display != "" && field.Properties.Display != f.Properties.Display {
-					f.Properties.Display = field.Properties.Display
-				}
-
-				if field.Properties.Visibility != "" && field.Properties.Visibility != f.Properties.Visibility {
-					f.Properties.Visibility = field.Properties.Visibility
-				}
-
-				if field.Properties.Provider != "" && field.Properties.Provider != f.Properties.Provider {
-					f.Properties.Provider = field.Properties.Provider
-				}
-
-				if field.Properties.RISCode != "" && field.Properties.RISCode != f.Properties.RISCode {
-					f.Properties.RISCode = field.Properties.RISCode
-				}
-			}
-
-			p.config.Fields = append(p.config.Fields, f)
-		} else {
-			// new pool-specific field definition
-			p.config.Fields = append(p.config.Fields, field)
+	// build list of unique facets by XID
+	facetXIDs := append(p.config.Global.Mappings.FacetXIDs, p.config.Local.Mappings.FacetXIDs...)
+	facetXIDSelected := make(map[string]bool)
+	for _, facetXID := range facetXIDs {
+		if facetXIDSelected[facetXID] == true {
+			continue
 		}
+
+		facet := facetMap[facetXID]
+
+		if facet == nil {
+			log.Printf("[INIT] unrecognized facet xid: [%s]", facetXID)
+			invalid = true
+			continue
+		}
+
+		p.config.Mappings.Facets = append(p.config.Mappings.Facets, *facet)
+		facetXIDSelected[facetXID] = true
+	}
+
+	// create mapping from field names to field definitions, allowing local overrides
+	fieldList := append(p.config.Global.Mappings.Fields, p.config.Local.Mappings.Fields...)
+	fieldMap := make(map[string]*poolConfigField)
+	for i := range fieldList {
+		field := &fieldList[i]
+		fieldMap[field.Name] = field
+	}
+
+	// build list of unique fields by name
+	fieldNames := append(p.config.Global.Mappings.FieldNames, p.config.Local.Mappings.FieldNames...)
+	fieldNameSelected := make(map[string]bool)
+	for _, fieldName := range fieldNames {
+		if fieldNameSelected[fieldName] == true {
+			continue
+		}
+
+		field := fieldMap[fieldName]
+
+		if field == nil {
+			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
+			invalid = true
+			continue
+		}
+
+		p.config.Mappings.Fields = append(p.config.Mappings.Fields, *field)
+		fieldNameSelected[fieldName] = true
+	}
+
+	if invalid == true {
+		log.Printf("[INIT] exiting due to error(s) above")
+		os.Exit(1)
 	}
 }
 

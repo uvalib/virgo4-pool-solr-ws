@@ -278,7 +278,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	}
 
 	// build group-restricted query from initial query
-	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Solr.Grouping.Field, strings.Join(safeGroups, " OR "))
+	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Local.Solr.Grouping.Field, strings.Join(safeGroups, " OR "))
 
 	// prepend existing query, if defined
 	newQuery := groupClause
@@ -295,8 +295,8 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	// intra-group sorting
 	c.virgoReq.Sort = &VirgoSort{
-		SortID: s.pool.config.Solr.Grouping.Sort.XID,
-		Order:  s.pool.config.Solr.Grouping.Sort.Order,
+		SortID: s.pool.config.Local.Solr.Grouping.Sort.XID,
+		Order:  s.pool.config.Local.Solr.Grouping.Sort.Order,
 	}
 
 	if resp := c.getPoolQueryResults(); resp.err != nil {
@@ -540,7 +540,7 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 	}
 
 	// per-mode tweaks to this record
-	switch s.pool.config.Identity.Mode {
+	switch s.pool.config.Local.Identity.Mode {
 	case "image":
 		record := &s.solrRes.Response.Docs[0]
 
@@ -558,10 +558,10 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 
 		for _, doc := range r.solrRes.Response.Docs {
 			rr := VirgoRelatedRecord{
-				ID:              firstElementOf(doc.getValuesByTag(s.pool.config.Related.Image.IDField)),
-				IIIFManifestURL: firstElementOf(doc.getValuesByTag(s.pool.config.Related.Image.IIIFManifestField)),
-				IIIFImageURL:    firstElementOf(doc.getValuesByTag(s.pool.config.Related.Image.IIIFImageField)),
-				IIIFBaseURL:     s.getIIIFBaseURL(&doc, s.pool.config.Related.Image.IdentifierField),
+				ID:              firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IDField)),
+				IIIFManifestURL: firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IIIFManifestField)),
+				IIIFImageURL:    firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IIIFImageField)),
+				IIIFBaseURL:     s.getIIIFBaseURL(&doc, s.pool.config.Local.Related.Image.IdentifierField),
 			}
 
 			related = append(related, rr)

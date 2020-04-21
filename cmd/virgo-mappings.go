@@ -51,7 +51,7 @@ func (s *solrDocument) getValuesByTag(tag string) []string {
 }
 
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	return firstElementOf(doc.getValuesByTag(s.pool.config.Solr.Grouping.Field))
+	return firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.Grouping.Field))
 }
 
 func (s *searchContext) virgoPopulateRecordDebug(doc *solrDocument) *VirgoRecordDebug {
@@ -87,7 +87,7 @@ func getGenericURL(t poolConfigURLTemplate, id string) string {
 }
 
 func (s *searchContext) getSirsiURL(id string) string {
-	return getGenericURL(s.pool.config.Service.URLTemplates.Sirsi, id)
+	return getGenericURL(s.pool.config.Global.Service.URLTemplates.Sirsi, id)
 }
 
 func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, doc *solrDocument, authorValues []string) string {
@@ -103,7 +103,7 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, 
 
 	idValues := doc.getValuesByTag(cfg.IDField)
 
-	url := getGenericURL(s.pool.config.Service.URLTemplates.CoverImages, firstElementOf(idValues))
+	url := getGenericURL(s.pool.config.Global.Service.URLTemplates.CoverImages, firstElementOf(idValues))
 
 	if url == "" {
 		return ""
@@ -185,12 +185,12 @@ func (s *searchContext) getIIIFBaseURL(doc *solrDocument, idField string) string
 	// construct iiif image base url from known image identifier prefixes.
 	// this fallback url conveniently points to an "orginial image missing" image
 
-	pid := s.pool.config.Service.URLTemplates.IIIF.Fallback
+	pid := s.pool.config.Global.Service.URLTemplates.IIIF.Fallback
 
 	idValues := doc.getValuesByTag(idField)
 
 	for _, id := range idValues {
-		for _, prefix := range s.pool.config.Service.URLTemplates.IIIF.Prefixes {
+		for _, prefix := range s.pool.config.Global.Service.URLTemplates.IIIF.Prefixes {
 			if strings.HasPrefix(id, prefix) {
 				pid = id
 				break
@@ -198,7 +198,7 @@ func (s *searchContext) getIIIFBaseURL(doc *solrDocument, idField string) string
 		}
 	}
 
-	return getGenericURL(s.pool.config.Service.URLTemplates.IIIF, pid)
+	return getGenericURL(s.pool.config.Global.Service.URLTemplates.IIIF, pid)
 }
 
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
@@ -208,13 +208,13 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// availability setup
 
-	anonValues := doc.getValuesByTag(s.pool.config.Availability.Anon.Field)
-	anonOnShelf := sliceContainsValueFromSlice(anonValues, s.pool.config.Availability.Values.OnShelf)
-	anonOnline := sliceContainsValueFromSlice(anonValues, s.pool.config.Availability.Values.Online)
+	anonValues := doc.getValuesByTag(s.pool.config.Global.Availability.Anon.Field)
+	anonOnShelf := sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.OnShelf)
+	anonOnline := sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online)
 
-	authValues := doc.getValuesByTag(s.pool.config.Availability.Auth.Field)
-	authOnShelf := sliceContainsValueFromSlice(authValues, s.pool.config.Availability.Values.OnShelf)
-	authOnline := sliceContainsValueFromSlice(authValues, s.pool.config.Availability.Values.Online)
+	authValues := doc.getValuesByTag(s.pool.config.Global.Availability.Auth.Field)
+	authOnShelf := sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.OnShelf)
+	authOnline := sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online)
 
 	// determine which availability field to use
 
@@ -230,7 +230,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// field loop (preprocessing)
 
-	for _, field := range s.pool.config.Fields {
+	for _, field := range s.pool.config.Mappings.Fields {
 		if field.Field != "" && field.Properties.Type == "author" {
 			authorValues = doc.getValuesByTag(field.Field)
 		}
@@ -238,7 +238,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 	// field loop
 
-	for _, field := range s.pool.config.Fields {
+	for _, field := range s.pool.config.Mappings.Fields {
 		if field.DetailsOnly && s.itemDetails == false {
 			continue
 		}
@@ -267,9 +267,9 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		switch field.Format {
 		case "access_url":
 			if anonOnline == true || authOnline == true {
-				urlValues := doc.getValuesByTag(field.AccessURL.URLField)
-				labelValues := doc.getValuesByTag(field.AccessURL.LabelField)
-				providerValues := doc.getValuesByTag(field.AccessURL.ProviderField)
+				urlValues := doc.getValuesByTag(field.FormatInfo.AccessURL.URLField)
+				labelValues := doc.getValuesByTag(field.FormatInfo.AccessURL.LabelField)
+				providerValues := doc.getValuesByTag(field.FormatInfo.AccessURL.ProviderField)
 
 				f.Provider = firstElementOf(providerValues)
 
@@ -289,7 +289,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 					// if not using labels, or this label is not defined, fall back to generic item label
 					if itemLabel == "" {
-						itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.AccessURL.DefaultItemXID), i+1)
+						itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.FormatInfo.AccessURL.DefaultItemXID), i+1)
 					}
 
 					f.Item = itemLabel
@@ -305,7 +305,7 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 		case "availability":
 			for _, availabilityValue := range availabilityValues {
-				if sliceContainsString(s.pool.config.Availability.ExposedValues, availabilityValue) {
+				if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
 					f.Value = availabilityValue
 					r.addField(f)
 				}
@@ -313,21 +313,21 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 
 		case "cover_image_url":
 			if s.pool.maps.attributes["cover_images"].Supported == true {
-				if url := s.getCoverImageURL(field.CoverImageURL, doc, authorValues); url != "" {
+				if url := s.getCoverImageURL(field.FormatInfo.CoverImageURL, doc, authorValues); url != "" {
 					f.Value = url
 					r.addField(f)
 				}
 			}
 
 		case "iiif_base_url":
-			if url := s.getIIIFBaseURL(doc, field.IIIFBaseURL.IdentifierField); url != "" {
+			if url := s.getIIIFBaseURL(doc, field.FormatInfo.IIIFBaseURL.IdentifierField); url != "" {
 				f.Value = url
 				r.addField(f)
 			}
 
 		case "sirsi_url":
-			idValue := firstElementOf(doc.getValuesByTag(field.SirsiURL.IDField))
-			idPrefix := field.SirsiURL.IDPrefix
+			idValue := firstElementOf(doc.getValuesByTag(field.FormatInfo.SirsiURL.IDField))
+			idPrefix := field.FormatInfo.SirsiURL.IDPrefix
 
 			if strings.HasPrefix(idValue, idPrefix) {
 				sirsiID := idValue[len(idPrefix):]
@@ -504,7 +504,7 @@ func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
 
 	// case 1: a single title search query matches the first title in this document
 	if s.solrRes.meta.parserInfo.isSingleTitleSearch == true {
-		firstTitleResult := firstElementOf(doc.getValuesByTag(s.pool.config.Solr.ExactMatchTitleField))
+		firstTitleResult := firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.ExactMatchTitleField))
 
 		titleQueried := firstElementOf(s.solrRes.meta.parserInfo.titles)
 
