@@ -115,7 +115,7 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	id.Name = c.localize(id.Name)
 	id.Description = c.localize(id.Description)
 
-	for i, _ := range id.SortOptions {
+	for i := range id.SortOptions {
 		opt := &id.SortOptions[i]
 
 		opt.Label = c.localize(opt.ID)

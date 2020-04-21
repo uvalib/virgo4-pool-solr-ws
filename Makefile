@@ -14,6 +14,7 @@ GOGET = $(GOCMD) get
 GOMOD = $(GOCMD) mod
 GOVER = $(GOCMD) version
 GOLNT = golint
+GOBIN = $(HOME)/go/bin
 
 # default build target is host machine architecture
 MACHINE = $(shell uname -s | tr '[A-Z]' '[a-z]')
@@ -126,6 +127,12 @@ dep:
 	$(GOMOD) tidy
 	$(GOMOD) verify
 
-check:
+check-static:
 	go get honnef.co/go/tools/cmd/staticcheck
-	~/go/bin/staticcheck -checks all,-S1002,-ST1003 cmd/*.go
+	$(GOBIN)/staticcheck -checks all,-S1002,-ST1003 ./cmd/...
+
+check-shadow:
+	go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
+	go vet -vettool=$(GOBIN)/shadow ./cmd/...
+
+check: check-shadow check-static

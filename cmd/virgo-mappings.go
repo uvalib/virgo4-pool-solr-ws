@@ -600,13 +600,13 @@ func (s *searchContext) virgoRecordResponse() error {
 
 	switch s.solrRes.meta.numRecords {
 	case 0:
-		return fmt.Errorf("Item not found")
+		return fmt.Errorf("record not found")
 
 	case 1:
 		v = s.virgoPopulateRecord(s.solrRes.meta.firstDoc)
 
 	default:
-		return fmt.Errorf("Multiple items found")
+		return fmt.Errorf("multiple records found")
 	}
 
 	s.virgoRecordRes = v

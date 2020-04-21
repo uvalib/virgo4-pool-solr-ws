@@ -178,7 +178,7 @@ func (p *poolContext) initSolr() {
 	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.Online...)
 	p.config.Availability.ExposedValues = append(p.config.Availability.ExposedValues, p.config.Availability.Values.Other...)
 
-	for i, _ := range p.config.Facets {
+	for i := range p.config.Facets {
 		f := &p.config.Facets[i]
 
 		// configure availability facet while we're here
@@ -451,7 +451,7 @@ func (p *poolContext) initFacetsAndFields() {
 	// * otherwise treat this as a new field definition and allow all values to be set
 
 	commonFieldMap := make(map[string]*poolConfigField)
-	for i, _ := range p.config.CommonFields {
+	for i := range p.config.CommonFields {
 		f := &p.config.CommonFields[i]
 		commonFieldMap[f.Name] = f
 	}

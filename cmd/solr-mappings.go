@@ -72,7 +72,7 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 
 	auth := s.virgoReq.meta.client.isAuthenticated()
 
-	for i, _ := range s.pool.maps.availableFacets {
+	for i := range s.pool.maps.availableFacets {
 		facet := s.pool.maps.availableFacets[i]
 
 		f := solrRequestFacet{
@@ -171,7 +171,7 @@ func (s *searchContext) solrSearchRequest() searchResponse {
 	// caller might have already supplied a Solr query
 	if s.virgoReq.meta.solrQuery == "" {
 		if p, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
-			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("Virgo query to Solr conversion error: %s", err.Error())}
+			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
 		}
 
 		s.virgoReq.meta.solrQuery = p.query

@@ -45,7 +45,7 @@ func (s *searchContext) convertFacets() error {
 
 	if mapDecErr := dec.Decode(facetsRaw); mapDecErr != nil {
 		s.log("[SOLR] mapstructure.Decode() failed: %s", mapDecErr.Error())
-		return fmt.Errorf("Failed to decode Solr facet map")
+		return fmt.Errorf("failed to decode Solr facet map")
 	}
 
 	s.solrRes.Facets = facets
@@ -102,7 +102,7 @@ func (s *searchContext) solrQuery() error {
 	jsonBytes, jsonErr := json.Marshal(s.solrReq.json)
 	if jsonErr != nil {
 		s.log("[SOLR] Marshal() failed: %s", jsonErr.Error())
-		return fmt.Errorf("Failed to marshal Solr JSON")
+		return fmt.Errorf("failed to marshal Solr JSON")
 	}
 
 	// we cannot use query parameters for the request due to the
@@ -114,7 +114,7 @@ func (s *searchContext) solrQuery() error {
 	req, reqErr := http.NewRequest("POST", s.pool.solr.url, bytes.NewBuffer(jsonBytes))
 	if reqErr != nil {
 		s.log("[SOLR] NewRequest() failed: %s", reqErr.Error())
-		return fmt.Errorf("Failed to create Solr request")
+		return fmt.Errorf("failed to create Solr request")
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -150,7 +150,7 @@ func (s *searchContext) solrQuery() error {
 
 		s.log("[SOLR] client.Do() failed: %s", resErr.Error())
 		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, status, errMsg, elapsedMS)
-		return fmt.Errorf("Failed to receive Solr response")
+		return fmt.Errorf("failed to receive Solr response")
 	}
 
 	defer res.Body.Close()
@@ -164,7 +164,7 @@ func (s *searchContext) solrQuery() error {
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
 		s.log("[SOLR] Decode() failed: %s", decErr.Error())
 		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
-		return fmt.Errorf("Failed to decode Solr response")
+		return fmt.Errorf("failed to decode Solr response")
 	}
 
 	// external service success logging
