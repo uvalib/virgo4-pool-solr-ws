@@ -23,7 +23,7 @@ func main() {
 	pool := initializePool(cfg)
 
 	gin.SetMode(gin.ReleaseMode)
-	//gin.DisableConsoleColor()
+	gin.DisableConsoleColor()
 
 	router := gin.Default()
 

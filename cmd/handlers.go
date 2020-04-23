@@ -18,9 +18,9 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
+	cl.logRequest()
 	resp := s.handleSearchRequest(c)
-
-	s.log("[RESPONSE] status: %d", resp.status)
+	cl.logResponse(resp)
 
 	if resp.err != nil {
 		s.err("searchHandler: error: %s", resp.err.Error())
@@ -38,9 +38,9 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
+	cl.logRequest()
 	resp := s.handleFacetsRequest(c)
-
-	s.log("[RESPONSE] status: %d", resp.status)
+	cl.logResponse(resp)
 
 	if resp.err != nil {
 		s.err("facetsHandler: error: %s", resp.err.Error())
@@ -67,9 +67,9 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	// mark this as a resource request
 	s.itemDetails = true
 
+	cl.logRequest()
 	resp := s.handleRecordRequest()
-
-	s.log("[RESPONSE] status: %d", resp.status)
+	cl.logResponse(resp)
 
 	if resp.err != nil {
 		s.err("resourceHandler: error: %s", resp.err.Error())
@@ -122,7 +122,9 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	// fill out Solr query directly, bypassing query syntax parser
 	s.virgoReq.meta.solrQuery = "id:pingtest"
 
+	cl.logRequest()
 	ping := s.handlePingRequest()
+	cl.logResponse(ping)
 
 	// build response
 

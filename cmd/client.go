@@ -20,12 +20,15 @@ type clientOpts struct {
 }
 
 type clientContext struct {
-	reqID     string          // internally generated
-	start     time.Time       // internally set
-	opts      clientOpts      // options set by client
-	claims    *v4jwt.V4Claims // information about this user
-	nolog     bool            // internally set
-	localizer *i18n.Localizer // per-request localization
+	reqID       string          // internally generated
+	start       time.Time       // internally set
+	opts        clientOpts      // options set by client
+	claims      *v4jwt.V4Claims // information about this user
+	nolog       bool            // internally set
+	localizer   *i18n.Localizer // per-request localization
+	ginCtx      *gin.Context    // gin context
+	acceptLang  string          // first language requested by client
+	contentLang string          // actual language we are responding with
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -40,10 +43,10 @@ func boolOptionWithFallback(opt string, fallback bool) bool {
 }
 
 func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
+	c.ginCtx = ctx
+
 	c.start = time.Now()
 	c.reqID = fmt.Sprintf("%08x", p.randomSource.Uint32())
-
-	c.log("------------------------------[ NEW REQUEST ]------------------------------")
 
 	// get claims, if any
 	if val, ok := ctx.Get("claims"); ok == true {
@@ -51,18 +54,18 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	}
 
 	// determine client preferred language
-	acceptLang := strings.Split(ctx.GetHeader("Accept-Language"), ",")[0]
-	if acceptLang == "" {
-		acceptLang = "en"
+	c.acceptLang = strings.Split(ctx.GetHeader("Accept-Language"), ",")[0]
+	if c.acceptLang == "" {
+		c.acceptLang = "en"
 	}
 
-	c.localizer = i18n.NewLocalizer(p.translations.bundle, acceptLang)
+	c.localizer = i18n.NewLocalizer(p.translations.bundle, c.acceptLang)
 
 	// kludge to get the response language by checking the tag value returned for a known message ID
 	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.config.Local.Identity.NameXID})
-	contentLang := tag.String()
+	c.contentLang = tag.String()
 
-	ctx.Header("Content-Language", contentLang)
+	ctx.Header("Content-Language", c.contentLang)
 
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.opts.intuit = false
@@ -71,10 +74,14 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	if p.config.Local.Solr.Grouping.Field != "" {
 		c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
 	}
+}
+
+func (c *clientContext) logRequest() {
+	c.log("------------------------------[ NEW REQUEST ]------------------------------")
 
 	query := ""
-	if ctx.Request.URL.RawQuery != "" {
-		query = fmt.Sprintf("?%s", ctx.Request.URL.RawQuery)
+	if c.ginCtx.Request.URL.RawQuery != "" {
+		query = fmt.Sprintf("?%s", c.ginCtx.Request.URL.RawQuery)
 	}
 
 	claimsStr := ""
@@ -82,7 +89,17 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 		claimsStr = fmt.Sprintf("  [%s; %s; %s; %v]", c.claims.UserID, c.claims.Role, c.claims.AuthMethod, c.claims.IsUVA)
 	}
 
-	c.log("[CLIENT] %s %s%s  (%s) => (%s)%s", ctx.Request.Method, ctx.Request.URL.Path, query, acceptLang, contentLang, claimsStr)
+	c.log("[REQUEST] %s %s%s  (%s) => (%s)%s", c.ginCtx.Request.Method, c.ginCtx.Request.URL.Path, query, c.acceptLang, c.contentLang, claimsStr)
+}
+
+func (c *clientContext) logResponse(resp searchResponse) {
+	msg := fmt.Sprintf("[RESPONSE] status: %d", resp.status)
+
+	if resp.err != nil {
+		msg = msg + fmt.Sprintf(", error: %s", resp.err.Error())
+	}
+
+	c.log(msg)
 }
 
 func (c *clientContext) printf(prefix, format string, args ...interface{}) {
