@@ -48,14 +48,14 @@ type solrMeta struct {
 	maxScore     float32
 	firstDoc     *solrDocument
 	start        int
-	numGroups    int                        // for grouped records
-	totalGroups  int                        // for grouped records
-	numRecords   int                        // for grouped or ungrouped records
-	totalRecords int                        // for grouped or ungrouped records
-	numRows      int                        // for client pagination -- numGroups or numRecords
-	totalRows    int                        // for client pagination -- totalGroups or totalRecords
-	selectionMap map[string]map[string]bool // to track what filters have been applied by the client
-	sort         VirgoSort                  // to hold requested (or defaulted) sort info
+	numGroups    int                          // for grouped records
+	totalGroups  int                          // for grouped records
+	numRecords   int                          // for grouped or ungrouped records
+	totalRecords int                          // for grouped or ungrouped records
+	numRows      int                          // for client pagination -- numGroups or numRecords
+	totalRows    int                          // for client pagination -- totalGroups or totalRecords
+	selectionMap map[string]map[string]string // to track what filters have been applied by the client
+	sort         VirgoSort                    // to hold requested (or defaulted) sort info
 }
 
 type solrRequest struct {

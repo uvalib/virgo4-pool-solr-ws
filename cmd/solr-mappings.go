@@ -58,10 +58,16 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 
 		// add this filter to selection map
 		if s.meta.selectionMap[filter.FacetID] == nil {
-			s.meta.selectionMap[filter.FacetID] = make(map[string]bool)
+			s.meta.selectionMap[filter.FacetID] = make(map[string]string)
 		}
 
-		s.meta.selectionMap[filter.FacetID][filterValue] = true
+		s.meta.selectionMap[filter.FacetID][filterValue] = solrFilter
+	}
+
+	for filterID := range s.meta.selectionMap {
+		for _, solrFilter := range s.meta.selectionMap[filterID] {
+			s.meta.client.log("[FILTER] applying filter: %-20s (%s)", filterID, solrFilter)
+		}
 	}
 }
 
@@ -100,7 +106,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	solrReq.meta.client = s.virgoReq.meta.client
 	solrReq.meta.parserInfo = s.virgoReq.meta.parserInfo
 
-	solrReq.meta.selectionMap = make(map[string]map[string]bool)
+	solrReq.meta.selectionMap = make(map[string]map[string]string)
 
 	// fill out requested/defaulted sort info
 

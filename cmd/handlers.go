@@ -20,6 +20,8 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 
 	resp := s.handleSearchRequest(c)
 
+	s.log("[RESPONSE] status: %d", resp.status)
+
 	if resp.err != nil {
 		s.err("searchHandler: error: %s", resp.err.Error())
 		c.String(resp.status, resp.err.Error())
@@ -37,6 +39,8 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 	s.init(p, &cl)
 
 	resp := s.handleFacetsRequest(c)
+
+	s.log("[RESPONSE] status: %d", resp.status)
 
 	if resp.err != nil {
 		s.err("facetsHandler: error: %s", resp.err.Error())
@@ -64,6 +68,8 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	s.itemDetails = true
 
 	resp := s.handleRecordRequest()
+
+	s.log("[RESPONSE] status: %d", resp.status)
 
 	if resp.err != nil {
 		s.err("resourceHandler: error: %s", resp.err.Error())

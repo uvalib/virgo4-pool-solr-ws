@@ -397,9 +397,14 @@ func (s *searchContext) virgoPopulateRecordList(solrDocuments *solrResponseDocum
 func (s *searchContext) virgoPopulateFacetBucket(name string, value solrBucket) *VirgoFacetBucket {
 	var bucket VirgoFacetBucket
 
+	selected := false
+	if s.solrReq.meta.selectionMap[name][value.Val] != "" {
+		selected = true
+	}
+
 	bucket.Value = value.Val
 	bucket.Count = value.Count
-	bucket.Selected = s.solrReq.meta.selectionMap[name][value.Val]
+	bucket.Selected = selected
 
 	return &bucket
 }
@@ -415,8 +420,13 @@ func (s *searchContext) virgoPopulateFacet(facetDef poolConfigFacet, value solrR
 
 	switch facetDef.Type {
 	case "boolean":
+		selected := false
+		if s.solrReq.meta.selectionMap[facetDef.XID][facetDef.Solr.Value] != "" {
+			selected = true
+		}
+
 		bucket := VirgoFacetBucket{
-			Selected: s.solrReq.meta.selectionMap[facetDef.XID][facetDef.Solr.Value],
+			Selected: selected,
 		}
 
 		buckets = append(buckets, bucket)

@@ -41,7 +41,9 @@ func boolOptionWithFallback(opt string, fallback bool) bool {
 
 func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.start = time.Now()
-	c.reqID = fmt.Sprintf("%016x", p.randomSource.Uint64())
+	c.reqID = fmt.Sprintf("%08x", p.randomSource.Uint32())
+
+	c.log("------------------------------[ NEW REQUEST ]------------------------------")
 
 	// get claims, if any
 	if val, ok := ctx.Get("claims"); ok == true {
@@ -80,7 +82,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 		claimsStr = fmt.Sprintf("  [%s; %s; %s; %v]", c.claims.UserID, c.claims.Role, c.claims.AuthMethod, c.claims.IsUVA)
 	}
 
-	c.log("%s %s%s  (%s) => (%s)%s", ctx.Request.Method, ctx.Request.URL.Path, query, acceptLang, contentLang, claimsStr)
+	c.log("[CLIENT] %s %s%s  (%s) => (%s)%s", ctx.Request.Method, ctx.Request.URL.Path, query, acceptLang, contentLang, claimsStr)
 }
 
 func (c *clientContext) printf(prefix, format string, args ...interface{}) {

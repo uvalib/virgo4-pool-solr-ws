@@ -77,12 +77,18 @@ func (s *searchContext) err(format string, args ...interface{}) {
 }
 
 func (s *searchContext) performQuery() searchResponse {
+	s.log("**********  START SOLR QUERY  **********")
+
 	if resp := s.solrSearchRequest(); resp.err != nil {
 		s.err("query creation error: %s", resp.err.Error())
 		return resp
 	}
 
-	if err := s.solrQuery(); err != nil {
+	err := s.solrQuery()
+
+	s.log("**********   END SOLR QUERY   **********")
+
+	if err != nil {
 		s.err("query execution error: %s", err.Error())
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
