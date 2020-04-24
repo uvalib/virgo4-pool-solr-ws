@@ -148,6 +148,7 @@ type poolConfigFacet struct {
 	XID                string              `json:"xid,omitempty"` // translation ID
 	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
 	Type               string              `json:"type,omitempty"`
+	Format             string              `json:"format,omitempty"`
 	ExposedValues      []string            `json:"exposed_values,omitempty"`
 	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
 	IsAvailability     bool                `json:"is_availability,omitempty"`
@@ -222,7 +223,7 @@ func getSortedJSONEnvVars() []string {
 
 	for _, keyval := range os.Environ() {
 		key := strings.Split(keyval, "=")[0]
-		if strings.HasPrefix(key, envPrefix + "_JSON_") {
+		if strings.HasPrefix(key, envPrefix+"_JSON_") {
 			keys = append(keys, key)
 		}
 	}

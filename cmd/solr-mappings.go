@@ -8,7 +8,7 @@ import (
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet) {
+func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
 	if filterGroups == nil {
 		return
 	}
@@ -42,17 +42,28 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 			s.meta.client.log("[FILTER] including filter [%s] due to %d selected dependent filters", filter.FacetID, numSelected)
 		}
 
+		var solrFilter string
 		var filterValue string
 
 		switch solrFacet.config.Type {
 		case "boolean":
 			filterValue = solrFacet.config.Solr.Value
 
+			if solrFacet.config.Format == "circulating" {
+				availabilityFacet := availability.Anon.Facet
+				if s.meta.client.isAuthenticated() == true {
+					availabilityFacet = availability.Auth.Facet
+				}
+
+				solrFilter = fmt.Sprintf(`(%s:"%s") OR (%s:"Online")`, solrFacet.Field, filterValue, availabilityFacet)
+			} else {
+				solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
+			}
+
 		default:
 			filterValue = filter.Value
+			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 		}
-
-		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 
 		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
 
@@ -66,7 +77,7 @@ func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets m
 
 	for filterID := range s.meta.selectionMap {
 		for _, solrFilter := range s.meta.selectionMap[filterID] {
-			s.meta.client.log("[FILTER] applying filter: %-20s (%s)", filterID, solrFilter)
+			s.meta.client.log("[FILTER] applying filter: %-20s : %s", filterID, solrFilter)
 		}
 	}
 }
@@ -162,7 +173,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		solrReq.json.Facets = availableFacets
 	}
 
-	solrReq.buildFilters(s.virgoReq.Filters, availableFacets)
+	solrReq.buildFilters(s.virgoReq.Filters, availableFacets, s.pool.config.Global.Availability)
 
 	s.solrReq = &solrReq
 
