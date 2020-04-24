@@ -366,6 +366,8 @@ func (p *poolContext) validateConfig() {
 				continue
 			}
 
+			miscValues.requireValue(field.FormatInfo.CoverImageURL.MusicPool, "%s section music pool")
+
 			solrFields.requireValue(field.FormatInfo.CoverImageURL.ThumbnailField, fmt.Sprintf("%s section thumbnail url field", field.Format))
 			solrFields.requireValue(field.FormatInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Format))
 			solrFields.requireValue(field.FormatInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Format))

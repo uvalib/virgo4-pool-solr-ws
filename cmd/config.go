@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+const envPrefix = "VIRGO4_SOLR_POOL_WS"
+
 type poolConfigURLTemplate struct {
 	Pattern  string   `json:"pattern,omitempty"`
 	Template string   `json:"template,omitempty"`
@@ -87,6 +89,7 @@ type poolConfigFieldTypeCoverImageURL struct {
 	OCLCField      string `json:"oclc_field,omitempty"`
 	LCCNField      string `json:"lccn_field,omitempty"`
 	UPCField       string `json:"upc_field,omitempty"`
+	MusicPool      string `json:"music_pool,omitempty"`
 }
 
 type poolConfigFieldTypeSirsiURL struct {
@@ -144,7 +147,7 @@ type poolConfigFacetSolr struct {
 type poolConfigFacet struct {
 	XID                string              `json:"xid,omitempty"` // translation ID
 	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
-	Type               string              `json:"type,omitempty"` // "checkbox" implies a filter value will be applied if checked, otherwise nothing
+	Type               string              `json:"type,omitempty"`
 	ExposedValues      []string            `json:"exposed_values,omitempty"`
 	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
 	IsAvailability     bool                `json:"is_availability,omitempty"`
@@ -219,7 +222,7 @@ func getSortedJSONEnvVars() []string {
 
 	for _, keyval := range os.Environ() {
 		key := strings.Split(keyval, "=")[0]
-		if strings.HasPrefix(key, "VIRGO4_SOLR_POOL_WS_JSON_") {
+		if strings.HasPrefix(key, envPrefix + "_JSON_") {
 			keys = append(keys, key)
 		}
 	}
@@ -257,14 +260,14 @@ func loadConfig() *poolConfig {
 	}
 
 	// optional convenience override to simplify terraform config
-	if host := os.Getenv("VIRGO4_SOLR_POOL_WS_SOLR_HOST"); host != "" {
+	if host := os.Getenv(envPrefix + "_SOLR_HOST"); host != "" {
 		cfg.Local.Solr.Host = host
 	}
 
 	//bytes, err := json.MarshalIndent(cfg, "", "  ")
 	bytes, err := json.Marshal(cfg)
 	if err != nil {
-		log.Printf("error encoding pool config json: %s", err.Error())
+		log.Printf("error encoding config json: %s", err.Error())
 		os.Exit(1)
 	}
 

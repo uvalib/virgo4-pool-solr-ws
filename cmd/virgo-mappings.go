@@ -130,7 +130,7 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, 
 	author := strings.Trim(strings.Split(firstElementOf(authorValues), "[")[0], " ")
 	title := firstElementOf(titleValues)
 
-	if sliceContainsString(poolValues, "music_recordings") == true {
+	if sliceContainsString(poolValues, cfg.MusicPool) == true {
 		// music
 
 		qp.Add("doc_type", "music")
