@@ -138,6 +138,14 @@ other = "Sujeto"
 desc = "The display name for the Video Format facet."
 other = "Formato de Video"
 
+[FieldAbbreviatedTitle]
+desc = "The display name for the abbreviated title field in a single item record."
+other = "Título abreviado"
+
+[FieldAlternateTitle]
+desc = "The display name for the Alternate Title field in a single item record."
+other = "Título alternativo"
+
 [FieldAccessURL]
 desc = "The display name for the field that contains a link to an external URL for online access."
 other = "Acceda en Línea"
@@ -190,6 +198,10 @@ other = "Género"
 desc = "The display name for the ISBN field in a single item record."
 other = "ISBN"
 
+[FieldISSN]
+desc = "The display name for the ISSN field in a single item record."
+other = "ISSN"
+
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
 other = "Identificador"
@@ -226,6 +238,18 @@ other = "Región"
 desc = "The display name for the Release Date field in a single item record."
 other = "Fecha de Lanzamiento"
 
+[FieldRights]
+desc = "The display name for the Rights field in a single item record."
+other = "Derechos"
+
+[FieldRightsStatementURI]
+desc = "The display name for the Rights Statement URI field in a single item record."
+other = "Rights Statement (derechos estandarizadas)"
+
+[FieldRunTime]
+desc = "The display name for the Run Time field in a single item record."
+other = "tiempo de ejecución"
+
 [FieldSeries]
 desc = "The display name for the Series field in a single item record."
 other = "Serie"
@@ -245,6 +269,10 @@ other = "Subtítulo"
 [FieldTitle]
 desc = "The display name for the Title field in a single item record."
 other = "Título"
+
+[FieldUniformTitle]
+desc = "The display name for the Uniform Title field in a single item record."
+other = "título uniforme"
 
 [FieldWorkIdentifier]
 desc = "The display name for the Work Identifier field in an image record."

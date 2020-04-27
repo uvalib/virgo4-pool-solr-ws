@@ -138,6 +138,10 @@ other = "Subject"
 desc = "The display name for the Video Format facet."
 other = "Video Format"
 
+[FieldAbbreviatedTitle]
+desc = "The display name for the abbreviated title field in a single item record."
+other = "Abbreviated Title"
+
 [FieldAccessURL]
 desc = "The display name for the field that contains a link to an external URL for online access."
 other = "Online Access"
@@ -145,6 +149,10 @@ other = "Online Access"
 [FieldAccessURLDefaultItemLabelPrefix]
 desc = "The default display label prefix for AccessURL items when the label is otherwise not known."
 other = "Copy"
+
+[FieldAlternateTitle]
+desc = "The display name for the Alternate Title field in a single item record."
+other = "Alternate Title"
 
 [FieldAuthor]
 desc = "The display name for the Author field in a single item record."
@@ -190,6 +198,10 @@ other = "Genre"
 desc = "The display name for the ISBN field in a single item record."
 other = "ISBN"
 
+[FieldISSN]
+desc = "The display name for the ISSN field in a single item record."
+other = "ISSN"
+
 [FieldIdentifier]
 desc = "The display name for the Identifier field in a single item record."
 other = "Identifier"
@@ -226,6 +238,18 @@ other = "Region"
 desc = "The display name for the Release Date field in a single item record."
 other = "Release Date"
 
+[FieldRights]
+desc = "The display name for the Rights field in a single item record."
+other = "Rights"
+
+[FieldRightsStatementURI]
+desc = "The display name for the Rights Statement URI field in a single item record."
+other = "Rights Statement"
+
+[FieldRunTime]
+desc = "The display name for the Run Time field in a single item record."
+other = "Run Time"
+
 [FieldSeries]
 desc = "The display name for the Series field in a single item record."
 other = "Series"
@@ -245,6 +269,10 @@ other = "Subtitle"
 [FieldTitle]
 desc = "The display name for the Title field in a single item record."
 other = "Title"
+
+[FieldUniformTitle]
+desc = "The display name for the Uniform Title field in a single item record."
+other = "Uniform Title"
 
 [FieldWorkIdentifier]
 desc = "The display name for the Work Identifier field in an image record."
