@@ -264,80 +264,81 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			f.RISCode = s.pool.maps.risCodes[field.Field]
 		}
 
-		switch field.Format {
-		case "access_url":
-			if anonOnline == true || authOnline == true {
-				urlValues := doc.getValuesByTag(field.FormatInfo.AccessURL.URLField)
-				labelValues := doc.getValuesByTag(field.FormatInfo.AccessURL.LabelField)
-				providerValues := doc.getValuesByTag(field.FormatInfo.AccessURL.ProviderField)
+		if field.Custom == true {
+			switch field.Name {
+			case "access_url":
+				if anonOnline == true || authOnline == true {
+					urlValues := doc.getValuesByTag(field.CustomInfo.AccessURL.URLField)
+					labelValues := doc.getValuesByTag(field.CustomInfo.AccessURL.LabelField)
+					providerValues := doc.getValuesByTag(field.CustomInfo.AccessURL.ProviderField)
 
-				f.Provider = firstElementOf(providerValues)
+					f.Provider = firstElementOf(providerValues)
 
-				useLabels := false
-				if len(labelValues) == len(urlValues) {
-					useLabels = true
-				}
-
-				for i, item := range urlValues {
-					f.Value = item
-
-					itemLabel := ""
-
-					if useLabels == true {
-						itemLabel = labelValues[i]
+					useLabels := false
+					if len(labelValues) == len(urlValues) {
+						useLabels = true
 					}
 
-					// if not using labels, or this label is not defined, fall back to generic item label
-					if itemLabel == "" {
-						itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.FormatInfo.AccessURL.DefaultItemXID), i+1)
+					for i, item := range urlValues {
+						f.Value = item
+
+						itemLabel := ""
+
+						if useLabels == true {
+							itemLabel = labelValues[i]
+						}
+
+						// if not using labels, or this label is not defined, fall back to generic item label
+						if itemLabel == "" {
+							itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.CustomInfo.AccessURL.DefaultItemXID), i+1)
+						}
+
+						f.Item = itemLabel
+
+						r.addField(f)
 					}
+				}
 
-					f.Item = itemLabel
-
+			case "authenticate":
+				if anonRequest == true && anonOnline == false && authOnline == true {
 					r.addField(f)
 				}
-			}
 
-		case "authentication_prompt":
-			if anonRequest == true && anonOnline == false && authOnline == true {
-				r.addField(f)
-			}
-
-		case "availability":
-			for _, availabilityValue := range availabilityValues {
-				if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
-					f.Value = availabilityValue
-					r.addField(f)
+			case "availability":
+				for _, availabilityValue := range availabilityValues {
+					if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
+						f.Value = availabilityValue
+						r.addField(f)
+					}
 				}
-			}
 
-		case "cover_image_url":
-			if s.pool.maps.attributes["cover_images"].Supported == true {
-				if url := s.getCoverImageURL(field.FormatInfo.CoverImageURL, doc, authorValues); url != "" {
+			case "cover_image":
+				if s.pool.maps.attributes["cover_images"].Supported == true {
+					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, authorValues); url != "" {
+						f.Value = url
+						r.addField(f)
+					}
+				}
+
+			case "iiif_base_url":
+				if url := s.getIIIFBaseURL(doc, field.CustomInfo.IIIFBaseURL.IdentifierField); url != "" {
 					f.Value = url
 					r.addField(f)
 				}
-			}
 
-		case "iiif_base_url":
-			if url := s.getIIIFBaseURL(doc, field.FormatInfo.IIIFBaseURL.IdentifierField); url != "" {
-				f.Value = url
-				r.addField(f)
-			}
+			case "sirsi_url":
+				idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))
+				idPrefix := field.CustomInfo.SirsiURL.IDPrefix
 
-		case "sirsi_url":
-			idValue := firstElementOf(doc.getValuesByTag(field.FormatInfo.SirsiURL.IDField))
-			idPrefix := field.FormatInfo.SirsiURL.IDPrefix
-
-			if strings.HasPrefix(idValue, idPrefix) {
-				sirsiID := idValue[len(idPrefix):]
-				if url := s.getSirsiURL(sirsiID); url != "" {
-					f.Value = url
-					r.addField(f)
+				if strings.HasPrefix(idValue, idPrefix) {
+					sirsiID := idValue[len(idPrefix):]
+					if url := s.getSirsiURL(sirsiID); url != "" {
+						f.Value = url
+						r.addField(f)
+					}
 				}
 			}
-
-		default:
+		} else {
 			fieldValues := doc.getValuesByTag(field.Field)
 
 			for i, fieldValue := range fieldValues {

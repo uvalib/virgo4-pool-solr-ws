@@ -97,7 +97,7 @@ type poolConfigFieldTypeSirsiURL struct {
 	IDPrefix string `json:"id_prefix,omitempty"`
 }
 
-type poolConfigFieldFormatInfo struct {
+type poolConfigFieldCustomInfo struct {
 	AccessURL     *poolConfigFieldTypeAccessURL     `json:"access_url,omitempty"`
 	IIIFBaseURL   *poolConfigFieldTypeIIIFBaseURL   `json:"iiif_base_url,omitempty"`
 	CoverImageURL *poolConfigFieldTypeCoverImageURL `json:"cover_image_url,omitempty"`
@@ -112,8 +112,8 @@ type poolConfigField struct {
 	Limit       int                        `json:"limit,omitempty"`
 	OnShelfOnly bool                       `json:"onshelf_only,omitempty"`
 	DetailsOnly bool                       `json:"details_only,omitempty"`
-	Format      string                     `json:"format,omitempty"`      // controlled vocabulary; drives special handling
-	FormatInfo  *poolConfigFieldFormatInfo `json:"format_info,omitempty"` // extra info for certain formats
+	Custom      bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
+	CustomInfo  *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
 }
 
 type poolConfigAvailabilityFields struct {

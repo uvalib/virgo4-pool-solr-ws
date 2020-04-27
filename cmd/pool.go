@@ -330,102 +330,101 @@ func (p *poolContext) validateConfig() {
 
 		miscValues.requireValue(field.Name, "name")
 
-		switch field.Format {
-		case "access_url":
-			if field.FormatInfo == nil {
-				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
+		if field.Custom == true {
+			switch field.Name {
+			case "access_url":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.AccessURL == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
+				solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
+				solrFields.requireValue(field.CustomInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
+				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+
+			case "authenticate":
+
+			case "availability":
+
+			case "cover_image":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.CoverImageURL == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				miscValues.requireValue(field.CustomInfo.CoverImageURL.MusicPool, "%s section music pool")
+
+				solrFields.requireValue(field.CustomInfo.CoverImageURL.ThumbnailField, fmt.Sprintf("%s section thumbnail url field", field.Name))
+				solrFields.requireValue(field.CustomInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Name))
+				solrFields.requireValue(field.CustomInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Name))
+				solrFields.requireValue(field.CustomInfo.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Name))
+
+				solrFields.addValue(field.CustomInfo.CoverImageURL.ISBNField)
+				solrFields.addValue(field.CustomInfo.CoverImageURL.OCLCField)
+				solrFields.addValue(field.CustomInfo.CoverImageURL.LCCNField)
+				solrFields.addValue(field.CustomInfo.CoverImageURL.UPCField)
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Template, "cover images template url")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
+
+			case "iiif_base_url":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.IIIFBaseURL == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.IIIFBaseURL.IdentifierField, fmt.Sprintf("%s section identifier field", field.Name))
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
+
+			case "sirsi_url":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.SirsiURL == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Name))
+				miscValues.requireValue(field.CustomInfo.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Name))
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Template, "sirsi template url")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
+
+			default:
+				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", i, field.Name)
 				invalid = true
 				continue
 			}
-
-			if field.FormatInfo.AccessURL == nil {
-				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			solrFields.requireValue(field.FormatInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Format))
-			solrFields.requireValue(field.FormatInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Format))
-			solrFields.requireValue(field.FormatInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Format))
-			messageIDs.requireValue(field.FormatInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Format))
-
-		case "authentication_prompt":
-
-		case "availability":
-
-		case "cover_image_url":
-			if field.FormatInfo == nil {
-				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			if field.FormatInfo.CoverImageURL == nil {
-				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			miscValues.requireValue(field.FormatInfo.CoverImageURL.MusicPool, "%s section music pool")
-
-			solrFields.requireValue(field.FormatInfo.CoverImageURL.ThumbnailField, fmt.Sprintf("%s section thumbnail url field", field.Format))
-			solrFields.requireValue(field.FormatInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Format))
-			solrFields.requireValue(field.FormatInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Format))
-			solrFields.requireValue(field.FormatInfo.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Format))
-
-			solrFields.addValue(field.FormatInfo.CoverImageURL.ISBNField)
-			solrFields.addValue(field.FormatInfo.CoverImageURL.OCLCField)
-			solrFields.addValue(field.FormatInfo.CoverImageURL.LCCNField)
-			solrFields.addValue(field.FormatInfo.CoverImageURL.UPCField)
-
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Template, "cover images template url")
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
-
-		case "iiif_base_url":
-			if field.FormatInfo == nil {
-				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			if field.FormatInfo.IIIFBaseURL == nil {
-				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			solrFields.requireValue(field.FormatInfo.IIIFBaseURL.IdentifierField, fmt.Sprintf("%s section identifier field", field.Format))
-
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
-
-		case "sirsi_url":
-			if field.FormatInfo == nil {
-				log.Printf("[VALIDATE] missing field index %d %s format_info section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			if field.FormatInfo.SirsiURL == nil {
-				log.Printf("[VALIDATE] missing field index %d %s section", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			solrFields.requireValue(field.FormatInfo.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Format))
-			miscValues.requireValue(field.FormatInfo.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Format))
-
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Template, "sirsi template url")
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
-
-		default:
-			if field.Format != "" {
-				log.Printf("[VALIDATE] field %d: unhandled format: [%s]", i, field.Format)
-				invalid = true
-				continue
-			}
-
-			// if not a specially handled field format, the source solr field must be defined
+		} else {
 			solrFields.requireValue(field.Field, "solr field")
 		}
 	}
