@@ -236,6 +236,9 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 		anonRequest = false
 	}
 
+	featureValues := doc.getValuesByTag(s.pool.config.Global.Service.DigitalContent.FeatureField)
+	hasDigitalContent := sliceContainsValueFromSlice(featureValues, s.pool.config.Global.Service.DigitalContent.Features)
+
 	// field loop (preprocessing)
 
 	for _, field := range s.pool.config.Mappings.Fields {
@@ -247,11 +250,15 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	// field loop
 
 	for _, field := range s.pool.config.Mappings.Fields {
-		if field.DetailsOnly && s.itemDetails == false {
+		if field.DetailsOnly == true && s.itemDetails == false {
 			continue
 		}
 
-		if field.OnShelfOnly && isAvailableOnShelf == false {
+		if field.OnShelfOnly == true && isAvailableOnShelf == false {
+			continue
+		}
+
+		if field.DigitalContentOnly == true && hasDigitalContent == false {
 			continue
 		}
 
@@ -329,19 +336,31 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 				}
 
 			case "digital_content_url":
-				featureValues := doc.getValuesByTag(field.CustomInfo.DigitalContentURL.FeatureField)
-
-				if sliceContainsValueFromSlice(featureValues, field.CustomInfo.DigitalContentURL.Features) {
-					if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
-						f.Value = url
-						r.addField(f)
-					}
+				if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
+					f.Value = url
+					r.addField(f)
 				}
 
 			case "iiif_base_url":
 				if url := s.getIIIFBaseURL(doc, field.CustomInfo.IIIFBaseURL.IdentifierField); url != "" {
 					f.Value = url
 					r.addField(f)
+				}
+
+			case "pdf_download_url":
+				pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
+
+				if len(pidValues) <= field.CustomInfo.PdfDownloadURL.MaxSupported {
+					pdfURL := firstElementOf(doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.URLField))
+
+					if pdfURL != "" {
+						for _, pid := range pidValues {
+							if pid != "" {
+								f.Value = fmt.Sprintf("%s/%s%s", pdfURL, pid, field.CustomInfo.PdfDownloadURL.Endpoint)
+								r.addField(f)
+							}
+						}
+					}
 				}
 
 			case "sirsi_url":
@@ -355,6 +374,19 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 						r.addField(f)
 					}
 				}
+
+			case "thumbnail_url":
+				urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)
+
+				if len(urlValues) <= field.CustomInfo.ThumbnailURL.MaxSupported {
+					for _, url := range urlValues {
+						if url != "" {
+							f.Value = url
+							r.addField(f)
+						}
+					}
+				}
+
 			}
 		} else {
 			fieldValues := doc.getValuesByTag(field.Field)

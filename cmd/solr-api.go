@@ -69,7 +69,7 @@ type solrResponseHeader struct {
 }
 
 type solrDocument struct {
-	// for performance reasons, pools should be configured to only request the fields below
+	AlternateID          []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability     []string `json:"anon_availability_a,omitempty"`
 	Author               []string `json:"author_facet_a,omitempty"`
 	CallNumber           []string `json:"call_number_a,omitempty"`
@@ -91,6 +91,7 @@ type solrDocument struct {
 	Location             []string `json:"location2_a,omitempty"`
 	Note                 []string `json:"note_a,omitempty"`
 	OCLC                 []string `json:"oclc_a,omitempty"`
+	PdfURL               []string `json:"pdf_url_a,omitempty"`
 	Pool                 []string `json:"pool_a,omitempty"`
 	PublicationDate      string   `json:"published_date,omitempty"`
 	PublicationDateRange []string `json:"published_daterange,omitempty"`

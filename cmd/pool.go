@@ -330,6 +330,10 @@ func (p *poolContext) validateConfig() {
 
 		miscValues.requireValue(field.Name, "name")
 
+		if field.DigitalContentOnly == true {
+			solrFields.requireValue(p.config.Global.Service.DigitalContent.FeatureField, "digital content feature field")
+		}
+
 		if field.Custom == true {
 			switch field.Name {
 			case "access_url":
@@ -396,7 +400,6 @@ func (p *poolContext) validateConfig() {
 				}
 
 				solrFields.requireValue(field.CustomInfo.DigitalContentURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-				solrFields.requireValue(field.CustomInfo.DigitalContentURL.FeatureField, fmt.Sprintf("%s section feature field", field.Name))
 
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Template, "digital content template url")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
@@ -419,6 +422,22 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 
+			case "pdf_download_url":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.PdfDownloadURL == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.URLField, fmt.Sprintf("%s section url field", field.Name))
+				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.PIDField, fmt.Sprintf("%s section pid field", field.Name))
+
 			case "sirsi_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
@@ -437,6 +456,21 @@ func (p *poolContext) validateConfig() {
 
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Template, "sirsi template url")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
+
+			case "thumbnail_url":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.ThumbnailURL == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.ThumbnailURL.URLField, fmt.Sprintf("%s section url field", field.Name))
 
 			default:
 				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", i, field.Name)

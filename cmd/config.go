@@ -25,11 +25,17 @@ type poolConfigURLTemplates struct {
 	DigitalContent poolConfigURLTemplate `json:"digital_content,omitempty"`
 }
 
+type poolConfigDigitalContent struct {
+	FeatureField string   `json:"feature_field,omitempty"`
+	Features     []string `json:"features,omitempty"`
+}
+
 type poolConfigService struct {
-	Port         string                 `json:"port,omitempty"`
-	JWTKey       string                 `json:"jwt_key,omitempty"`
-	DefaultSort  poolConfigSort         `json:"default_sort,omitempty"`
-	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
+	Port           string                   `json:"port,omitempty"`
+	JWTKey         string                   `json:"jwt_key,omitempty"`
+	DefaultSort    poolConfigSort           `json:"default_sort,omitempty"`
+	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
+	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
 }
 
 type poolConfigSolrParams struct {
@@ -99,9 +105,19 @@ type poolConfigFieldTypeSirsiURL struct {
 }
 
 type poolConfigFieldTypeDigitalContentURL struct {
-	IDField      string   `json:"id_field,omitempty"`
-	FeatureField string   `json:"feature_field,omitempty"`
-	Features     []string `json:"features,omitempty"`
+	IDField string `json:"id_field,omitempty"`
+}
+
+type poolConfigFieldTypePdfDownloadURL struct {
+	URLField     string `json:"url_field,omitempty"`
+	PIDField     string `json:"pid_field,omitempty"`
+	Endpoint     string `json:"endpoint,omitempty"`
+	MaxSupported int    `json:"max_supported,omitempty"`
+}
+
+type poolConfigFieldTypeThumbnailURL struct {
+	URLField     string `json:"url_field,omitempty"`
+	MaxSupported int    `json:"max_supported,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {
@@ -110,18 +126,21 @@ type poolConfigFieldCustomInfo struct {
 	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
 	SirsiURL          *poolConfigFieldTypeSirsiURL          `json:"sirsi_url,omitempty"`
 	DigitalContentURL *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`
+	PdfDownloadURL    *poolConfigFieldTypePdfDownloadURL    `json:"pdf_download_url,omitempty"`
+	ThumbnailURL      *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
 }
 
 type poolConfigField struct {
-	Name        string                     `json:"name,omitempty"` // required; v4 field name, and key for common fields
-	XID         string                     `json:"xid,omitempty"`
-	Field       string                     `json:"field,omitempty"`
-	Properties  poolConfigFieldProperties  `json:"properties,omitempty"`
-	Limit       int                        `json:"limit,omitempty"`
-	OnShelfOnly bool                       `json:"onshelf_only,omitempty"`
-	DetailsOnly bool                       `json:"details_only,omitempty"`
-	Custom      bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
-	CustomInfo  *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
+	Name               string                     `json:"name,omitempty"` // required; v4 field name, and key for common fields
+	XID                string                     `json:"xid,omitempty"`
+	Field              string                     `json:"field,omitempty"`
+	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
+	Limit              int                        `json:"limit,omitempty"`
+	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
+	DetailsOnly        bool                       `json:"details_only,omitempty"`
+	DigitalContentOnly bool                       `json:"digital_content_only,omitempty"`
+	Custom             bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
+	CustomInfo         *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
 }
 
 type poolConfigAvailabilityFields struct {
