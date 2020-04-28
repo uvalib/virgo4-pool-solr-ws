@@ -36,6 +36,7 @@ type poolConfigService struct {
 	DefaultSort    poolConfigSort           `json:"default_sort,omitempty"`
 	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
 	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
+	Pdf            poolConfigPdf            `json:"pdf,omitempty"`
 }
 
 type poolConfigSolrParams struct {
@@ -66,6 +67,20 @@ type poolConfigSolr struct {
 	Params               poolConfigSolrParams   `json:"params,omitempty"`
 	Grouping             poolConfigSolrGrouping `json:"grouping,omitempty"`
 	ExactMatchTitleField string                 `json:"exact_match_title_field,omitempty"`
+}
+
+type poolConfigPdfEndpoints struct {
+	Generate string `json:"generate,omitempty"`
+	Status   string `json:"status,omitempty"`
+	Download string `json:"download,omitempty"`
+	Delete   string `json:"delete,omitempty"`
+}
+
+type poolConfigPdf struct {
+	ConnTimeout string                 `json:"conn_timeout,omitempty"`
+	ReadTimeout string                 `json:"read_timeout,omitempty"`
+	Endpoints   poolConfigPdfEndpoints `json:"endpoints,omitempty"`
+	ReadyValues []string               `json:"ready_values,omitempty"`
 }
 
 type poolConfigFieldProperties struct {
@@ -111,7 +126,6 @@ type poolConfigFieldTypeDigitalContentURL struct {
 type poolConfigFieldTypePdfDownloadURL struct {
 	URLField     string `json:"url_field,omitempty"`
 	PIDField     string `json:"pid_field,omitempty"`
-	Endpoint     string `json:"endpoint,omitempty"`
 	MaxSupported int    `json:"max_supported,omitempty"`
 }
 

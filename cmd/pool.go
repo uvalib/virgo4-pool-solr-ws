@@ -33,6 +33,10 @@ type poolSolr struct {
 	scoreThresholdHigh   float32
 }
 
+type poolPdf struct {
+	client *http.Client
+}
+
 type poolTranslations struct {
 	bundle *i18n.Bundle
 }
@@ -52,6 +56,7 @@ type poolContext struct {
 	providers    VirgoPoolProviders
 	version      poolVersion
 	solr         poolSolr
+	pdf          poolPdf
 	maps         poolMaps
 }
 
@@ -207,6 +212,30 @@ func (p *poolContext) initSolr() {
 	log.Printf("[POOL] solr.url                  = [%s]", p.solr.url)
 	log.Printf("[POOL] solr.scoreThresholdMedium = [%0.1f]", p.solr.scoreThresholdMedium)
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
+}
+
+func (p *poolContext) initPdf() {
+	// client setup
+
+	connTimeout := timeoutWithMinimum(p.config.Global.Service.Pdf.ConnTimeout, 1)
+	readTimeout := timeoutWithMinimum(p.config.Global.Service.Pdf.ReadTimeout, 1)
+
+	pdfClient := &http.Client{
+		Timeout: time.Duration(readTimeout) * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   time.Duration(connTimeout) * time.Second,
+				KeepAlive: 60 * time.Second,
+			}).DialContext,
+			MaxIdleConns:        100, // we are most likely hitting one pdf host, so
+			MaxIdleConnsPerHost: 100, // these two values can be the same
+			IdleConnTimeout:     90 * time.Second,
+		},
+	}
+
+	p.pdf = poolPdf{
+		client: pdfClient,
+	}
 }
 
 func (p *poolContext) initTranslations() {
@@ -597,6 +626,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initProviders()
 	p.initVersion()
 	p.initSolr()
+	p.initPdf()
 
 	p.validateConfig()
 

@@ -353,12 +353,27 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 				if len(pidValues) <= field.CustomInfo.PdfDownloadURL.MaxSupported {
 					pdfURL := firstElementOf(doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.URLField))
 
-					if pdfURL != "" {
-						for _, pid := range pidValues {
-							if pid != "" {
-								f.Value = fmt.Sprintf("%s/%s%s", pdfURL, pid, field.CustomInfo.PdfDownloadURL.Endpoint)
-								r.addField(f)
-							}
+					if pdfURL == "" {
+						continue
+					}
+
+					for _, pid := range pidValues {
+						if pid == "" {
+							continue
+						}
+
+						statusURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Status)
+
+						pdfStatus, pdfErr := s.getPdfStatus(statusURL)
+
+						if pdfErr != nil {
+							continue
+						}
+
+						if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus) == true {
+							downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
+							f.Value = downloadURL
+							r.addField(f)
 						}
 					}
 				}
