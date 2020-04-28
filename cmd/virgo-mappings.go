@@ -201,6 +201,14 @@ func (s *searchContext) getIIIFBaseURL(doc *solrDocument, idField string) string
 	return getGenericURL(s.pool.config.Global.Service.URLTemplates.IIIF, pid)
 }
 
+func (s *searchContext) getDigitalContentURL(doc *solrDocument, idField string) string {
+	idValues := doc.getValuesByTag(idField)
+
+	id := firstElementOf(idValues)
+
+	return getGenericURL(s.pool.config.Global.Service.URLTemplates.DigitalContent, id)
+}
+
 func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 	var r VirgoRecord
 
@@ -315,6 +323,16 @@ func (s *searchContext) virgoPopulateRecord(doc *solrDocument) *VirgoRecord {
 			case "cover_image":
 				if s.pool.maps.attributes["cover_images"].Supported == true {
 					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, authorValues); url != "" {
+						f.Value = url
+						r.addField(f)
+					}
+				}
+
+			case "digital_content_url":
+				featureValues := doc.getValuesByTag(field.CustomInfo.DigitalContentURL.FeatureField)
+
+				if sliceContainsValueFromSlice(featureValues, field.CustomInfo.DigitalContentURL.Features) {
+					if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
 						f.Value = url
 						r.addField(f)
 					}

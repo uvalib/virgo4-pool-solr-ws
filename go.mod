@@ -9,12 +9,10 @@ require (
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.2
-	github.com/golang/protobuf v1.4.0 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/mitchellh/mapstructure v1.2.3
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
+	github.com/mitchellh/mapstructure v1.3.0
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
-	github.com/prometheus/client_golang v1.5.1
-	github.com/prometheus/procfs v0.0.11 // indirect
+	github.com/prometheus/client_golang v1.6.0
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	github.com/uvalib/virgo4-jwt v0.0.0-20200427141047-8e5c1f68bc8f
 	github.com/uvalib/virgo4-parser v0.0.0-20200210232429-840aa60f76a5

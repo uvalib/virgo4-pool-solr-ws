@@ -19,9 +19,10 @@ type poolConfigURLTemplate struct {
 }
 
 type poolConfigURLTemplates struct {
-	Sirsi       poolConfigURLTemplate `json:"sirsi,omitempty"`
-	CoverImages poolConfigURLTemplate `json:"cover_images,omitempty"`
-	IIIF        poolConfigURLTemplate `json:"iiif,omitempty"`
+	Sirsi          poolConfigURLTemplate `json:"sirsi,omitempty"`
+	CoverImages    poolConfigURLTemplate `json:"cover_images,omitempty"`
+	IIIF           poolConfigURLTemplate `json:"iiif,omitempty"`
+	DigitalContent poolConfigURLTemplate `json:"digital_content,omitempty"`
 }
 
 type poolConfigService struct {
@@ -97,11 +98,18 @@ type poolConfigFieldTypeSirsiURL struct {
 	IDPrefix string `json:"id_prefix,omitempty"`
 }
 
+type poolConfigFieldTypeDigitalContentURL struct {
+	IDField      string   `json:"id_field,omitempty"`
+	FeatureField string   `json:"feature_field,omitempty"`
+	Features     []string `json:"features,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
-	AccessURL     *poolConfigFieldTypeAccessURL     `json:"access_url,omitempty"`
-	IIIFBaseURL   *poolConfigFieldTypeIIIFBaseURL   `json:"iiif_base_url,omitempty"`
-	CoverImageURL *poolConfigFieldTypeCoverImageURL `json:"cover_image_url,omitempty"`
-	SirsiURL      *poolConfigFieldTypeSirsiURL      `json:"sirsi_url,omitempty"`
+	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
+	IIIFBaseURL       *poolConfigFieldTypeIIIFBaseURL       `json:"iiif_base_url,omitempty"`
+	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
+	SirsiURL          *poolConfigFieldTypeSirsiURL          `json:"sirsi_url,omitempty"`
+	DigitalContentURL *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`
 }
 
 type poolConfigField struct {

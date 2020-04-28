@@ -78,6 +78,7 @@ type solrDocument struct {
 	Collection           []string `json:"collection_a,omitempty"`
 	DataSource           []string `json:"data_source_a,omitempty"`
 	Director             []string `json:"author_director_a,omitempty"`
+	Feature              []string `json:"feature_a,omitempty"`
 	Format               []string `json:"format_a,omitempty"`
 	FullRecord           string   `json:"fullrecord,omitempty"`
 	ID                   string   `json:"id,omitempty"`
