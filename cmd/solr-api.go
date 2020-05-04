@@ -89,6 +89,7 @@ type solrDocument struct {
 	Language             []string `json:"language_a,omitempty"`
 	Library              []string `json:"library_a,omitempty"`
 	Location             []string `json:"location2_a,omitempty"`
+	MSSWorkKeySort       string   `json:"mss_work_key_sort,omitempty"`
 	Note                 []string `json:"note_a,omitempty"`
 	OCLC                 []string `json:"oclc_a,omitempty"`
 	PdfURL               []string `json:"pdf_url_a,omitempty"`
