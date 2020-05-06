@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/uvalib/virgo4-api/v4api"
 	"github.com/uvalib/virgo4-jwt/v4jwt"
 )
 
@@ -128,7 +129,7 @@ func (c *clientContext) localize(id string) string {
 	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
 }
 
-func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity {
+func (c *clientContext) localizedPoolIdentity(p *poolContext) v4api.PoolIdentity {
 	id := p.identity
 
 	id.Name = c.localize(id.Name)
@@ -143,8 +144,8 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) VirgoPoolIdentity 
 	return id
 }
 
-func (c *clientContext) localizedProviders(p *poolContext) VirgoPoolProviders {
-	providers := VirgoPoolProviders{}
+func (c *clientContext) localizedProviders(p *poolContext) v4api.PoolProviders {
+	var providers v4api.PoolProviders
 
 	for _, val := range p.providers.Providers {
 		opt := val

@@ -4,22 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/uvalib/virgo4-api/v4api"
 )
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) buildFilters(filterGroups *VirgoFilters, availableFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
-	if filterGroups == nil {
-		return
-	}
-
-	if len(*filterGroups) == 0 {
+func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, availableFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
+	if len(filterGroups) == 0 {
 		return
 	}
 
 	// we are guaranteed to only have one filter group due to up-front validations
 
-	filterGroup := (*filterGroups)[0]
+	filterGroup := filterGroups[0]
 
 	for _, filter := range filterGroup.Facets {
 		solrFacet := availableFacets[filter.FacetID]
@@ -87,7 +85,7 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 
 	availableFacets := make(map[string]solrRequestFacet)
 
-	auth := s.virgoReq.meta.client.isAuthenticated()
+	auth := s.client.isAuthenticated()
 
 	for i := range s.pool.maps.availableFacets {
 		facet := s.pool.maps.availableFacets[i]
@@ -114,31 +112,31 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	var solrReq solrRequest
 
-	solrReq.meta.client = s.virgoReq.meta.client
-	solrReq.meta.parserInfo = s.virgoReq.meta.parserInfo
+	solrReq.meta.client = s.client
+	solrReq.meta.parserInfo = s.virgo.parserInfo
 
 	solrReq.meta.selectionMap = make(map[string]map[string]string)
 
 	// fill out requested/defaulted sort info
 
-	sort := VirgoSort{
+	sort := v4api.SortOrder{
 		SortID: s.pool.config.Global.Service.DefaultSort.XID,
 		Order:  s.pool.config.Global.Service.DefaultSort.Order,
 	}
 
-	if s.virgoReq.Sort != nil && (s.virgoReq.Sort.SortID != "" || s.virgoReq.Sort.Order != "") {
+	if s.virgo.req.Sort.SortID != "" || s.virgo.req.Sort.Order != "" {
 		// sort was specified
 
 		sortValid := false
 
-		if s.pool.maps.sortFields[s.virgoReq.Sort.SortID] != "" {
+		if s.pool.maps.sortFields[s.virgo.req.Sort.SortID] != "" {
 			// sort id is valid
 
-			if s.virgoReq.Sort.Order == "asc" || s.virgoReq.Sort.Order == "desc" {
+			if s.virgo.req.Sort.Order == "asc" || s.virgo.req.Sort.Order == "desc" {
 				// sort order is valid
 
 				sortValid = true
-				sort = *s.virgoReq.Sort
+				sort = s.virgo.req.Sort
 			}
 		}
 
@@ -151,13 +149,13 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	// fill out as much as we can for a generic request
 
-	solrReq.json.Params.Q = s.virgoReq.meta.solrQuery
+	solrReq.json.Params.Q = s.virgo.solrQuery
 	solrReq.json.Params.Qt = s.pool.config.Local.Solr.Params.Qt
 	solrReq.json.Params.DefType = s.pool.config.Local.Solr.Params.DefType
 	solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
 	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
-	solrReq.json.Params.Start = restrictValue("start", s.virgoReq.Pagination.Start, 0, 0)
-	solrReq.json.Params.Rows = restrictValue("rows", s.virgoReq.Pagination.Rows, 0, 0)
+	solrReq.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
+	solrReq.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
 	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID], solrReq.meta.sort.Order)
 
 	if s.client.opts.grouped == true {
@@ -169,13 +167,13 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	availableFacets := s.solrAvailableFacets()
 
-	if s.virgoReq.meta.requestFacets == true && len(availableFacets) > 0 {
+	if s.virgo.requestFacets == true && len(availableFacets) > 0 {
 		solrReq.json.Facets = availableFacets
 	}
 
-	solrReq.buildFilters(s.virgoReq.Filters, availableFacets, s.pool.config.Global.Availability)
+	solrReq.buildFilters(s.virgo.req.Filters, availableFacets, s.pool.config.Global.Availability)
 
-	s.solrReq = &solrReq
+	s.solr.req = solrReq
 
 	return searchResponse{status: http.StatusOK}
 }
@@ -186,13 +184,13 @@ func (s *searchContext) solrSearchRequest() searchResponse {
 	var p *solrParserInfo
 
 	// caller might have already supplied a Solr query
-	if s.virgoReq.meta.solrQuery == "" {
-		if p, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
+	if s.virgo.solrQuery == "" {
+		if p, err = virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
 			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
 		}
 
-		s.virgoReq.meta.solrQuery = p.query
-		s.virgoReq.meta.parserInfo = p
+		s.virgo.solrQuery = p.query
+		s.virgo.parserInfo = p
 	}
 
 	if resp := s.solrRequestWithDefaults(); resp.err != nil {

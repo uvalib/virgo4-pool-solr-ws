@@ -7,6 +7,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/uvalib/virgo4-api/v4api"
 )
 
 const envPrefix = "VIRGO4_SOLR_POOL_WS"
@@ -204,7 +206,7 @@ type poolConfigIdentity struct {
 	NameXID     string                  `json:"name_xid,omitempty"`     // translation ID
 	DescXID     string                  `json:"desc_xid,omitempty"`     // translation ID
 	Mode        string                  `json:"mode,omitempty"`         // pool mode (what it is, e.g. "record" (default), "image", etc.)
-	Attributes  VirgoPoolAttributes     `json:"attributes,omitempty"`   // pool attributes (what it supports)
+	Attributes  []v4api.PoolAttribute   `json:"attributes,omitempty"`   // pool attributes (what it supports)
 	SortOptions []poolConfigSortOptions `json:"sort_options,omitempty"` // available sort options
 }
 

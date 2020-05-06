@@ -10,18 +10,30 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uvalib/virgo4-api/v4api"
 )
 
+type virgoDialog struct {
+	req           v4api.SearchRequest
+	poolRes       v4api.PoolResult
+	recordRes     v4api.Record
+	solrQuery     string          // holds the solr query (either parsed or specified)
+	parserInfo    *solrParserInfo // holds the information for parsed queries
+	requestFacets bool            // set to true for non-speculative searches
+}
+
+type solrDialog struct {
+	req solrRequest
+	res solrResponse
+}
+
 type searchContext struct {
-	pool           *poolContext
-	client         *clientContext
-	virgoReq       VirgoSearchRequest
-	virgoPoolRes   *VirgoPoolResult
-	virgoRecordRes *VirgoRecord
-	solrReq        *solrRequest
-	solrRes        *solrResponse
-	confidence     string
-	itemDetails    bool
+	pool        *poolContext
+	client      *clientContext
+	virgo       virgoDialog
+	solr        solrDialog
+	confidence  string
+	itemDetails bool
 }
 
 type searchResponse struct {
@@ -44,8 +56,6 @@ func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.pool = p
 
 	s.client = c
-
-	s.virgoReq.meta.client = s.client
 }
 
 func (s *searchContext) copySearchContext() *searchContext {
@@ -62,8 +72,8 @@ func (s *searchContext) copySearchContext() *searchContext {
 	c := *s.client
 	sc.client = &c
 
-	v := s.virgoReq
-	sc.virgoReq = v
+	v := s.virgo.req
+	sc.virgo.req = v
 
 	return sc
 }
@@ -106,7 +116,7 @@ func (s *searchContext) getPoolQueryResults() searchResponse {
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
-	s.confidence = s.virgoPoolRes.Confidence
+	s.confidence = s.virgo.poolRes.Confidence
 
 	return searchResponse{status: http.StatusOK}
 }
@@ -133,9 +143,9 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	// just want first result, not first result group
 	top.client.opts.grouped = false
 
-	top.virgoReq.Query = query
-	top.virgoReq.meta.solrQuery = ""
-	top.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 1}
+	top.virgo.req.Query = query
+	top.virgo.solrQuery = ""
+	top.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 1}
 
 	if resp := top.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
@@ -159,17 +169,17 @@ func (b *byConfidence) Swap(i, j int) {
 func (b *byConfidence) Less(i, j int) bool {
 	// sort by confidence index
 
-	if confidenceIndex(b.results[i].virgoPoolRes.Confidence) < confidenceIndex(b.results[j].virgoPoolRes.Confidence) {
+	if confidenceIndex(b.results[i].virgo.poolRes.Confidence) < confidenceIndex(b.results[j].virgo.poolRes.Confidence) {
 		return false
 	}
 
-	if confidenceIndex(b.results[i].virgoPoolRes.Confidence) > confidenceIndex(b.results[j].virgoPoolRes.Confidence) {
+	if confidenceIndex(b.results[i].virgo.poolRes.Confidence) > confidenceIndex(b.results[j].virgo.poolRes.Confidence) {
 		return true
 	}
 
 	// confidence is equal; sort by score
 
-	return b.results[i].solrRes.meta.maxScore > b.results[j].solrRes.meta.maxScore
+	return b.results[i].solr.res.meta.maxScore > b.results[j].solr.res.meta.maxScore
 }
 
 func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) {
@@ -178,10 +188,10 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 	// otherwise, query the top result so that we can use its potentially better/more
 	// accurate confidence level in the original query's results.
 
-	if s.virgoReq.Pagination.Start != 0 {
+	if s.virgo.req.Pagination.Start != 0 {
 		s.log("[SEARCH] determining true confidence level for title search")
 
-		return s.newSearchWithTopResult(s.virgoReq.Query)
+		return s.newSearchWithTopResult(s.virgo.req.Query)
 	}
 
 	return s, nil
@@ -210,20 +220,20 @@ func (s *searchContext) performSpeculativeKeywordSearch(origSearchTerm string) (
 
 	s.log("[INTUIT] checking if keyword search term [%s] might be a title or author search...", searchTerm)
 
-	if keyword, err = s.newSearchWithTopResult(s.virgoReq.Query); err != nil {
+	if keyword, err = s.newSearchWithTopResult(s.virgo.req.Query); err != nil {
 		return nil, err
 	}
 
-	s.log("[INTUIT] keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgoPoolRes.Confidence, keyword.solrRes.meta.maxScore)
+	s.log("[INTUIT] keyword: confidence = [%s]  maxScore = [%0.2f]", keyword.virgo.poolRes.Confidence, keyword.solr.res.meta.maxScore)
 	searchResults = append(searchResults, keyword)
 
 	if title, err = keyword.newSearchWithTopResult(fmt.Sprintf("title:{%s}", searchTerm)); err == nil {
-		s.log("[INTUIT] title: confidence = [%s]  maxScore = [%0.2f]", title.virgoPoolRes.Confidence, title.solrRes.meta.maxScore)
+		s.log("[INTUIT] title: confidence = [%s]  maxScore = [%0.2f]", title.virgo.poolRes.Confidence, title.solr.res.meta.maxScore)
 		searchResults = append(searchResults, title)
 	}
 
 	if author, err = keyword.newSearchWithTopResult(fmt.Sprintf("author:{%s}", searchTerm)); err == nil {
-		s.log("[INTUIT] author: confidence = [%s]  maxScore = [%0.2f]", author.virgoPoolRes.Confidence, author.solrRes.meta.maxScore)
+		s.log("[INTUIT] author: confidence = [%s]  maxScore = [%0.2f]", author.virgo.poolRes.Confidence, author.solr.res.meta.maxScore)
 		searchResults = append(searchResults, author)
 	}
 
@@ -240,14 +250,14 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	// maybe facet buckets might differ based on speculative search?
 	/*
 		// facet-only requests don't need speculation, as the client is only looking for buckets
-		if s.virgoReq.Pagination.Rows == 0 {
+		if s.virgo.req.Pagination.Rows == 0 {
 			return s, nil
 		}
 	*/
 
 	// parse original query to determine query type
 
-	if parsedQuery, err = virgoQueryConvertToSolr(s.virgoReq.Query); err != nil {
+	if parsedQuery, err = virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
 		return nil, err
 	}
 
@@ -292,15 +302,15 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 		newQuery = fmt.Sprintf(`%s AND %s`, initialQuery, groupClause)
 	}
 
-	c.virgoReq.Query = ""
-	c.virgoReq.meta.solrQuery = newQuery
-	c.virgoReq.meta.requestFacets = false
+	c.virgo.req.Query = ""
+	c.virgo.solrQuery = newQuery
+	c.virgo.requestFacets = false
 
 	// get everything!  even bible (5000+)
-	c.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 100000}
+	c.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 100000}
 
 	// intra-group sorting
-	c.virgoReq.Sort = &VirgoSort{
+	c.virgo.req.Sort = v4api.SortOrder{
 		SortID: s.pool.config.Local.Solr.Grouping.Sort.XID,
 		Order:  s.pool.config.Local.Solr.Grouping.Sort.Order,
 	}
@@ -313,27 +323,19 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 }
 
 func (s *searchContext) wrapRecordsInGroups() {
-	// non-grouped results with no records don't need wrapping
-	if s.virgoPoolRes.RecordList == nil {
-		return
-	}
+	var groups []v4api.Group
 
-	var groups VirgoGroups
-
-	for _, record := range *s.virgoPoolRes.RecordList {
-		group := VirgoGroup{
-			Value:      "",
-			Count:      1,
-			RecordList: []VirgoRecord{record},
+	for _, record := range s.virgo.poolRes.Groups[0].Records {
+		group := v4api.Group{
+			Value:   "",
+			Count:   1,
+			Records: []v4api.Record{record},
 		}
 
 		groups = append(groups, group)
 	}
 
-	s.virgoPoolRes.GroupList = &groups
-
-	// remove record list, as results are now in groups
-	s.virgoPoolRes.RecordList = nil
+	s.virgo.poolRes.Groups = groups
 }
 
 func (s *searchContext) populateGroups() error {
@@ -341,7 +343,12 @@ func (s *searchContext) populateGroups() error {
 	// by querying for all group records in one request, and plinko'ing the results to the correct groups
 
 	// no need to group facet endpoint results
-	if s.virgoReq.meta.requestFacets == true {
+	if s.virgo.requestFacets == true {
+		return nil
+	}
+
+	// no need to populate or wrap results when there are none
+	if len(s.virgo.poolRes.Groups) == 0 {
 		return nil
 	}
 
@@ -351,70 +358,42 @@ func (s *searchContext) populateGroups() error {
 		return nil
 	}
 
-	// grouped results with no results don't need populating
-	if s.solrRes.meta.numGroups == 0 {
-		return nil
-	}
-
-	var groups VirgoGroups
+	// grouped results need to be populated per group value
+	var groups []v4api.Group
 
 	var groupValues []string
 
 	groupValueMap := make(map[string]int)
 
-	for i, groupRecord := range s.solrRes.Response.Docs {
+	for i, groupRecord := range s.solr.res.Response.Docs {
 		groupValue := s.getSolrGroupFieldValue(&groupRecord)
 		groupValues = append(groupValues, groupValue)
 		groupValueMap[groupValue] = i
-		var records VirgoRecords
-		groups = append(groups, VirgoGroup{Value: groupValue, RecordList: records})
+		groups = append(groups, v4api.Group{Value: groupValue, Records: []v4api.Record{}})
 	}
 
-	r, err := s.newSearchWithRecordListForGroups(s.virgoReq.meta.solrQuery, groupValues)
+	r, err := s.newSearchWithRecordListForGroups(s.virgo.solrQuery, groupValues)
 	if err != nil {
 		return err
 	}
 
 	// loop through records to route to correct group
 
-	for _, record := range *r.virgoPoolRes.RecordList {
-		v := groupValueMap[record.groupValue]
-		groups[v].RecordList = append(groups[v].RecordList, record)
+	for i, record := range r.virgo.poolRes.Groups[0].Records {
+		groupRecord := r.solr.res.Response.Docs[i]
+		groupValue := s.getSolrGroupFieldValue(&groupRecord)
+		v := groupValueMap[groupValue]
+		groups[v].Records = append(groups[v].Records, record)
 	}
 
 	// loop through groups to assign count and fields
 
 	for i := range groups {
 		group := &groups[i]
-
-		group.Count = len(group.RecordList)
-
-		// cover image url
-		// just use url from first grouped result that has one
-		// (they all will for now, but we check properly anyway)
-
-		gotCover := false
-
-		for _, r := range group.RecordList {
-			for _, f := range r.Fields {
-				if f.Name == "cover_image" {
-					group.addField(&f)
-					gotCover = true
-					break
-				}
-			}
-
-			if gotCover == true {
-				break
-			}
-		}
-
+		group.Count = len(group.Records)
 	}
 
-	s.virgoPoolRes.GroupList = &groups
-
-	// remove record list, as results are now in groups
-	s.virgoPoolRes.RecordList = nil
+	s.virgo.poolRes.Groups = groups
 
 	return nil
 }
@@ -425,26 +404,24 @@ func (s *searchContext) validateSearchRequest() error {
 	// ensure we received either zero or one filter group,
 	// and that any filters provided are supported
 
-	if s.virgoReq.Filters != nil {
-		numFilterGroups := len(*s.virgoReq.Filters)
+	numFilterGroups := len(s.virgo.req.Filters)
 
-		switch {
-		case numFilterGroups > 1:
-			return errors.New("received too many filter groups")
+	switch {
+	case numFilterGroups > 1:
+		return errors.New("received too many filter groups")
 
-		case numFilterGroups == 1:
-			// the pool id in the filter group is not associated with anything
-			// in our config, so the best we can do is ensure just one filter
-			// group was passed, and that it contains filters that we know about
+	case numFilterGroups == 1:
+		// the pool id in the filter group is not associated with anything
+		// in our config, so the best we can do is ensure just one filter
+		// group was passed, and that it contains filters that we know about
 
-			filterGroup := (*s.virgoReq.Filters)[0]
+		filterGroup := s.virgo.req.Filters[0]
 
-			availableFacets := s.solrAvailableFacets()
+		availableFacets := s.solrAvailableFacets()
 
-			for _, filter := range filterGroup.Facets {
-				if _, ok := availableFacets[filter.FacetID]; ok == false {
-					return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
-				}
+		for _, filter := range filterGroup.Facets {
+			if _, ok := availableFacets[filter.FacetID]; ok == false {
+				return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
 			}
 		}
 	}
@@ -456,29 +433,29 @@ func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchRespon
 	var err error
 	var top *searchContext
 
-	if err = c.BindJSON(&s.virgoReq); err != nil {
+	if err = c.BindJSON(&s.virgo.req); err != nil {
 		// "Invalid Request" instead?
 		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
-	s.log("[SEARCH] query: [%s]", s.virgoReq.Query)
+	s.log("[SEARCH] query: [%s]", s.virgo.req.Query)
 
 	if err = s.validateSearchRequest(); err != nil {
 		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
 	// save original facet request flag
-	requestFacets := s.virgoReq.meta.requestFacets
+	requestFacets := s.virgo.requestFacets
 
 	if top, err = s.performSpeculativeSearches(); err != nil {
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
 
 	// use query syntax from chosen search
-	s.virgoReq.Query = top.virgoReq.Query
+	s.virgo.req.Query = top.virgo.req.Query
 
 	// restore original facet request flag
-	s.virgoReq.meta.requestFacets = requestFacets
+	s.virgo.requestFacets = requestFacets
 
 	// now do the search
 	if resp := s.getPoolQueryResults(); resp.err != nil {
@@ -491,18 +468,18 @@ func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchRespon
 	}
 
 	// restore actual confidence
-	if confidenceIndex(top.confidence) > confidenceIndex(s.virgoPoolRes.Confidence) {
-		s.log("[SEARCH] overriding confidence [%s] with [%s]", s.virgoPoolRes.Confidence, top.confidence)
-		s.virgoPoolRes.Confidence = top.confidence
+	if confidenceIndex(top.confidence) > confidenceIndex(s.virgo.poolRes.Confidence) {
+		s.log("[SEARCH] overriding confidence [%s] with [%s]", s.virgo.poolRes.Confidence, top.confidence)
+		s.virgo.poolRes.Confidence = top.confidence
 	}
 
 	// add sort info for these results
 
-	s.virgoPoolRes.Sort = &s.solrReq.meta.sort
+	s.virgo.poolRes.Sort = s.solr.req.meta.sort
 
 	// finally fill out elapsed time
 
-	s.virgoPoolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
+	s.virgo.poolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
 
 	return searchResponse{status: http.StatusOK}
 }
@@ -512,34 +489,34 @@ func (s *searchContext) handleSearchRequest(c *gin.Context) searchResponse {
 		return resp
 	}
 
-	s.virgoPoolRes.FacetList = nil
+	s.virgo.poolRes.FacetList = nil
 
-	return searchResponse{status: http.StatusOK, data: s.virgoPoolRes}
+	return searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
 }
 
 func (s *searchContext) handleFacetsRequest(c *gin.Context) searchResponse {
 	// override these values from the original search query, since we are
 	// only interested in facets, not records
-	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 0}
+	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 
-	s.virgoReq.meta.requestFacets = true
+	s.virgo.requestFacets = true
 
 	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
 		return resp
 	}
 
-	virgoFacetsRes := VirgoFacetsResult{
-		FacetList: s.virgoPoolRes.FacetList,
-		ElapsedMS: s.virgoPoolRes.ElapsedMS,
+	facetRes := v4api.PoolResult{
+		FacetList: s.virgo.poolRes.FacetList,
+		ElapsedMS: s.virgo.poolRes.ElapsedMS,
 	}
 
-	return searchResponse{status: http.StatusOK, data: virgoFacetsRes}
+	return searchResponse{status: http.StatusOK, data: facetRes}
 }
 
 func (s *searchContext) handleRecordRequest() searchResponse {
 	// override these values from defaults.  specify two rows to catch
 	// the (impossible?) scenario of multiple records with the same id
-	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 2}
+	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 2}
 
 	if resp := s.getRecordQueryResults(); resp.err != nil {
 		return resp
@@ -548,7 +525,7 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 	// per-mode tweaks to this record
 	switch s.pool.config.Local.Identity.Mode {
 	case "image":
-		record := &s.solrRes.Response.Docs[0]
+		record := &s.solr.res.Response.Docs[0]
 
 		group := s.getSolrGroupFieldValue(record)
 		groupValues := []string{group}
@@ -560,10 +537,10 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 
 		// put related values in a separate section of the record response
 
-		var related VirgoRelatedRecords
+		var related []v4api.RelatedRecord
 
-		for _, doc := range r.solrRes.Response.Docs {
-			rr := VirgoRelatedRecord{
+		for _, doc := range r.solr.res.Response.Docs {
+			rr := v4api.RelatedRecord{
 				ID:              firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IDField)),
 				IIIFManifestURL: firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IIIFManifestField)),
 				IIIFImageURL:    firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IIIFImageField)),
@@ -573,16 +550,16 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 			related = append(related, rr)
 		}
 
-		s.virgoRecordRes.Related = &related
+		s.virgo.recordRes.Related = related
 	}
 
-	return searchResponse{status: http.StatusOK, data: s.virgoRecordRes}
+	return searchResponse{status: http.StatusOK, data: s.virgo.recordRes}
 }
 
 func (s *searchContext) handlePingRequest() searchResponse {
 	// override these values from defaults.  we are not interested
 	// in records, just connectivity
-	s.virgoReq.Pagination = VirgoPagination{Start: 0, Rows: 0}
+	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 
 	if resp := s.performQuery(); resp.err != nil {
 		return resp

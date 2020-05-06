@@ -27,7 +27,7 @@ func (s *searchContext) convertFacets() error {
 	facetsRaw := make(map[string]interface{})
 	var facets solrResponseFacets
 
-	for key, val := range s.solrRes.FacetsRaw {
+	for key, val := range s.solr.res.FacetsRaw {
 		switch val.(type) {
 		case map[string]interface{}:
 			facetsRaw[key] = val
@@ -48,7 +48,7 @@ func (s *searchContext) convertFacets() error {
 		return fmt.Errorf("failed to decode Solr facet map")
 	}
 
-	s.solrRes.Facets = facets
+	s.solr.res.Facets = facets
 
 	return nil
 }
@@ -56,50 +56,50 @@ func (s *searchContext) convertFacets() error {
 func (s *searchContext) populateMetaFields() {
 	// fill out meta fields for easier use later
 
-	s.solrRes.meta = &s.solrReq.meta
+	s.solr.res.meta = &s.solr.req.meta
 
-	s.solrRes.meta.start = s.solrReq.json.Params.Start
+	s.solr.res.meta.start = s.solr.req.json.Params.Start
 
 	if s.client.opts.grouped == true {
 		// calculate number of groups in this response, and total available
 		// (grouping, take 2: each record is the top entry of a group, so effectively records == groups)
 
-		s.solrRes.meta.numGroups = len(s.solrRes.Response.Docs)
-		s.solrRes.meta.totalGroups = s.solrRes.Response.NumFound
+		s.solr.res.meta.numGroups = len(s.solr.res.Response.Docs)
+		s.solr.res.meta.totalGroups = s.solr.res.Response.NumFound
 
 		// find max score and first document
-		if s.solrRes.meta.numGroups > 0 {
-			s.solrRes.meta.maxScore = s.solrRes.Response.MaxScore
-			s.solrRes.meta.firstDoc = &s.solrRes.Response.Docs[0]
+		if s.solr.res.meta.numGroups > 0 {
+			s.solr.res.meta.maxScore = s.solr.res.Response.MaxScore
+			s.solr.res.meta.firstDoc = &s.solr.res.Response.Docs[0]
 		}
 
 		// calculate number of records in this response
 		// (grouping, take 2: this happens later, after all groups are queried to fill out their records)
-		s.solrRes.meta.numRecords = 0
-		s.solrRes.meta.totalRecords = -1
+		s.solr.res.meta.numRecords = 0
+		s.solr.res.meta.totalRecords = -1
 
 		// set generic "rows" fields for client pagination
-		s.solrRes.meta.numRows = s.solrRes.meta.numGroups
-		s.solrRes.meta.totalRows = s.solrRes.meta.totalGroups
+		s.solr.res.meta.numRows = s.solr.res.meta.numGroups
+		s.solr.res.meta.totalRows = s.solr.res.meta.totalGroups
 	} else {
 		// calculate number of records in this response, and total available
-		s.solrRes.meta.numRecords = len(s.solrRes.Response.Docs)
-		s.solrRes.meta.totalRecords = s.solrRes.Response.NumFound
+		s.solr.res.meta.numRecords = len(s.solr.res.Response.Docs)
+		s.solr.res.meta.totalRecords = s.solr.res.Response.NumFound
 
 		// find max score and first document
-		if s.solrRes.meta.numRecords > 0 {
-			s.solrRes.meta.maxScore = s.solrRes.Response.MaxScore
-			s.solrRes.meta.firstDoc = &s.solrRes.Response.Docs[0]
+		if s.solr.res.meta.numRecords > 0 {
+			s.solr.res.meta.maxScore = s.solr.res.Response.MaxScore
+			s.solr.res.meta.firstDoc = &s.solr.res.Response.Docs[0]
 		}
 
 		// set generic "rows" fields for client pagination
-		s.solrRes.meta.numRows = s.solrRes.meta.numRecords
-		s.solrRes.meta.totalRows = s.solrRes.meta.totalRecords
+		s.solr.res.meta.numRows = s.solr.res.meta.numRecords
+		s.solr.res.meta.totalRows = s.solr.res.meta.totalRecords
 	}
 }
 
 func (s *searchContext) solrQuery() error {
-	jsonBytes, jsonErr := json.Marshal(s.solrReq.json)
+	jsonBytes, jsonErr := json.Marshal(s.solr.req.json)
 	if jsonErr != nil {
 		s.log("[SOLR] Marshal() failed: %s", jsonErr.Error())
 		return fmt.Errorf("failed to marshal Solr JSON")
@@ -123,7 +123,7 @@ func (s *searchContext) solrQuery() error {
 		s.log("[SOLR] req: [%s]", string(jsonBytes))
 	} else {
 		// prettify logged query
-		pieces := strings.SplitAfter(s.solrReq.json.Params.Q, fmt.Sprintf(" AND %s:", s.pool.config.Local.Solr.Grouping.Field))
+		pieces := strings.SplitAfter(s.solr.req.json.Params.Q, fmt.Sprintf(" AND %s:", s.pool.config.Local.Solr.Grouping.Field))
 		q := pieces[0]
 		if len(pieces) > 1 {
 			q = q + " ..."
@@ -171,7 +171,7 @@ func (s *searchContext) solrQuery() error {
 
 	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, elapsedMS)
 
-	s.solrRes = &solrRes
+	s.solr.res = solrRes
 
 	s.convertFacets()
 

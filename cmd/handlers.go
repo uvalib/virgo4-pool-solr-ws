@@ -62,7 +62,7 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	s.init(p, &cl)
 
 	// fill out Solr query directly, bypassing query syntax parser
-	s.virgoReq.meta.solrQuery = fmt.Sprintf(`id:"%s"`, c.Param("id"))
+	s.virgo.solrQuery = fmt.Sprintf(`id:"%s"`, c.Param("id"))
 
 	// mark this as a resource request
 	s.itemDetails = true
@@ -120,7 +120,7 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	}
 
 	// fill out Solr query directly, bypassing query syntax parser
-	s.virgoReq.meta.solrQuery = "id:pingtest"
+	s.virgo.solrQuery = "id:pingtest"
 
 	cl.logRequest()
 	ping := s.handlePingRequest()

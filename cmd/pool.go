@@ -14,6 +14,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/uvalib/virgo4-api/v4api"
 	"golang.org/x/text/language"
 )
 
@@ -43,7 +44,7 @@ type poolTranslations struct {
 
 type poolMaps struct {
 	sortFields      map[string]string
-	attributes      map[string]VirgoPoolAttribute
+	attributes      map[string]v4api.PoolAttribute
 	availableFacets map[string]poolConfigFacet
 	risCodes        map[string]string
 }
@@ -52,8 +53,8 @@ type poolContext struct {
 	randomSource *rand.Rand
 	config       *poolConfig
 	translations poolTranslations
-	identity     VirgoPoolIdentity
-	providers    VirgoPoolProviders
+	identity     v4api.PoolIdentity
+	providers    v4api.PoolProviders
 	version      poolVersion
 	solr         poolSolr
 	pdf          poolPdf
@@ -100,7 +101,7 @@ func (v *stringValidator) Invalid() bool {
 }
 
 func (p *poolContext) initIdentity() {
-	p.identity = VirgoPoolIdentity{
+	p.identity = v4api.PoolIdentity{
 		Name:        p.config.Local.Identity.NameXID,
 		Description: p.config.Local.Identity.DescXID,
 		Mode:        p.config.Local.Identity.Mode,
@@ -110,12 +111,12 @@ func (p *poolContext) initIdentity() {
 	// create sort field map
 	p.maps.sortFields = make(map[string]string)
 	for _, val := range p.config.Local.Identity.SortOptions {
-		p.identity.SortOptions = append(p.identity.SortOptions, VirgoSortOption{ID: val.XID})
+		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: val.XID})
 		p.maps.sortFields[val.XID] = val.Field
 	}
 
 	// create attribute map
-	p.maps.attributes = make(map[string]VirgoPoolAttribute)
+	p.maps.attributes = make(map[string]v4api.PoolAttribute)
 	for _, attribute := range p.identity.Attributes {
 		p.maps.attributes[attribute.Name] = attribute
 	}
@@ -127,7 +128,7 @@ func (p *poolContext) initIdentity() {
 
 func (p *poolContext) initProviders() {
 	for _, val := range p.config.Global.Providers {
-		provider := VirgoProvider{
+		provider := v4api.Provider{
 			Provider:    val.Name,
 			Label:       val.XID,
 			LogoURL:     val.Logo,
