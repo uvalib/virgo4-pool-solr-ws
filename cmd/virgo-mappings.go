@@ -286,19 +286,6 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 	return records
 }
 
-func (s *searchContext) populateFacetBucket(name string, value solrBucket) v4api.FacetBucket {
-	selected := false
-	if s.solr.req.meta.selectionMap[name][value.Val] != "" {
-		selected = true
-	}
-
-	return v4api.FacetBucket{
-		Value:    value.Val,
-		Count:    value.Count,
-		Selected: selected,
-	}
-}
-
 func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrResponseFacet) v4api.Facet {
 	var facet v4api.Facet
 
@@ -315,18 +302,17 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 			selected = true
 		}
 
-		bucket := v4api.FacetBucket{
-			Selected: selected,
-		}
-
-		buckets = append(buckets, bucket)
+		buckets = append(buckets, v4api.FacetBucket{Selected: selected})
 
 	default:
 		for _, b := range value.Buckets {
-			bucket := s.populateFacetBucket(facetDef.XID, b)
+			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, b.Val) {
+				selected := false
+				if s.solr.req.meta.selectionMap[facetDef.XID][b.Val] != "" {
+					selected = true
+				}
 
-			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, bucket.Value) {
-				buckets = append(buckets, bucket)
+				buckets = append(buckets, v4api.FacetBucket{Value: b.Val, Count: b.Count, Selected: selected})
 			}
 		}
 
@@ -498,13 +484,13 @@ func (s *searchContext) populatePoolResult() {
 
 // the main response functions for each endpoint
 
-func (s *searchContext) virgoSearchResponse() error {
+func (s *searchContext) poolSearchResponse() error {
 	s.populatePoolResult()
 
 	return nil
 }
 
-func (s *searchContext) virgoRecordResponse() error {
+func (s *searchContext) poolRecordResponse() error {
 	var v v4api.Record
 
 	switch s.solr.res.meta.numRecords {

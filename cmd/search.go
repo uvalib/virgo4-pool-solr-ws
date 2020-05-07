@@ -111,7 +111,7 @@ func (s *searchContext) getPoolQueryResults() searchResponse {
 		return resp
 	}
 
-	if err := s.virgoSearchResponse(); err != nil {
+	if err := s.poolSearchResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
@@ -128,7 +128,7 @@ func (s *searchContext) getRecordQueryResults() searchResponse {
 		return resp
 	}
 
-	if err = s.virgoRecordResponse(); err != nil {
+	if err = s.poolRecordResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
