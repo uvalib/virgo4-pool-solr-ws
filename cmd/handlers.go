@@ -24,8 +24,6 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 
 	if resp.err != nil {
 		s.err("searchHandler: error: %s", resp.err.Error())
-		c.String(resp.status, resp.err.Error())
-		return
 	}
 
 	c.JSON(resp.status, resp.data)
@@ -44,8 +42,6 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 
 	if resp.err != nil {
 		s.err("facetsHandler: error: %s", resp.err.Error())
-		c.String(resp.status, resp.err.Error())
-		return
 	}
 
 	c.JSON(resp.status, resp.data)

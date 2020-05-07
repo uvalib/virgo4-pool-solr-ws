@@ -173,7 +173,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	solrReq.buildFilters(s.virgo.req.Filters, availableFacets, s.pool.config.Global.Availability)
 
-	s.solr.req = solrReq
+	s.solr.req = &solrReq
 
 	return searchResponse{status: http.StatusOK}
 }

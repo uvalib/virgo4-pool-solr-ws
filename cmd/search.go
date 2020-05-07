@@ -23,8 +23,8 @@ type virgoDialog struct {
 }
 
 type solrDialog struct {
-	req solrRequest
-	res solrResponse
+	req *solrRequest
+	res *solrResponse
 }
 
 type searchContext struct {
@@ -486,10 +486,12 @@ func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchRespon
 
 func (s *searchContext) handleSearchRequest(c *gin.Context) searchResponse {
 	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
+		resp.data = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		return resp
 	}
 
-	s.virgo.poolRes.FacetList = nil
+	s.virgo.poolRes.FacetList = []v4api.Facet{}
+	s.virgo.poolRes.StatusCode = http.StatusOK
 
 	return searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
 }
@@ -502,12 +504,14 @@ func (s *searchContext) handleFacetsRequest(c *gin.Context) searchResponse {
 	s.virgo.requestFacets = true
 
 	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
+		resp.data = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		return resp
 	}
 
 	facetRes := v4api.PoolResult{
 		FacetList: s.virgo.poolRes.FacetList,
 		ElapsedMS: s.virgo.poolRes.ElapsedMS,
+		StatusCode: http.StatusOK,
 	}
 
 	return searchResponse{status: http.StatusOK, data: facetRes}

@@ -171,7 +171,7 @@ func (s *searchContext) solrQuery() error {
 
 	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, s.pool.solr.url, elapsedMS)
 
-	s.solr.res = solrRes
+	s.solr.res = &solrRes
 
 	s.convertFacets()
 
