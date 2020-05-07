@@ -509,8 +509,8 @@ func (s *searchContext) handleFacetsRequest(c *gin.Context) searchResponse {
 	}
 
 	facetRes := v4api.PoolResult{
-		FacetList: s.virgo.poolRes.FacetList,
-		ElapsedMS: s.virgo.poolRes.ElapsedMS,
+		FacetList:  s.virgo.poolRes.FacetList,
+		ElapsedMS:  s.virgo.poolRes.ElapsedMS,
 		StatusCode: http.StatusOK,
 	}
 

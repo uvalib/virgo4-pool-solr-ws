@@ -145,7 +145,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		}
 	}
 
-	solrReq.meta.sort = sort
+	solrReq.meta.sort = &sort
 
 	// fill out as much as we can for a generic request
 
