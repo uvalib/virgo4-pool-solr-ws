@@ -430,7 +430,9 @@ func (s *searchContext) searchIsExactMatch() bool {
 	return true
 }
 
-func (s *searchContext) populatePoolResult() {
+// the main response functions for each endpoint
+
+func (s *searchContext) buildPoolSearchResponse() error {
 	var pr v4api.PoolResult
 
 	//pr.Identity = s.client.localizedPoolIdentity(s.pool)
@@ -479,32 +481,26 @@ func (s *searchContext) populatePoolResult() {
 		pr.Debug["max_score"] = s.solr.res.meta.maxScore
 	}
 
-	s.virgo.poolRes = pr
-}
-
-// the main response functions for each endpoint
-
-func (s *searchContext) poolSearchResponse() error {
-	s.populatePoolResult()
+	s.virgo.poolRes = &pr
 
 	return nil
 }
 
-func (s *searchContext) poolRecordResponse() error {
-	var v v4api.Record
+func (s *searchContext) buildPoolRecordResponse() error {
+	var r v4api.Record
 
 	switch s.solr.res.meta.numRecords {
 	case 0:
 		return fmt.Errorf("record not found")
 
 	case 1:
-		v = s.populateRecord(s.solr.res.meta.firstDoc)
+		r = s.populateRecord(s.solr.res.meta.firstDoc)
 
 	default:
 		return fmt.Errorf("multiple records found")
 	}
 
-	s.virgo.recordRes = v
+	s.virgo.recordRes = &r
 
 	return nil
 }

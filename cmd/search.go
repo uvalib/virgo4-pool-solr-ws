@@ -15,8 +15,8 @@ import (
 
 type virgoDialog struct {
 	req           v4api.SearchRequest
-	poolRes       v4api.PoolResult
-	recordRes     v4api.Record
+	poolRes       *v4api.PoolResult
+	recordRes     *v4api.Record
 	solrQuery     string          // holds the solr query (either parsed or specified)
 	parserInfo    *solrParserInfo // holds the information for parsed queries
 	requestFacets bool            // set to true for non-speculative searches
@@ -111,7 +111,7 @@ func (s *searchContext) getPoolQueryResults() searchResponse {
 		return resp
 	}
 
-	if err := s.poolSearchResponse(); err != nil {
+	if err := s.buildPoolSearchResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
@@ -128,7 +128,7 @@ func (s *searchContext) getRecordQueryResults() searchResponse {
 		return resp
 	}
 
-	if err = s.poolRecordResponse(); err != nil {
+	if err = s.buildPoolRecordResponse(); err != nil {
 		s.err("result parsing error: %s", err.Error())
 		return searchResponse{status: http.StatusInternalServerError, err: err}
 	}
