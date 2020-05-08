@@ -28,7 +28,9 @@ type poolVersion struct {
 }
 
 type poolSolr struct {
-	client               *http.Client
+	client               *http.Client // points to one of the following
+	serviceClient        *http.Client
+	healthcheckClient    *http.Client
 	url                  string
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
@@ -158,16 +160,34 @@ func (p *poolContext) initVersion() {
 }
 
 func (p *poolContext) initSolr() {
-	// client setup
+	// service client setup
 
-	connTimeout := timeoutWithMinimum(p.config.Local.Solr.ConnTimeout, 5)
-	readTimeout := timeoutWithMinimum(p.config.Local.Solr.ReadTimeout, 5)
+	svcConnTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.Service.ConnTimeout, 1)
+	svcReadTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.Service.ReadTimeout, 1)
 
-	solrClient := &http.Client{
-		Timeout: time.Duration(readTimeout) * time.Second,
+	svcClient := &http.Client{
+		Timeout: time.Duration(svcReadTimeout) * time.Second,
 		Transport: &http.Transport{
 			DialContext: (&net.Dialer{
-				Timeout:   time.Duration(connTimeout) * time.Second,
+				Timeout:   time.Duration(svcConnTimeout) * time.Second,
+				KeepAlive: 60 * time.Second,
+			}).DialContext,
+			MaxIdleConns:        100, // we are hitting one solr host, so
+			MaxIdleConnsPerHost: 100, // these two values can be the same
+			IdleConnTimeout:     90 * time.Second,
+		},
+	}
+
+	// health check client setup
+
+	hcConnTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, 1)
+	hcReadTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.HealthCheck.ReadTimeout, 1)
+
+	hcClient := &http.Client{
+		Timeout: time.Duration(hcReadTimeout) * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   time.Duration(hcConnTimeout) * time.Second,
 				KeepAlive: 60 * time.Second,
 			}).DialContext,
 			MaxIdleConns:        100, // we are hitting one solr host, so
@@ -199,7 +219,9 @@ func (p *poolContext) initSolr() {
 
 	p.solr = poolSolr{
 		url:                  fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Handler),
-		client:               solrClient,
+		client:               nil,
+		serviceClient:        svcClient,
+		healthcheckClient:    hcClient,
 		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,
 		scoreThresholdHigh:   p.config.Local.Solr.ScoreThresholdHigh,
 	}

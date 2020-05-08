@@ -132,7 +132,7 @@ func (s *searchContext) solrQuery() error {
 	}
 
 	start := time.Now()
-	res, resErr := s.pool.solr.client.Do(req)
+	res, resErr := s.solr.client.Do(req)
 	elapsedMS := int64(time.Since(start) / time.Millisecond)
 
 	// external service failure logging (scenario 1)

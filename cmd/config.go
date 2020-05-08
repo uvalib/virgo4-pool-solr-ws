@@ -58,17 +58,26 @@ type poolConfigSolrGrouping struct {
 	Sort  poolConfigSort `json:"sort,omitempty"`
 }
 
+type poolConfigSolrClient struct {
+	ConnTimeout string `json:"conn_timeout,omitempty"`
+	ReadTimeout string `json:"read_timeout,omitempty"`
+}
+
+type poolConfigSolrClients struct {
+	Service     poolConfigSolrClient `json:"service,omitempty"`
+	HealthCheck poolConfigSolrClient `json:"healthcheck,omitempty"`
+}
+
 type poolConfigSolr struct {
 	Host                 string                 `json:"host,omitempty"`
 	Core                 string                 `json:"core,omitempty"`
 	Handler              string                 `json:"handler,omitempty"`
-	ConnTimeout          string                 `json:"conn_timeout,omitempty"`
-	ReadTimeout          string                 `json:"read_timeout,omitempty"`
-	ScoreThresholdMedium float32                `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh   float32                `json:"score_threshold_high,omitempty"`
+	Clients              poolConfigSolrClients  `json:"clients,omitempty"`
 	Params               poolConfigSolrParams   `json:"params,omitempty"`
 	Grouping             poolConfigSolrGrouping `json:"grouping,omitempty"`
 	ExactMatchTitleField string                 `json:"exact_match_title_field,omitempty"`
+	ScoreThresholdMedium float32                `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh   float32                `json:"score_threshold_high,omitempty"`
 }
 
 type poolConfigPdfEndpoints struct {

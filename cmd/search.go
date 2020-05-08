@@ -24,8 +24,9 @@ type virgoDialog struct {
 }
 
 type solrDialog struct {
-	req *solrRequest
-	res *solrResponse
+	req    *solrRequest
+	res    *solrResponse
+	client *http.Client // points to appropriate http client
 }
 
 type searchContext struct {
@@ -55,8 +56,8 @@ func confidenceIndex(s string) int {
 
 func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.pool = p
-
 	s.client = c
+	s.solr.client = s.pool.solr.serviceClient
 }
 
 func (s *searchContext) copySearchContext() *searchContext {
@@ -562,6 +563,8 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 }
 
 func (s *searchContext) handlePingRequest() searchResponse {
+	s.solr.client = s.pool.solr.healthcheckClient
+
 	// override these values from defaults.  we are not interested
 	// in records, just connectivity
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
