@@ -437,7 +437,7 @@ func (s *searchContext) buildPoolSearchResponse() error {
 
 	//pr.Identity = s.client.localizedPoolIdentity(s.pool)
 
-	pr.Pagination = &v4api.Pagination{
+	pr.Pagination = v4api.Pagination{
 		Start: s.solr.res.meta.start,
 		Rows:  s.solr.res.meta.numRows,
 		Total: s.solr.res.meta.totalRows,

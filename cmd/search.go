@@ -16,6 +16,7 @@ import (
 type virgoDialog struct {
 	req           v4api.SearchRequest
 	poolRes       *v4api.PoolResult
+	facetsRes     *v4api.PoolFacets
 	recordRes     *v4api.Record
 	solrQuery     string          // holds the solr query (either parsed or specified)
 	parserInfo    *solrParserInfo // holds the information for parsed queries
@@ -504,17 +505,17 @@ func (s *searchContext) handleFacetsRequest(c *gin.Context) searchResponse {
 	s.virgo.requestFacets = true
 
 	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
-		resp.data = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+		resp.data = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		return resp
 	}
 
-	facetRes := v4api.PoolResult{
+	s.virgo.facetsRes = &v4api.PoolFacets{
 		FacetList:  s.virgo.poolRes.FacetList,
 		ElapsedMS:  s.virgo.poolRes.ElapsedMS,
 		StatusCode: http.StatusOK,
 	}
 
-	return searchResponse{status: http.StatusOK, data: facetRes}
+	return searchResponse{status: http.StatusOK, data: s.virgo.facetsRes}
 }
 
 func (s *searchContext) handleRecordRequest() searchResponse {
