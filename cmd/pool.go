@@ -28,7 +28,6 @@ type poolVersion struct {
 }
 
 type poolSolr struct {
-	client               *http.Client // points to one of the following
 	serviceClient        *http.Client
 	healthcheckClient    *http.Client
 	url                  string
@@ -219,7 +218,6 @@ func (p *poolContext) initSolr() {
 
 	p.solr = poolSolr{
 		url:                  fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Handler),
-		client:               nil,
 		serviceClient:        svcClient,
 		healthcheckClient:    hcClient,
 		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,

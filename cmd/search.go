@@ -57,7 +57,7 @@ func confidenceIndex(s string) int {
 func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.pool = p
 	s.client = c
-	s.solr.client = s.pool.solr.serviceClient
+	s.solr.client = p.solr.serviceClient
 }
 
 func (s *searchContext) copySearchContext() *searchContext {
@@ -69,6 +69,7 @@ func (s *searchContext) copySearchContext() *searchContext {
 	sc := &searchContext{}
 
 	sc.pool = s.pool
+	sc.solr.client = s.solr.client
 
 	// copy client (modified for speculative searches)
 	c := *s.client
