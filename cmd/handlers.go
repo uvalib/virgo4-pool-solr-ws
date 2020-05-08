@@ -124,6 +124,8 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 
 	// build response
 
+	internalServiceError := false
+
 	type hcResp struct {
 		Healthy bool   `json:"healthy"`
 		Message string `json:"message,omitempty"`
@@ -131,14 +133,19 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 
 	hcSolr := hcResp{Healthy: true}
 	if ping.err != nil {
+		internalServiceError = true
 		hcSolr = hcResp{Healthy: false, Message: ping.err.Error()}
 	}
 
 	hcMap := make(map[string]hcResp)
-
 	hcMap["solr"] = hcSolr
 
-	c.JSON(ping.status, hcMap)
+	hcStatus := http.StatusOK
+	if internalServiceError == true {
+		hcStatus = http.StatusInternalServerError
+	}
+
+	c.JSON(hcStatus, hcMap)
 }
 
 func getBearerToken(authorization string) (string, error) {
