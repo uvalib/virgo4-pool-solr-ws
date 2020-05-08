@@ -98,6 +98,7 @@ type solrDocument struct {
 	PublicationDate      string   `json:"published_date,omitempty"`
 	PublicationDateRange []string `json:"published_daterange,omitempty"`
 	Published            []string `json:"published_a,omitempty"`
+	PublishedDisplay     []string `json:"published_display_a,omitempty"`
 	Region               []string `json:"region_a,omitempty"`
 	ReleaseDate          []string `json:"release_a,omitempty"`
 	Rights               []string `json:"rights_a,omitempty"`
