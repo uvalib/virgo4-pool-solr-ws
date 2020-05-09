@@ -76,6 +76,7 @@ type solrDocument struct {
 	CallNumber           []string `json:"call_number_a,omitempty"`
 	CallNumberBroad      []string `json:"call_number_broad_a,omitempty"`
 	CallNumberNarrow     []string `json:"call_number_narrow_a,omitempty"`
+	CallNumberSort       string   `json:"call_number_sort,omitempty"`
 	Collection           []string `json:"collection_a,omitempty"`
 	DataSource           []string `json:"data_source_a,omitempty"`
 	Director             []string `json:"author_director_a,omitempty"`

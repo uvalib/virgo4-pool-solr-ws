@@ -123,7 +123,7 @@ func (s *searchContext) solrQuery() error {
 		s.log("[SOLR] req: [%s]", string(jsonBytes))
 	} else {
 		// prettify logged query
-		pieces := strings.SplitAfter(s.solr.req.json.Params.Q, fmt.Sprintf(" AND %s:", s.pool.config.Local.Solr.Grouping.Field))
+		pieces := strings.SplitAfter(s.solr.req.json.Params.Q, fmt.Sprintf(" AND %s:", s.pool.config.Local.Solr.GroupField))
 		q := pieces[0]
 		if len(pieces) > 1 {
 			q = q + " ..."

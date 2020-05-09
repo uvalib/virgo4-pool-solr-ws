@@ -72,7 +72,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.intuit = false
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 
-	if p.config.Local.Solr.Grouping.Field != "" {
+	if p.config.Local.Solr.GroupField != "" {
 		c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
 	}
 }

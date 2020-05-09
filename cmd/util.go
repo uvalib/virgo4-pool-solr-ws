@@ -89,3 +89,14 @@ func titlesAreEqual(t1, t2 string) bool {
 
 	return strings.EqualFold(s1, s2)
 }
+
+func isValidSortOrder(s string) bool {
+	switch s {
+	case "asc":
+	case "desc":
+	default:
+		return false
+	}
+
+	return true
+}

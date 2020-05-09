@@ -52,7 +52,7 @@ func (s *solrDocument) getValuesByTag(tag string) []string {
 }
 
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	return firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.Grouping.Field))
+	return firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.GroupField))
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {

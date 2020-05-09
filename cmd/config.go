@@ -48,16 +48,6 @@ type poolConfigSolrParams struct {
 	Fl      []string `json:"fl,omitempty"`
 }
 
-type poolConfigSort struct {
-	XID   string `json:"xid,omitempty"`
-	Order string `json:"order,omitempty"`
-}
-
-type poolConfigSolrGrouping struct {
-	Field string         `json:"field,omitempty"`
-	Sort  poolConfigSort `json:"sort,omitempty"`
-}
-
 type poolConfigSolrClient struct {
 	ConnTimeout string `json:"conn_timeout,omitempty"`
 	ReadTimeout string `json:"read_timeout,omitempty"`
@@ -69,15 +59,15 @@ type poolConfigSolrClients struct {
 }
 
 type poolConfigSolr struct {
-	Host                 string                 `json:"host,omitempty"`
-	Core                 string                 `json:"core,omitempty"`
-	Handler              string                 `json:"handler,omitempty"`
-	Clients              poolConfigSolrClients  `json:"clients,omitempty"`
-	Params               poolConfigSolrParams   `json:"params,omitempty"`
-	Grouping             poolConfigSolrGrouping `json:"grouping,omitempty"`
-	ExactMatchTitleField string                 `json:"exact_match_title_field,omitempty"`
-	ScoreThresholdMedium float32                `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh   float32                `json:"score_threshold_high,omitempty"`
+	Host                 string                `json:"host,omitempty"`
+	Core                 string                `json:"core,omitempty"`
+	Handler              string                `json:"handler,omitempty"`
+	Clients              poolConfigSolrClients `json:"clients,omitempty"`
+	Params               poolConfigSolrParams  `json:"params,omitempty"`
+	GroupField           string                `json:"group_field,omitempty"`
+	ExactMatchTitleField string                `json:"exact_match_title_field,omitempty"`
+	ScoreThresholdMedium float32               `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh   float32               `json:"score_threshold_high,omitempty"`
 }
 
 type poolConfigPdfEndpoints struct {
@@ -206,17 +196,19 @@ type poolConfigFacet struct {
 	IsAvailability     bool                `json:"is_availability,omitempty"`
 }
 
-type poolConfigSortOptions struct {
-	XID   string `json:"xid,omitempty"` // translation ID
-	Field string `json:"field,omitempty"`
+type poolConfigSort struct {
+	XID         string `json:"xid,omitempty"` // translation ID
+	Field       string `json:"field,omitempty"`
+	Order       string `json:"order,omitempty"`
+	RecordXID   string `json:"record_xid,omitempty"`
+	RecordOrder string `json:"record_order,omitempty"`
 }
 
 type poolConfigIdentity struct {
-	NameXID     string                  `json:"name_xid,omitempty"`     // translation ID
-	DescXID     string                  `json:"desc_xid,omitempty"`     // translation ID
-	Mode        string                  `json:"mode,omitempty"`         // pool mode (what it is, e.g. "record" (default), "image", etc.)
-	Attributes  []v4api.PoolAttribute   `json:"attributes,omitempty"`   // pool attributes (what it supports)
-	SortOptions []poolConfigSortOptions `json:"sort_options,omitempty"` // available sort options
+	NameXID    string                `json:"name_xid,omitempty"`   // translation ID
+	DescXID    string                `json:"desc_xid,omitempty"`   // translation ID
+	Mode       string                `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Attributes []v4api.PoolAttribute `json:"attributes,omitempty"` // pool attributes (what it supports)
 }
 
 type poolConfigProvider struct {
@@ -247,6 +239,8 @@ type poolConfigMappings struct {
 	FieldNames []string          `json:"field_names,omitempty"`
 	Facets     []poolConfigFacet `json:"facets,omitempty"`
 	FacetXIDs  []string          `json:"facet_xids,omitempty"`
+	Sorts      []poolConfigSort  `json:"sorts,omitempty"`
+	SortXIDs   []string          `json:"sort_xids,omitempty"`
 }
 
 type poolConfigGlobal struct {

@@ -19,7 +19,7 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 	s.init(p, &cl)
 
 	cl.logRequest()
-	resp := s.handleSearchRequest(c)
+	resp := s.handleSearchRequest()
 	cl.logResponse(resp)
 
 	if resp.err != nil {
@@ -37,7 +37,7 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 	s.init(p, &cl)
 
 	cl.logRequest()
-	resp := s.handleFacetsRequest(c)
+	resp := s.handleFacetsRequest()
 	cl.logResponse(resp)
 
 	if resp.err != nil {

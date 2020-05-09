@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
@@ -297,7 +296,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	}
 
 	// build group-restricted query from initial query
-	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Local.Solr.Grouping.Field, strings.Join(safeGroups, " OR "))
+	groupClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Local.Solr.GroupField, strings.Join(safeGroups, " OR "))
 
 	// prepend existing query, if defined
 	newQuery := groupClause
@@ -312,11 +311,26 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	// get everything!  even bible (5000+)
 	c.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 100000}
 
-	// intra-group sorting
-	c.virgo.req.Sort = v4api.SortOrder{
-		SortID: s.pool.config.Local.Solr.Grouping.Sort.XID,
-		Order:  s.pool.config.Local.Solr.Grouping.Sort.Order,
+	// intra-group sorting:
+	// * inherit sort from original search;
+	// * if that sort xid's definition specifies a record sort xid:
+	//   * use that sort xid instead; and if it specifies a record sort order; use that instead
+
+	sortOpt := s.virgo.req.Sort
+
+	sortDef := s.pool.maps.sortFields[sortOpt.SortID]
+
+	if sortDef.RecordXID != "" {
+		sortOpt.SortID = sortDef.RecordXID
+
+		if sortDef.RecordOrder != "" {
+			sortOpt.Order = sortDef.RecordOrder
+		}
 	}
+
+	s.log("[SORT] intra-group sort: %#v", sortOpt)
+
+	c.virgo.req.Sort = sortOpt
 
 	if resp := c.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
@@ -432,14 +446,18 @@ func (s *searchContext) validateSearchRequest() error {
 	return nil
 }
 
-func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchResponse {
-	var err error
-	var top *searchContext
-
-	if err = c.BindJSON(&s.virgo.req); err != nil {
+func (s *searchContext) parseSearchOrFacetsRequest() searchResponse {
+	if err := s.client.ginCtx.BindJSON(&s.virgo.req); err != nil {
 		// "Invalid Request" instead?
 		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
+
+	return searchResponse{status: http.StatusOK}
+}
+
+func (s *searchContext) handleSearchOrFacetsRequest() searchResponse {
+	var err error
+	var top *searchContext
 
 	s.log("[SEARCH] query: [%s]", s.virgo.req.Query)
 
@@ -487,9 +505,60 @@ func (s *searchContext) handleSearchOrFacetsRequest(c *gin.Context) searchRespon
 	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) handleSearchRequest(c *gin.Context) searchResponse {
-	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
-		resp.data = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+func (s *searchContext) determineSortOptions() searchResponse {
+	// determine if specified sort and order is valid, or if we should use a default
+
+	sortOpt := v4api.SortOrder{
+		SortID: s.pool.config.Global.Service.DefaultSort.XID,
+		Order:  s.pool.config.Global.Service.DefaultSort.Order,
+	}
+
+	sortReq := s.virgo.req.Sort
+
+	if sortReq.SortID != "" || sortReq.Order != "" {
+		// sort was specified; validate it
+		sortDef := s.pool.maps.sortFields[sortReq.SortID]
+
+		if sortDef.XID == "" {
+			return searchResponse{status: http.StatusBadRequest, err: errors.New("invalid sort id")}
+		}
+
+		if isValidSortOrder(sortReq.Order) == false {
+			return searchResponse{status: http.StatusBadRequest, err: errors.New("invalid sort order")}
+		}
+
+		if sortDef.Order != "" && sortReq.Order != sortDef.Order {
+			return searchResponse{status: http.StatusBadRequest, err: errors.New("sort order not valid for this sort id")}
+		}
+
+		sortOpt = s.virgo.req.Sort
+	}
+
+	s.log("[SORT] inter-group sort: %#v", sortOpt)
+
+	s.virgo.req.Sort = sortOpt
+
+	return searchResponse{status: http.StatusOK}
+}
+
+func (s *searchContext) handleSearchRequest() searchResponse {
+	var errData v4api.PoolResult
+
+	if resp := s.parseSearchOrFacetsRequest(); resp.err != nil {
+		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+		resp.data = errData
+		return resp
+	}
+
+	if resp := s.determineSortOptions(); resp.err != nil {
+		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+		resp.data = errData
+		return resp
+	}
+
+	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
+		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+		resp.data = errData
 		return resp
 	}
 
@@ -499,15 +568,24 @@ func (s *searchContext) handleSearchRequest(c *gin.Context) searchResponse {
 	return searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
 }
 
-func (s *searchContext) handleFacetsRequest(c *gin.Context) searchResponse {
+func (s *searchContext) handleFacetsRequest() searchResponse {
+	var errData v4api.PoolFacets
+
+	if resp := s.parseSearchOrFacetsRequest(); resp.err != nil {
+		errData = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+		resp.data = errData
+		return resp
+	}
+
 	// override these values from the original search query, since we are
 	// only interested in facets, not records
-	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 
+	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 	s.virgo.requestFacets = true
 
-	if resp := s.handleSearchOrFacetsRequest(c); resp.err != nil {
-		resp.data = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
+		errData = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
+		resp.data = errData
 		return resp
 	}
 

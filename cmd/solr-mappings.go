@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -117,35 +116,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	solrReq.meta.selectionMap = make(map[string]map[string]string)
 
-	// fill out requested/defaulted sort info
-
-	sort := v4api.SortOrder{
-		SortID: s.pool.config.Global.Service.DefaultSort.XID,
-		Order:  s.pool.config.Global.Service.DefaultSort.Order,
-	}
-
-	if s.virgo.req.Sort.SortID != "" || s.virgo.req.Sort.Order != "" {
-		// sort was specified
-
-		sortValid := false
-
-		if s.pool.maps.sortFields[s.virgo.req.Sort.SortID] != "" {
-			// sort id is valid
-
-			if s.virgo.req.Sort.Order == "asc" || s.virgo.req.Sort.Order == "desc" {
-				// sort order is valid
-
-				sortValid = true
-				sort = s.virgo.req.Sort
-			}
-		}
-
-		if sortValid == false {
-			return searchResponse{status: http.StatusBadRequest, err: errors.New("Invalid sort")}
-		}
-	}
-
-	solrReq.meta.sort = sort
+	solrReq.meta.sort = s.virgo.req.Sort
 
 	// fill out as much as we can for a generic request
 
@@ -156,10 +127,10 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
 	solrReq.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
 	solrReq.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
-	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID], solrReq.meta.sort.Order)
+	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID].Field, solrReq.meta.sort.Order)
 
 	if s.client.opts.grouped == true {
-		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.Grouping.Field)
+		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.GroupField)
 		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
 	}
 

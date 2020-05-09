@@ -326,6 +326,10 @@ other = "VIVA Demand Driven Acquisition"
 desc = "The display name for this URL provider."
 other = "Virgo Classic"
 
+[SortCallNumber]
+desc = "The display name for this sorting option."
+other = "Número de Llamada"
+
 [SortDatePublished]
 desc = "The display name for this sorting option."
 other = "Fecha de Publicación"
