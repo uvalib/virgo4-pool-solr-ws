@@ -268,6 +268,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	r.GroupValue = s.getSolrGroupFieldValue(doc)
 
 	if s.client.opts.debug == true {
+		r.Debug = make(map[string]interface{})
 		r.Debug["score"] = doc.Score
 	}
 
@@ -477,6 +478,7 @@ func (s *searchContext) buildPoolSearchResponse() error {
 	pr.Warnings = s.solr.res.meta.warnings
 
 	if s.client.opts.debug == true {
+		pr.Debug = make(map[string]interface{})
 		pr.Debug["request_id"] = s.client.reqID
 		pr.Debug["max_score"] = s.solr.res.meta.maxScore
 	}
