@@ -106,7 +106,17 @@ func (p *poolContext) initIdentity() {
 		Name:        p.config.Local.Identity.NameXID,
 		Description: p.config.Local.Identity.DescXID,
 		Mode:        p.config.Local.Identity.Mode,
-		Attributes:  p.config.Local.Identity.Attributes,
+	}
+
+	// populate supported attributes
+
+	for _, attribute := range p.config.Global.Attributes {
+		supported := false
+		if sliceContainsString(p.config.Local.Identity.Attributes, attribute) {
+			supported = true
+		}
+
+		p.identity.Attributes = append(p.identity.Attributes, v4api.PoolAttribute{Name: attribute, Supported: supported})
 	}
 
 	// create sort field map
@@ -284,6 +294,13 @@ func (p *poolContext) validateConfig() {
 	var solrFields stringValidator
 	var messageIDs stringValidator
 	var miscValues stringValidator
+
+	for _, attribute := range p.config.Local.Identity.Attributes {
+		if sliceContainsString(p.config.Global.Attributes, attribute) == false {
+			log.Printf("[VALIDATE] attribute [%s] not found in global attribute list", attribute)
+			invalid = true
+		}
+	}
 
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.XID, "default sort xid")
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.Order, "default sort order")
