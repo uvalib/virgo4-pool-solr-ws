@@ -116,8 +116,6 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	solrReq.meta.selectionMap = make(map[string]map[string]string)
 
-	solrReq.meta.sort = s.virgo.req.Sort
-
 	// fill out as much as we can for a generic request
 
 	solrReq.json.Params.Q = s.virgo.solrQuery
@@ -127,7 +125,10 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
 	solrReq.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
 	solrReq.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
-	solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[solrReq.meta.sort.SortID].Field, solrReq.meta.sort.Order)
+
+	if s.virgo.req.Sort.SortID != "" {
+		solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
+	}
 
 	if s.client.opts.grouped == true {
 		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.GroupField)

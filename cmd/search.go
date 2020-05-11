@@ -496,7 +496,7 @@ func (s *searchContext) handleSearchOrFacetsRequest() searchResponse {
 
 	// add sort info for these results
 
-	s.virgo.poolRes.Sort = s.solr.req.meta.sort
+	s.virgo.poolRes.Sort = s.virgo.req.Sort
 
 	// finally fill out elapsed time
 
