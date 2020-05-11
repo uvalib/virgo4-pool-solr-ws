@@ -78,14 +78,6 @@ other = "Autor"
 desc = "The display name for the Availability facet."
 other = "Disponibilidad"
 
-[FacetCallNumberBroad]
-desc = "The display name for the Call Number (Broad) facet."
-other = "Número de Llamada (Amplio)"
-
-[FacetCallNumberNarrow]
-desc = "The display name for the Call Number (Narrow) facet."
-other = "Número de Llamada (Estrecho)"
-
 [FacetCirculating]
 desc = "The display name for the Circulating facet."
 other = "FacetCirculating"
@@ -166,14 +158,6 @@ other = "Disponibilidad"
 desc = "The display name for the Call Number field in a single item record."
 other = "Número de Llamada"
 
-[FieldCallNumberBroad]
-desc = "The display name for the Call Number (Broad) field in a single item record."
-other = "Número de Llamada (Amplio)"
-
-[FieldCallNumberNarrow]
-desc = "The display name for the Call Number (Narrow) field in a single item record."
-other = "Número de Llamada (Estrecho)"
-
 [FieldCollection]
 desc = "The display name for the Collection field in an image record."
 other = "Colección"
@@ -221,10 +205,6 @@ other = "Ubicación"
 [FieldNote]
 desc = "The display name for the Note field in an image record."
 other = "Notas"
-
-[FieldPublicationDate]
-desc = "The display name for the Publication Date field in a single item record."
-other = "Fecha de Publicación"
 
 [FieldPublished]
 desc = "The display name for the Published field in a single item record."

@@ -78,14 +78,6 @@ other = "Author"
 desc = "The display name for the Availability facet."
 other = "Availability"
 
-[FacetCallNumberBroad]
-desc = "The display name for the Call Number (Broad) facet."
-other = "Call Number (Broad)"
-
-[FacetCallNumberNarrow]
-desc = "The display name for the Call Number (Narrow) facet."
-other = "Call Number (Narrow)"
-
 [FacetCirculating]
 desc = "The display name for the Circulating facet."
 other = "Hide items limited to in-Library use"
@@ -166,14 +158,6 @@ other = "Availability"
 desc = "The display name for the Call Number field in a single item record."
 other = "Call Number"
 
-[FieldCallNumberBroad]
-desc = "The display name for the Call Number (Broad) field in a single item record."
-other = "Call Number (Broad)"
-
-[FieldCallNumberNarrow]
-desc = "The display name for the Call Number (Narrow) field in a single item record."
-other = "Call Number (Narrow)"
-
 [FieldCollection]
 desc = "The display name for the Collection field in an image record."
 other = "Collection"
@@ -221,10 +205,6 @@ other = "Location"
 [FieldNote]
 desc = "The display name for the Note field in an image record."
 other = "Notes"
-
-[FieldPublicationDate]
-desc = "The display name for the Publication Date field in a single item record."
-other = "Publication Date"
 
 [FieldPublished]
 desc = "The display name for the Published field in a single item record."
