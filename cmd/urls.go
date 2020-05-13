@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -106,26 +107,12 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, 
 	return req.URL.String()
 }
 
-func (s *searchContext) getIIIFBaseURL(doc *solrDocument, idField string) string {
-	// FIXME: update after iiif_image_url is correct
+func (s *searchContext) getIIIFBaseURL(doc *solrDocument, imageField string) string {
+	// base url is simply the image url, stripped of the trailing '/info.json'
 
-	// construct iiif image base url from known image identifier prefixes.
-	// this fallback url conveniently points to an "orginial image missing" image
+	imageURL := doc.getValuesByTag(imageField)[0]
 
-	pid := s.pool.config.Global.Service.URLTemplates.IIIF.Fallback
-
-	idValues := doc.getValuesByTag(idField)
-
-	for _, id := range idValues {
-		for _, prefix := range s.pool.config.Global.Service.URLTemplates.IIIF.Prefixes {
-			if strings.HasPrefix(id, prefix) {
-				pid = id
-				break
-			}
-		}
-	}
-
-	return getGenericURL(s.pool.config.Global.Service.URLTemplates.IIIF, pid)
+	return path.Dir(imageURL)
 }
 
 func (s *searchContext) getDigitalContentURL(doc *solrDocument, idField string) string {

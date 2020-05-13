@@ -188,7 +188,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				}
 
 			case "iiif_base_url":
-				if url := s.getIIIFBaseURL(doc, field.CustomInfo.IIIFBaseURL.IdentifierField); url != "" {
+				if url := s.getIIIFBaseURL(doc, field.CustomInfo.IIIFBaseURL.ImageField); url != "" {
 					f.Value = url
 					r.Fields = append(r.Fields, f)
 				}

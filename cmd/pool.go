@@ -345,12 +345,8 @@ func (p *poolContext) validateConfig() {
 			invalid = true
 		} else {
 			solrFields.requireValue(p.config.Local.Related.Image.IDField, "iiif id field")
-			solrFields.requireValue(p.config.Local.Related.Image.IdentifierField, "iiif identifier field")
 			solrFields.requireValue(p.config.Local.Related.Image.IIIFManifestField, "iiif manifest field")
 			solrFields.requireValue(p.config.Local.Related.Image.IIIFImageField, "iiif image field")
-
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
-			miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
 		}
 	}
 
@@ -491,10 +487,7 @@ func (p *poolContext) validateConfig() {
 					continue
 				}
 
-				solrFields.requireValue(field.CustomInfo.IIIFBaseURL.IdentifierField, fmt.Sprintf("%s section identifier field", field.Name))
-
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Template, "iiif template url")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.IIIF.Pattern, "iiif template pattern")
+				solrFields.requireValue(field.CustomInfo.IIIFBaseURL.ImageField, fmt.Sprintf("%s section image field", field.Name))
 
 			case "pdf_download_url":
 				if field.CustomInfo == nil {
