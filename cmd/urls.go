@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"path"
 	"strings"
 )
 
@@ -110,9 +109,9 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, 
 func (s *searchContext) getIIIFBaseURL(doc *solrDocument, imageField string) string {
 	// base url is simply the image url, stripped of the trailing '/info.json'
 
-	imageURL := doc.getValuesByTag(imageField)[0]
+	imageURL := strings.TrimSuffix(doc.getValuesByTag(imageField)[0], "/info.json")
 
-	return path.Dir(imageURL)
+	return imageURL
 }
 
 func (s *searchContext) getDigitalContentURL(doc *solrDocument, idField string) string {
