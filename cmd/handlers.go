@@ -111,16 +111,7 @@ func (p *poolContext) healthCheckHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
-	if s.client.opts.verbose == false {
-		s.client.nolog = true
-	}
-
-	// fill out Solr query directly, bypassing query syntax parser
-	s.virgo.solrQuery = "id:pingtest"
-
-	cl.logRequest()
 	ping := s.handlePingRequest()
-	cl.logResponse(ping)
 
 	// build response
 
@@ -153,7 +144,7 @@ func getBearerToken(authorization string) (string, error) {
 
 	// must have two components, the first of which is "Bearer", and the second a non-empty token
 	if len(components) != 2 || components[0] != "Bearer" || components[1] == "" {
-		return "", fmt.Errorf("Invalid Authorization header: [%s]", authorization)
+		return "", fmt.Errorf("invalid Authorization header: [%s]", authorization)
 	}
 
 	token := components[1]
@@ -168,7 +159,7 @@ func getBearerToken(authorization string) (string, error) {
 func (p *poolContext) authenticateHandler(c *gin.Context) {
 	token, err := getBearerToken(c.GetHeader("Authorization"))
 	if err != nil {
-		log.Printf("Authentication failed: [%s]", err.Error())
+		log.Printf("authentication failed: [%s]", err.Error())
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

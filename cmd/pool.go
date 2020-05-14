@@ -27,10 +27,14 @@ type poolVersion struct {
 	GitCommit    string `json:"git_commit,omitempty"`
 }
 
+type poolSolrContext struct {
+	client *http.Client
+	url    string
+}
+
 type poolSolr struct {
-	serviceClient        *http.Client
-	healthcheckClient    *http.Client
-	url                  string
+	service              poolSolrContext
+	healthcheck          poolSolrContext
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
 }
@@ -188,6 +192,11 @@ func (p *poolContext) initSolr() {
 		},
 	}
 
+	svcCtx := poolSolrContext{
+		client: svcClient,
+		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.Service.Endpoint),
+	}
+
 	// health check client setup
 
 	hcConnTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, 1)
@@ -204,6 +213,11 @@ func (p *poolContext) initSolr() {
 			MaxIdleConnsPerHost: 100, // these two values can be the same
 			IdleConnTimeout:     90 * time.Second,
 		},
+	}
+
+	hcCtx := poolSolrContext{
+		client: hcClient,
+		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.HealthCheck.Endpoint),
 	}
 
 	// create facet map
@@ -228,9 +242,8 @@ func (p *poolContext) initSolr() {
 	}
 
 	p.solr = poolSolr{
-		url:                  fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Handler),
-		serviceClient:        svcClient,
-		healthcheckClient:    hcClient,
+		service:              svcCtx,
+		healthcheck:          hcCtx,
 		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,
 		scoreThresholdHigh:   p.config.Local.Solr.ScoreThresholdHigh,
 	}
@@ -241,7 +254,8 @@ func (p *poolContext) initSolr() {
 		p.maps.risCodes[code.Field] = code.Code
 	}
 
-	log.Printf("[POOL] solr.url                  = [%s]", p.solr.url)
+	log.Printf("[POOL] solr.service.url          = [%s]", p.solr.service.url)
+	log.Printf("[POOL] solr.healthcheck.url      = [%s]", p.solr.healthcheck.url)
 	log.Printf("[POOL] solr.scoreThresholdMedium = [%0.1f]", p.solr.scoreThresholdMedium)
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
 }
@@ -319,7 +333,8 @@ func (p *poolContext) validateConfig() {
 
 	miscValues.requireValue(p.config.Local.Solr.Host, "solr host")
 	miscValues.requireValue(p.config.Local.Solr.Core, "solr core")
-	miscValues.requireValue(p.config.Local.Solr.Handler, "solr handler")
+	miscValues.requireValue(p.config.Local.Solr.Clients.Service.Endpoint, "solr search endpoint")
+	miscValues.requireValue(p.config.Local.Solr.Clients.HealthCheck.Endpoint, "solr health check endpoint")
 	miscValues.requireValue(p.config.Local.Solr.Params.Qt, "solr param qt")
 	miscValues.requireValue(p.config.Local.Solr.Params.DefType, "solr param deftype")
 

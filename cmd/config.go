@@ -46,6 +46,7 @@ type poolConfigSolrParams struct {
 }
 
 type poolConfigSolrClient struct {
+	Endpoint    string `json:"endpoint,omitempty"`
 	ConnTimeout string `json:"conn_timeout,omitempty"`
 	ReadTimeout string `json:"read_timeout,omitempty"`
 }
@@ -58,7 +59,6 @@ type poolConfigSolrClients struct {
 type poolConfigSolr struct {
 	Host                 string                `json:"host,omitempty"`
 	Core                 string                `json:"core,omitempty"`
-	Handler              string                `json:"handler,omitempty"`
 	Clients              poolConfigSolrClients `json:"clients,omitempty"`
 	Params               poolConfigSolrParams  `json:"params,omitempty"`
 	GroupField           string                `json:"group_field,omitempty"`

@@ -25,7 +25,6 @@ type clientContext struct {
 	start       time.Time       // internally set
 	opts        clientOpts      // options set by client
 	claims      *v4jwt.V4Claims // information about this user
-	nolog       bool            // internally set
 	localizer   *i18n.Localizer // per-request localization
 	ginCtx      *gin.Context    // gin context
 	acceptLang  string          // first language requested by client
@@ -114,10 +113,6 @@ func (c *clientContext) printf(prefix, format string, args ...interface{}) {
 }
 
 func (c *clientContext) log(format string, args ...interface{}) {
-	if c.nolog == true {
-		return
-	}
-
 	c.printf("", format, args...)
 }
 

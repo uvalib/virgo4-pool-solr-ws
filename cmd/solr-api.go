@@ -153,11 +153,13 @@ type solrError struct {
 	Code     int      `json:"code,omitempty"`
 }
 
+// a catch-all for search and ping responses
 type solrResponse struct {
 	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
 	Response       solrResponseDocuments  `json:"response,omitempty"`
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`
+	Status         string                 `json:"status,omitempty"`
 	meta           *solrMeta              // pointer to struct in corresponding solrRequest
 }
