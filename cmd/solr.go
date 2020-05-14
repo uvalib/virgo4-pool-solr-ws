@@ -97,7 +97,7 @@ func (s *searchContext) populateMetaFields() {
 }
 
 func (s *searchContext) solrQuery() error {
-	ctx := s.pool.solr.healthcheck
+	ctx := s.pool.solr.service
 
 	jsonBytes, jsonErr := json.Marshal(s.solr.req.json)
 	if jsonErr != nil {
