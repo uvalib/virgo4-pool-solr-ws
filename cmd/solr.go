@@ -58,7 +58,7 @@ func (s *searchContext) populateMetaFields() {
 
 	s.solr.res.meta.start = s.solr.req.json.Params.Start
 
-	if s.client.opts.grouped == true {
+	if s.virgo.flags.groupResults == true {
 		// calculate number of groups in this response, and total available
 		// (grouping, take 2: each record is the top entry of a group, so effectively records == groups)
 

@@ -15,9 +15,7 @@ import (
 
 type clientOpts struct {
 	debug   bool // controls whether debug info is added to pool results
-	intuit  bool // controls whether intuited (speculative) searches are performed
 	verbose bool // controls whether verbose Solr requests/responses are logged
-	grouped bool // controls whether Solr results are grouped
 }
 
 type clientContext struct {
@@ -68,12 +66,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	ctx.Header("Content-Language", c.contentLang)
 
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
-	c.opts.intuit = false
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
-
-	if p.config.Local.Solr.GroupField != "" {
-		c.opts.grouped = boolOptionWithFallback(ctx.Query("grouped"), true)
-	}
 }
 
 func (c *clientContext) logRequest() {

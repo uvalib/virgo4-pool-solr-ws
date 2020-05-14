@@ -131,7 +131,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
-	if s.client.opts.grouped == true && s.virgo.requestFacets == false {
+	if s.virgo.flags.groupResults == true && s.virgo.flags.requestFacets == false {
 		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.GroupField)
 		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
 	}
@@ -140,7 +140,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	availableFacets := s.solrAvailableFacets()
 
-	if s.virgo.requestFacets == true && len(availableFacets) > 0 {
+	if s.virgo.flags.requestFacets == true && len(availableFacets) > 0 {
 		solrReq.json.Facets = availableFacets
 	}
 
