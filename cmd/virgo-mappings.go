@@ -313,7 +313,7 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 					selected = true
 				}
 
-				buckets = append(buckets, v4api.FacetBucket{Value: b.Val, Count: b.Count, Selected: selected})
+				buckets = append(buckets, v4api.FacetBucket{Value: b.Val, Count: b.GroupCount, Selected: selected})
 			}
 		}
 

@@ -95,6 +95,7 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 			Sort:   facet.Solr.Sort,
 			Offset: facet.Solr.Offset,
 			Limit:  facet.Solr.Limit,
+			Facet:  solrRequestSubFacet{GroupCount: fmt.Sprintf("unique(%s)", s.pool.config.Local.Solr.GroupField)},
 			config: &facet,
 		}
 
@@ -130,7 +131,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
-	if s.client.opts.grouped == true {
+	if s.client.opts.grouped == true && s.virgo.requestFacets == false {
 		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.GroupField)
 		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
 	}

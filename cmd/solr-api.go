@@ -27,12 +27,17 @@ type solrRequestParams struct {
 
 type solrRequestFacets map[string]solrRequestFacet
 
+type solrRequestSubFacet struct {
+	GroupCount string `json:"group_count"`
+}
+
 type solrRequestFacet struct {
-	Type   string `json:"type"`
-	Field  string `json:"field"`
-	Sort   string `json:"sort,omitempty"`
-	Offset int    `json:"offset,omitempty"`
-	Limit  int    `json:"limit,omitempty"`
+	Type   string              `json:"type"`
+	Field  string              `json:"field"`
+	Sort   string              `json:"sort,omitempty"`
+	Offset int                 `json:"offset,omitempty"`
+	Limit  int                 `json:"limit,omitempty"`
+	Facet  solrRequestSubFacet `json:"facet,omitempty"`
 	config *poolConfigFacet
 }
 
@@ -124,8 +129,9 @@ type solrDocument struct {
 }
 
 type solrBucket struct {
-	Val   string `json:"val"`
-	Count int    `json:"count"`
+	Val        string `json:"val"`
+	Count      int    `json:"count"`
+	GroupCount int    `json:"group_count"`
 }
 
 type solrResponseFacet struct {
