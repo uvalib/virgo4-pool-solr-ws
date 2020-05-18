@@ -15,14 +15,15 @@ type solrParserInfo struct {
 }
 
 type solrRequestParams struct {
-	DefType string   `json:"defType,omitempty"`
-	Qt      string   `json:"qt,omitempty"`
-	Sort    string   `json:"sort,omitempty"`
-	Start   int      `json:"start"`
-	Rows    int      `json:"rows"`
-	Fl      []string `json:"fl,omitempty"`
-	Fq      []string `json:"fq,omitempty"`
-	Q       string   `json:"q,omitempty"`
+	DefType    string   `json:"defType,omitempty"`
+	Qt         string   `json:"qt,omitempty"`
+	Sort       string   `json:"sort,omitempty"`
+	Start      int      `json:"start"`
+	Rows       int      `json:"rows"`
+	Fl         []string `json:"fl,omitempty"`
+	Fq         []string `json:"fq,omitempty"`
+	Q          string   `json:"q,omitempty"`
+	DebugQuery string   `json:"debugQuery,omitempty"`
 }
 
 type solrRequestFacets map[string]solrRequestFacet
@@ -157,6 +158,7 @@ type solrError struct {
 type solrResponse struct {
 	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
 	Response       solrResponseDocuments  `json:"response,omitempty"`
+	Debug          interface{}            `json:"debug,omitempty"`
 	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
 	Facets         solrResponseFacets     // will be parsed from FacetsRaw
 	Error          solrError              `json:"error,omitempty"`

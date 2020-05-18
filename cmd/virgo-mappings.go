@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"sort"
 	"strings"
@@ -433,7 +434,7 @@ func (s *searchContext) searchIsExactMatch() bool {
 
 // the main response functions for each endpoint
 
-func (s *searchContext) buildPoolSearchResponse() error {
+func (s *searchContext) buildPoolSearchResponse() searchResponse {
 	var pr v4api.PoolResult
 
 	//pr.Identity = s.client.localizedPoolIdentity(s.pool)
@@ -481,28 +482,29 @@ func (s *searchContext) buildPoolSearchResponse() error {
 		pr.Debug = make(map[string]interface{})
 		pr.Debug["request_id"] = s.client.reqID
 		pr.Debug["max_score"] = s.solr.res.meta.maxScore
+		//pr.Debug["solr"] = s.solr.res.Debug
 	}
 
 	s.virgo.poolRes = &pr
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) buildPoolRecordResponse() error {
+func (s *searchContext) buildPoolRecordResponse() searchResponse {
 	var r v4api.Record
 
 	switch s.solr.res.meta.numRecords {
 	case 0:
-		return fmt.Errorf("record not found")
+		return searchResponse{status: http.StatusNotFound, err: fmt.Errorf("record not found")}
 
 	case 1:
 		r = s.populateRecord(s.solr.res.meta.firstDoc)
 
 	default:
-		return fmt.Errorf("multiple records found")
+		return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("multiple records found")}
 	}
 
 	s.virgo.recordRes = &r
 
-	return nil
+	return searchResponse{status: http.StatusOK}
 }

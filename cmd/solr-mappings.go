@@ -146,6 +146,10 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	solrReq.buildFilters(s.virgo.req.Filters, availableFacets, s.pool.config.Global.Availability)
 
+	if s.client.opts.debug == true {
+		solrReq.json.Params.DebugQuery = "on"
+	}
+
 	s.solr.req = &solrReq
 
 	return searchResponse{status: http.StatusOK}

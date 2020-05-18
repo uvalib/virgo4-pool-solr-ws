@@ -115,9 +115,9 @@ func (s *searchContext) getPoolQueryResults() searchResponse {
 		return resp
 	}
 
-	if err := s.buildPoolSearchResponse(); err != nil {
-		s.err("result parsing error: %s", err.Error())
-		return searchResponse{status: http.StatusInternalServerError, err: err}
+	if resp := s.buildPoolSearchResponse(); resp.err != nil {
+		s.err("result parsing error: %s", resp.err.Error())
+		return resp
 	}
 
 	s.confidence = s.virgo.poolRes.Confidence
@@ -126,15 +126,13 @@ func (s *searchContext) getPoolQueryResults() searchResponse {
 }
 
 func (s *searchContext) getRecordQueryResults() searchResponse {
-	var err error
-
 	if resp := s.performQuery(); resp.err != nil {
 		return resp
 	}
 
-	if err = s.buildPoolRecordResponse(); err != nil {
-		s.err("result parsing error: %s", err.Error())
-		return searchResponse{status: http.StatusInternalServerError, err: err}
+	if resp := s.buildPoolRecordResponse(); resp.err != nil {
+		s.err("result parsing error: %s", resp.err.Error())
+		return resp
 	}
 
 	return searchResponse{status: http.StatusOK}
@@ -223,7 +221,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	// prepend existing query, if defined
 	newQuery := groupClause
 	if initialQuery != "" {
-		newQuery = fmt.Sprintf(`%s AND %s`, initialQuery, groupClause)
+		newQuery = fmt.Sprintf(`(%s) AND (%s)`, initialQuery, groupClause)
 	}
 
 	c.virgo.req.Query = ""
