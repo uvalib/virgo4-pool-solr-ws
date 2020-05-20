@@ -157,8 +157,8 @@ github.com/uvalib/virgo4-api v0.0.0-20200508182614-47c3773a6cea h1:RF0aaStXO1QT7
 github.com/uvalib/virgo4-api v0.0.0-20200508182614-47c3773a6cea/go.mod h1:p+LmQBQahBom6DErthL8iGZU6NgRJ9aN2wM7EE6VBSE=
 github.com/uvalib/virgo4-jwt v0.0.0-20200427141047-8e5c1f68bc8f h1:+jcp7eZKpxiR4Rl5m7BHiNfTy1Woej9HO1JgsAZR/H8=
 github.com/uvalib/virgo4-jwt v0.0.0-20200427141047-8e5c1f68bc8f/go.mod h1:pPSHBTeq1RftpQGB6H1GaihwPZtl5RpGCEeov0eH05Y=
-github.com/uvalib/virgo4-parser v0.0.0-20200519230309-cb6170b58ae6 h1:VERd5J2mfSqfl6lEG5F9xOWaoUQEU3YIkoEuKbDQAa8=
-github.com/uvalib/virgo4-parser v0.0.0-20200519230309-cb6170b58ae6/go.mod h1:oD6YA1ao3Eo5QVI5q6AoZKgWH/2NBWTa4e9dzQ9okw8=
+github.com/uvalib/virgo4-parser v0.0.0-20200520010212-8579e11e5412 h1:iWx3hrB3N0emHClqC1uORscjz0LDxZfY6dDGSHeByVY=
+github.com/uvalib/virgo4-parser v0.0.0-20200520010212-8579e11e5412/go.mod h1:oD6YA1ao3Eo5QVI5q6AoZKgWH/2NBWTa4e9dzQ9okw8=
 github.com/zsais/go-gin-prometheus v0.1.0 h1:bkLv1XCdzqVgQ36ScgRi09MA2UC1t3tAB6nsfErsGO4=
 github.com/zsais/go-gin-prometheus v0.1.0/go.mod h1:Slirjzuz8uM8Cw0jmPNqbneoqcUtY2GGjn2bEd4NRLY=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
