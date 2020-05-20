@@ -188,12 +188,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.Fields = append(r.Fields, f)
 				}
 
-			case "iiif_base_url":
-				if url := s.getIIIFBaseURL(doc, field.CustomInfo.IIIFBaseURL.ImageField); url != "" {
-					f.Value = url
-					r.Fields = append(r.Fields, f)
-				}
-
 			case "pdf_download_url":
 				pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
 

@@ -489,21 +489,6 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Template, "digital content template url")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
 
-			case "iiif_base_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.IIIFBaseURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.IIIFBaseURL.ImageField, fmt.Sprintf("%s section image field", field.Name))
-
 			case "pdf_download_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)

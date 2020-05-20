@@ -106,14 +106,6 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCoverImageURL, 
 	return req.URL.String()
 }
 
-func (s *searchContext) getIIIFBaseURL(doc *solrDocument, imageField string) string {
-	// base url is simply the image url, stripped of the trailing '/info.json'
-
-	imageURL := strings.TrimSuffix(doc.getValuesByTag(imageField)[0], "/info.json")
-
-	return imageURL
-}
-
 func (s *searchContext) getDigitalContentURL(doc *solrDocument, idField string) string {
 	idValues := doc.getValuesByTag(idField)
 

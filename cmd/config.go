@@ -96,10 +96,6 @@ type poolConfigFieldTypeAccessURL struct {
 	DefaultItemXID string `json:"default_item_xid,omitempty"`
 }
 
-type poolConfigFieldTypeIIIFBaseURL struct {
-	ImageField string `json:"image_field,omitempty"`
-}
-
 type poolConfigFieldTypeCoverImageURL struct {
 	ThumbnailField string `json:"thumbnail_field,omitempty"`
 	IDField        string `json:"id_field,omitempty"`
@@ -134,7 +130,6 @@ type poolConfigFieldTypeThumbnailURL struct {
 
 type poolConfigFieldCustomInfo struct {
 	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
-	IIIFBaseURL       *poolConfigFieldTypeIIIFBaseURL       `json:"iiif_base_url,omitempty"`
 	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
 	SirsiURL          *poolConfigFieldTypeSirsiURL          `json:"sirsi_url,omitempty"`
 	DigitalContentURL *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`

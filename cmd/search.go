@@ -549,7 +549,6 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 				ID:              firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IDField)),
 				IIIFManifestURL: firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IIIFManifestField)),
 				IIIFImageURL:    firstElementOf(doc.getValuesByTag(s.pool.config.Local.Related.Image.IIIFImageField)),
-				IIIFBaseURL:     s.getIIIFBaseURL(&doc, s.pool.config.Local.Related.Image.IIIFImageField),
 			}
 
 			related = append(related, rr)

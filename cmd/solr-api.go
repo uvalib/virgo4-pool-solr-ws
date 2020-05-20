@@ -117,8 +117,8 @@ type solrDocument struct {
 	TitleUniform        []string `json:"title_uniform_a,omitempty"`
 	UPC                 []string `json:"upc_a,omitempty"`
 	URL                 []string `json:"url_a,omitempty"`
-	URLIIIFImage        string   `json:"url_iiif_image_stored,omitempty"`
-	URLIIIFManifest     string   `json:"url_iiif_manifest_stored,omitempty"`
+	URLIIIFImage        []string `json:"url_iiif_image_a,omitempty"`
+	URLIIIFManifest     []string `json:"url_iiif_manifest_a,omitempty"`
 	URLLabel            []string `json:"url_label_a,omitempty"`
 	UVAAvailability     []string `json:"uva_availability_a,omitempty"`
 	WorkIdentifier      []string `json:"workIdentifier_a,omitempty"`
