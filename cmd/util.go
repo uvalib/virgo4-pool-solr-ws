@@ -64,10 +64,10 @@ func nonemptyValues(val []string) []string {
 	return res
 }
 
-func timeoutWithMinimum(str string, min int) int {
+func integerWithMinimum(str string, min int) int {
 	val, err := strconv.Atoi(str)
 
-	// fallback for invalid or nonsensical timeout values
+	// fallback for invalid or nonsensical values
 	if err != nil || val < min {
 		val = min
 	}

@@ -173,51 +173,37 @@ func (p *poolContext) initVersion() {
 	log.Printf("[POOL] version.GitCommit         = [%s]", p.version.GitCommit)
 }
 
+func httpClientWithTimeouts(conn, read string) *http.Client {
+	connTimeout := integerWithMinimum(conn, 1)
+	readTimeout := integerWithMinimum(read, 1)
+
+	client := &http.Client{
+		Timeout: time.Duration(readTimeout) * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   time.Duration(connTimeout) * time.Second,
+				KeepAlive: 60 * time.Second,
+			}).DialContext,
+			MaxIdleConns:        100, // we are hitting one solr host, so
+			MaxIdleConnsPerHost: 100, // these two values can be the same
+			IdleConnTimeout:     90 * time.Second,
+		},
+	}
+
+	return client
+}
+
 func (p *poolContext) initSolr() {
 	// service client setup
 
-	svcConnTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.Service.ConnTimeout, 1)
-	svcReadTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.Service.ReadTimeout, 1)
-
-	svcClient := &http.Client{
-		Timeout: time.Duration(svcReadTimeout) * time.Second,
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   time.Duration(svcConnTimeout) * time.Second,
-				KeepAlive: 60 * time.Second,
-			}).DialContext,
-			MaxIdleConns:        100, // we are hitting one solr host, so
-			MaxIdleConnsPerHost: 100, // these two values can be the same
-			IdleConnTimeout:     90 * time.Second,
-		},
-	}
-
-	svcCtx := poolSolrContext{
-		client: svcClient,
+	serviceCtx := poolSolrContext{
 		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.Service.Endpoint),
+		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.Service.ConnTimeout, p.config.Local.Solr.Clients.Service.ReadTimeout),
 	}
 
-	// health check client setup
-
-	hcConnTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, 1)
-	hcReadTimeout := timeoutWithMinimum(p.config.Local.Solr.Clients.HealthCheck.ReadTimeout, 1)
-
-	hcClient := &http.Client{
-		Timeout: time.Duration(hcReadTimeout) * time.Second,
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   time.Duration(hcConnTimeout) * time.Second,
-				KeepAlive: 60 * time.Second,
-			}).DialContext,
-			MaxIdleConns:        100, // we are hitting one solr host, so
-			MaxIdleConnsPerHost: 100, // these two values can be the same
-			IdleConnTimeout:     90 * time.Second,
-		},
-	}
-
-	hcCtx := poolSolrContext{
-		client: hcClient,
+	healthCtx := poolSolrContext{
 		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.HealthCheck.Endpoint),
+		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, p.config.Local.Solr.Clients.HealthCheck.ReadTimeout),
 	}
 
 	// create facet map
@@ -242,8 +228,8 @@ func (p *poolContext) initSolr() {
 	}
 
 	p.solr = poolSolr{
-		service:              svcCtx,
-		healthcheck:          hcCtx,
+		service:              serviceCtx,
+		healthcheck:          healthCtx,
 		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,
 		scoreThresholdHigh:   p.config.Local.Solr.ScoreThresholdHigh,
 	}
@@ -263,24 +249,8 @@ func (p *poolContext) initSolr() {
 func (p *poolContext) initPdf() {
 	// client setup
 
-	connTimeout := timeoutWithMinimum(p.config.Global.Service.Pdf.ConnTimeout, 1)
-	readTimeout := timeoutWithMinimum(p.config.Global.Service.Pdf.ReadTimeout, 1)
-
-	pdfClient := &http.Client{
-		Timeout: time.Duration(readTimeout) * time.Second,
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   time.Duration(connTimeout) * time.Second,
-				KeepAlive: 60 * time.Second,
-			}).DialContext,
-			MaxIdleConns:        100, // we are most likely hitting one pdf host, so
-			MaxIdleConnsPerHost: 100, // these two values can be the same
-			IdleConnTimeout:     90 * time.Second,
-		},
-	}
-
 	p.pdf = poolPdf{
-		client: pdfClient,
+		client: httpClientWithTimeouts(p.config.Global.Service.Pdf.ConnTimeout, p.config.Global.Service.Pdf.ReadTimeout),
 	}
 }
 
