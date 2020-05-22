@@ -452,6 +452,22 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Template, "digital content template url")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
 
+			case "full_title":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.FullTitle == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.FullTitle.TitleField, fmt.Sprintf("%s section title field", field.Name))
+				solrFields.requireValue(field.CustomInfo.FullTitle.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
+
 			case "pdf_download_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)

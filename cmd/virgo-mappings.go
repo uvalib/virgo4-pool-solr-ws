@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/igorsobreira/titlecase"
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
@@ -212,6 +213,18 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					f.Value = url
 					r.addField(f)
 				}
+
+			case "full_title":
+				titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.FullTitle.TitleField))
+				subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.FullTitle.SubtitleField))
+
+				title := titleValue
+				if subtitleValue != "" {
+					title = title + ": " + titlecase.Title(subtitleValue)
+				}
+
+				f.Value = title
+				r.addField(f)
 
 			case "pdf_download_url":
 				pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)

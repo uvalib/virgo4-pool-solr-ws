@@ -127,6 +127,11 @@ type poolConfigFieldTypeThumbnailURL struct {
 	MaxSupported int    `json:"max_supported,omitempty"`
 }
 
+type poolConfigFieldTypeFullTitle struct {
+	TitleField    string `json:"title_field,omitempty"`
+	SubtitleField string `json:"subtitle_field,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
 	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
 	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
@@ -134,6 +139,7 @@ type poolConfigFieldCustomInfo struct {
 	DigitalContentURL *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`
 	PdfDownloadURL    *poolConfigFieldTypePdfDownloadURL    `json:"pdf_download_url,omitempty"`
 	ThumbnailURL      *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
+	FullTitle         *poolConfigFieldTypeFullTitle         `json:"full_title,omitempty"`
 }
 
 type poolConfigField struct {
