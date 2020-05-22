@@ -51,7 +51,6 @@ type poolMaps struct {
 	sortFields      map[string]poolConfigSort
 	attributes      map[string]v4api.PoolAttribute
 	availableFacets map[string]poolConfigFacet
-	risCodes        map[string]string
 }
 
 type poolContext struct {
@@ -232,12 +231,6 @@ func (p *poolContext) initSolr() {
 		healthcheck:          healthCtx,
 		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,
 		scoreThresholdHigh:   p.config.Local.Solr.ScoreThresholdHigh,
-	}
-
-	// create RIS code map
-	p.maps.risCodes = make(map[string]string)
-	for _, code := range p.config.Global.RISCodes {
-		p.maps.risCodes[code.Field] = code.Code
 	}
 
 	log.Printf("[POOL] solr.service.url          = [%s]", p.solr.service.url)

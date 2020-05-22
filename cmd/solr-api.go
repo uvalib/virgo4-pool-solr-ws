@@ -77,10 +77,12 @@ type solrDocument struct {
 	AlternateID         []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability    []string `json:"anon_availability_a,omitempty"`
 	Author              []string `json:"author_facet_a,omitempty"`
+	AuthorAddedEntry    []string `json:"author_added_entry_a,omitempty"`
 	CallNumber          []string `json:"call_number_a,omitempty"`
 	CallNumberSort      string   `json:"call_number_sort,omitempty"`
 	Collection          []string `json:"collection_a,omitempty"`
 	DataSource          []string `json:"data_source_a,omitempty"`
+	Description         []string `json:"description_a,omitempty"`
 	Director            []string `json:"author_director_a,omitempty"`
 	Feature             []string `json:"feature_a,omitempty"`
 	Format              []string `json:"format_a,omitempty"`
@@ -100,6 +102,8 @@ type solrDocument struct {
 	Pool                []string `json:"pool_a,omitempty"`
 	PublicationDate     string   `json:"published_date,omitempty"`
 	PublishedDisplay    []string `json:"published_display_a,omitempty"`
+	PublishedLocation   []string `json:"published_location_a,omitempty"`
+	PublisherName       []string `json:"publisher_name_a,omitempty"`
 	Region              []string `json:"region_a,omitempty"`
 	ReleaseDate         []string `json:"release_a,omitempty"`
 	Rights              []string `json:"rights_a,omitempty"`
@@ -124,6 +128,7 @@ type solrDocument struct {
 	WorkIdentifier      []string `json:"workIdentifier_a,omitempty"`
 	WorkLocation        []string `json:"workLocation_a,omitempty"`
 	WorkPhysicalDetails []string `json:"workPhysicalDetails_a,omitempty"`
+	WorkPrimaryAuthor   []string `json:"work_primary_author_a,omitempty"`
 	WorkTitle2KeySort   string   `json:"work_title2_key_sort,omitempty"`
 	WorkTitle3KeySort   string   `json:"work_title3_key_sort,omitempty"`
 	WorkType            []string `json:"workType_a,omitempty"`

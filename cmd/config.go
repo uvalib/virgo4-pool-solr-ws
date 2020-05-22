@@ -86,7 +86,6 @@ type poolConfigFieldProperties struct {
 	Display    string `json:"display,omitempty"`
 	Visibility string `json:"visibility,omitempty"`
 	Provider   string `json:"provider,omitempty"`
-	RISCode    string `json:"ris_code,omitempty"` // can override mapping
 }
 
 type poolConfigFieldTypeAccessURL struct {
@@ -142,6 +141,7 @@ type poolConfigField struct {
 	XID                string                     `json:"xid,omitempty"`
 	Field              string                     `json:"field,omitempty"`
 	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
+	RISCodes           []string                   `json:"ris_codes,omitempty"`
 	Limit              int                        `json:"limit,omitempty"`
 	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
 	DetailsOnly        bool                       `json:"details_only,omitempty"`
@@ -220,11 +220,6 @@ type poolConfigRelated struct {
 	Image *poolConfigRelatedImage `json:"image,omitempty"`
 }
 
-type poolConfigRISCode struct {
-	Field string `json:"field,omitempty"`
-	Code  string `json:"code,omitempty"`
-}
-
 type poolConfigMappings struct {
 	Fields     []poolConfigField `json:"fields,omitempty"`
 	FieldNames []string          `json:"field_names,omitempty"`
@@ -240,7 +235,6 @@ type poolConfigGlobal struct {
 	Providers    []poolConfigProvider   `json:"providers,omitempty"`
 	Availability poolConfigAvailability `json:"availability,omitempty"`
 	Mappings     poolConfigMappings     `json:"mappings,omitempty"`
-	RISCodes     []poolConfigRISCode    `json:"ris_codes,omitempty"`
 }
 
 type poolConfigLocal struct {

@@ -56,8 +56,36 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 	return firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.GroupField))
 }
 
+type poolRecord struct {
+	record   v4api.Record
+	risCodes []string
+}
+
+func (r *poolRecord) addField(field v4api.RecordField) {
+	if len(r.risCodes) == 0 {
+		r.record.Fields = append(r.record.Fields, field)
+		return
+	}
+
+	// RIS codes present; add each with different name, and hide all but the first from display
+
+	name := field.Name
+
+	for i, code := range r.risCodes {
+		field.RISCode = code
+
+		if i > 0 {
+			field.Name = fmt.Sprintf("%s_%d", name, i+1)
+			field.Label = ""
+			field.Display = "optional"
+		}
+
+		r.record.Fields = append(r.record.Fields, field)
+	}
+}
+
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
-	var r v4api.Record
+	var r poolRecord
 
 	var authorValues []string
 
@@ -109,21 +137,18 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			continue
 		}
 
+		r.risCodes = field.RISCodes
+
 		f := v4api.RecordField{
 			Name:       field.Name,
 			Type:       field.Properties.Type,
 			Visibility: field.Properties.Visibility,
 			Display:    field.Properties.Display,
 			Provider:   field.Properties.Provider,
-			RISCode:    field.Properties.RISCode,
 		}
 
 		if field.XID != "" {
 			f.Label = s.client.localize(field.XID)
-		}
-
-		if field.Properties.RISCode == "" && field.Field != "" {
-			f.RISCode = s.pool.maps.risCodes[field.Field]
 		}
 
 		if field.Custom == true {
@@ -157,20 +182,20 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 						f.Item = itemLabel
 
-						r.Fields = append(r.Fields, f)
+						r.addField(f)
 					}
 				}
 
 			case "authenticate":
 				if anonRequest == true && anonOnline == false && authOnline == true {
-					r.Fields = append(r.Fields, f)
+					r.addField(f)
 				}
 
 			case "availability":
 				for _, availabilityValue := range availabilityValues {
 					if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
 						f.Value = availabilityValue
-						r.Fields = append(r.Fields, f)
+						r.addField(f)
 					}
 				}
 
@@ -178,14 +203,14 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				if s.pool.maps.attributes["cover_images"].Supported == true {
 					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, authorValues); url != "" {
 						f.Value = url
-						r.Fields = append(r.Fields, f)
+						r.addField(f)
 					}
 				}
 
 			case "digital_content_url":
 				if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
 					f.Value = url
-					r.Fields = append(r.Fields, f)
+					r.addField(f)
 				}
 
 			case "pdf_download_url":
@@ -214,7 +239,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 						if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus) == true {
 							downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
 							f.Value = downloadURL
-							r.Fields = append(r.Fields, f)
+							r.addField(f)
 						}
 					}
 				}
@@ -227,7 +252,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					sirsiID := idValue[len(idPrefix):]
 					if url := s.getSirsiURL(sirsiID); url != "" {
 						f.Value = url
-						r.Fields = append(r.Fields, f)
+						r.addField(f)
 					}
 				}
 
@@ -238,7 +263,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					for _, url := range urlValues {
 						if url != "" {
 							f.Value = url
-							r.Fields = append(r.Fields, f)
+							r.addField(f)
 						}
 					}
 				}
@@ -249,7 +274,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 			for i, fieldValue := range fieldValues {
 				f.Value = fieldValue
-				r.Fields = append(r.Fields, f)
+				r.addField(f)
 
 				if field.Limit > 0 && i+1 >= field.Limit {
 					break
@@ -260,14 +285,14 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// add internal info
 
-	r.GroupValue = s.getSolrGroupFieldValue(doc)
+	r.record.GroupValue = s.getSolrGroupFieldValue(doc)
 
 	if s.client.opts.debug == true {
-		r.Debug = make(map[string]interface{})
-		r.Debug["score"] = doc.Score
+		r.record.Debug = make(map[string]interface{})
+		r.record.Debug["score"] = doc.Score
 	}
 
-	return r
+	return r.record
 }
 
 func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []v4api.Record {
