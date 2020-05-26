@@ -6,11 +6,11 @@ import (
 )
 
 func getGenericURL(t poolConfigURLTemplate, id string) string {
-	if strings.Contains(t.Template, t.Pattern) == false {
+	if strings.Contains(t.Path, t.Pattern) == false {
 		return ""
 	}
 
-	return strings.Replace(t.Template, t.Pattern, id, -1)
+	return t.Host + strings.Replace(t.Path, t.Pattern, id, -1)
 }
 
 func (s *searchContext) getSirsiURL(id string) string {

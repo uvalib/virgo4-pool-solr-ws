@@ -12,10 +12,9 @@ import (
 const envPrefix = "VIRGO4_SOLR_POOL_WS"
 
 type poolConfigURLTemplate struct {
-	Pattern  string   `json:"pattern,omitempty"`
-	Template string   `json:"template,omitempty"`
-	Fallback string   `json:"fallback,omitempty"`
-	Prefixes []string `json:"prefixes,omitempty"`
+	Host    string `json:"host,omitempty"`
+	Path    string `json:"path,omitempty"`
+	Pattern string `json:"pattern,omitempty"`
 }
 
 type poolConfigURLTemplates struct {
@@ -298,12 +297,16 @@ func loadConfig() *poolConfig {
 		os.Exit(1)
 	}
 
-	// optional convenience override to simplify terraform config
+	// optional convenience overrides to simplify terraform config
 	if host := os.Getenv(envPrefix + "_SOLR_HOST"); host != "" {
 		cfg.Local.Solr.Host = host
 	}
 
-	//bytes, err := json.MarshalIndent(cfg, "", "  ")
+	if host := os.Getenv(envPrefix + "_DCON_HOST"); host != "" {
+		cfg.Global.Service.URLTemplates.DigitalContent.Host = host
+	}
+
+	// log accumulated config
 	bytes, err := json.Marshal(cfg)
 	if err != nil {
 		log.Printf("error encoding config json: %s", err.Error())

@@ -20,7 +20,7 @@ require (
 	github.com/uvalib/virgo4-jwt v0.0.0-20200427141047-8e5c1f68bc8f
 	github.com/uvalib/virgo4-parser v0.0.0-20200520010212-8579e11e5412
 	github.com/zsais/go-gin-prometheus v0.1.0
-	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299 // indirect
+	golang.org/x/sys v0.0.0-20200523222454-059865788121 // indirect
 	golang.org/x/text v0.3.2
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
