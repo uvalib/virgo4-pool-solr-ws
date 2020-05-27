@@ -22,5 +22,6 @@ require (
 	github.com/zsais/go-gin-prometheus v0.1.0
 	golang.org/x/sys v0.0.0-20200523222454-059865788121 // indirect
 	golang.org/x/text v0.3.2
+	google.golang.org/protobuf v1.24.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

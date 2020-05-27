@@ -22,6 +22,14 @@ other = "Images"
 desc = "The detailed description for the Solr pool designated as images."
 other = "Imagery that the UVA Library has curated, collected, and described."
 
+[PoolMapsName]
+desc = "The display name for the pool of Solr search results designated as maps."
+other = "Maps"
+
+[PoolMapsDescription]
+desc = "The detailed description for the Solr pool designated as maps."
+other = "If there's a place you got to go, I'm the one you need to know, I'm the map, I'm the map, I'm the map, If there's a place you got to get, I can get you there I bet, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map, I'm the map!"
+
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Music Recordings"

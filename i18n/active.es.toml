@@ -22,6 +22,14 @@ other = "Imágenes"
 desc = "The detailed description for the Solr pool designated as images."
 other = "PoolImagesDescription"
 
+[PoolMapsName]
+desc = "The display name for the pool of Solr search results designated as maps."
+other = "Mapas"
+
+[PoolMapsDescription]
+desc = "The detailed description for the Solr pool designated as maps."
+other = "PoolMapsDescription"
+
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Grabaciones Musicales"
