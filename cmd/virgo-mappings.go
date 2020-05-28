@@ -352,9 +352,20 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 
 		// sort facet values alphabetically (they are queried by count, but we want to present a-z)
 
-		sort.Slice(buckets, func(i, j int) bool {
-			return buckets[i].Value < buckets[j].Value
-		})
+		switch facetDef.BucketSort {
+		case "alpha":
+			sort.Slice(buckets, func(i, j int) bool {
+				return buckets[i].Value < buckets[j].Value
+			})
+
+		case "count":
+			sort.Slice(buckets, func(i, j int) bool {
+				return buckets[i].Count > buckets[j].Count
+			})
+
+		default:
+		}
+
 	}
 
 	facet.Buckets = buckets

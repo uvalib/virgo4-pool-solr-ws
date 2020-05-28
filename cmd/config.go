@@ -186,6 +186,7 @@ type poolConfigFacetSolr struct {
 type poolConfigFacet struct {
 	XID                string              `json:"xid,omitempty"` // translation ID
 	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
+	BucketSort         string              `json:"bucket_sort,omitempty"`
 	Type               string              `json:"type,omitempty"`
 	Format             string              `json:"format,omitempty"`
 	ExposedValues      []string            `json:"exposed_values,omitempty"`
