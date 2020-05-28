@@ -37,6 +37,8 @@ fi
 START_TIME=$(date +%s)
 END_TIME=$(expr $START_TIME + $TIMEOUT)
 
+echo "Endpoint: $ENDPOINT"
+
 # loop until timeout
 while true; do
 
