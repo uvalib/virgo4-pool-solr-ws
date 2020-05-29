@@ -140,7 +140,7 @@ other = "Fotógrafo"
 
 [FacetRegion]
 desc = "The display name for the Region facet."
-other = "Región"
+other = "Ubicación Geográfica"
 
 [FacetSeries]
 desc = "The display name for the Series facet."
@@ -240,7 +240,7 @@ other = "Publicado"
 
 [FieldRegion]
 desc = "The display name for the Region field in a single item record."
-other = "Región"
+other = "Ubicación Geográfica"
 
 [FieldReleaseDate]
 desc = "The display name for the Release Date field in a single item record."
