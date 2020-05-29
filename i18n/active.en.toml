@@ -86,6 +86,10 @@ other = "Author"
 desc = "The display name for the Availability facet."
 other = "Availability"
 
+[FacetCallNumberRange]
+desc = "The display name for the Call Number Range facet."
+other = "Call Number Range"
+
 [FacetCirculating]
 desc = "The display name for the Circulating facet."
 other = "Hide items limited to in-Library use"
@@ -101,6 +105,14 @@ other = "Composer"
 [FacetCompositionEra]
 desc = "The display name for the Composition Era facet."
 other = "Composition Era"
+
+[FacetDate]
+desc = "The display name for the Date facet."
+other = "Date"
+
+[FacetDepartment]
+desc = "The display name for the Department facet."
+other = "Department"
 
 [FacetFormat]
 desc = "The display name for the Format facet."
@@ -122,6 +134,10 @@ other = "Language"
 desc = "The display name for the Library facet."
 other = "Library"
 
+[FacetPhotographer]
+desc = "The display name for the Photographer facet."
+other = "Photographer"
+
 [FacetRegion]
 desc = "The display name for the Region facet."
 other = "Region"
@@ -129,6 +145,10 @@ other = "Region"
 [FacetSeries]
 desc = "The display name for the Series facet."
 other = "Series"
+
+[FacetSource]
+desc = "The display name for the Source facet."
+other = "Source"
 
 [FacetSubject]
 desc = "The display name for the Subject facet."

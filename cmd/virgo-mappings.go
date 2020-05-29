@@ -117,7 +117,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// field loop (preprocessing)
 
-	for _, field := range s.pool.config.Mappings.Fields {
+	for _, field := range s.pool.config.Mappings.Available.Fields {
 		if field.Field != "" && field.Properties.Type == "author" {
 			authorValues = doc.getValuesByTag(field.Field)
 		}
@@ -125,7 +125,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// field loop
 
-	for _, field := range s.pool.config.Mappings.Fields {
+	for _, field := range s.pool.config.Mappings.Available.Fields {
 		if field.DetailsOnly == true && s.itemDetails == false {
 			continue
 		}
@@ -350,22 +350,31 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 			}
 		}
 
-		// sort facet values alphabetically (they are queried by count, but we want to present a-z)
+		// sort facet bucket values per configuration
 
 		switch facetDef.BucketSort {
 		case "alpha":
 			sort.Slice(buckets, func(i, j int) bool {
+				// bucket values are unique so this is the only test we need
 				return buckets[i].Value < buckets[j].Value
 			})
 
 		case "count":
 			sort.Slice(buckets, func(i, j int) bool {
-				return buckets[i].Count > buckets[j].Count
+				if buckets[i].Count > buckets[j].Count {
+					return true
+				}
+
+				if buckets[i].Count < buckets[j].Count {
+					return false
+				}
+
+				// items with the same count get sorted alphabetically for consistency
+				return buckets[i].Value < buckets[j].Value
 			})
 
 		default:
 		}
-
 	}
 
 	facet.Buckets = buckets
@@ -374,7 +383,12 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 }
 
 func (s *searchContext) populateFacetList(solrFacets solrResponseFacets) []v4api.Facet {
-	var facetList []v4api.Facet
+	type indexedFacet struct {
+		index int
+		facet v4api.Facet
+	}
+
+	var orderedFacets []indexedFacet
 
 	gotFacet := false
 
@@ -404,7 +418,7 @@ func (s *searchContext) populateFacetList(solrFacets solrResponseFacets) []v4api
 
 			facet := s.populateFacet(facetDef, val)
 
-			facetList = append(facetList, facet)
+			orderedFacets = append(orderedFacets, indexedFacet{index: facetDef.Index, facet: facet})
 		}
 	}
 
@@ -412,11 +426,16 @@ func (s *searchContext) populateFacetList(solrFacets solrResponseFacets) []v4api
 		return nil
 	}
 
-	// sort facet names alphabetically (Solr returns them randomly)
+	// sort facet names in the same order the pool config lists them (Solr returns them randomly)
 
-	sort.Slice(facetList, func(i, j int) bool {
-		return facetList[i].Name < facetList[j].Name
+	sort.Slice(orderedFacets, func(i, j int) bool {
+		return orderedFacets[i].index < orderedFacets[j].index
 	})
+
+	var facetList []v4api.Facet
+	for _, f := range orderedFacets {
+		facetList = append(facetList, f.facet)
+	}
 
 	return facetList
 }

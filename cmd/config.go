@@ -186,12 +186,13 @@ type poolConfigFacetSolr struct {
 type poolConfigFacet struct {
 	XID                string              `json:"xid,omitempty"` // translation ID
 	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
-	BucketSort         string              `json:"bucket_sort,omitempty"`
 	Type               string              `json:"type,omitempty"`
 	Format             string              `json:"format,omitempty"`
 	ExposedValues      []string            `json:"exposed_values,omitempty"`
 	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
 	IsAvailability     bool                `json:"is_availability,omitempty"`
+	BucketSort         string              `json:"-"`
+	Index              int                 `json:"-"`
 }
 
 type poolConfigSort struct {
@@ -226,13 +227,26 @@ type poolConfigRelated struct {
 	Image *poolConfigRelatedImage `json:"image,omitempty"`
 }
 
+type poolConfigFacetSort struct {
+	XID  string `json:"xid,omitempty"`
+	Sort string `json:"sort,omitempty"`
+}
+
+type poolConfigMappingsAvailable struct {
+	Fields []poolConfigField `json:"fields,omitempty"`
+	Facets []poolConfigFacet `json:"facets,omitempty"`
+	Sorts  []poolConfigSort  `json:"sorts,omitempty"`
+}
+
+type poolConfigMappingsActive struct {
+	FieldNames    []string              `json:"field_names,omitempty"`
+	FacetXIDSorts []poolConfigFacetSort `json:"facet_xid_sorts,omitempty"`
+	SortXIDs      []string              `json:"sort_xids,omitempty"`
+}
+
 type poolConfigMappings struct {
-	Fields     []poolConfigField `json:"fields,omitempty"`
-	FieldNames []string          `json:"field_names,omitempty"`
-	Facets     []poolConfigFacet `json:"facets,omitempty"`
-	FacetXIDs  []string          `json:"facet_xids,omitempty"`
-	Sorts      []poolConfigSort  `json:"sorts,omitempty"`
-	SortXIDs   []string          `json:"sort_xids,omitempty"`
+	Available poolConfigMappingsAvailable `json:"available,omitempty"`
+	Active    poolConfigMappingsActive    `json:"active,omitempty"`
 }
 
 type poolConfigGlobal struct {
