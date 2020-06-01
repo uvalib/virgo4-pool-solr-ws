@@ -521,6 +521,21 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.PIDField, fmt.Sprintf("%s section pid field", field.Name))
 
+			case "ris_authors":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.RISAuthors == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.RISAuthors.AuthorField, fmt.Sprintf("%s section author field", field.Name))
+
 			case "ris_type":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)

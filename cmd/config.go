@@ -136,6 +136,12 @@ type poolConfigFieldTypeRISType struct {
 	FormatField string `json:"format_field,omitempty"`
 }
 
+type poolConfigFieldTypeRISAuthors struct {
+	AuthorField    string `json:"author_field,omitempty"`
+	PrimaryCode    string `json:"primary_code,omitempty"`
+	AdditionalCode string `json:"additional_code,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
 	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
 	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
@@ -145,6 +151,7 @@ type poolConfigFieldCustomInfo struct {
 	ThumbnailURL      *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
 	FullTitle         *poolConfigFieldTypeFullTitle         `json:"full_title,omitempty"`
 	RISType           *poolConfigFieldTypeRISType           `json:"ris_type,omitempty"`
+	RISAuthors        *poolConfigFieldTypeRISAuthors        `json:"ris_authors,omitempty"`
 }
 
 type poolConfigField struct {

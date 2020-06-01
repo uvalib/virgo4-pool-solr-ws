@@ -286,6 +286,21 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					}
 				}
 
+			case "ris_authors":
+				authorValues := doc.getValuesByTag(field.CustomInfo.RISAuthors.AuthorField)
+
+				for i, authorValue := range authorValues {
+					f.Value = authorValue
+
+					if i == 0 {
+						f.RISCode = field.CustomInfo.RISAuthors.PrimaryCode
+					} else {
+						f.RISCode = field.CustomInfo.RISAuthors.AdditionalCode
+					}
+
+					r.addField(f)
+				}
+
 			case "ris_type":
 				formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
 				f.Value = s.getRISType(formatValues)
