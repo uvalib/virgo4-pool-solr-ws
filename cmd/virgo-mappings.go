@@ -86,8 +86,32 @@ func (r *poolRecord) addField(field v4api.RecordField) {
 }
 
 func (s *searchContext) getRISType(formats []string) string {
-	// FIXME
-	return strings.ToUpper(firstElementOf(formats))
+	// use configured RIS type for pool, if defined
+	if s.pool.config.Local.Identity.RISType != "" {
+		return s.pool.config.Local.Identity.RISType
+	}
+
+	// point to last entry (which by configuration should be GEN for generic)
+	best := len(s.pool.config.Global.RISTypes) - 1
+
+	// check each format to try to find better type match
+	for _, format := range formats {
+		for i := range s.pool.config.Global.RISTypes {
+			// no need to check worse possibilities
+			if i >= best {
+				continue
+			}
+
+			ristype := &s.pool.config.Global.RISTypes[i]
+
+			if ristype.re.MatchString(format) == true {
+				best = i
+				break
+			}
+		}
+	}
+
+	return s.pool.config.Global.RISTypes[best].Type
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {

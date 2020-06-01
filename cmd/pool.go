@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -246,6 +247,38 @@ func (p *poolContext) initPdf() {
 
 	p.pdf = poolPdf{
 		client: httpClientWithTimeouts(p.config.Global.Service.Pdf.ConnTimeout, p.config.Global.Service.Pdf.ReadTimeout),
+	}
+}
+
+func (p *poolContext) initRIS() {
+	invalid := false
+
+	for i := range p.config.Global.RISTypes {
+		ristype := &p.config.Global.RISTypes[i]
+
+		var err error
+
+		if ristype.Type == "" {
+			log.Printf("[INIT] empty type in RIS type entry %d", i)
+			invalid = true
+		}
+
+		if ristype.Pattern == "" {
+			log.Printf("[INIT] empty pattern in RIS type entry %d (type: %s)", i, ristype.Type)
+			invalid = true
+			continue
+		}
+
+		if ristype.re, err = regexp.Compile(ristype.Pattern); err != nil {
+			log.Printf("[INIT] pattern compilation error in RIS type entry %d (type: %s): %s", i, ristype.Type, err.Error())
+			invalid = true
+			continue
+		}
+	}
+
+	if invalid == true {
+		log.Printf("[INIT] exiting due to error(s) above")
+		os.Exit(1)
 	}
 }
 
@@ -698,6 +731,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initVersion()
 	p.initSolr()
 	p.initPdf()
+	p.initRIS()
 
 	p.validateConfig()
 

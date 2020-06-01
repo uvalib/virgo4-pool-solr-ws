@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -251,8 +252,9 @@ type poolConfigMappings struct {
 }
 
 type poolConfigRISType struct {
-	Type    string   `json:"type,omitempty"`
-	Formats []string `json:"formats,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Pattern string `json:"pattern,omitempty"`
+	re      *regexp.Regexp
 }
 
 type poolConfigGlobal struct {
