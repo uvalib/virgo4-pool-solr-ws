@@ -85,6 +85,11 @@ func (r *poolRecord) addField(field v4api.RecordField) {
 	}
 }
 
+func (s *searchContext) getRISType(formats []string) string {
+	// FIXME
+	return strings.ToUpper(firstElementOf(formats))
+}
+
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	var r poolRecord
 
@@ -117,7 +122,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// field loop (preprocessing)
 
-	for _, field := range s.pool.config.Mappings.Available.Fields {
+	for _, field := range s.pool.config.Mappings.Definitions.Fields {
 		if field.Field != "" && field.Properties.Type == "author" {
 			authorValues = doc.getValuesByTag(field.Field)
 		}
@@ -125,7 +130,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// field loop
 
-	for _, field := range s.pool.config.Mappings.Available.Fields {
+	for _, field := range s.pool.config.Mappings.Definitions.Fields {
 		if field.DetailsOnly == true && s.itemDetails == false {
 			continue
 		}
@@ -256,6 +261,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 						}
 					}
 				}
+
+			case "ris_type":
+				formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
+				f.Value = s.getRISType(formatValues)
+				r.addField(f)
 
 			case "sirsi_url":
 				idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))

@@ -131,6 +131,10 @@ type poolConfigFieldTypeFullTitle struct {
 	SubtitleField string `json:"subtitle_field,omitempty"`
 }
 
+type poolConfigFieldTypeRISType struct {
+	FormatField string `json:"format_field,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
 	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
 	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
@@ -139,6 +143,7 @@ type poolConfigFieldCustomInfo struct {
 	PdfDownloadURL    *poolConfigFieldTypePdfDownloadURL    `json:"pdf_download_url,omitempty"`
 	ThumbnailURL      *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
 	FullTitle         *poolConfigFieldTypeFullTitle         `json:"full_title,omitempty"`
+	RISType           *poolConfigFieldTypeRISType           `json:"ris_type,omitempty"`
 }
 
 type poolConfigField struct {
@@ -191,7 +196,7 @@ type poolConfigFacet struct {
 	ExposedValues      []string            `json:"exposed_values,omitempty"`
 	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
 	IsAvailability     bool                `json:"is_availability,omitempty"`
-	BucketSort         string              `json:"-"`
+	BucketSort         string              `json:"bucket_sort,omitempty"`
 	Index              int                 `json:"-"`
 }
 
@@ -208,6 +213,7 @@ type poolConfigIdentity struct {
 	DescXID    string   `json:"desc_xid,omitempty"`   // translation ID
 	Mode       string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
 	Attributes []string `json:"attributes,omitempty"` // pool attributes (what it supports)
+	RISType    string   `json:"ris_type,omitempty"`
 }
 
 type poolConfigProvider struct {
@@ -227,26 +233,26 @@ type poolConfigRelated struct {
 	Image *poolConfigRelatedImage `json:"image,omitempty"`
 }
 
-type poolConfigFacetSort struct {
-	XID  string `json:"xid,omitempty"`
-	Sort string `json:"sort,omitempty"`
-}
-
-type poolConfigMappingsAvailable struct {
+type poolConfigMappingsDefinitions struct {
 	Fields []poolConfigField `json:"fields,omitempty"`
 	Facets []poolConfigFacet `json:"facets,omitempty"`
 	Sorts  []poolConfigSort  `json:"sorts,omitempty"`
 }
 
-type poolConfigMappingsActive struct {
-	FieldNames    []string              `json:"field_names,omitempty"`
-	FacetXIDSorts []poolConfigFacetSort `json:"facet_xid_sorts,omitempty"`
-	SortXIDs      []string              `json:"sort_xids,omitempty"`
+type poolConfigMappingsConfigured struct {
+	FieldNames []string `json:"field_names,omitempty"`
+	FacetXIDs  []string `json:"facet_xids,omitempty"`
+	SortXIDs   []string `json:"sort_xids,omitempty"`
 }
 
 type poolConfigMappings struct {
-	Available poolConfigMappingsAvailable `json:"available,omitempty"`
-	Active    poolConfigMappingsActive    `json:"active,omitempty"`
+	Definitions poolConfigMappingsDefinitions `json:"definitions,omitempty"`
+	Configured  poolConfigMappingsConfigured  `json:"configured,omitempty"`
+}
+
+type poolConfigRISType struct {
+	Type    string   `json:"type,omitempty"`
+	Formats []string `json:"formats,omitempty"`
 }
 
 type poolConfigGlobal struct {
@@ -254,6 +260,7 @@ type poolConfigGlobal struct {
 	Attributes   []string               `json:"attributes,omitempty"`
 	Providers    []poolConfigProvider   `json:"providers,omitempty"`
 	Availability poolConfigAvailability `json:"availability,omitempty"`
+	RISTypes     []poolConfigRISType    `json:"ris_types,omitempty"`
 	Mappings     poolConfigMappings     `json:"mappings,omitempty"`
 }
 

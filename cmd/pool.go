@@ -124,8 +124,8 @@ func (p *poolContext) initIdentity() {
 
 	// create sort field map
 	p.maps.sortFields = make(map[string]poolConfigSort)
-	for i := range p.config.Mappings.Available.Sorts {
-		s := &p.config.Mappings.Available.Sorts[i]
+	for i := range p.config.Mappings.Definitions.Sorts {
+		s := &p.config.Mappings.Definitions.Sorts[i]
 		p.maps.sortFields[s.XID] = *s
 		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID})
 	}
@@ -213,8 +213,8 @@ func (p *poolContext) initSolr() {
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
 
-	for i := range p.config.Mappings.Available.Facets {
-		f := &p.config.Mappings.Available.Facets[i]
+	for i := range p.config.Mappings.Definitions.Facets {
+		f := &p.config.Mappings.Definitions.Facets[i]
 
 		f.Index = i
 
@@ -330,7 +330,7 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for i, val := range p.config.Mappings.Available.Sorts {
+	for i, val := range p.config.Mappings.Definitions.Sorts {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("sort option %d xid", i))
 		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d group field", i))
 		messageIDs.addValue(val.RecordXID)
@@ -355,14 +355,14 @@ func (p *poolContext) validateConfig() {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("provider %d xid", i))
 	}
 
-	for i, val := range p.config.Mappings.Available.Facets {
+	for i, val := range p.config.Mappings.Definitions.Facets {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
 		for j, depval := range val.DependentFacetXIDs {
 			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
 		}
 	}
 
-	for i, field := range p.config.Mappings.Available.Fields {
+	for i, field := range p.config.Mappings.Definitions.Fields {
 		prefix := fmt.Sprintf("field index %d: ", i)
 		postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
 
@@ -488,6 +488,21 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.PIDField, fmt.Sprintf("%s section pid field", field.Name))
 
+			case "ris_type":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.RISType == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.RISType.FormatField, fmt.Sprintf("%s section format field", field.Name))
+
 			case "sirsi_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
@@ -575,7 +590,7 @@ func (p *poolContext) initMappings() {
 	invalid := false
 
 	// create mapping from facet XIDs to facet definitions, allowing local overrides
-	facetList := append(p.config.Global.Mappings.Available.Facets, p.config.Local.Mappings.Available.Facets...)
+	facetList := append(p.config.Global.Mappings.Definitions.Facets, p.config.Local.Mappings.Definitions.Facets...)
 	facetMap := make(map[string]*poolConfigFacet)
 	for i := range facetList {
 		facetDef := &facetList[i]
@@ -583,31 +598,31 @@ func (p *poolContext) initMappings() {
 	}
 
 	// build list of unique facets by XID
-	facetSorts := append(p.config.Global.Mappings.Active.FacetXIDSorts, p.config.Local.Mappings.Active.FacetXIDSorts...)
+	facetXIDs := append(p.config.Global.Mappings.Configured.FacetXIDs, p.config.Local.Mappings.Configured.FacetXIDs...)
 	facetsSeen := make(map[string]bool)
-	for _, facetSort := range facetSorts {
-		if facetsSeen[facetSort.XID] == true {
+	for _, facetXID := range facetXIDs {
+		if facetsSeen[facetXID] == true {
 			continue
 		}
 
-		facetDef := facetMap[facetSort.XID]
+		facetDef := facetMap[facetXID]
 
 		if facetDef == nil {
-			log.Printf("[INIT] unrecognized facet xid: [%s]", facetSort.XID)
+			log.Printf("[INIT] unrecognized facet xid: [%s]", facetXID)
 			invalid = true
 			continue
 		}
 
-		facetDef.BucketSort = facetSort.Sort
+		// this is used to preserve facet order when building facets response
 		facetDef.Index = len(facetsSeen)
 
-		p.config.Mappings.Available.Facets = append(p.config.Mappings.Available.Facets, *facetDef)
+		p.config.Mappings.Definitions.Facets = append(p.config.Mappings.Definitions.Facets, *facetDef)
 
-		facetsSeen[facetSort.XID] = true
+		facetsSeen[facetXID] = true
 	}
 
 	// create mapping from field names to field definitions, allowing local overrides
-	fieldList := append(p.config.Global.Mappings.Available.Fields, p.config.Local.Mappings.Available.Fields...)
+	fieldList := append(p.config.Global.Mappings.Definitions.Fields, p.config.Local.Mappings.Definitions.Fields...)
 	fieldMap := make(map[string]*poolConfigField)
 	for i := range fieldList {
 		fieldDef := &fieldList[i]
@@ -615,7 +630,7 @@ func (p *poolContext) initMappings() {
 	}
 
 	// build list of unique fields by name
-	fieldNames := append(p.config.Global.Mappings.Active.FieldNames, p.config.Local.Mappings.Active.FieldNames...)
+	fieldNames := append(p.config.Global.Mappings.Configured.FieldNames, p.config.Local.Mappings.Configured.FieldNames...)
 	fieldNamesSeen := make(map[string]bool)
 	for _, fieldName := range fieldNames {
 		if fieldNamesSeen[fieldName] == true {
@@ -630,13 +645,13 @@ func (p *poolContext) initMappings() {
 			continue
 		}
 
-		p.config.Mappings.Available.Fields = append(p.config.Mappings.Available.Fields, *fieldDef)
+		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *fieldDef)
 
 		fieldNamesSeen[fieldName] = true
 	}
 
 	// create mapping from sort XIDs to sort definitions, allowing local overrides
-	sortList := append(p.config.Global.Mappings.Available.Sorts, p.config.Local.Mappings.Available.Sorts...)
+	sortList := append(p.config.Global.Mappings.Definitions.Sorts, p.config.Local.Mappings.Definitions.Sorts...)
 	sortMap := make(map[string]*poolConfigSort)
 	for i := range sortList {
 		sortDef := &sortList[i]
@@ -644,7 +659,7 @@ func (p *poolContext) initMappings() {
 	}
 
 	// build list of unique sorts by XID
-	sortXIDs := append(p.config.Global.Mappings.Active.SortXIDs, p.config.Local.Mappings.Active.SortXIDs...)
+	sortXIDs := append(p.config.Global.Mappings.Configured.SortXIDs, p.config.Local.Mappings.Configured.SortXIDs...)
 	sortsSeen := make(map[string]bool)
 	for _, sortXID := range sortXIDs {
 		if sortsSeen[sortXID] == true {
@@ -659,7 +674,7 @@ func (p *poolContext) initMappings() {
 			continue
 		}
 
-		p.config.Mappings.Available.Sorts = append(p.config.Mappings.Available.Sorts, *sortDef)
+		p.config.Mappings.Definitions.Sorts = append(p.config.Mappings.Definitions.Sorts, *sortDef)
 
 		sortsSeen[sortXID] = true
 	}
