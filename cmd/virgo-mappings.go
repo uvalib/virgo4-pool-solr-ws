@@ -114,6 +114,38 @@ func (s *searchContext) getRISType(formats []string) string {
 	return s.pool.config.Global.RISTypes[best].Type
 }
 
+func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
+	for i := range s.pool.config.Global.Service.Publishers {
+		publisher := &s.pool.config.Global.Service.Publishers[i]
+
+		fieldValues := doc.getValuesByTag(publisher.Field)
+
+		for _, fieldValue := range fieldValues {
+			if publisher.re.MatchString(fieldValue) {
+				return publisher
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *searchContext) getPublishedLocation(doc *solrDocument) []string {
+	if publisher := s.getPublisherEntry(doc); publisher != nil {
+		return []string{publisher.Place}
+	}
+
+	return []string{}
+}
+
+func (s *searchContext) getPublisherName(doc *solrDocument) []string {
+	if publisher := s.getPublisherEntry(doc); publisher != nil {
+		return []string{publisher.Publisher}
+	}
+
+	return []string{}
+}
+
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	var r poolRecord
 
@@ -254,6 +286,34 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 				f.Value = title
 				r.addField(f)
+
+			case "published_location":
+				fieldValues := doc.getValuesByTag(field.Field)
+
+				if len(fieldValues) == 0 {
+					fieldValues = s.getPublishedLocation(doc)
+				}
+
+				for _, fieldValue := range fieldValues {
+					f.Value = fieldValue
+					r.addField(f)
+				}
+
+			case "publisher_name":
+				fieldValues := doc.getValuesByTag(field.Field)
+
+				if len(fieldValues) == 0 {
+					fieldValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
+				}
+
+				if len(fieldValues) == 0 {
+					fieldValues = s.getPublisherName(doc)
+				}
+
+				for _, fieldValue := range fieldValues {
+					f.Value = fieldValue
+					r.addField(f)
+				}
 
 			case "pdf_download_url":
 				pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)

@@ -276,6 +276,24 @@ func (p *poolContext) initRIS() {
 		}
 	}
 
+	for i := range p.config.Global.Service.Publishers {
+		publisher := &p.config.Global.Service.Publishers[i]
+
+		var err error
+
+		if publisher.Pattern == "" {
+			log.Printf("[INIT] empty pattern in publisher entry %d (id: %s)", i, publisher.ID)
+			invalid = true
+			continue
+		}
+
+		if publisher.re, err = regexp.Compile(publisher.Pattern); err != nil {
+			log.Printf("[INIT] pattern compilation error in publisher entry %d (id: %s): %s", i, publisher.ID, err.Error())
+			invalid = true
+			continue
+		}
+	}
+
 	if invalid == true {
 		log.Printf("[INIT] exiting due to error(s) above")
 		os.Exit(1)
@@ -393,6 +411,10 @@ func (p *poolContext) validateConfig() {
 		for j, depval := range val.DependentFacetXIDs {
 			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
 		}
+	}
+
+	for i, val := range p.config.Global.Service.Publishers {
+		solrFields.requireValue(val.Field, fmt.Sprintf("publisher %d solr field", i))
 	}
 
 	for i, field := range p.config.Mappings.Definitions.Fields {
@@ -520,6 +542,23 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.PIDField, fmt.Sprintf("%s section pid field", field.Name))
+
+			case "published_location":
+
+			case "publisher_name":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.PublisherName == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.PublisherName.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
 
 			case "ris_authors":
 				if field.CustomInfo == nil {

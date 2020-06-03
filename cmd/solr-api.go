@@ -101,6 +101,7 @@ type solrDocument struct {
 	PdfURL              []string `json:"pdf_url_a,omitempty"`
 	Pool                []string `json:"pool_a,omitempty"`
 	PublicationDate     string   `json:"published_date,omitempty"`
+	Published           []string `json:"published_a,omitempty"`
 	PublishedDisplay    []string `json:"published_display_a,omitempty"`
 	PublishedLocation   []string `json:"published_location_a,omitempty"`
 	PublisherName       []string `json:"publisher_name_a,omitempty"`

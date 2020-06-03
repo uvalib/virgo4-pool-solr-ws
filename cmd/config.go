@@ -29,12 +29,22 @@ type poolConfigDigitalContent struct {
 	Features     []string `json:"features,omitempty"`
 }
 
+type poolConfigPublisher struct {
+	ID        string `json:"id,omitempty"`
+	Field     string `json:"field,omitempty"`
+	Pattern   string `json:"pattern,omitempty"`
+	Publisher string `json:"publisher,omitempty"`
+	Place     string `json:"place,omitempty"`
+	re        *regexp.Regexp
+}
+
 type poolConfigService struct {
 	Port           string                   `json:"port,omitempty"`
 	JWTKey         string                   `json:"jwt_key,omitempty"`
 	DefaultSort    poolConfigSort           `json:"default_sort,omitempty"`
 	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
 	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
+	Publishers     []poolConfigPublisher    `json:"publishers,omitempty"`
 	Pdf            poolConfigPdf            `json:"pdf,omitempty"`
 }
 
@@ -142,6 +152,10 @@ type poolConfigFieldTypeRISAuthors struct {
 	AdditionalCode string `json:"additional_code,omitempty"`
 }
 
+type poolConfigFieldTypePublisherName struct {
+	AlternateField string `json:"alternate_field,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
 	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
 	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
@@ -152,6 +166,7 @@ type poolConfigFieldCustomInfo struct {
 	FullTitle         *poolConfigFieldTypeFullTitle         `json:"full_title,omitempty"`
 	RISType           *poolConfigFieldTypeRISType           `json:"ris_type,omitempty"`
 	RISAuthors        *poolConfigFieldTypeRISAuthors        `json:"ris_authors,omitempty"`
+	PublisherName     *poolConfigFieldTypePublisherName     `json:"publisher_name,omitempty"`
 }
 
 type poolConfigField struct {
