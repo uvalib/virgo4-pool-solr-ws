@@ -234,9 +234,17 @@ other = "Ubicación"
 desc = "The display name for the Note field in an image record."
 other = "Notas"
 
-[FieldPublished]
-desc = "The display name for the Published field in a single item record."
-other = "Publicado"
+[FieldPublicationDate]
+desc = "The display name for the Publication Date field in a single item record."
+other = "Fecha de Publicación"
+
+[FieldPublicationLocation]
+desc = "The display name for the Publication Location field in a single item record."
+other = "Lugar de Publicación"
+
+[FieldPublisher]
+desc = "The display name for the Publisher field in a single item record."
+other = "Editor"
 
 [FieldRegion]
 desc = "The display name for the Region field in a single item record."
