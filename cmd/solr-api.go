@@ -87,6 +87,7 @@ type solrDocument struct {
 	Feature             []string `json:"feature_a,omitempty"`
 	Format              []string `json:"format_a,omitempty"`
 	FullRecord          string   `json:"fullrecord,omitempty"`
+	Genre               []string `json:"topic_form_genre_a,omitempty"`
 	ID                  string   `json:"id,omitempty"`
 	ISBN                []string `json:"isbn_a,omitempty"`
 	ISSN                []string `json:"issn_a,omitempty"`
