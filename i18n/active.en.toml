@@ -28,7 +28,7 @@ other = "Maps"
 
 [PoolMapsDescription]
 desc = "The detailed description for the Solr pool designated as maps."
-other = "Cartographic materials."
+other = "Maps, atlases, and other cartographic materials."
 
 [PoolMusicRecordingsName]
 desc = "The display name for the pool of Solr search results designated as music recordings."
