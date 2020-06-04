@@ -240,7 +240,7 @@ other = "Publication Date"
 
 [FieldPublicationLocation]
 desc = "The display name for the Publication Location field in a single item record."
-other = "Publication Location"
+other = "Publication Place"
 
 [FieldPublisher]
 desc = "The display name for the Publisher field in a single item record."
