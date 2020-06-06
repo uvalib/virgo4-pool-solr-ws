@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/igorsobreira/titlecase"
+	//	"github.com/igorsobreira/titlecase"
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
@@ -275,16 +275,16 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.addField(f)
 				}
 
-			case "full_title":
-				titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.FullTitle.TitleField))
-				subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.FullTitle.SubtitleField))
+			case "full_title_with_edition":
+				fullTitleValue := firstElementOf(doc.getValuesByTag(field.Field))
+				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.FullTitleWithEdition.EditionField))
 
-				title := titleValue
-				if subtitleValue != "" {
-					title = title + ": " + titlecase.Title(subtitleValue)
+				fullTitle := fullTitleValue
+				if editionValue != "" {
+					fullTitle = fullTitle + "  " + editionValue
 				}
 
-				f.Value = title
+				f.Value = fullTitle
 				r.addField(f)
 
 			case "published_location":
@@ -361,6 +361,18 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.addField(f)
 				}
 
+			case "ris_full_title_with_edition":
+				fullTitleValue := firstElementOf(doc.getValuesByTag(field.Field))
+				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.RISFullTitleWithEdition.EditionField))
+
+				fullTitle := fullTitleValue
+				if editionValue != "" {
+					fullTitle = fullTitle + "  " + editionValue
+				}
+
+				f.Value = fullTitle
+				r.addField(f)
+
 			case "ris_type":
 				formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
 				f.Value = s.getRISType(formatValues)
@@ -377,6 +389,21 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 						r.addField(f)
 					}
 				}
+
+			case "subtitle_with_edition":
+				subtitleValue := firstElementOf(doc.getValuesByTag(field.Field))
+				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SubtitleWithEdition.EditionField))
+
+				subtitle := subtitleValue
+				if editionValue != "" {
+					if subtitle != "" {
+						subtitle = subtitle + "  "
+					}
+					subtitle = subtitle + editionValue
+				}
+
+				f.Value = subtitle
+				r.addField(f)
 
 			case "thumbnail_url":
 				urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)

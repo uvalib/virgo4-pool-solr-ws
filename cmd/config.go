@@ -137,11 +137,6 @@ type poolConfigFieldTypeThumbnailURL struct {
 	MaxSupported int    `json:"max_supported,omitempty"`
 }
 
-type poolConfigFieldTypeFullTitle struct {
-	TitleField    string `json:"title_field,omitempty"`
-	SubtitleField string `json:"subtitle_field,omitempty"`
-}
-
 type poolConfigFieldTypeRISType struct {
 	FormatField string `json:"format_field,omitempty"`
 }
@@ -156,17 +151,23 @@ type poolConfigFieldTypePublisherName struct {
 	AlternateField string `json:"alternate_field,omitempty"`
 }
 
+type poolConfigFieldTypeFieldWithEdition struct {
+	EditionField string `json:"edition_field,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
-	AccessURL         *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
-	CoverImageURL     *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
-	SirsiURL          *poolConfigFieldTypeSirsiURL          `json:"sirsi_url,omitempty"`
-	DigitalContentURL *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`
-	PdfDownloadURL    *poolConfigFieldTypePdfDownloadURL    `json:"pdf_download_url,omitempty"`
-	ThumbnailURL      *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
-	FullTitle         *poolConfigFieldTypeFullTitle         `json:"full_title,omitempty"`
-	RISType           *poolConfigFieldTypeRISType           `json:"ris_type,omitempty"`
-	RISAuthors        *poolConfigFieldTypeRISAuthors        `json:"ris_authors,omitempty"`
-	PublisherName     *poolConfigFieldTypePublisherName     `json:"publisher_name,omitempty"`
+	AccessURL               *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
+	CoverImageURL           *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
+	DigitalContentURL       *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`
+	FullTitleWithEdition    *poolConfigFieldTypeFieldWithEdition  `json:"full_title_with_edition,omitempty"`
+	PdfDownloadURL          *poolConfigFieldTypePdfDownloadURL    `json:"pdf_download_url,omitempty"`
+	PublisherName           *poolConfigFieldTypePublisherName     `json:"publisher_name,omitempty"`
+	RISFullTitleWithEdition *poolConfigFieldTypeFieldWithEdition  `json:"ris_full_title_with_edition,omitempty"`
+	RISType                 *poolConfigFieldTypeRISType           `json:"ris_type,omitempty"`
+	RISAuthors              *poolConfigFieldTypeRISAuthors        `json:"ris_authors,omitempty"`
+	SirsiURL                *poolConfigFieldTypeSirsiURL          `json:"sirsi_url,omitempty"`
+	SubtitleWithEdition     *poolConfigFieldTypeFieldWithEdition  `json:"subtitle_with_edition,omitempty"`
+	ThumbnailURL            *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
 }
 
 type poolConfigField struct {
