@@ -127,6 +127,13 @@ func (p *poolContext) initIdentity() {
 	p.maps.sortFields = make(map[string]poolConfigSort)
 	for i := range p.config.Mappings.Definitions.Sorts {
 		s := &p.config.Mappings.Definitions.Sorts[i]
+
+		// FIXME: needs improvement; should not assume relevance sort XID
+		if s.XID == "SortRelevance" {
+			s.RecordXID = p.config.Local.Solr.RelevanceIntraGroupSort.XID
+			s.RecordOrder = p.config.Local.Solr.RelevanceIntraGroupSort.Order
+		}
+
 		p.maps.sortFields[s.XID] = *s
 		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID})
 	}
