@@ -1,359 +1,362 @@
 [PoolArchivalName]
-desc = "The display name for the pool of Solr search results designated as archival."
 other = "Manuscripts & Archival Material"
 
 [PoolArchivalDescription]
-desc = "The detailed description for the Solr pool designated as archival."
 other = "Published and unpublished manuscripts, business records, maps, correspondence, and more. <a href='https://virginia.aeon.atlas-sys.com/logon' target='_blank'>Items may be requested for access in the Clifton Waller Barrett Reading Room</a> and cannot leave the premises."
 
 [PoolCatalogName]
-desc = "The display name for the pool of Solr search results designated as the main catalog."
 other = "Books"
 
 [PoolCatalogDescription]
-desc = "The detailed description for the Solr pool designated as the main catalog."
 other = "Physical and electronic books from UVA’s collection."
 
 [PoolImagesName]
-desc = "The display name for the pool of Solr search results designated as images."
 other = "Images"
 
 [PoolImagesDescription]
-desc = "The detailed description for the Solr pool designated as images."
 other = "Imagery that the UVA Library has curated, collected, and described."
 
 [PoolMapsName]
-desc = "The display name for the pool of Solr search results designated as maps."
 other = "Maps"
 
 [PoolMapsDescription]
-desc = "The detailed description for the Solr pool designated as maps."
 other = "Maps, atlases, and other cartographic materials."
 
 [PoolMusicRecordingsName]
-desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Music Recordings"
 
 [PoolMusicRecordingsDescription]
-desc = "The detailed description for the Solr pool designated as music recordings."
 other = "Music-based audio available for streaming, download, or in-person use."
 
 [PoolMusicalScoresName]
-desc = "The display name for the pool of Solr search results designated as musical scores."
 other = "Musical Scores"
 
 [PoolMusicalScoresDescription]
-desc = "The detailed description for the Solr pool designated as musical scores."
 other = "Sheet music and other musical notation."
 
 [PoolSerialsName]
-desc = "The display name for the pool of Solr search results designated as serials."
 other = "Journals"
 
 [PoolSerialsDescription]
-desc = "The detailed description for the Solr pool designated as serials."
 other = "Journals, magazines, newspapers, and other periodicals. May be available in print, electronic access journals, bound volumes containing multiple issues, or online. NOTE: Display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
 
 [PoolSoundRecordingsName]
-desc = "The display name for the pool of Solr search results designated as sound recordings."
 other = "Sound Recordings"
 
 [PoolSoundRecordingsDescription]
-desc = "The detailed description for the Solr pool designated as sound recordings."
 other = "Non-music audio available for streaming, download, or in-person use."
 
 [PoolThesisName]
-desc = "The display name for the pool of Solr search results designated as thesis."
 other = "Theses"
 
 [PoolThesisDescription]
-desc = "The detailed description for the Solr pool designated as thesis."
 other = "Theses and dissertations completed at the University of Virginia."
 
 [PoolVideoName]
-desc = "The display name for the pool of Solr search results designated as video."
 other = "Video"
 
 [PoolVideoDescription]
-desc = "The detailed description for the Solr pool designated as video."
 other = "Documentaries, films, television shows, and more; for check out or streaming access."
 
 [FacetAuthor]
-desc = "The display name for the Author facet."
 other = "Author"
 
 [FacetAvailability]
-desc = "The display name for the Availability facet."
 other = "Availability"
 
 [FacetCallNumberRange]
-desc = "The display name for the Call Number Range facet."
 other = "Call Number Range"
 
 [FacetCirculating]
-desc = "The display name for the Circulating facet."
 other = "Hide items limited to in-Library use"
 
 [FacetCollection]
-desc = "The display name for the Collection facet."
 other = "Collection"
 
 [FacetComposer]
-desc = "The display name for the Composer facet."
 other = "Composer"
 
 [FacetCompositionEra]
-desc = "The display name for the Composition Era facet."
 other = "Composition Era"
 
 [FacetDate]
-desc = "The display name for the Date facet."
 other = "Date"
 
 [FacetDepartment]
-desc = "The display name for the Department facet."
 other = "Department"
 
 [FacetFormat]
-desc = "The display name for the Format facet."
 other = "Format"
 
 [FacetGenre]
-desc = "The display name for the Genre facet."
 other = "Genre"
 
 [FacetInstrument]
-desc = "The display name for the Instrument facet."
 other = "Instrument"
 
 [FacetLanguage]
-desc = "The display name for the Language facet."
 other = "Language"
 
 [FacetLibrary]
-desc = "The display name for the Library facet."
 other = "Library"
 
 [FacetPhotographer]
-desc = "The display name for the Photographer facet."
 other = "Photographer"
 
 [FacetRegion]
-desc = "The display name for the Region facet."
 other = "Geographic Location"
 
 [FacetSeries]
-desc = "The display name for the Series facet."
 other = "Series"
 
 [FacetSource]
-desc = "The display name for the Source facet."
 other = "Source"
 
 [FacetSubject]
-desc = "The display name for the Subject facet."
 other = "Subject"
 
 [FacetVideoFormat]
-desc = "The display name for the Video Format facet."
 other = "Video Format"
 
 [FieldAbbreviatedTitle]
-desc = "The display name for the abbreviated title field in a single item record."
 other = "Abbreviated Title"
 
+[FieldAbstract]
+other = "Abstract"
+
 [FieldAccessURL]
-desc = "The display name for the field that contains a link to an external URL for online access."
 other = "Online Access"
 
 [FieldAccessURLDefaultItemLabelPrefix]
-desc = "The default display label prefix for AccessURL items when the label is otherwise not known."
 other = "Copy"
 
 [FieldAlternateTitle]
-desc = "The display name for the Alternate Title field in a single item record."
-other = "Alternate Title"
+other = "Variant Title"
+
+[FieldArrangement]
+other = "Arrangement"
 
 [FieldAuthor]
-desc = "The display name for the Author field in a single item record."
 other = "Author"
 
+[FieldAuthorCredits]
+other = "Credits"
+
 [FieldAvailability]
-desc = "The display name for the Availability field in a single item record."
 other = "Availability"
 
+[FieldAwards]
+other = "Awards"
+
+[FieldBiographicalNote]
+other = "Biographical Note"
+
 [FieldCallNumber]
-desc = "The display name for the Call Number field in a single item record."
 other = "Call Number"
 
+[FieldCartographicInfo]
+other = "Cartographic Info"
+
 [FieldCollection]
-desc = "The display name for the Collection field in an image record."
 other = "Collection"
 
+[FieldContents]
+other = "Contents"
+
+[FieldDepartment]
+other = "Department"
+
+[FieldDescription]
+other = "Description"
+
 [FieldDetailsURL]
-desc = "The display name for the field that contains a link to an external URL with more details."
 other = "More"
 
+[FieldDigitalCollection]
+other = "Digital Collection"
+
 [FieldDirector]
-desc = "The display name for the Director field in a single item record."
 other = "Director"
 
+[FieldDissertationNote]
+other = "Dissertation Note"
+
+[FieldEdition]
+other = "Edition"
+
+[FieldFindingAidNote]
+other = "Finding Aid Note"
+
 [FieldFormat]
-desc = "The display name for the Format field in a single item record."
 other = "Format"
 
 [FieldGenre]
-desc = "The display name for the Genre field in a single item record."
 other = "Genre"
 
 [FieldISBN]
-desc = "The display name for the ISBN field in a single item record."
 other = "ISBN"
 
 [FieldISSN]
-desc = "The display name for the ISSN field in a single item record."
 other = "ISSN"
 
 [FieldIdentifier]
-desc = "The display name for the Identifier field in a single item record."
 other = "Identifier"
 
+[FieldJournalFrequency]
+other = "Journal Frequency"
+
 [FieldLanguage]
-desc = "The display name for the Language field in a single item record."
 other = "Language"
 
+[FieldLaterTitle]
+other = "Later Title"
+
 [FieldLibrary]
-desc = "The display name for the Library field in a single item record."
 other = "Library"
 
+[FieldLocalNotes]
+other = "Local Notes"
+
+[FieldLocatedIn]
+other = "Located in"
+
 [FieldLocation]
-desc = "The display name for the Location field in a single item record."
 other = "Location"
 
+[FieldLocationOfOriginal]
+other = "Location of Original"
+
 [FieldNote]
-desc = "The display name for the Note field in an image record."
 other = "Notes"
 
+[FieldOriginalVersion]
+other = "Original Version"
+
+[FieldOtherArchivalMaterials]
+other = "Other Archival Materials"
+
+[FieldOtherForms]
+other = "Other Forms"
+
+[FieldPerformers]
+other = "Performers"
+
+[FieldPreviousTitle]
+other = "Previous Title"
+
 [FieldPublicationDate]
-desc = "The display name for the Publication Date field in a single item record."
 other = "Publication Date"
 
+[FieldPublicationHistory]
+other = "Publication History"
+
 [FieldPublicationLocation]
-desc = "The display name for the Publication Location field in a single item record."
 other = "Publication Place"
 
 [FieldPublisher]
-desc = "The display name for the Publisher field in a single item record."
 other = "Publisher"
 
+[FieldRating]
+other = "Rating"
+
+[FieldRecordingInfo]
+other = "Recording Info"
+
 [FieldRegion]
-desc = "The display name for the Region field in a single item record."
 other = "Geographic Location"
 
 [FieldReleaseDate]
-desc = "The display name for the Release Date field in a single item record."
 other = "Release Date"
 
+[FieldReproductionNotes]
+other = "Reproduction Notes"
+
 [FieldRights]
-desc = "The display name for the Rights field in a single item record."
 other = "Rights"
 
 [FieldRightsStatementURI]
-desc = "The display name for the Rights Statement URI field in a single item record."
 other = "Rights Statement"
 
 [FieldRunTime]
-desc = "The display name for the Run Time field in a single item record."
 other = "Run Time"
 
 [FieldSeries]
-desc = "The display name for the Series field in a single item record."
 other = "Series"
 
 [FieldSubject]
-desc = "The display name for the Subject field in a single item record."
 other = "Subject"
 
 [FieldSubjectSummary]
-desc = "The display name for the Subject Summary field in an image record."
 other = "Summary"
 
 [FieldSubtitle]
-desc = "The display name for the Subtitle field in a single item record."
 other = "Subtitle"
 
+[FieldSuDocNumber]
+other = "SuDoc Number"
+
+[FieldTargetAudience]
+other = "Target Audience"
+
+[FieldTermsOfUse]
+other = "Terms of Use"
+
 [FieldTitle]
-desc = "The display name for the Title field in a single item record."
 other = "Title"
 
+[FieldTitleHistoryNote]
+other = "Title History Note"
+
 [FieldUniformTitle]
-desc = "The display name for the Uniform Title field in a single item record."
 other = "Uniform Title"
 
 [FieldWorkIdentifier]
-desc = "The display name for the Work Identifier field in an image record."
 other = "Work Identifier"
 
 [FieldWorkLocation]
-desc = "The display name for the Work Location field in an image record."
 other = "Work Location"
 
 [FieldWorkPhysicalDetails]
-desc = "The display name for the Work Physical Details field in an image record."
 other = "Work Physical Details"
 
 [FieldWorkType]
-desc = "The display name for the Work Type field in an image record."
 other = "Work Type"
 
 [ProviderGetty]
-desc = "The display name for this URL provider."
 other = "Getty Publications Virtual Library"
 
 [ProviderHathiTrust]
-desc = "The display name for this URL provider."
 other = "Hathi Trust Digital Library"
 
 [ProviderKanopy]
-desc = "The display name for this URL provider."
 other = "Kanopy Online Video Collection"
 
 [ProviderLibraETD]
-desc = "The display name for this URL provider."
 other = "Libra Repository"
 
 [ProviderProQuest]
-desc = "The display name for this URL provider."
 other = "ProQuest U.S. Congressional Hearings Digital Collection"
 
 [ProviderSWANK]
-desc = "The display name for this URL provider."
 other = "SWANK Streaming Film Database"
 
 [ProviderSirsi]
-desc = "The display name for this URL provider."
 other = "Library Catalog"
 
 [ProviderVIVADDA]
-desc = "The display name for this URL provider."
 other = "VIVA Demand Driven Acquisition"
 
 [ProviderVirgoClassic]
-desc = "The display name for this URL provider."
 other = "Virgo Classic"
 
 [SortCallNumber]
-desc = "The display name for this sorting option."
 other = "Call Number"
 
 [SortDatePublished]
-desc = "The display name for this sorting option."
 other = "Date Published"
 
 [SortDateReceived]
-desc = "The display name for this sorting option."
 other = "Date Received"
 
 [SortRelevance]
-desc = "The display name for this sorting option."
 other = "Relevance"

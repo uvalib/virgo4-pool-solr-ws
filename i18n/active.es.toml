@@ -1,359 +1,362 @@
-[PoolArchiaalName]
-desc = "The display name for the pool of Solr search results designated as archival."
+[PoolArchivalName]
 other = "Los Archivos"
 
 [PoolArchivalDescription]
-desc = "The detailed description for the Solr pool designated as archival."
 other = "PoolArchivalDescription"
 
 [PoolCatalogName]
-desc = "The display name for the pool of Solr search results designated as the main catalog."
 other = "Libros"
 
 [PoolCatalogDescription]
-desc = "The detailed description for the Solr pool designated as the main catalog."
 other = "PoolCatalogDescription"
 
 [PoolImagesName]
-desc = "The display name for the pool of Solr search results designated as images."
 other = "Imágenes"
 
 [PoolImagesDescription]
-desc = "The detailed description for the Solr pool designated as images."
 other = "PoolImagesDescription"
 
 [PoolMapsName]
-desc = "The display name for the pool of Solr search results designated as maps."
 other = "Mapas"
 
 [PoolMapsDescription]
-desc = "The detailed description for the Solr pool designated as maps."
 other = "PoolMapsDescription"
 
 [PoolMusicRecordingsName]
-desc = "The display name for the pool of Solr search results designated as music recordings."
 other = "Grabaciones Musicales"
 
 [PoolMusicRecordingsDescription]
-desc = "The detailed description for the Solr pool designated as music recordings."
 other = "PoolMusicRecordingsDescription"
 
 [PoolMusicalScoresName]
-desc = "The display name for the pool of Solr search results designated as musical scores."
 other = "Partituras Musicales"
 
 [PoolMusicalScoresDescription]
-desc = "The detailed description for the Solr pool designated as musical scores."
 other = "PoolMusicalScoresDescription"
 
 [PoolSerialsName]
-desc = "The display name for the pool of Solr search results designated as serials."
 other = "Revistas"
 
 [PoolSerialsDescription]
-desc = "The detailed description for the Solr pool designated as serials."
 other = "PoolSerialsDescription"
 
 [PoolSoundRecordingsName]
-desc = "The display name for the pool of Solr search results designated as sound recordings."
 other = "Grabaciones de Sonido"
 
 [PoolSoundRecordingsDescription]
-desc = "The detailed description for the Solr pool designated as sound recordings."
 other = "PoolSoundRecordingsDescription"
 
 [PoolThesisName]
-desc = "The display name for the pool of Solr search results designated as thesis."
 other = "Tesis"
 
 [PoolThesisDescription]
-desc = "The detailed description for the Solr pool designated as thesis."
 other = "PoolThesisDescription"
 
 [PoolVideoName]
-desc = "The display name for the pool of Solr search results designated as video."
 other = "Vídeo"
 
 [PoolVideoDescription]
-desc = "The detailed description for the Solr pool designated as video."
 other = "PoolVideoDescription"
 
 [FacetAuthor]
-desc = "The display name for the Author facet."
 other = "Autor"
 
 [FacetAvailability]
-desc = "The display name for the Availability facet."
 other = "Disponibilidad"
 
 [FacetCallNumberRange]
-desc = "The display name for the Call Number Range facet."
 other = "Rango de Número de Llamada"
 
 [FacetCirculating]
-desc = "The display name for the Circulating facet."
 other = "FacetCirculating"
 
 [FacetCollection]
-desc = "The display name for the Collection facet."
 other = "Colección"
 
 [FacetComposer]
-desc = "The display name for the Composer facet."
 other = "Compositor"
 
 [FacetCompositionEra]
-desc = "The display name for the Composition Era facet."
 other = "Era de Composición"
 
 [FacetDate]
-desc = "The display name for the Date facet."
 other = "Fecha"
 
 [FacetDepartment]
-desc = "The display name for the Department facet."
 other = "Departamento"
 
 [FacetFormat]
-desc = "The display name for the Format facet."
 other = "Formato"
 
 [FacetGenre]
-desc = "The display name for the Genre facet."
 other = "Género"
 
 [FacetInstrument]
-desc = "The display name for the Instrument facet."
 other = "Instrumento"
 
 [FacetLanguage]
-desc = "The display name for the Language facet."
 other = "Idioma"
 
 [FacetLibrary]
-desc = "The display name for the Library facet."
 other = "Biblioteca"
 
 [FacetPhotographer]
-desc = "The display name for the Photographer facet."
 other = "Fotógrafo"
 
 [FacetRegion]
-desc = "The display name for the Region facet."
 other = "Ubicación Geográfica"
 
 [FacetSeries]
-desc = "The display name for the Series facet."
 other = "Serie"
 
 [FacetSource]
-desc = "The display name for the Source facet."
 other = "Fuente"
 
 [FacetSubject]
-desc = "The display name for the Subject facet."
 other = "Sujeto"
 
 [FacetVideoFormat]
-desc = "The display name for the Video Format facet."
 other = "Formato de Video"
 
 [FieldAbbreviatedTitle]
-desc = "The display name for the abbreviated title field in a single item record."
 other = "Título abreviado"
 
-[FieldAlternateTitle]
-desc = "The display name for the Alternate Title field in a single item record."
-other = "Título alternativo"
+[FieldAbstract]
+other = "Abstracto"
 
 [FieldAccessURL]
-desc = "The display name for the field that contains a link to an external URL for online access."
 other = "Acceda en Línea"
 
 [FieldAccessURLDefaultItemLabelPrefix]
-desc = "The default display label prefix for AccessURL items when the label is otherwise not known."
 other = "Copia"
 
+[FieldAlternateTitle]
+other = "Título Variante"
+
+[FieldArrangement]
+other = "Arreglo"
+
 [FieldAuthor]
-desc = "The display name for the Author field in a single item record."
 other = "Autor"
 
+[FieldAuthorCredits]
+other = "Créditos"
+
 [FieldAvailability]
-desc = "The display name for the Availability field in a single item record."
 other = "Disponibilidad"
 
+[FieldAwards]
+other = "Premios"
+
+[FieldBiographicalNote]
+other = "Nota Biográfica"
+
 [FieldCallNumber]
-desc = "The display name for the Call Number field in a single item record."
 other = "Número de Llamada"
 
+[FieldCartographicInfo]
+other = "Información Cartográfica"
+
 [FieldCollection]
-desc = "The display name for the Collection field in an image record."
 other = "Colección"
 
+[FieldContents]
+other = "Contenido"
+
+[FieldDepartment]
+other = "Departamento"
+
+[FieldDescription]
+other = "Descripción"
+
 [FieldDetailsURL]
-desc = "The display name for the field that contains a link to an external URL with more details."
 other = "Más"
 
+[FieldDigitalCollection]
+other = "Colección Digital"
+
 [FieldDirector]
-desc = "The display name for the Director field in a single item record."
 other = "Director"
 
+[FieldDissertationNote]
+other = "Nota de Disertación"
+
+[FieldEdition]
+other = "Edición"
+
+[FieldFindingAidNote]
+other = "Encontrar Nota de Ayuda"
+
 [FieldFormat]
-desc = "The display name for the Format field in a single item record."
 other = "Formato"
 
 [FieldGenre]
-desc = "The display name for the Genre field in a single item record."
 other = "Género"
 
 [FieldISBN]
-desc = "The display name for the ISBN field in a single item record."
 other = "ISBN"
 
 [FieldISSN]
-desc = "The display name for the ISSN field in a single item record."
 other = "ISSN"
 
 [FieldIdentifier]
-desc = "The display name for the Identifier field in a single item record."
 other = "Identificador"
 
+[FieldJournalFrequency]
+other = "Frecuencia de Diario"
+
 [FieldLanguage]
-desc = "The display name for the Language field in a single item record."
 other = "Idioma"
 
+[FieldLaterTitle]
+other = "Título Posterior"
+
 [FieldLibrary]
-desc = "The display name for the Library field in a single item record."
 other = "Biblioteca"
 
+[FieldLocalNotes]
+other = "Notas Locales"
+
+[FieldLocatedIn]
+other = "Situado en"
+
 [FieldLocation]
-desc = "The display name for the Location field in a single item record."
 other = "Ubicación"
 
+[FieldLocationOfOriginal]
+other = "Ubicación del Original"
+
 [FieldNote]
-desc = "The display name for the Note field in an image record."
 other = "Notas"
 
+[FieldOriginalVersion]
+other = "Versión original"
+
+[FieldOtherArchivalMaterials]
+other = "Otros Materiales de Archivo"
+
+[FieldOtherForms]
+other = "Otras Formas"
+
+[FieldPerformers]
+other = "Artistas Intérpretes o Ejecutantes"
+
+[FieldPreviousTitle]
+other = "Título Anterior"
+
 [FieldPublicationDate]
-desc = "The display name for the Publication Date field in a single item record."
 other = "Fecha de Publicación"
 
+[FieldPublicationHistory]
+other = "Historia de Publicaciones"
+
 [FieldPublicationLocation]
-desc = "The display name for the Publication Location field in a single item record."
 other = "Lugar de Publicación"
 
 [FieldPublisher]
-desc = "The display name for the Publisher field in a single item record."
 other = "Editor"
 
+[FieldRating]
+other = "Clasificación"
+
+[FieldRecordingInfo]
+other = "Información de Grabación"
+
 [FieldRegion]
-desc = "The display name for the Region field in a single item record."
 other = "Ubicación Geográfica"
 
 [FieldReleaseDate]
-desc = "The display name for the Release Date field in a single item record."
 other = "Fecha de Lanzamiento"
 
+[FieldReproductionNotes]
+other = "Notas de Reproducción"
+
 [FieldRights]
-desc = "The display name for the Rights field in a single item record."
 other = "Derechos"
 
 [FieldRightsStatementURI]
-desc = "The display name for the Rights Statement URI field in a single item record."
 other = "Rights Statement (derechos estandarizadas)"
 
 [FieldRunTime]
-desc = "The display name for the Run Time field in a single item record."
 other = "tiempo de ejecución"
 
 [FieldSeries]
-desc = "The display name for the Series field in a single item record."
 other = "Serie"
 
 [FieldSubject]
-desc = "The display name for the Subject field in a single item record."
 other = "Tema"
 
 [FieldSubjectSummary]
-desc = "The display name for the Subject Summary field in an image record."
 other = "Resumen"
 
 [FieldSubtitle]
-desc = "The display name for the Subtitle field in a single item record."
 other = "Subtítulo"
 
+[FieldSuDocNumber]
+other = "Número de SuDoc"
+
+[FieldTargetAudience]
+other = "Público Objetivo"
+
+[FieldTermsOfUse]
+other = "Términos de Uso"
+
 [FieldTitle]
-desc = "The display name for the Title field in a single item record."
 other = "Título"
 
+[FieldTitleHistoryNote]
+other = "Nota de Historia del Título"
+
 [FieldUniformTitle]
-desc = "The display name for the Uniform Title field in a single item record."
 other = "título uniforme"
 
 [FieldWorkIdentifier]
-desc = "The display name for the Work Identifier field in an image record."
 other = "Identificador de Trabajo"
 
 [FieldWorkLocation]
-desc = "The display name for the Work Location field in an image record."
 other = "Ubicación de Trabajo"
 
 [FieldWorkPhysicalDetails]
-desc = "The display name for the Work Physical Details field in an image record."
 other = "Detalles Físicos del Trabajo"
 
 [FieldWorkType]
-desc = "The display name for the Work Type field in an image record."
 other = "Tipo de Trabajo"
 
 [ProviderGetty]
-desc = "The display name for this URL provider."
 other = "Getty Publications Virtual Library"
 
 [ProviderHathiTrust]
-desc = "The display name for this URL provider."
 other = "Hathi Trust Digital Library"
 
 [ProviderKanopy]
-desc = "The display name for this URL provider."
 other = "Kanopy Online Video Collection"
 
 [ProviderLibraETD]
-desc = "The display name for this URL provider."
 other = "Libra Repository"
 
 [ProviderProQuest]
-desc = "The display name for this URL provider."
 other = "ProQuest U.S. Congressional Hearings Digital Collection"
 
 [ProviderSWANK]
-desc = "The display name for this URL provider."
 other = "SWANK Streaming Film Database"
 
 [ProviderSirsi]
-desc = "The display name for this URL provider."
 other = "Library Catalog"
 
 [ProviderVIVADDA]
-desc = "The display name for this URL provider."
 other = "VIVA Demand Driven Acquisition"
 
 [ProviderVirgoClassic]
-desc = "The display name for this URL provider."
 other = "Virgo Classic"
 
 [SortCallNumber]
-desc = "The display name for this sorting option."
 other = "Número de Llamada"
 
 [SortDatePublished]
-desc = "The display name for this sorting option."
 other = "Fecha de Publicación"
 
 [SortDateReceived]
-desc = "The display name for this sorting option."
 other = "Fecha de Recepción"
 
 [SortRelevance]
-desc = "The display name for this sorting option."
 other = "Relevancia"
