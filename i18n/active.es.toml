@@ -322,6 +322,9 @@ other = "Detalles Físicos del Trabajo"
 [FieldWorkType]
 other = "Tipo de Trabajo"
 
+[ProviderDataverse]
+other = "Libra Repository"
+
 [ProviderGetty]
 other = "Getty Publications Virtual Library"
 
@@ -332,6 +335,9 @@ other = "Hathi Trust Digital Library"
 other = "Kanopy Online Video Collection"
 
 [ProviderLibraETD]
+other = "Libra Repository"
+
+[ProviderLibraOC]
 other = "Libra Repository"
 
 [ProviderProQuest]
