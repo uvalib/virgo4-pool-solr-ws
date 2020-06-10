@@ -264,10 +264,15 @@ type poolConfigMappingsDefinitions struct {
 	Sorts  []poolConfigSort  `json:"sorts,omitempty"`
 }
 
+type poolConfigMappingsConfiguredFields struct {
+	Basic    []string `json:"basic,omitempty"`
+	Detailed []string `json:"detailed,omitempty"`
+}
+
 type poolConfigMappingsConfigured struct {
-	FieldNames []string `json:"field_names,omitempty"`
-	FacetXIDs  []string `json:"facet_xids,omitempty"`
-	SortXIDs   []string `json:"sort_xids,omitempty"`
+	FieldNames poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
+	FacetXIDs  []string                           `json:"facet_xids,omitempty"`
+	SortXIDs   []string                           `json:"sort_xids,omitempty"`
 }
 
 type poolConfigMappings struct {

@@ -756,25 +756,56 @@ func (p *poolContext) initMappings() {
 		fieldMap[fieldDef.Name] = fieldDef
 	}
 
-	// build list of unique fields by name
-	fieldNames := append(p.config.Global.Mappings.Configured.FieldNames, p.config.Local.Mappings.Configured.FieldNames...)
-	fieldNamesSeen := make(map[string]bool)
-	for _, fieldName := range fieldNames {
-		if fieldNamesSeen[fieldName] == true {
+	// build list of unique basic fields by name
+	basicFieldNames := append(p.config.Global.Mappings.Configured.FieldNames.Basic, p.config.Local.Mappings.Configured.FieldNames.Basic...)
+	basicFieldNamesSeen := make(map[string]bool)
+	for _, basicFieldName := range basicFieldNames {
+		if basicFieldNamesSeen[basicFieldName] == true {
 			continue
 		}
 
-		fieldDef := fieldMap[fieldName]
+		basicFieldDef := fieldMap[basicFieldName]
 
-		if fieldDef == nil {
-			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
+		if basicFieldDef == nil {
+			log.Printf("[INIT] unrecognized basic field name: [%s]", basicFieldName)
 			invalid = true
 			continue
 		}
 
-		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *fieldDef)
+		basicFieldDef.Properties.Visibility = ""
 
-		fieldNamesSeen[fieldName] = true
+		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *basicFieldDef)
+
+		basicFieldNamesSeen[basicFieldName] = true
+	}
+
+	// build list of unique detailed fields by name
+	detailedFieldNames := append(p.config.Global.Mappings.Configured.FieldNames.Detailed, p.config.Local.Mappings.Configured.FieldNames.Detailed...)
+	detailedFieldNamesSeen := make(map[string]bool)
+	for _, detailedFieldName := range detailedFieldNames {
+		if basicFieldNamesSeen[detailedFieldName] == true {
+			log.Printf("[INIT] field exists in both basic and detailed lists: [%s]", detailedFieldName)
+			invalid = true
+			continue
+		}
+
+		if detailedFieldNamesSeen[detailedFieldName] == true {
+			continue
+		}
+
+		detailedFieldDef := fieldMap[detailedFieldName]
+
+		if detailedFieldDef == nil {
+			log.Printf("[INIT] unrecognized detailed field name: [%s]", detailedFieldName)
+			invalid = true
+			continue
+		}
+
+		detailedFieldDef.Properties.Visibility = "detailed"
+
+		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *detailedFieldDef)
+
+		detailedFieldNamesSeen[detailedFieldName] = true
 	}
 
 	// create mapping from sort XIDs to sort definitions, allowing local overrides
