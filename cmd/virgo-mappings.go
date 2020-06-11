@@ -187,9 +187,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	// field loop
 
 	for _, field := range s.pool.config.Mappings.Definitions.Fields {
-		if field.Properties.Visibility == "detailed" && s.itemDetails == false {
-			continue
-		}
+		/*
+			if field.Properties.Visibility == "detailed" && s.itemDetails == false {
+				continue
+			}
+		*/
 
 		if field.DetailsOnly == true && s.itemDetails == false {
 			continue

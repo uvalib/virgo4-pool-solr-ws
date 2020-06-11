@@ -74,6 +74,7 @@ type solrResponseHeader struct {
 }
 
 type solrDocument struct {
+	APlaceholderField           []string `json:"placeholder_a,omitempty"`
 	AlternateID                 []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability            []string `json:"anon_availability_a,omitempty"`
 	Author                      []string `json:"author_facet_a,omitempty"`
@@ -156,6 +157,7 @@ type solrDocument struct {
 	URLIIIFImage                []string `json:"url_iiif_image_a,omitempty"`
 	URLIIIFManifest             []string `json:"url_iiif_manifest_a,omitempty"`
 	URLLabel                    []string `json:"url_label_a,omitempty"`
+	URLSupplemental             []string `json:"url_supp_a,omitempty"`
 	UVAAvailability             []string `json:"uva_availability_a,omitempty"`
 	WorkIdentifier              []string `json:"workIdentifier_a,omitempty"`
 	WorkLocation                []string `json:"workLocation_a,omitempty"`

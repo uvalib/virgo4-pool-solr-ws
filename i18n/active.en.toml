@@ -124,6 +124,9 @@ other = "Abbreviated Title"
 [FieldAbstract]
 other = "Abstract"
 
+[FieldAccessRestriction]
+other = "Access Restriction"
+
 [FieldAccessURL]
 other = "Online Access"
 
@@ -157,11 +160,23 @@ other = "Call Number"
 [FieldCartographicInfo]
 other = "Cartographic Info"
 
+[FieldCiteAs]
+other = "Cite as"
+
+[FieldCitedIn]
+other = "Cited in"
+
 [FieldCollection]
 other = "Collection"
 
 [FieldContents]
 other = "Contents"
+
+[FieldCopyright]
+other = "Copyright & Permissions"
+
+[FieldDateIndexed]
+other = "Date Indexed"
 
 [FieldDepartment]
 other = "Department"
@@ -204,6 +219,9 @@ other = "Identifier"
 
 [FieldJournalFrequency]
 other = "Journal Frequency"
+
+[FieldLabelNumber]
+other = "Label no."
 
 [FieldLanguage]
 other = "Language"
@@ -256,6 +274,12 @@ other = "Publication Place"
 [FieldPublisher]
 other = "Publisher"
 
+[FieldPublisherNumber]
+other = "Publisher no."
+
+[FieldPublisherPlateNumber]
+other = "Publisher/plate no."
+
 [FieldRating]
 other = "Rating"
 
@@ -264,6 +288,12 @@ other = "Recording Info"
 
 [FieldRegion]
 other = "Geographic Location"
+
+[FieldRelatedResources]
+other = "Related Resources"
+
+[FieldRelatedTitle]
+other = "Related Title"
 
 [FieldReleaseDate]
 other = "Release Date"

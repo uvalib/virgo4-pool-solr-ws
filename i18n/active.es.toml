@@ -124,6 +124,9 @@ other = "Título abreviado"
 [FieldAbstract]
 other = "Abstracto"
 
+[FieldAccessRestriction]
+other = "Restricción de Acceso"
+
 [FieldAccessURL]
 other = "Acceda en Línea"
 
@@ -157,11 +160,23 @@ other = "Número de Llamada"
 [FieldCartographicInfo]
 other = "Información Cartográfica"
 
+[FieldCiteAs]
+other = "Citar como"
+
+[FieldCitedIn]
+other = "Citado en"
+
 [FieldCollection]
 other = "Colección"
 
 [FieldContents]
 other = "Contenido"
+
+[FieldCopyright]
+other = "Copyright y Permisos"
+
+[FieldDateIndexed]
+other = "Fecha Indexada"
 
 [FieldDepartment]
 other = "Departamento"
@@ -204,6 +219,9 @@ other = "Identificador"
 
 [FieldJournalFrequency]
 other = "Frecuencia de Diario"
+
+[FieldLabelNumber]
+other = "Etiqueta no."
 
 [FieldLanguage]
 other = "Idioma"
@@ -256,6 +274,12 @@ other = "Lugar de Publicación"
 [FieldPublisher]
 other = "Editor"
 
+[FieldPublisherNumber]
+other = "Editorial no."
+
+[FieldPublisherPlateNumber]
+other = "Editorial/placa no."
+
 [FieldRating]
 other = "Clasificación"
 
@@ -264,6 +288,12 @@ other = "Información de Grabación"
 
 [FieldRegion]
 other = "Ubicación Geográfica"
+
+[FieldRelatedResources]
+other = "Recursos Relacionados"
+
+[FieldRelatedTitle]
+other = "Título Relacionado"
 
 [FieldReleaseDate]
 other = "Fecha de Lanzamiento"
