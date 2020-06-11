@@ -73,8 +73,8 @@ other = "FacetCirculating"
 [FacetCollection]
 other = "Colección"
 
-[FacetComposer]
-other = "Compositor"
+[FacetComposerPerformer]
+other = "Compositor/Intérprete"
 
 [FacetCompositionEra]
 other = "Era de Composición"
@@ -142,9 +142,6 @@ other = "Arreglo"
 [FieldAuthor]
 other = "Autor"
 
-[FieldAuthorCredits]
-other = "Créditos"
-
 [FieldAvailability]
 other = "Disponibilidad"
 
@@ -169,11 +166,17 @@ other = "Citado en"
 [FieldCollection]
 other = "Colección"
 
+[FieldComposerPerformer]
+other = "Compositor/Intérprete"
+
 [FieldContents]
 other = "Contenido"
 
 [FieldCopyright]
 other = "Copyright y Permisos"
+
+[FieldCredits]
+other = "Créditos"
 
 [FieldDateIndexed]
 other = "Fecha Indexada"
@@ -217,9 +220,6 @@ other = "ISSN"
 [FieldIdentifier]
 other = "Identificador"
 
-[FieldJournalFrequency]
-other = "Frecuencia de Diario"
-
 [FieldLabelNumber]
 other = "Etiqueta no."
 
@@ -244,8 +244,14 @@ other = "Ubicación"
 [FieldLocationOfOriginal]
 other = "Ubicación del Original"
 
-[FieldNote]
+[FieldNotes]
 other = "Notas"
+
+[FieldOnlineRelated]
+other = "Relacionado en Línea"
+
+[FieldOnlineVersion]
+other = "Versión en Línea"
 
 [FieldOriginalVersion]
 other = "Versión original"
@@ -264,6 +270,9 @@ other = "Título Anterior"
 
 [FieldPublicationDate]
 other = "Fecha de Publicación"
+
+[FieldPublicationFrequency]
+other = "Frecuencia de Diario"
 
 [FieldPublicationHistory]
 other = "Historia de Publicaciones"
@@ -313,6 +322,9 @@ other = "tiempo de ejecución"
 [FieldSeries]
 other = "Serie"
 
+[FieldSeriesStatement]
+other = "Declaración de la Serie"
+
 [FieldSubject]
 other = "Tema"
 
@@ -337,8 +349,11 @@ other = "Título"
 [FieldTitleHistoryNote]
 other = "Nota de Historia del Título"
 
+[FieldTracks]
+other = "Pistas"
+
 [FieldUniformTitle]
-other = "título uniforme"
+other = "Título Uniforme"
 
 [FieldWorkIdentifier]
 other = "Identificador de Trabajo"

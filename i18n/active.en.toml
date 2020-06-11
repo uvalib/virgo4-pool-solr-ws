@@ -73,8 +73,8 @@ other = "Hide items limited to in-Library use"
 [FacetCollection]
 other = "Collection"
 
-[FacetComposer]
-other = "Composer"
+[FacetComposerPerformer]
+other = "Composer/Performer"
 
 [FacetCompositionEra]
 other = "Composition Era"
@@ -142,9 +142,6 @@ other = "Arrangement"
 [FieldAuthor]
 other = "Author"
 
-[FieldAuthorCredits]
-other = "Credits"
-
 [FieldAvailability]
 other = "Availability"
 
@@ -169,11 +166,17 @@ other = "Cited in"
 [FieldCollection]
 other = "Collection"
 
+[FieldComposerPerformer]
+other = "Composer/Performer"
+
 [FieldContents]
 other = "Contents"
 
 [FieldCopyright]
 other = "Copyright & Permissions"
+
+[FieldCredits]
+other = "Credits"
 
 [FieldDateIndexed]
 other = "Date Indexed"
@@ -217,9 +220,6 @@ other = "ISSN"
 [FieldIdentifier]
 other = "Identifier"
 
-[FieldJournalFrequency]
-other = "Journal Frequency"
-
 [FieldLabelNumber]
 other = "Label no."
 
@@ -244,8 +244,14 @@ other = "Location"
 [FieldLocationOfOriginal]
 other = "Location of Original"
 
-[FieldNote]
+[FieldNotes]
 other = "Notes"
+
+[FieldOnlineRelated]
+other = "Online Related"
+
+[FieldOnlineVersion]
+other = "Online Version"
 
 [FieldOriginalVersion]
 other = "Original Version"
@@ -264,6 +270,9 @@ other = "Previous Title"
 
 [FieldPublicationDate]
 other = "Publication Date"
+
+[FieldPublicationFrequency]
+other = "Journal Frequency"
 
 [FieldPublicationHistory]
 other = "Publication History"
@@ -313,6 +322,9 @@ other = "Run Time"
 [FieldSeries]
 other = "Series"
 
+[FieldSeriesStatement]
+other = "Series Statement"
+
 [FieldSubject]
 other = "Subject"
 
@@ -336,6 +348,9 @@ other = "Title"
 
 [FieldTitleHistoryNote]
 other = "Title History Note"
+
+[FieldTracks]
+other = "Tracks"
 
 [FieldUniformTitle]
 other = "Uniform Title"
