@@ -78,7 +78,8 @@ type solrDocument struct {
 	Advisor                     []string `json:"creator_a,omitempty"`
 	AlternateID                 []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability            []string `json:"anon_availability_a,omitempty"`
-	Author                      []string `json:"author_facet_a,omitempty"`
+	Author                      []string `json:"author_a,omitempty"`
+	AuthorFacet                 []string `json:"author_facet_a,omitempty"`
 	AuthorAddedEntry            []string `json:"author_added_entry_a,omitempty"`
 	AuthorCredits               []string `json:"author_credits_a,omitempty"`
 	AwardsNote                  []string `json:"awards_note_a,omitempty"`

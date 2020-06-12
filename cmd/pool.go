@@ -522,21 +522,6 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
 
-			case "full_title_with_edition":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.FullTitleWithEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.FullTitleWithEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
-
 			case "pdf_download_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
@@ -585,21 +570,6 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomInfo.RISAuthors.AuthorField, fmt.Sprintf("%s section author field", field.Name))
 
-			case "ris_full_title_with_edition":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.RISFullTitleWithEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.RISFullTitleWithEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
-
 			case "ris_type":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
@@ -635,21 +605,6 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
 
-			case "subtitle_with_edition":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.SubtitleWithEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.SubtitleWithEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
-
 			case "thumbnail_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
@@ -664,6 +619,22 @@ func (p *poolContext) validateConfig() {
 				}
 
 				solrFields.requireValue(field.CustomInfo.ThumbnailURL.URLField, fmt.Sprintf("%s section url field", field.Name))
+
+			case "title_subtitle_edition":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.TitleSubtitleEdition == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
 
 			default:
 				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", i, field.Name)

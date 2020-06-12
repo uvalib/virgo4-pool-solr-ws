@@ -152,23 +152,22 @@ type poolConfigFieldTypePublisherName struct {
 	AlternateField string `json:"alternate_field,omitempty"`
 }
 
-type poolConfigFieldTypeFieldWithEdition struct {
-	EditionField string `json:"edition_field,omitempty"`
+type poolConfigFieldTypeTitleSubtitleEdition struct {
+	SubtitleField string `json:"subtitle_field,omitempty"`
+	EditionField  string `json:"edition_field,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {
-	AccessURL               *poolConfigFieldTypeAccessURL         `json:"access_url,omitempty"`
-	CoverImageURL           *poolConfigFieldTypeCoverImageURL     `json:"cover_image_url,omitempty"`
-	DigitalContentURL       *poolConfigFieldTypeDigitalContentURL `json:"digital_content_url,omitempty"`
-	FullTitleWithEdition    *poolConfigFieldTypeFieldWithEdition  `json:"full_title_with_edition,omitempty"`
-	PdfDownloadURL          *poolConfigFieldTypePdfDownloadURL    `json:"pdf_download_url,omitempty"`
-	PublisherName           *poolConfigFieldTypePublisherName     `json:"publisher_name,omitempty"`
-	RISFullTitleWithEdition *poolConfigFieldTypeFieldWithEdition  `json:"ris_full_title_with_edition,omitempty"`
-	RISType                 *poolConfigFieldTypeRISType           `json:"ris_type,omitempty"`
-	RISAuthors              *poolConfigFieldTypeRISAuthors        `json:"ris_authors,omitempty"`
-	SirsiURL                *poolConfigFieldTypeSirsiURL          `json:"sirsi_url,omitempty"`
-	SubtitleWithEdition     *poolConfigFieldTypeFieldWithEdition  `json:"subtitle_with_edition,omitempty"`
-	ThumbnailURL            *poolConfigFieldTypeThumbnailURL      `json:"thumbnail_url,omitempty"`
+	AccessURL            *poolConfigFieldTypeAccessURL            `json:"access_url,omitempty"`
+	CoverImageURL        *poolConfigFieldTypeCoverImageURL        `json:"cover_image_url,omitempty"`
+	DigitalContentURL    *poolConfigFieldTypeDigitalContentURL    `json:"digital_content_url,omitempty"`
+	PdfDownloadURL       *poolConfigFieldTypePdfDownloadURL       `json:"pdf_download_url,omitempty"`
+	PublisherName        *poolConfigFieldTypePublisherName        `json:"publisher_name,omitempty"`
+	RISType              *poolConfigFieldTypeRISType              `json:"ris_type,omitempty"`
+	RISAuthors           *poolConfigFieldTypeRISAuthors           `json:"ris_authors,omitempty"`
+	SirsiURL             *poolConfigFieldTypeSirsiURL             `json:"sirsi_url,omitempty"`
+	ThumbnailURL         *poolConfigFieldTypeThumbnailURL         `json:"thumbnail_url,omitempty"`
+	TitleSubtitleEdition *poolConfigFieldTypeTitleSubtitleEdition `json:"title_subtitle_edition,omitempty"`
 }
 
 type poolConfigField struct {

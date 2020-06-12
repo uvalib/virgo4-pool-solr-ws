@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	//	"github.com/igorsobreira/titlecase"
+	"github.com/igorsobreira/titlecase"
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
@@ -281,46 +281,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.addField(f)
 				}
 
-			case "full_title_with_edition":
-				fullTitleValue := firstElementOf(doc.getValuesByTag(field.Field))
-				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.FullTitleWithEdition.EditionField))
-
-				fullTitle := fullTitleValue
-				if editionValue != "" {
-					fullTitle = fullTitle + "  " + editionValue
-				}
-
-				f.Value = fullTitle
-				r.addField(f)
-
-			case "published_location":
-				fieldValues := doc.getValuesByTag(field.Field)
-
-				if len(fieldValues) == 0 {
-					fieldValues = s.getPublishedLocation(doc)
-				}
-
-				for _, fieldValue := range fieldValues {
-					f.Value = fieldValue
-					r.addField(f)
-				}
-
-			case "publisher_name":
-				fieldValues := doc.getValuesByTag(field.Field)
-
-				if len(fieldValues) == 0 {
-					fieldValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
-				}
-
-				if len(fieldValues) == 0 {
-					fieldValues = s.getPublisherName(doc)
-				}
-
-				for _, fieldValue := range fieldValues {
-					f.Value = fieldValue
-					r.addField(f)
-				}
-
 			case "pdf_download_url":
 				pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
 
@@ -352,6 +312,34 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					}
 				}
 
+			case "published_location":
+				fieldValues := doc.getValuesByTag(field.Field)
+
+				if len(fieldValues) == 0 {
+					fieldValues = s.getPublishedLocation(doc)
+				}
+
+				for _, fieldValue := range fieldValues {
+					f.Value = fieldValue
+					r.addField(f)
+				}
+
+			case "publisher_name":
+				fieldValues := doc.getValuesByTag(field.Field)
+
+				if len(fieldValues) == 0 {
+					fieldValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
+				}
+
+				if len(fieldValues) == 0 {
+					fieldValues = s.getPublisherName(doc)
+				}
+
+				for _, fieldValue := range fieldValues {
+					f.Value = fieldValue
+					r.addField(f)
+				}
+
 			case "ris_authors":
 				authorValues := doc.getValuesByTag(field.CustomInfo.RISAuthors.AuthorField)
 
@@ -366,18 +354,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 					r.addField(f)
 				}
-
-			case "ris_full_title_with_edition":
-				fullTitleValue := firstElementOf(doc.getValuesByTag(field.Field))
-				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.RISFullTitleWithEdition.EditionField))
-
-				fullTitle := fullTitleValue
-				if editionValue != "" {
-					fullTitle = fullTitle + "  " + editionValue
-				}
-
-				f.Value = fullTitle
-				r.addField(f)
 
 			case "ris_type":
 				formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
@@ -396,21 +372,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					}
 				}
 
-			case "subtitle_with_edition":
-				subtitleValue := firstElementOf(doc.getValuesByTag(field.Field))
-				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SubtitleWithEdition.EditionField))
-
-				subtitle := subtitleValue
-				if editionValue != "" {
-					if subtitle != "" {
-						subtitle = subtitle + "  "
-					}
-					subtitle = subtitle + editionValue
-				}
-
-				f.Value = subtitle
-				r.addField(f)
-
 			case "thumbnail_url":
 				urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)
 
@@ -422,6 +383,28 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 						}
 					}
 				}
+
+			case "title_subtitle_edition":
+				titleValue := firstElementOf(doc.getValuesByTag(field.Field))
+				subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
+				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
+
+				fullTitle := titlecase.Title(titleValue)
+
+				if subtitleValue != "" {
+					fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitleValue))
+				}
+
+				if editionValue != "" {
+					if strings.HasPrefix(editionValue, "(") && strings.HasSuffix(editionValue, ")") {
+						fullTitle = fmt.Sprintf("%s %s", fullTitle, editionValue)
+					} else {
+						fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
+					}
+				}
+
+				f.Value = fullTitle
+				r.addField(f)
 
 			}
 		} else {
