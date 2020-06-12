@@ -145,8 +145,8 @@ other = "Author"
 [FieldAvailability]
 other = "Availability"
 
-[FieldAwards]
-other = "Awards"
+[FieldAwardsNote]
+other = "Awards Note"
 
 [FieldBiographicalNote]
 other = "Biographical Note"
@@ -342,6 +342,9 @@ other = "Target Audience"
 
 [FieldTermsOfUse]
 other = "Terms of Use"
+
+[FieldTermsOfUseOnline]
+other = "Terms of Use (Online)"
 
 [FieldTitle]
 other = "Title"

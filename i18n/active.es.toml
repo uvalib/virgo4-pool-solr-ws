@@ -145,8 +145,8 @@ other = "Autor"
 [FieldAvailability]
 other = "Disponibilidad"
 
-[FieldAwards]
-other = "Premios"
+[FieldAwardsNote]
+other = "Nota de Premios"
 
 [FieldBiographicalNote]
 other = "Nota Biográfica"
@@ -342,6 +342,9 @@ other = "Público Objetivo"
 
 [FieldTermsOfUse]
 other = "Términos de Uso"
+
+[FieldTermsOfUseOnline]
+other = "Términos de Uso (en Línea)"
 
 [FieldTitle]
 other = "Título"
