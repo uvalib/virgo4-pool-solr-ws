@@ -133,6 +133,9 @@ other = "Acceda en Línea"
 [FieldAccessURLDefaultItemLabelPrefix]
 other = "Copia"
 
+[FieldAdvisor]
+other = "Tutor"
+
 [FieldAlternateTitle]
 other = "Título Variante"
 
@@ -172,6 +175,9 @@ other = "Compositor/Intérprete"
 [FieldContents]
 other = "Contenido"
 
+[FieldContributor]
+other = "Contribuyente"
+
 [FieldCopyright]
 other = "Copyright y Permisos"
 
@@ -180,6 +186,9 @@ other = "Créditos"
 
 [FieldDateIndexed]
 other = "Fecha Indexada"
+
+[FieldDegree]
+other = "La Licenciatura"
 
 [FieldDepartment]
 other = "Departamento"
@@ -210,6 +219,9 @@ other = "Formato"
 
 [FieldGenre]
 other = "Género"
+
+[FieldGrantInformation]
+other = "Información de Subvención"
 
 [FieldISBN]
 other = "ISBN"
@@ -324,6 +336,9 @@ other = "Serie"
 
 [FieldSeriesStatement]
 other = "Declaración de la Serie"
+
+[FieldSponsoringAgency]
+other = "Agencia Patrocinadora"
 
 [FieldSubject]
 other = "Tema"

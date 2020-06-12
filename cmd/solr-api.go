@@ -75,6 +75,7 @@ type solrResponseHeader struct {
 
 type solrDocument struct {
 	APlaceholderField           []string `json:"placeholder_a,omitempty"`
+	Advisor                     []string `json:"creator_a,omitempty"`
 	AlternateID                 []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability            []string `json:"anon_availability_a,omitempty"`
 	Author                      []string `json:"author_facet_a,omitempty"`
@@ -86,7 +87,9 @@ type solrDocument struct {
 	CallNumberSort              string   `json:"call_number_sort,omitempty"`
 	CartographicMath            []string `json:"cartographic_math_a,omitempty"`
 	Collection                  []string `json:"collection_a,omitempty"`
+	Contributor                 []string `json:"contributor_a,omitempty"`
 	DataSource                  []string `json:"data_source_a,omitempty"`
+	Degree                      []string `json:"degree_a,omitempty"`
 	Department                  []string `json:"department_a,omitempty"`
 	Description                 []string `json:"description_a,omitempty"`
 	DigitalCollection           []string `json:"digital_collection_a,omitempty"`
@@ -99,6 +102,7 @@ type solrDocument struct {
 	FullRecord                  string   `json:"fullrecord,omitempty"`
 	FullTitle                   []string `json:"full_title_a,omitempty"`
 	Genre                       []string `json:"topic_form_genre_a,omitempty"`
+	GrantInformation            []string `json:"grant_info_a,omitempty"`
 	ID                          string   `json:"id,omitempty"`
 	ISBN                        []string `json:"isbn_a,omitempty"`
 	ISSN                        []string `json:"issn_a,omitempty"`
@@ -136,6 +140,7 @@ type solrDocument struct {
 	RunTime                     []string `json:"video_run_time_a,omitempty"`
 	Score                       float32  `json:"score,omitempty"`
 	Series                      []string `json:"title_series_a,omitempty"`
+	SponsoringAgency            []string `json:"sponsoring_agency_a,omitempty"`
 	Subject                     []string `json:"subject_a,omitempty"`
 	SubjectAbstract             []string `json:"subject_abstract_a,omitempty"`
 	SubjectSummary              []string `json:"subject_summary_a,omitempty"`

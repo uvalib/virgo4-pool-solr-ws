@@ -133,6 +133,9 @@ other = "Online Access"
 [FieldAccessURLDefaultItemLabelPrefix]
 other = "Copy"
 
+[FieldAdvisor]
+other = "Advisor"
+
 [FieldAlternateTitle]
 other = "Variant Title"
 
@@ -172,6 +175,9 @@ other = "Composer/Performer"
 [FieldContents]
 other = "Contents"
 
+[FieldContributor]
+other = "Contributor"
+
 [FieldCopyright]
 other = "Copyright & Permissions"
 
@@ -180,6 +186,9 @@ other = "Credits"
 
 [FieldDateIndexed]
 other = "Date Indexed"
+
+[FieldDegree]
+other = "Degree"
 
 [FieldDepartment]
 other = "Department"
@@ -210,6 +219,9 @@ other = "Format"
 
 [FieldGenre]
 other = "Genre"
+
+[FieldGrantInformation]
+other = "Grant Information"
 
 [FieldISBN]
 other = "ISBN"
@@ -324,6 +336,9 @@ other = "Series"
 
 [FieldSeriesStatement]
 other = "Series Statement"
+
+[FieldSponsoringAgency]
+other = "Sponsoring Agency"
 
 [FieldSubject]
 other = "Subject"
