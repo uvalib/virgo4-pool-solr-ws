@@ -483,6 +483,11 @@ func (p *poolContext) validateConfig() {
 
 			case "authenticate":
 
+			case "author":
+			case "author_date":
+			case "author_date_relation":
+			case "author_relation":
+
 			case "availability":
 
 			case "cover_image":

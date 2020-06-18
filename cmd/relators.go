@@ -35,7 +35,7 @@ func (s *searchContext) parseRelators(entries []string) categorizedRelations {
 	}
 
 	r := relationContext{
-		search: s,
+		search:       s,
 		matchTermsRE: regexp.MustCompile(`([\s(]*)([^\s()]+)([\s)]*)`),
 		cleanTermsRE: regexp.MustCompile(`(?i)([\s(]*(` + strings.Join(terms, "|") + `)[\s)]*)`),
 		cleanDatesRE: regexp.MustCompile(`([\s\[,]*)(\d{4}(-)?(\d{4})?)([\s\]]*)`),
@@ -58,6 +58,8 @@ func (s *searchContext) parseRelators(entries []string) categorizedRelations {
 			r.addOther(entry)
 		}
 	}
+
+	r.removeDuplicateRelations()
 
 	return r.relations
 }
@@ -134,4 +136,58 @@ func (r *relationContext) addOther(entry string) {
 	r.relations.others.dx = append(r.relations.others.dx, p.dx...)
 	r.relations.others.xr = append(r.relations.others.xr, p.xr...)
 	r.relations.others.xx = append(r.relations.others.xx, p.xx...)
+}
+
+func (r *relationContext) removeDuplicateEntries(entries []string) []string {
+	var unique []string
+
+	seen := make(map[string]bool)
+
+	for _, entry := range entries {
+		key := strings.ToLower(entry)
+
+		if seen[key] == false {
+			unique = append(unique, entry)
+			seen[key] = true
+		} else {
+			r.search.log("[RELATORS] removed duplicate entry: [%s]", entry)
+		}
+	}
+
+	return unique
+}
+
+func (r *relationContext) removeDuplicateAuthors() {
+	r.relations.authors.dr = r.removeDuplicateEntries(r.relations.authors.dr)
+	r.relations.authors.dx = r.removeDuplicateEntries(r.relations.authors.dx)
+	r.relations.authors.xr = r.removeDuplicateEntries(r.relations.authors.xr)
+	r.relations.authors.xx = r.removeDuplicateEntries(r.relations.authors.xx)
+}
+
+func (r *relationContext) removeDuplicateAdvisors() {
+	r.relations.advisors.dr = r.removeDuplicateEntries(r.relations.advisors.dr)
+	r.relations.advisors.dx = r.removeDuplicateEntries(r.relations.advisors.dx)
+	r.relations.advisors.xr = r.removeDuplicateEntries(r.relations.advisors.xr)
+	r.relations.advisors.xx = r.removeDuplicateEntries(r.relations.advisors.xx)
+}
+
+func (r *relationContext) removeDuplicateEditors() {
+	r.relations.editors.dr = r.removeDuplicateEntries(r.relations.editors.dr)
+	r.relations.editors.dx = r.removeDuplicateEntries(r.relations.editors.dx)
+	r.relations.editors.xr = r.removeDuplicateEntries(r.relations.editors.xr)
+	r.relations.editors.xx = r.removeDuplicateEntries(r.relations.editors.xx)
+}
+
+func (r *relationContext) removeDuplicateOthers() {
+	r.relations.others.dr = r.removeDuplicateEntries(r.relations.others.dr)
+	r.relations.others.dx = r.removeDuplicateEntries(r.relations.others.dx)
+	r.relations.others.xr = r.removeDuplicateEntries(r.relations.others.xr)
+	r.relations.others.xx = r.removeDuplicateEntries(r.relations.others.xx)
+}
+
+func (r *relationContext) removeDuplicateRelations() {
+	r.removeDuplicateAuthors()
+	r.removeDuplicateAdvisors()
+	r.removeDuplicateEditors()
+	r.removeDuplicateOthers()
 }

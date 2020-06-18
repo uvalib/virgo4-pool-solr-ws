@@ -215,6 +215,8 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			f.Label = s.client.localize(field.XID)
 		}
 
+		//fieldValues := s.getFieldValues(field, doc)
+
 		if field.Custom == true {
 			switch field.Name {
 			case "access_url":
@@ -252,6 +254,30 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 			case "authenticate":
 				if anonRequest == true && anonOnline == false && authOnline == true {
+					r.addField(f)
+				}
+
+			case "author":
+				for _, authorValue := range relators.authors.xx {
+					f.Value = authorValue
+					r.addField(f)
+				}
+
+			case "author_date":
+				for _, authorValue := range relators.authors.dx {
+					f.Value = authorValue
+					r.addField(f)
+				}
+
+			case "author_date_relation":
+				for _, authorValue := range relators.authors.dr {
+					f.Value = authorValue
+					r.addField(f)
+				}
+
+			case "author_relation":
+				for _, authorValue := range relators.authors.xr {
+					f.Value = authorValue
 					r.addField(f)
 				}
 
