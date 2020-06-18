@@ -376,13 +376,13 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
 
-	if len(p.config.Global.Service.Relators.AuthorFields) == 0 {
-		log.Printf("[VALIDATE] missing relator author field(s)")
+	if len(p.config.Local.Solr.AuthorFields) == 0 {
+		log.Printf("[VALIDATE] missing solr author field(s)")
 		invalid = true
 	}
 
-	for _, field := range p.config.Global.Service.Relators.AuthorFields {
-		solrFields.requireValue(field, "relator author field")
+	for _, field := range p.config.Local.Solr.AuthorFields {
+		solrFields.requireValue(field, "solr author field")
 	}
 
 	if p.config.Local.Identity.Mode == "image" {
@@ -484,11 +484,16 @@ func (p *poolContext) validateConfig() {
 			case "authenticate":
 
 			case "author":
+
 			case "author_date":
+
 			case "author_date_relation":
+
 			case "author_relation":
 
 			case "availability":
+
+			case "composer_performer":
 
 			case "cover_image":
 				if field.CustomInfo == nil {

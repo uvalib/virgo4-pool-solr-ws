@@ -75,6 +75,7 @@ type solrResponseHeader struct {
 
 type solrDocument struct {
 	APlaceholderField           []string `json:"placeholder_a,omitempty"`
+	AccessNote                  []string `json:"access_note_a,omitempty"`
 	Advisor                     []string `json:"creator_a,omitempty"`
 	AlternateID                 []string `json:"alternate_id_a,omitempty"`
 	AnonAvailability            []string `json:"anon_availability_a,omitempty"`
@@ -87,6 +88,7 @@ type solrDocument struct {
 	CallNumber                  []string `json:"call_number_a,omitempty"`
 	CallNumberSort              string   `json:"call_number_sort,omitempty"`
 	CartographicMath            []string `json:"cartographic_math_a,omitempty"`
+	CitationNote                []string `json:"citation_note_a,omitempty"`
 	Collection                  []string `json:"collection_a,omitempty"`
 	Contributor                 []string `json:"contributor_a,omitempty"`
 	DataSource                  []string `json:"data_source_a,omitempty"`
@@ -132,7 +134,9 @@ type solrDocument struct {
 	PublishedDisplay            []string `json:"published_display_a,omitempty"`
 	PublishedLocation           []string `json:"published_location_a,omitempty"`
 	PublisherName               []string `json:"publisher_name_a,omitempty"`
+	PublisherNumber             []string `json:"publisher_number_a,omitempty"`
 	RecordingInfo               []string `json:"recording_info_a,omitempty"`
+	ReferencesNote              []string `json:"references_note_a,omitempty"`
 	Region                      []string `json:"region_a,omitempty"`
 	ReleaseDate                 []string `json:"release_a,omitempty"`
 	ReproductionNote            []string `json:"reproduction_note_a,omitempty"`

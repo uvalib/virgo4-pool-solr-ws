@@ -175,7 +175,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	hasDigitalContent := sliceContainsValueFromSlice(featureValues, s.pool.config.Global.Service.DigitalContent.Features)
 
 	var rawAuthorValues []string
-	for _, authorField := range s.pool.config.Global.Service.Relators.AuthorFields {
+	for _, authorField := range s.pool.config.Local.Solr.AuthorFields {
 		rawAuthorValues = append(rawAuthorValues, doc.getValuesByTag(authorField)...)
 	}
 	relators := s.parseRelators(rawAuthorValues)
@@ -287,6 +287,12 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 						f.Value = availabilityValue
 						r.addField(f)
 					}
+				}
+
+			case "composer_performer":
+				for _, authorValue := range relators.authors.xx {
+					f.Value = authorValue
+					r.addField(f)
 				}
 
 			case "cover_image":

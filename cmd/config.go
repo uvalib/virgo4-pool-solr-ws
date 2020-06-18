@@ -44,7 +44,6 @@ type poolConfigRelator struct {
 }
 
 type poolConfigRelators struct {
-	AuthorFields []string            `json:"author_fields,omitempty"`
 	AuthorCodes  []string            `json:"author_codes,omitempty"`
 	AdvisorCodes []string            `json:"advisor_codes,omitempty"`
 	EditorCodes  []string            `json:"editor_codes,omitempty"`
@@ -87,6 +86,7 @@ type poolConfigSolr struct {
 	Params                  poolConfigSolrParams  `json:"params,omitempty"`
 	GroupField              string                `json:"group_field,omitempty"`
 	RelevanceIntraGroupSort poolConfigSort        `json:"relevance_intra_group_sort,omitempty"`
+	AuthorFields            []string              `json:"author_fields,omitempty"`
 	ExactMatchTitleField    string                `json:"exact_match_title_field,omitempty"`
 	ScoreThresholdMedium    float32               `json:"score_threshold_medium,omitempty"`
 	ScoreThresholdHigh      float32               `json:"score_threshold_high,omitempty"`
