@@ -149,8 +149,6 @@ func (s *searchContext) getPublisherName(doc *solrDocument) []string {
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	var r poolRecord
 
-	var authorValues []string
-
 	// availability setup
 
 	anonValues := doc.getValuesByTag(s.pool.config.Global.Availability.Anon.Field)
@@ -176,13 +174,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	featureValues := doc.getValuesByTag(s.pool.config.Global.Service.DigitalContent.FeatureField)
 	hasDigitalContent := sliceContainsValueFromSlice(featureValues, s.pool.config.Global.Service.DigitalContent.Features)
 
-	// field loop (preprocessing)
-
-	for _, field := range s.pool.config.Mappings.Definitions.Fields {
-		if field.Field != "" && field.Properties.Type == "author" {
-			authorValues = doc.getValuesByTag(field.Field)
-		}
+	var rawAuthorValues []string
+	for _, authorField := range s.pool.config.Global.Service.Relators.AuthorFields {
+		rawAuthorValues = append(rawAuthorValues, doc.getValuesByTag(authorField)...)
 	}
+	relators := s.parseRelators(rawAuthorValues)
 
 	// field loop
 
@@ -269,7 +265,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 			case "cover_image":
 				if s.pool.maps.attributes["cover_images"].Supported == true {
-					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, authorValues); url != "" {
+					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, relators.authors.xx); url != "" {
 						f.Value = url
 						r.addField(f)
 					}

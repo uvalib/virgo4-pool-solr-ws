@@ -38,6 +38,19 @@ type poolConfigPublisher struct {
 	re        *regexp.Regexp
 }
 
+type poolConfigRelator struct {
+	Code string `json:"code,omitempty"`
+	Term string `json:"term,omitempty"`
+}
+
+type poolConfigRelators struct {
+	AuthorFields []string            `json:"author_fields,omitempty"`
+	AuthorCodes  []string            `json:"author_codes,omitempty"`
+	AdvisorCodes []string            `json:"advisor_codes,omitempty"`
+	EditorCodes  []string            `json:"editor_codes,omitempty"`
+	Map          []poolConfigRelator `json:"map,omitempty"`
+}
+
 type poolConfigService struct {
 	Port           string                   `json:"port,omitempty"`
 	JWTKey         string                   `json:"jwt_key,omitempty"`
@@ -45,6 +58,7 @@ type poolConfigService struct {
 	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
 	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
 	Publishers     []poolConfigPublisher    `json:"publishers,omitempty"`
+	Relators       poolConfigRelators       `json:"relators,omitempty"`
 	Pdf            poolConfigPdf            `json:"pdf,omitempty"`
 }
 

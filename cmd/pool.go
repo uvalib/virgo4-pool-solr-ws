@@ -52,6 +52,8 @@ type poolMaps struct {
 	sortFields      map[string]poolConfigSort
 	attributes      map[string]v4api.PoolAttribute
 	availableFacets map[string]poolConfigFacet
+	relatorTerms    map[string]string
+	relatorCodes    map[string]string
 }
 
 type poolContext struct {
@@ -373,6 +375,15 @@ func (p *poolContext) validateConfig() {
 
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
+
+	if len(p.config.Global.Service.Relators.AuthorFields) == 0 {
+		log.Printf("[VALIDATE] missing relator author field(s)")
+		invalid = true
+	}
+
+	for _, field := range p.config.Global.Service.Relators.AuthorFields {
+		solrFields.requireValue(field, "relator author field")
+	}
 
 	if p.config.Local.Identity.Mode == "image" {
 		if p.config.Local.Related == nil {
@@ -806,6 +817,27 @@ func (p *poolContext) initMappings() {
 		p.config.Mappings.Definitions.Sorts = append(p.config.Mappings.Definitions.Sorts, *sortDef)
 
 		sortsSeen[sortXID] = true
+	}
+
+	// relator maps
+	p.maps.relatorTerms = make(map[string]string)
+	p.maps.relatorCodes = make(map[string]string)
+
+	terms := []string{}
+
+	for i := range p.config.Global.Service.Relators.Map {
+		r := &p.config.Global.Service.Relators.Map[i]
+
+		if r.Code == "" || r.Term == "" {
+			log.Printf("[INIT] incomplete relator definition: code = [%s]  term = [%s]", r.Code, r.Term)
+			invalid = true
+			continue
+		}
+
+		p.maps.relatorTerms[r.Code] = r.Term
+		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
+
+		terms = append(terms, strings.ToLower(r.Term))
 	}
 
 	if invalid == true {
