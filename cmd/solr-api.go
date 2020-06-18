@@ -91,6 +91,7 @@ type solrDocument struct {
 	CitationNote                []string `json:"citation_note_a,omitempty"`
 	Collection                  []string `json:"collection_a,omitempty"`
 	Contributor                 []string `json:"contributor_a,omitempty"`
+	CreativeCommonsURI          []string `json:"cc_uri_a,omitempty"`
 	DataSource                  []string `json:"data_source_a,omitempty"`
 	Degree                      []string `json:"degree_a,omitempty"`
 	Department                  []string `json:"department_a,omitempty"`

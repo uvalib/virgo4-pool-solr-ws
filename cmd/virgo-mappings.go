@@ -295,6 +295,17 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.addField(f)
 				}
 
+			case "copyright_and_permissions":
+				ccValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.CreativeCommonsURIField)
+				rsValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.RightsStatementURIField)
+
+				uriValues := append(ccValues, rsValues...)
+
+				if len(uriValues) > 0 {
+					f.Value = firstElementOf(uriValues)
+					r.addField(f)
+				}
+
 			case "cover_image":
 				if s.pool.maps.attributes["cover_images"].Supported == true {
 					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, relators.authors.xx); url != "" {

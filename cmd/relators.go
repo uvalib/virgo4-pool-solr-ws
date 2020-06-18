@@ -149,8 +149,6 @@ func (r *relationContext) removeDuplicateEntries(entries []string) []string {
 		if seen[key] == false {
 			unique = append(unique, entry)
 			seen[key] = true
-		} else {
-			r.search.log("[RELATORS] removed duplicate entry: [%s]", entry)
 		}
 	}
 

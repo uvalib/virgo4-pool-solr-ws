@@ -171,17 +171,23 @@ type poolConfigFieldTypeTitleSubtitleEdition struct {
 	EditionField  string `json:"edition_field,omitempty"`
 }
 
+type poolConfigFieldTypeCopyrightAndPermissions struct {
+	CreativeCommonsURIField string `json:"creative_commons_uri_field,omitempty"`
+	RightsStatementURIField string `json:"rights_statement_uri_field,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
-	AccessURL            *poolConfigFieldTypeAccessURL            `json:"access_url,omitempty"`
-	CoverImageURL        *poolConfigFieldTypeCoverImageURL        `json:"cover_image_url,omitempty"`
-	DigitalContentURL    *poolConfigFieldTypeDigitalContentURL    `json:"digital_content_url,omitempty"`
-	PdfDownloadURL       *poolConfigFieldTypePdfDownloadURL       `json:"pdf_download_url,omitempty"`
-	PublisherName        *poolConfigFieldTypePublisherName        `json:"publisher_name,omitempty"`
-	RISType              *poolConfigFieldTypeRISType              `json:"ris_type,omitempty"`
-	RISAuthors           *poolConfigFieldTypeRISAuthors           `json:"ris_authors,omitempty"`
-	SirsiURL             *poolConfigFieldTypeSirsiURL             `json:"sirsi_url,omitempty"`
-	ThumbnailURL         *poolConfigFieldTypeThumbnailURL         `json:"thumbnail_url,omitempty"`
-	TitleSubtitleEdition *poolConfigFieldTypeTitleSubtitleEdition `json:"title_subtitle_edition,omitempty"`
+	AccessURL               *poolConfigFieldTypeAccessURL               `json:"access_url,omitempty"`
+	CopyrightAndPermissions *poolConfigFieldTypeCopyrightAndPermissions `json:"copyright_and_permissions,omitempty"`
+	CoverImageURL           *poolConfigFieldTypeCoverImageURL           `json:"cover_image_url,omitempty"`
+	DigitalContentURL       *poolConfigFieldTypeDigitalContentURL       `json:"digital_content_url,omitempty"`
+	PdfDownloadURL          *poolConfigFieldTypePdfDownloadURL          `json:"pdf_download_url,omitempty"`
+	PublisherName           *poolConfigFieldTypePublisherName           `json:"publisher_name,omitempty"`
+	RISType                 *poolConfigFieldTypeRISType                 `json:"ris_type,omitempty"`
+	RISAuthors              *poolConfigFieldTypeRISAuthors              `json:"ris_authors,omitempty"`
+	SirsiURL                *poolConfigFieldTypeSirsiURL                `json:"sirsi_url,omitempty"`
+	ThumbnailURL            *poolConfigFieldTypeThumbnailURL            `json:"thumbnail_url,omitempty"`
+	TitleSubtitleEdition    *poolConfigFieldTypeTitleSubtitleEdition    `json:"title_subtitle_edition,omitempty"`
 }
 
 type poolConfigField struct {
