@@ -833,8 +833,6 @@ func (p *poolContext) initMappings() {
 	p.maps.relatorTerms = make(map[string]string)
 	p.maps.relatorCodes = make(map[string]string)
 
-	terms := []string{}
-
 	for i := range p.config.Global.Service.Relators.Map {
 		r := &p.config.Global.Service.Relators.Map[i]
 
@@ -846,8 +844,6 @@ func (p *poolContext) initMappings() {
 
 		p.maps.relatorTerms[r.Code] = r.Term
 		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
-
-		terms = append(terms, strings.ToLower(r.Term))
 	}
 
 	if invalid == true {

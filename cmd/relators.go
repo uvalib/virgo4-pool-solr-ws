@@ -52,7 +52,7 @@ func (s *searchContext) parseRelators(entries []string) categorizedRelations {
 			r.addAdvisor(entry)
 
 		case sliceContainsString(s.pool.config.Global.Service.Relators.EditorCodes, code):
-			r.addAuthor(entry)
+			r.addEditor(entry)
 
 		default:
 			r.addOther(entry)
