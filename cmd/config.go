@@ -174,6 +174,7 @@ type poolConfigFieldTypeTitleSubtitleEdition struct {
 type poolConfigFieldTypeCopyrightAndPermissions struct {
 	CreativeCommonsURIField string `json:"creative_commons_uri_field,omitempty"`
 	RightsStatementURIField string `json:"rights_statement_uri_field,omitempty"`
+	FormatField             string `json:"format_field,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {

@@ -495,7 +495,7 @@ func (p *poolContext) validateConfig() {
 
 			case "composer_performer":
 
-			case "copyright_and_permissions":
+			case "copyright_and_permissions_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
 					invalid = true
@@ -510,8 +510,9 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomInfo.CopyrightAndPermissions.CreativeCommonsURIField, fmt.Sprintf("%s section creative commons uri field", field.Name))
 				solrFields.requireValue(field.CustomInfo.CopyrightAndPermissions.RightsStatementURIField, fmt.Sprintf("%s section rights statement uri field", field.Name))
+				solrFields.requireValue(field.CustomInfo.CopyrightAndPermissions.FormatField, fmt.Sprintf("%s section format field", field.Name))
 
-			case "cover_image":
+			case "cover_image_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
 					invalid = true

@@ -295,18 +295,143 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.addField(f)
 				}
 
-			case "copyright_and_permissions":
+			case "copyright_and_permissions_url":
 				ccValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.CreativeCommonsURIField)
 				rsValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.RightsStatementURIField)
+				formatValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.FormatField)
 
 				uriValues := append(ccValues, rsValues...)
 
-				if len(uriValues) > 0 {
-					f.Value = firstElementOf(uriValues)
-					r.addField(f)
+				var uriValue string
+
+				switch {
+				case len(uriValues) > 0:
+					uriValue = firstElementOf(uriValues)
+
+				// FIXME hardcoded values ahead
+				case sliceContainsString(formatValues, "Online"):
+					uriValue = "https://rightsstatements.org/vocab/CNE/1.0/"
+
+				default:
+					continue
 				}
 
-			case "cover_image":
+				// FIXME: ugly uri parsing
+				pieces := strings.Split(uriValue, "/")
+
+				if len(pieces) < 5 {
+					continue
+				}
+
+				var code string
+				var license string
+
+				// FIXME
+				switch pieces[2] {
+				case "creativecommons.org":
+					switch {
+					case pieces[3] == "licenses":
+						code = pieces[4]
+
+					case strings.Contains(uriValue, "/publicdomain/mark/1.0/"):
+						code = "publicdomain"
+
+					case strings.Contains(uriValue, "/publicdomain/zero/1.0/"):
+						code = "cc-zero"
+
+					default:
+						continue
+					}
+
+					switch strings.ToLower(code) {
+						case "publicdomain":
+							license = "Public Domain"
+
+						case "cc-zero":
+							license = "Public Domain Dedication"
+
+						default:
+							var clauses []string
+
+							clcodes := strings.Split(code, "-")
+
+							for _, clcode := range clcodes {
+								switch clcode {
+									case "by":
+										clauses = append(clauses, "Attribution")
+
+									case "sa":
+										clauses = append(clauses, "Share-alike")
+
+									case "nc":
+										clauses = append(clauses, "Non-commercial")
+
+									case "nd":
+										clauses = append(clauses, "No Derivative Works")
+								}
+							}
+
+							license = fmt.Sprintf("Creative Commons %s License", strings.Join(clauses, ", "))
+					}
+
+				case "rightsstatements.org":
+					code = pieces[4]
+
+					if code == "" {
+						code = "CNE"
+					}
+
+					switch strings.ToLower(code) {
+						case "inc":
+							license = "In Copyright"
+
+						case "inc-ow-eu":
+							license = "In Copyright - EU Orphan Work"
+
+						case "inc-edu":
+							license = "In Copyright - Education Use Permitted"
+
+						case "inc-nc":
+							license = "In Copyright - Non-Commercial Use Permitted"
+
+						case "inc-ruu":
+							license = "In Copyright - Rights-Holder(s) Unlocatable or Unidentifiable"
+
+						case "noc-cr":
+							license = "No Copyright - Contractual Restrictions"
+
+						case "noc-nc":
+							license = "No Copyright - Non-Commercial Use Only"
+
+						case "noc-oklr":
+							license = "No Copyright - Other Known Legal Restrictions"
+
+						case "noc-us":
+							license = "No Copyright - United States"
+
+						case "cne":
+							license = "Copyright Not Evaluated"
+
+						case "und":
+							license = "Copyright Undetermined"
+
+						case "nkc":
+							license = "No Known Copyright"
+
+						default:
+							s.log("unexpected rights statement code: [%s]", code)
+							continue
+					}
+
+				default:
+					continue
+				}
+
+				f.Label = license
+				f.Value = uriValue
+				r.addField(f)
+
+			case "cover_image_url":
 				if s.pool.maps.attributes["cover_images"].Supported == true {
 					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, relators.authors.xx); url != "" {
 						f.Value = url
