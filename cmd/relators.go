@@ -30,7 +30,7 @@ type relationContext struct {
 func (s *searchContext) parseRelators(entries []string) categorizedRelations {
 	terms := []string{}
 
-	for _, term := range s.pool.config.Global.Service.Relators.Map {
+	for _, term := range s.pool.config.Global.Relators.Map {
 		terms = append(terms, term.Term)
 	}
 
@@ -45,13 +45,13 @@ func (s *searchContext) parseRelators(entries []string) categorizedRelations {
 		code := r.getRelatorCode(entry)
 
 		switch {
-		case sliceContainsString(s.pool.config.Global.Service.Relators.AuthorCodes, code):
+		case sliceContainsString(s.pool.config.Global.Relators.AuthorCodes, code):
 			r.addAuthor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Service.Relators.AdvisorCodes, code):
+		case sliceContainsString(s.pool.config.Global.Relators.AdvisorCodes, code):
 			r.addAdvisor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Service.Relators.EditorCodes, code):
+		case sliceContainsString(s.pool.config.Global.Relators.EditorCodes, code):
 			r.addEditor(entry)
 
 		default:

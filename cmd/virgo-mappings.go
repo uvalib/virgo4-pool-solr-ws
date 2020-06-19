@@ -115,8 +115,8 @@ func (s *searchContext) getRISType(formats []string) string {
 }
 
 func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
-	for i := range s.pool.config.Global.Service.Publishers {
-		publisher := &s.pool.config.Global.Service.Publishers[i]
+	for i := range s.pool.config.Global.Publishers {
+		publisher := &s.pool.config.Global.Publishers[i]
 
 		fieldValues := doc.getValuesByTag(publisher.Field)
 
@@ -171,8 +171,8 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		anonRequest = false
 	}
 
-	featureValues := doc.getValuesByTag(s.pool.config.Global.Service.DigitalContent.FeatureField)
-	hasDigitalContent := sliceContainsValueFromSlice(featureValues, s.pool.config.Global.Service.DigitalContent.Features)
+	featureValues := doc.getValuesByTag(s.pool.config.Global.DigitalContent.FeatureField)
+	hasDigitalContent := sliceContainsValueFromSlice(featureValues, s.pool.config.Global.DigitalContent.Features)
 
 	var rawAuthorValues []string
 	for _, authorField := range s.pool.config.Local.Solr.AuthorFields {
@@ -344,34 +344,34 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					}
 
 					switch strings.ToLower(code) {
-						case "publicdomain":
-							license = "Public Domain"
+					case "publicdomain":
+						license = "Public Domain"
 
-						case "cc-zero":
-							license = "Public Domain Dedication"
+					case "cc-zero":
+						license = "Public Domain Dedication"
 
-						default:
-							var clauses []string
+					default:
+						var clauses []string
 
-							clcodes := strings.Split(code, "-")
+						clcodes := strings.Split(code, "-")
 
-							for _, clcode := range clcodes {
-								switch clcode {
-									case "by":
-										clauses = append(clauses, "Attribution")
+						for _, clcode := range clcodes {
+							switch clcode {
+							case "by":
+								clauses = append(clauses, "Attribution")
 
-									case "sa":
-										clauses = append(clauses, "Share-alike")
+							case "sa":
+								clauses = append(clauses, "Share-alike")
 
-									case "nc":
-										clauses = append(clauses, "Non-commercial")
+							case "nc":
+								clauses = append(clauses, "Non-commercial")
 
-									case "nd":
-										clauses = append(clauses, "No Derivative Works")
-								}
+							case "nd":
+								clauses = append(clauses, "No Derivative Works")
 							}
+						}
 
-							license = fmt.Sprintf("Creative Commons %s License", strings.Join(clauses, ", "))
+						license = fmt.Sprintf("Creative Commons %s License", strings.Join(clauses, ", "))
 					}
 
 				case "rightsstatements.org":
@@ -382,45 +382,45 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					}
 
 					switch strings.ToLower(code) {
-						case "inc":
-							license = "In Copyright"
+					case "inc":
+						license = "In Copyright"
 
-						case "inc-ow-eu":
-							license = "In Copyright - EU Orphan Work"
+					case "inc-ow-eu":
+						license = "In Copyright - EU Orphan Work"
 
-						case "inc-edu":
-							license = "In Copyright - Education Use Permitted"
+					case "inc-edu":
+						license = "In Copyright - Education Use Permitted"
 
-						case "inc-nc":
-							license = "In Copyright - Non-Commercial Use Permitted"
+					case "inc-nc":
+						license = "In Copyright - Non-Commercial Use Permitted"
 
-						case "inc-ruu":
-							license = "In Copyright - Rights-Holder(s) Unlocatable or Unidentifiable"
+					case "inc-ruu":
+						license = "In Copyright - Rights-Holder(s) Unlocatable or Unidentifiable"
 
-						case "noc-cr":
-							license = "No Copyright - Contractual Restrictions"
+					case "noc-cr":
+						license = "No Copyright - Contractual Restrictions"
 
-						case "noc-nc":
-							license = "No Copyright - Non-Commercial Use Only"
+					case "noc-nc":
+						license = "No Copyright - Non-Commercial Use Only"
 
-						case "noc-oklr":
-							license = "No Copyright - Other Known Legal Restrictions"
+					case "noc-oklr":
+						license = "No Copyright - Other Known Legal Restrictions"
 
-						case "noc-us":
-							license = "No Copyright - United States"
+					case "noc-us":
+						license = "No Copyright - United States"
 
-						case "cne":
-							license = "Copyright Not Evaluated"
+					case "cne":
+						license = "Copyright Not Evaluated"
 
-						case "und":
-							license = "Copyright Undetermined"
+					case "und":
+						license = "Copyright Undetermined"
 
-						case "nkc":
-							license = "No Known Copyright"
+					case "nkc":
+						license = "No Known Copyright"
 
-						default:
-							s.log("unexpected rights statement code: [%s]", code)
-							continue
+					default:
+						s.log("unexpected rights statement code: [%s]", code)
+						continue
 					}
 
 				default:

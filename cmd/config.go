@@ -50,15 +50,15 @@ type poolConfigRelators struct {
 	Map          []poolConfigRelator `json:"map,omitempty"`
 }
 
+type poolConfigCopyrights struct {
+}
+
 type poolConfigService struct {
-	Port           string                   `json:"port,omitempty"`
-	JWTKey         string                   `json:"jwt_key,omitempty"`
-	DefaultSort    poolConfigSort           `json:"default_sort,omitempty"`
-	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
-	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
-	Publishers     []poolConfigPublisher    `json:"publishers,omitempty"`
-	Relators       poolConfigRelators       `json:"relators,omitempty"`
-	Pdf            poolConfigPdf            `json:"pdf,omitempty"`
+	Port         string                 `json:"port,omitempty"`
+	JWTKey       string                 `json:"jwt_key,omitempty"`
+	DefaultSort  poolConfigSort         `json:"default_sort,omitempty"`
+	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
+	Pdf          poolConfigPdf          `json:"pdf,omitempty"`
 }
 
 type poolConfigSolrParams struct {
@@ -307,12 +307,16 @@ type poolConfigRISType struct {
 }
 
 type poolConfigGlobal struct {
-	Service      poolConfigService      `json:"service,omitempty"`
-	Attributes   []string               `json:"attributes,omitempty"`
-	Providers    []poolConfigProvider   `json:"providers,omitempty"`
-	Availability poolConfigAvailability `json:"availability,omitempty"`
-	RISTypes     []poolConfigRISType    `json:"ris_types,omitempty"`
-	Mappings     poolConfigMappings     `json:"mappings,omitempty"`
+	Service        poolConfigService        `json:"service,omitempty"`
+	Attributes     []string                 `json:"attributes,omitempty"`
+	Providers      []poolConfigProvider     `json:"providers,omitempty"`
+	Availability   poolConfigAvailability   `json:"availability,omitempty"`
+	RISTypes       []poolConfigRISType      `json:"ris_types,omitempty"`
+	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
+	Publishers     []poolConfigPublisher    `json:"publishers,omitempty"`
+	Relators       poolConfigRelators       `json:"relators,omitempty"`
+	Copyrights     poolConfigCopyrights     `json:"copyrights,omitempty"`
+	Mappings       poolConfigMappings       `json:"mappings,omitempty"`
 }
 
 type poolConfigLocal struct {

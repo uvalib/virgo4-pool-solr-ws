@@ -285,8 +285,8 @@ func (p *poolContext) initRIS() {
 		}
 	}
 
-	for i := range p.config.Global.Service.Publishers {
-		publisher := &p.config.Global.Service.Publishers[i]
+	for i := range p.config.Global.Publishers {
+		publisher := &p.config.Global.Publishers[i]
 
 		var err error
 
@@ -431,7 +431,7 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for i, val := range p.config.Global.Service.Publishers {
+	for i, val := range p.config.Global.Publishers {
 		solrFields.requireValue(val.Field, fmt.Sprintf("publisher %d solr field", i))
 	}
 
@@ -454,7 +454,7 @@ func (p *poolContext) validateConfig() {
 		miscValues.requireValue(field.Name, "name")
 
 		if field.DigitalContentOnly == true {
-			solrFields.requireValue(p.config.Global.Service.DigitalContent.FeatureField, "digital content feature field")
+			solrFields.requireValue(p.config.Global.DigitalContent.FeatureField, "digital content feature field")
 		}
 
 		if field.Custom == true {
@@ -850,8 +850,8 @@ func (p *poolContext) initMappings() {
 	p.maps.relatorTerms = make(map[string]string)
 	p.maps.relatorCodes = make(map[string]string)
 
-	for i := range p.config.Global.Service.Relators.Map {
-		r := &p.config.Global.Service.Relators.Map[i]
+	for i := range p.config.Global.Relators.Map {
+		r := &p.config.Global.Relators.Map[i]
 
 		if r.Code == "" || r.Term == "" {
 			log.Printf("[INIT] incomplete relator definition: code = [%s]  term = [%s]", r.Code, r.Term)
