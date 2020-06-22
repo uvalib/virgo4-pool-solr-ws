@@ -368,10 +368,14 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					r.addField(f)
 				}
 
-			case "copyright_and_permissions_url":
+			case "copyright_and_permissions":
 				if license, uri := s.getCopyrightLicenseAndURL(doc); license != "" {
+					f.Value = license
+					r.addField(f)
+
 					f.Label = license
 					f.Value = uri
+					f.Type = "url"
 					r.addField(f)
 				}
 

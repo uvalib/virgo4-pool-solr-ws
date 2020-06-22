@@ -510,7 +510,7 @@ func (p *poolContext) validateConfig() {
 
 			case "composer_performer":
 
-			case "copyright_and_permissions_url":
+			case "copyright_and_permissions":
 
 			case "cover_image_url":
 				if field.CustomInfo == nil {
