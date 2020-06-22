@@ -59,11 +59,12 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 
 type poolRecord struct {
 	record   v4api.Record
+	ris      bool
 	risCodes []string
 }
 
 func (r *poolRecord) addField(field v4api.RecordField) {
-	if len(r.risCodes) == 0 {
+	if r.ris == false || len(r.risCodes) == 0 {
 		r.record.Fields = append(r.record.Fields, field)
 		return
 	}
@@ -335,13 +336,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "copyright_and_permissions":
 		if license, uri := s.getCopyrightLicenseAndURL(doc); license != "" {
-			f.Value = license
-			values = append(values, f)
-
-			f.Name += "_url"
-			f.Type = "url"
-			f.Label = license
-			f.Value = uri
+			f.Value = fmt.Sprintf(`<a href="%s">%s</a>`, uri, license)
 			values = append(values, f)
 		}
 
@@ -509,7 +504,8 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
-	var r poolRecord
+	r := poolRecord{ris: s.client.opts.ris}
+	r.ris = true
 
 	var rc recordContext
 
