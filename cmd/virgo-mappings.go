@@ -64,12 +64,15 @@ type poolRecord struct {
 }
 
 func (r *poolRecord) addField(field v4api.RecordField) {
-	if r.ris == false || len(r.risCodes) == 0 {
+	// non-RIS mode; add field as-is
+
+	if r.ris == false {
 		r.record.Fields = append(r.record.Fields, field)
 		return
 	}
 
-	// RIS codes present; add each with different name, and hide all but the first from display
+	// RIS mode; for each RIS code, add a new field with a different name,
+	// and hide all but the first from display
 
 	name := field.Name
 
@@ -505,7 +508,6 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	r := poolRecord{ris: s.client.opts.ris}
-	r.ris = true
 
 	var rc recordContext
 
