@@ -214,6 +214,7 @@ type poolConfigField struct {
 	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
 	RISCodes           []string                   `json:"ris_codes,omitempty"`
 	Limit              int                        `json:"limit,omitempty"`
+	Join               string                     `json:"join,omitempty"`
 	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
 	DetailsOnly        bool                       `json:"details_only,omitempty"`
 	DigitalContentOnly bool                       `json:"digital_content_only,omitempty"`

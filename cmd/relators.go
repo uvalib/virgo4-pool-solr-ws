@@ -27,7 +27,7 @@ type relationContext struct {
 	cleanDatesRE *regexp.Regexp
 }
 
-func (s *searchContext) parseRelators(entries []string) categorizedRelations {
+func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 	terms := []string{}
 
 	for _, term := range s.pool.config.Global.Relators.Map {

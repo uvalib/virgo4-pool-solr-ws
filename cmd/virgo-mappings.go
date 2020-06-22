@@ -212,46 +212,339 @@ func (s *searchContext) getCopyrightLicenseAndURL(doc *solrDocument) (string, st
 	return "", ""
 }
 
-/*
-func (s *searchContext) getFieldValues(template v4api.RecordField, doc *solrDocument) []v4api.RecordField {
-	// TODO
-	return []v4api.RecordField{template}
+type recordContext struct {
+	anonOnline         bool
+	authOnline         bool
+	availabilityValues []string
+	isAvailableOnShelf bool
+	anonRequest        bool
+	hasDigitalContent  bool
+	relations          categorizedRelations
 }
-*/
+
+func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, f v4api.RecordField, doc *solrDocument) []v4api.RecordField {
+	var values []v4api.RecordField
+
+	if field.Custom == false {
+		fieldValues := doc.getValuesByTag(field.Field)
+
+		for i, fieldValue := range fieldValues {
+			f.Value = fieldValue
+			values = append(values, f)
+
+			if field.Limit > 0 && i+1 >= field.Limit {
+				break
+			}
+		}
+
+		return values
+	}
+
+	switch field.Name {
+	case "access_url":
+		if rc.anonOnline == true || rc.authOnline == true {
+			urlValues := doc.getValuesByTag(field.CustomInfo.AccessURL.URLField)
+			labelValues := doc.getValuesByTag(field.CustomInfo.AccessURL.LabelField)
+			providerValues := doc.getValuesByTag(field.CustomInfo.AccessURL.ProviderField)
+
+			f.Provider = firstElementOf(providerValues)
+
+			useLabels := false
+			if len(labelValues) == len(urlValues) {
+				useLabels = true
+			}
+
+			for i, item := range urlValues {
+				f.Value = item
+
+				itemLabel := ""
+
+				if useLabels == true {
+					itemLabel = labelValues[i]
+				}
+
+				// if not using labels, or this label is not defined, fall back to generic item label
+				if itemLabel == "" {
+					itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.CustomInfo.AccessURL.DefaultItemXID), i+1)
+				}
+
+				f.Item = itemLabel
+
+				values = append(values, f)
+			}
+		}
+
+		return values
+
+	case "authenticate":
+		if rc.anonRequest == true && rc.anonOnline == false && rc.authOnline == true {
+			values = append(values, f)
+		}
+
+		return values
+
+	case "author":
+		for _, authorValue := range rc.relations.authors.name {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "author_date":
+		for _, authorValue := range rc.relations.authors.nameDate {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "author_date_relation":
+		for _, authorValue := range rc.relations.authors.nameDateRelation {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "author_relation":
+		for _, authorValue := range rc.relations.authors.nameRelation {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "availability":
+		for _, availabilityValue := range rc.availabilityValues {
+			if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
+				f.Value = availabilityValue
+				values = append(values, f)
+			}
+		}
+
+		return values
+
+	case "composer_performer":
+		for _, authorValue := range rc.relations.authors.name {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "copyright_and_permissions":
+		if license, uri := s.getCopyrightLicenseAndURL(doc); license != "" {
+			f.Value = license
+			values = append(values, f)
+
+			f.Name += "_url"
+			f.Type = "url"
+			f.Label = license
+			f.Value = uri
+			values = append(values, f)
+		}
+
+		return values
+
+	case "cover_image_url":
+		if s.pool.maps.attributes["cover_images"].Supported == true {
+			if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, rc.relations.authors.name); url != "" {
+				f.Value = url
+				values = append(values, f)
+			}
+		}
+
+		return values
+
+	case "digital_content_url":
+		if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
+			f.Value = url
+			values = append(values, f)
+		}
+
+		return values
+
+	case "pdf_download_url":
+		pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
+
+		if len(pidValues) <= field.CustomInfo.PdfDownloadURL.MaxSupported {
+			pdfURL := firstElementOf(doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.URLField))
+
+			if pdfURL == "" {
+				return values
+			}
+
+			for _, pid := range pidValues {
+				if pid == "" {
+					return values
+				}
+
+				statusURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Status)
+
+				pdfStatus, pdfErr := s.getPdfStatus(statusURL)
+
+				if pdfErr != nil {
+					return values
+				}
+
+				if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus) == true {
+					downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
+					f.Value = downloadURL
+					values = append(values, f)
+				}
+			}
+		}
+
+		return values
+
+	case "published_location":
+		fieldValues := doc.getValuesByTag(field.Field)
+
+		if len(fieldValues) == 0 {
+			fieldValues = s.getPublishedLocation(doc)
+		}
+
+		for _, fieldValue := range fieldValues {
+			f.Value = fieldValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "publisher_name":
+		fieldValues := doc.getValuesByTag(field.Field)
+
+		if len(fieldValues) == 0 {
+			fieldValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
+		}
+
+		if len(fieldValues) == 0 {
+			fieldValues = s.getPublisherName(doc)
+		}
+
+		for _, fieldValue := range fieldValues {
+			f.Value = fieldValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "ris_authors":
+		authorValues := doc.getValuesByTag(field.CustomInfo.RISAuthors.AuthorField)
+
+		for i, authorValue := range authorValues {
+			f.Value = authorValue
+
+			if i == 0 {
+				f.RISCode = field.CustomInfo.RISAuthors.PrimaryCode
+			} else {
+				f.RISCode = field.CustomInfo.RISAuthors.AdditionalCode
+			}
+
+			values = append(values, f)
+		}
+
+		return values
+
+	case "ris_type":
+		formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
+		f.Value = s.getRISType(formatValues)
+		values = append(values, f)
+
+		return values
+
+	case "sirsi_url":
+		idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))
+		idPrefix := field.CustomInfo.SirsiURL.IDPrefix
+
+		if strings.HasPrefix(idValue, idPrefix) {
+			sirsiID := idValue[len(idPrefix):]
+			if url := s.getSirsiURL(sirsiID); url != "" {
+				f.Value = url
+				values = append(values, f)
+			}
+		}
+
+		return values
+
+	case "thumbnail_url":
+		urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)
+
+		if len(urlValues) <= field.CustomInfo.ThumbnailURL.MaxSupported {
+			for _, url := range urlValues {
+				if url != "" {
+					f.Value = url
+					values = append(values, f)
+				}
+			}
+		}
+
+		return values
+
+	case "title_subtitle_edition":
+		titleValue := firstElementOf(doc.getValuesByTag(field.Field))
+		subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
+		editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
+
+		fullTitle := titlecase.Title(titleValue)
+
+		if subtitleValue != "" {
+			fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitleValue))
+		}
+
+		if editionValue != "" {
+			if strings.HasPrefix(editionValue, "(") && strings.HasSuffix(editionValue, ")") {
+				fullTitle = fmt.Sprintf("%s %s", fullTitle, editionValue)
+			} else {
+				fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
+			}
+		}
+
+		f.Value = fullTitle
+		values = append(values, f)
+
+		return values
+	}
+
+	return values
+}
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	var r poolRecord
+
+	var rc recordContext
 
 	// availability setup
 
 	anonValues := doc.getValuesByTag(s.pool.config.Global.Availability.Anon.Field)
 	anonOnShelf := sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.OnShelf)
-	anonOnline := sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online)
+	rc.anonOnline = sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online)
 
 	authValues := doc.getValuesByTag(s.pool.config.Global.Availability.Auth.Field)
 	authOnShelf := sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.OnShelf)
-	authOnline := sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online)
+	rc.authOnline = sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online)
 
 	// determine which availability field to use
 
-	availabilityValues := anonValues
-	isAvailableOnShelf := anonOnShelf
-	anonRequest := true
+	rc.availabilityValues = anonValues
+	rc.isAvailableOnShelf = anonOnShelf
+	rc.anonRequest = true
 
 	if s.client.isAuthenticated() == true {
-		availabilityValues = authValues
-		isAvailableOnShelf = authOnShelf
-		anonRequest = false
+		rc.availabilityValues = authValues
+		rc.isAvailableOnShelf = authOnShelf
+		rc.anonRequest = false
 	}
 
 	featureValues := doc.getValuesByTag(s.pool.config.Global.DigitalContent.FeatureField)
-	hasDigitalContent := sliceContainsValueFromSlice(featureValues, s.pool.config.Global.DigitalContent.Features)
+	rc.hasDigitalContent = sliceContainsValueFromSlice(featureValues, s.pool.config.Global.DigitalContent.Features)
 
 	var rawAuthorValues []string
 	for _, authorField := range s.pool.config.Local.Solr.AuthorFields {
 		rawAuthorValues = append(rawAuthorValues, doc.getValuesByTag(authorField)...)
 	}
-	relators := s.parseRelators(rawAuthorValues)
+	rc.relations = s.parseRelations(rawAuthorValues)
 
 	// field loop
 
@@ -266,11 +559,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			continue
 		}
 
-		if field.OnShelfOnly == true && isAvailableOnShelf == false {
+		if field.OnShelfOnly == true && rc.isAvailableOnShelf == false {
 			continue
 		}
 
-		if field.DigitalContentOnly == true && hasDigitalContent == false {
+		if field.DigitalContentOnly == true && rc.hasDigitalContent == false {
 			continue
 		}
 
@@ -288,247 +581,25 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			f.Label = s.client.localize(field.XID)
 		}
 
-		//fieldValues := s.getFieldValues(field, doc)
+		fieldValues := s.getFieldValues(rc, field, f, doc)
 
-		if field.Custom == true {
-			switch field.Name {
-			case "access_url":
-				if anonOnline == true || authOnline == true {
-					urlValues := doc.getValuesByTag(field.CustomInfo.AccessURL.URLField)
-					labelValues := doc.getValuesByTag(field.CustomInfo.AccessURL.LabelField)
-					providerValues := doc.getValuesByTag(field.CustomInfo.AccessURL.ProviderField)
+		if len(fieldValues) == 0 {
+			continue
+		}
 
-					f.Provider = firstElementOf(providerValues)
-
-					useLabels := false
-					if len(labelValues) == len(urlValues) {
-						useLabels = true
-					}
-
-					for i, item := range urlValues {
-						f.Value = item
-
-						itemLabel := ""
-
-						if useLabels == true {
-							itemLabel = labelValues[i]
-						}
-
-						// if not using labels, or this label is not defined, fall back to generic item label
-						if itemLabel == "" {
-							itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.CustomInfo.AccessURL.DefaultItemXID), i+1)
-						}
-
-						f.Item = itemLabel
-
-						r.addField(f)
-					}
-				}
-
-			case "authenticate":
-				if anonRequest == true && anonOnline == false && authOnline == true {
-					r.addField(f)
-				}
-
-			case "author":
-				for _, authorValue := range relators.authors.name {
-					f.Value = authorValue
-					r.addField(f)
-				}
-
-			case "author_date":
-				for _, authorValue := range relators.authors.nameDate {
-					f.Value = authorValue
-					r.addField(f)
-				}
-
-			case "author_date_relation":
-				for _, authorValue := range relators.authors.nameDateRelation {
-					f.Value = authorValue
-					r.addField(f)
-				}
-
-			case "author_relation":
-				for _, authorValue := range relators.authors.nameRelation {
-					f.Value = authorValue
-					r.addField(f)
-				}
-
-			case "availability":
-				for _, availabilityValue := range availabilityValues {
-					if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
-						f.Value = availabilityValue
-						r.addField(f)
-					}
-				}
-
-			case "composer_performer":
-				for _, authorValue := range relators.authors.name {
-					f.Value = authorValue
-					r.addField(f)
-				}
-
-			case "copyright_and_permissions":
-				if license, uri := s.getCopyrightLicenseAndURL(doc); license != "" {
-					f.Value = license
-					r.addField(f)
-
-					f.Label = license
-					f.Value = uri
-					f.Type = "url"
-					r.addField(f)
-				}
-
-			case "cover_image_url":
-				if s.pool.maps.attributes["cover_images"].Supported == true {
-					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, relators.authors.name); url != "" {
-						f.Value = url
-						r.addField(f)
-					}
-				}
-
-			case "digital_content_url":
-				if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
-					f.Value = url
-					r.addField(f)
-				}
-
-			case "pdf_download_url":
-				pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
-
-				if len(pidValues) <= field.CustomInfo.PdfDownloadURL.MaxSupported {
-					pdfURL := firstElementOf(doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.URLField))
-
-					if pdfURL == "" {
-						continue
-					}
-
-					for _, pid := range pidValues {
-						if pid == "" {
-							continue
-						}
-
-						statusURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Status)
-
-						pdfStatus, pdfErr := s.getPdfStatus(statusURL)
-
-						if pdfErr != nil {
-							continue
-						}
-
-						if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus) == true {
-							downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
-							f.Value = downloadURL
-							r.addField(f)
-						}
-					}
-				}
-
-			case "published_location":
-				fieldValues := doc.getValuesByTag(field.Field)
-
-				if len(fieldValues) == 0 {
-					fieldValues = s.getPublishedLocation(doc)
-				}
-
-				for _, fieldValue := range fieldValues {
-					f.Value = fieldValue
-					r.addField(f)
-				}
-
-			case "publisher_name":
-				fieldValues := doc.getValuesByTag(field.Field)
-
-				if len(fieldValues) == 0 {
-					fieldValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
-				}
-
-				if len(fieldValues) == 0 {
-					fieldValues = s.getPublisherName(doc)
-				}
-
-				for _, fieldValue := range fieldValues {
-					f.Value = fieldValue
-					r.addField(f)
-				}
-
-			case "ris_authors":
-				authorValues := doc.getValuesByTag(field.CustomInfo.RISAuthors.AuthorField)
-
-				for i, authorValue := range authorValues {
-					f.Value = authorValue
-
-					if i == 0 {
-						f.RISCode = field.CustomInfo.RISAuthors.PrimaryCode
-					} else {
-						f.RISCode = field.CustomInfo.RISAuthors.AdditionalCode
-					}
-
-					r.addField(f)
-				}
-
-			case "ris_type":
-				formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
-				f.Value = s.getRISType(formatValues)
-				r.addField(f)
-
-			case "sirsi_url":
-				idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))
-				idPrefix := field.CustomInfo.SirsiURL.IDPrefix
-
-				if strings.HasPrefix(idValue, idPrefix) {
-					sirsiID := idValue[len(idPrefix):]
-					if url := s.getSirsiURL(sirsiID); url != "" {
-						f.Value = url
-						r.addField(f)
-					}
-				}
-
-			case "thumbnail_url":
-				urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)
-
-				if len(urlValues) <= field.CustomInfo.ThumbnailURL.MaxSupported {
-					for _, url := range urlValues {
-						if url != "" {
-							f.Value = url
-							r.addField(f)
-						}
-					}
-				}
-
-			case "title_subtitle_edition":
-				titleValue := firstElementOf(doc.getValuesByTag(field.Field))
-				subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
-				editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
-
-				fullTitle := titlecase.Title(titleValue)
-
-				if subtitleValue != "" {
-					fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitleValue))
-				}
-
-				if editionValue != "" {
-					if strings.HasPrefix(editionValue, "(") && strings.HasSuffix(editionValue, ")") {
-						fullTitle = fmt.Sprintf("%s %s", fullTitle, editionValue)
-					} else {
-						fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
-					}
-				}
-
-				f.Value = fullTitle
-				r.addField(f)
-
+		if field.Join != "" {
+			var values []string
+			for _, fieldValue := range fieldValues {
+				values = append(values, fieldValue.Value)
 			}
+
+			joinedValue := fieldValues[0]
+			joinedValue.Value = strings.Join(values, field.Join)
+
+			r.addField(joinedValue)
 		} else {
-			fieldValues := doc.getValuesByTag(field.Field)
-
-			for i, fieldValue := range fieldValues {
-				f.Value = fieldValue
-				r.addField(f)
-
-				if field.Limit > 0 && i+1 >= field.Limit {
-					break
-				}
+			for _, fieldValue := range fieldValues {
+				r.addField(fieldValue)
 			}
 		}
 	}
