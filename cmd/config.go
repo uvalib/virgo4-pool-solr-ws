@@ -50,7 +50,30 @@ type poolConfigRelators struct {
 	Map          []poolConfigRelator `json:"map,omitempty"`
 }
 
-type poolConfigCopyrights struct {
+type poolConfigCopyrightLabel struct {
+	Text  string `json:"text,omitempty"`
+	Label string `json:"label,omitempty"`
+}
+
+type poolConfigCopyrightLabels struct {
+	Prefix string                     `json:"prefix,omitempty"`
+	Suffix string                     `json:"suffix,omitempty"`
+	Split  string                     `json:"split,omitempty"`
+	Join   string                     `json:"join,omitempty"`
+	Labels []poolConfigCopyrightLabel `json:"labels,omitempty"`
+}
+
+type poolConfigCopyright struct {
+	Field      string                    `json:"field,omitempty"`
+	Pattern    string                    `json:"pattern,omitempty"`
+	URL        string                    `json:"url,omitempty"`
+	Label      string                    `json:"label,omitempty"`
+	URLGroup   int                       `json:"url_group,omitempty"`
+	PathGroup  int                       `json:"path_group,omitempty"`
+	PathLabels poolConfigCopyrightLabels `json:"path_labels,omitempty"`
+	CodeGroup  int                       `json:"code_group,omitempty"`
+	CodeLabels poolConfigCopyrightLabels `json:"code_labels,omitempty"`
+	re         *regexp.Regexp
 }
 
 type poolConfigService struct {
@@ -171,24 +194,17 @@ type poolConfigFieldTypeTitleSubtitleEdition struct {
 	EditionField  string `json:"edition_field,omitempty"`
 }
 
-type poolConfigFieldTypeCopyrightAndPermissions struct {
-	CreativeCommonsURIField string `json:"creative_commons_uri_field,omitempty"`
-	RightsStatementURIField string `json:"rights_statement_uri_field,omitempty"`
-	FormatField             string `json:"format_field,omitempty"`
-}
-
 type poolConfigFieldCustomInfo struct {
-	AccessURL               *poolConfigFieldTypeAccessURL               `json:"access_url,omitempty"`
-	CopyrightAndPermissions *poolConfigFieldTypeCopyrightAndPermissions `json:"copyright_and_permissions,omitempty"`
-	CoverImageURL           *poolConfigFieldTypeCoverImageURL           `json:"cover_image_url,omitempty"`
-	DigitalContentURL       *poolConfigFieldTypeDigitalContentURL       `json:"digital_content_url,omitempty"`
-	PdfDownloadURL          *poolConfigFieldTypePdfDownloadURL          `json:"pdf_download_url,omitempty"`
-	PublisherName           *poolConfigFieldTypePublisherName           `json:"publisher_name,omitempty"`
-	RISType                 *poolConfigFieldTypeRISType                 `json:"ris_type,omitempty"`
-	RISAuthors              *poolConfigFieldTypeRISAuthors              `json:"ris_authors,omitempty"`
-	SirsiURL                *poolConfigFieldTypeSirsiURL                `json:"sirsi_url,omitempty"`
-	ThumbnailURL            *poolConfigFieldTypeThumbnailURL            `json:"thumbnail_url,omitempty"`
-	TitleSubtitleEdition    *poolConfigFieldTypeTitleSubtitleEdition    `json:"title_subtitle_edition,omitempty"`
+	AccessURL            *poolConfigFieldTypeAccessURL            `json:"access_url,omitempty"`
+	CoverImageURL        *poolConfigFieldTypeCoverImageURL        `json:"cover_image_url,omitempty"`
+	DigitalContentURL    *poolConfigFieldTypeDigitalContentURL    `json:"digital_content_url,omitempty"`
+	PdfDownloadURL       *poolConfigFieldTypePdfDownloadURL       `json:"pdf_download_url,omitempty"`
+	PublisherName        *poolConfigFieldTypePublisherName        `json:"publisher_name,omitempty"`
+	RISType              *poolConfigFieldTypeRISType              `json:"ris_type,omitempty"`
+	RISAuthors           *poolConfigFieldTypeRISAuthors           `json:"ris_authors,omitempty"`
+	SirsiURL             *poolConfigFieldTypeSirsiURL             `json:"sirsi_url,omitempty"`
+	ThumbnailURL         *poolConfigFieldTypeThumbnailURL         `json:"thumbnail_url,omitempty"`
+	TitleSubtitleEdition *poolConfigFieldTypeTitleSubtitleEdition `json:"title_subtitle_edition,omitempty"`
 }
 
 type poolConfigField struct {
@@ -315,7 +331,7 @@ type poolConfigGlobal struct {
 	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
 	Publishers     []poolConfigPublisher    `json:"publishers,omitempty"`
 	Relators       poolConfigRelators       `json:"relators,omitempty"`
-	Copyrights     poolConfigCopyrights     `json:"copyrights,omitempty"`
+	Copyrights     []poolConfigCopyright    `json:"copyrights,omitempty"`
 	Mappings       poolConfigMappings       `json:"mappings,omitempty"`
 }
 

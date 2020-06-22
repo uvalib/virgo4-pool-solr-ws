@@ -328,6 +328,8 @@ func (p *poolContext) initTranslations() {
 func (p *poolContext) validateConfig() {
 	// ensure the existence and validity of required variables/solr fields/translation ids
 
+	var err error
+
 	invalid := false
 
 	var solrFields stringValidator
@@ -435,6 +437,19 @@ func (p *poolContext) validateConfig() {
 		solrFields.requireValue(val.Field, fmt.Sprintf("publisher %d solr field", i))
 	}
 
+	for i := range p.config.Global.Copyrights {
+		val := &p.config.Global.Copyrights[i]
+
+		solrFields.requireValue(val.Field, fmt.Sprintf("copyright %d solr field", i))
+		miscValues.requireValue(val.Pattern, fmt.Sprintf("copyright %d pattern", i))
+
+		if val.re, err = regexp.Compile(val.Pattern); err != nil {
+			log.Printf("[INIT] pattern compilation error in copyright entry %d: %s", i, err.Error())
+			invalid = true
+			continue
+		}
+	}
+
 	for i, field := range p.config.Mappings.Definitions.Fields {
 		prefix := fmt.Sprintf("field index %d: ", i)
 		postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
@@ -496,21 +511,6 @@ func (p *poolContext) validateConfig() {
 			case "composer_performer":
 
 			case "copyright_and_permissions_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.CopyrightAndPermissions == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.CopyrightAndPermissions.CreativeCommonsURIField, fmt.Sprintf("%s section creative commons uri field", field.Name))
-				solrFields.requireValue(field.CustomInfo.CopyrightAndPermissions.RightsStatementURIField, fmt.Sprintf("%s section rights statement uri field", field.Name))
-				solrFields.requireValue(field.CustomInfo.CopyrightAndPermissions.FormatField, fmt.Sprintf("%s section format field", field.Name))
 
 			case "cover_image_url":
 				if field.CustomInfo == nil {

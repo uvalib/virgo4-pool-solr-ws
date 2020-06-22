@@ -121,7 +121,7 @@ func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublishe
 		fieldValues := doc.getValuesByTag(publisher.Field)
 
 		for _, fieldValue := range fieldValues {
-			if publisher.re.MatchString(fieldValue) {
+			if publisher.re.MatchString(fieldValue) == true {
 				return publisher
 			}
 		}
@@ -144,6 +144,77 @@ func (s *searchContext) getPublisherName(doc *solrDocument) []string {
 	}
 
 	return []string{}
+}
+
+func (s *searchContext) getCopyrightLicense(text string, cfg poolConfigCopyrightLabels) string {
+	var texts []string
+	if cfg.Split == "" {
+		texts = []string{text}
+	} else {
+		texts = strings.Split(text, cfg.Split)
+	}
+
+	var labels []string
+	for _, txt := range texts {
+		key := strings.ToLower(txt)
+		for _, val := range cfg.Labels {
+			if key == val.Text {
+				labels = append(labels, val.Label)
+				continue
+			}
+		}
+	}
+
+	prefix := ""
+	if cfg.Prefix != "" {
+		prefix = cfg.Prefix + " "
+	}
+
+	suffix := ""
+	if cfg.Suffix != "" {
+		suffix = " " + cfg.Suffix
+	}
+
+	label := fmt.Sprintf("%s%s%s", prefix, strings.Join(labels, cfg.Join), suffix)
+
+	return label
+}
+
+func (s *searchContext) getCopyrightLicenseAndURL(doc *solrDocument) (string, string) {
+	for _, cr := range s.pool.config.Global.Copyrights {
+		fieldValues := doc.getValuesByTag(cr.Field)
+
+		for _, fieldValue := range fieldValues {
+			if groups := cr.re.FindStringSubmatch(fieldValue); len(groups) > 0 {
+				// first, check explicit assignment
+				if cr.Label != "" {
+					return cr.Label, cr.URL
+				}
+
+				url := groups[cr.URLGroup]
+
+				// next, check path mappings
+				path := groups[cr.PathGroup]
+				if license := s.getCopyrightLicense(path, cr.PathLabels); license != "" {
+					return license, url
+				}
+
+				// finally, attempt to map code to a label
+				code := groups[cr.CodeGroup]
+				if license := s.getCopyrightLicense(code, cr.CodeLabels); license != "" {
+					return license, url
+				}
+			}
+		}
+	}
+
+	// no matches found
+	return "", ""
+}
+
+func (s *searchContext) getFieldValues(template v4api.RecordField, doc *solrDocument) []v4api.RecordField {
+	// TODO
+	return []v4api.RecordField{template}
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
@@ -258,25 +329,25 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				}
 
 			case "author":
-				for _, authorValue := range relators.authors.xx {
+				for _, authorValue := range relators.authors.name {
 					f.Value = authorValue
 					r.addField(f)
 				}
 
 			case "author_date":
-				for _, authorValue := range relators.authors.dx {
+				for _, authorValue := range relators.authors.nameDate {
 					f.Value = authorValue
 					r.addField(f)
 				}
 
 			case "author_date_relation":
-				for _, authorValue := range relators.authors.dr {
+				for _, authorValue := range relators.authors.nameDateRelation {
 					f.Value = authorValue
 					r.addField(f)
 				}
 
 			case "author_relation":
-				for _, authorValue := range relators.authors.xr {
+				for _, authorValue := range relators.authors.nameRelation {
 					f.Value = authorValue
 					r.addField(f)
 				}
@@ -290,150 +361,21 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				}
 
 			case "composer_performer":
-				for _, authorValue := range relators.authors.xx {
+				for _, authorValue := range relators.authors.name {
 					f.Value = authorValue
 					r.addField(f)
 				}
 
 			case "copyright_and_permissions_url":
-				ccValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.CreativeCommonsURIField)
-				rsValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.RightsStatementURIField)
-				formatValues := doc.getValuesByTag(field.CustomInfo.CopyrightAndPermissions.FormatField)
-
-				uriValues := append(ccValues, rsValues...)
-
-				var uriValue string
-
-				switch {
-				case len(uriValues) > 0:
-					uriValue = firstElementOf(uriValues)
-
-				// FIXME hardcoded values ahead
-				case sliceContainsString(formatValues, "Online"):
-					uriValue = "https://rightsstatements.org/vocab/CNE/1.0/"
-
-				default:
-					continue
+				if license, uri := s.getCopyrightLicenseAndURL(doc); license != "" {
+					f.Label = license
+					f.Value = uri
+					r.addField(f)
 				}
-
-				// FIXME: ugly uri parsing
-				pieces := strings.Split(uriValue, "/")
-
-				if len(pieces) < 5 {
-					continue
-				}
-
-				var code string
-				var license string
-
-				// FIXME
-				switch pieces[2] {
-				case "creativecommons.org":
-					switch {
-					case pieces[3] == "licenses":
-						code = pieces[4]
-
-					case strings.Contains(uriValue, "/publicdomain/mark/1.0/"):
-						code = "publicdomain"
-
-					case strings.Contains(uriValue, "/publicdomain/zero/1.0/"):
-						code = "cc-zero"
-
-					default:
-						continue
-					}
-
-					switch strings.ToLower(code) {
-					case "publicdomain":
-						license = "Public Domain"
-
-					case "cc-zero":
-						license = "Public Domain Dedication"
-
-					default:
-						var clauses []string
-
-						clcodes := strings.Split(code, "-")
-
-						for _, clcode := range clcodes {
-							switch clcode {
-							case "by":
-								clauses = append(clauses, "Attribution")
-
-							case "sa":
-								clauses = append(clauses, "Share-alike")
-
-							case "nc":
-								clauses = append(clauses, "Non-commercial")
-
-							case "nd":
-								clauses = append(clauses, "No Derivative Works")
-							}
-						}
-
-						license = fmt.Sprintf("Creative Commons %s License", strings.Join(clauses, ", "))
-					}
-
-				case "rightsstatements.org":
-					code = pieces[4]
-
-					if code == "" {
-						code = "CNE"
-					}
-
-					switch strings.ToLower(code) {
-					case "inc":
-						license = "In Copyright"
-
-					case "inc-ow-eu":
-						license = "In Copyright - EU Orphan Work"
-
-					case "inc-edu":
-						license = "In Copyright - Education Use Permitted"
-
-					case "inc-nc":
-						license = "In Copyright - Non-Commercial Use Permitted"
-
-					case "inc-ruu":
-						license = "In Copyright - Rights-Holder(s) Unlocatable or Unidentifiable"
-
-					case "noc-cr":
-						license = "No Copyright - Contractual Restrictions"
-
-					case "noc-nc":
-						license = "No Copyright - Non-Commercial Use Only"
-
-					case "noc-oklr":
-						license = "No Copyright - Other Known Legal Restrictions"
-
-					case "noc-us":
-						license = "No Copyright - United States"
-
-					case "cne":
-						license = "Copyright Not Evaluated"
-
-					case "und":
-						license = "Copyright Undetermined"
-
-					case "nkc":
-						license = "No Known Copyright"
-
-					default:
-						s.log("unexpected rights statement code: [%s]", code)
-						continue
-					}
-
-				default:
-					continue
-				}
-
-				f.Label = license
-				f.Value = uriValue
-				r.addField(f)
 
 			case "cover_image_url":
 				if s.pool.maps.attributes["cover_images"].Supported == true {
-					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, relators.authors.xx); url != "" {
+					if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, relators.authors.name); url != "" {
 						f.Value = url
 						r.addField(f)
 					}
