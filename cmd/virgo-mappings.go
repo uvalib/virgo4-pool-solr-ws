@@ -212,10 +212,12 @@ func (s *searchContext) getCopyrightLicenseAndURL(doc *solrDocument) (string, st
 	return "", ""
 }
 
+/*
 func (s *searchContext) getFieldValues(template v4api.RecordField, doc *solrDocument) []v4api.RecordField {
 	// TODO
 	return []v4api.RecordField{template}
 }
+*/
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	var r poolRecord
