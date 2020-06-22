@@ -65,27 +65,19 @@ type poolRecord struct {
 
 func (r *poolRecord) addField(field v4api.RecordField) {
 	// non-RIS mode; add field as-is
-
 	if r.ris == false {
 		r.record.Fields = append(r.record.Fields, field)
 		return
 	}
 
-	// RIS mode; for each RIS code, add a new field with a different name,
-	// and hide all but the first from display
-
-	name := field.Name
-
-	for i, code := range r.risCodes {
-		field.RISCode = code
-
-		if i > 0 {
-			field.Name = fmt.Sprintf("%s_%d", name, i+1)
-			field.Label = ""
-			field.Display = "optional"
+	// RIS mode; for each RIS code, output a minimal field with that code and the field value
+	for _, code := range r.risCodes {
+		risField := v4api.RecordField{
+			Value:   field.Value,
+			RISCode: code,
 		}
 
-		r.record.Fields = append(r.record.Fields, field)
+		r.record.Fields = append(r.record.Fields, risField)
 	}
 }
 
@@ -428,16 +420,21 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
-	case "ris_authors":
+	case "ris_additional_author":
 		for i, authorValue := range rc.relations.authors.name {
-			f.Value = authorValue
-
 			if i == 0 {
-				f.RISCode = field.CustomInfo.RISAuthors.PrimaryCode
-			} else {
-				f.RISCode = field.CustomInfo.RISAuthors.AdditionalCode
+				continue
 			}
 
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "ris_author":
+		if len(rc.relations.authors.name) > 0 {
+			f.Value = rc.relations.authors.name[0]
 			values = append(values, f)
 		}
 

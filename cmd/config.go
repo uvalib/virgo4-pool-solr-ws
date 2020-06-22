@@ -179,11 +179,6 @@ type poolConfigFieldTypeRISType struct {
 	FormatField string `json:"format_field,omitempty"`
 }
 
-type poolConfigFieldTypeRISAuthors struct {
-	PrimaryCode    string `json:"primary_code,omitempty"`
-	AdditionalCode string `json:"additional_code,omitempty"`
-}
-
 type poolConfigFieldTypePublisherName struct {
 	AlternateField string `json:"alternate_field,omitempty"`
 }
@@ -200,7 +195,6 @@ type poolConfigFieldCustomInfo struct {
 	PdfDownloadURL       *poolConfigFieldTypePdfDownloadURL       `json:"pdf_download_url,omitempty"`
 	PublisherName        *poolConfigFieldTypePublisherName        `json:"publisher_name,omitempty"`
 	RISType              *poolConfigFieldTypeRISType              `json:"ris_type,omitempty"`
-	RISAuthors           *poolConfigFieldTypeRISAuthors           `json:"ris_authors,omitempty"`
 	SirsiURL             *poolConfigFieldTypeSirsiURL             `json:"sirsi_url,omitempty"`
 	ThumbnailURL         *poolConfigFieldTypeThumbnailURL         `json:"thumbnail_url,omitempty"`
 	TitleSubtitleEdition *poolConfigFieldTypeTitleSubtitleEdition `json:"title_subtitle_edition,omitempty"`

@@ -593,21 +593,9 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomInfo.PublisherName.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
 
-			case "ris_authors":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
+			case "ris_additional_author":
 
-				if field.CustomInfo.RISAuthors == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				miscValues.requireValue(field.CustomInfo.RISAuthors.PrimaryCode, fmt.Sprintf("%s section primary author code", field.Name))
-				miscValues.requireValue(field.CustomInfo.RISAuthors.AdditionalCode, fmt.Sprintf("%s section additional author code", field.Name))
+			case "ris_author":
 
 			case "ris_type":
 				if field.CustomInfo == nil {
