@@ -180,7 +180,6 @@ type poolConfigFieldTypeRISType struct {
 }
 
 type poolConfigFieldTypeRISAuthors struct {
-	AuthorField    string `json:"author_field,omitempty"`
 	PrimaryCode    string `json:"primary_code,omitempty"`
 	AdditionalCode string `json:"additional_code,omitempty"`
 }

@@ -606,7 +606,8 @@ func (p *poolContext) validateConfig() {
 					continue
 				}
 
-				solrFields.requireValue(field.CustomInfo.RISAuthors.AuthorField, fmt.Sprintf("%s section author field", field.Name))
+				miscValues.requireValue(field.CustomInfo.RISAuthors.PrimaryCode, fmt.Sprintf("%s section primary author code", field.Name))
+				miscValues.requireValue(field.CustomInfo.RISAuthors.AdditionalCode, fmt.Sprintf("%s section additional author code", field.Name))
 
 			case "ris_type":
 				if field.CustomInfo == nil {

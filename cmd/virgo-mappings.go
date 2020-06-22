@@ -431,9 +431,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "ris_authors":
-		authorValues := doc.getValuesByTag(field.CustomInfo.RISAuthors.AuthorField)
-
-		for i, authorValue := range authorValues {
+		for i, authorValue := range rc.relations.authors.name {
 			f.Value = authorValue
 
 			if i == 0 {
