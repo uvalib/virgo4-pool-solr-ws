@@ -73,6 +73,7 @@ func (r *poolRecord) addField(field v4api.RecordField) {
 	// RIS mode; for each RIS code, output a minimal field with that code and the field value
 	for _, code := range r.risCodes {
 		risField := v4api.RecordField{
+			Name:    field.Name,
 			Value:   field.Value,
 			RISCode: code,
 		}
@@ -580,14 +581,14 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			continue
 		}
 
-		if field.Join != "" {
+		if r.ris == false && field.Separator != "" {
 			var values []string
 			for _, fieldValue := range fieldValues {
 				values = append(values, fieldValue.Value)
 			}
 
 			joinedValue := fieldValues[0]
-			joinedValue.Value = strings.Join(values, field.Join)
+			joinedValue.Value = strings.Join(values, field.Separator)
 
 			r.addField(joinedValue)
 		} else {
