@@ -566,6 +566,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		f := v4api.RecordField{
 			Name:       field.Name,
 			Type:       field.Properties.Type,
+			Separator:  field.Properties.Separator,
 			Visibility: field.Properties.Visibility,
 			Display:    field.Properties.Display,
 			Provider:   field.Properties.Provider,
@@ -596,21 +597,8 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			}
 		}
 
-		// join multiple fields if configured (but not for RIS output)
-		if r.ris == false && field.Separator != "" {
-			var values []string
-			for _, fieldValue := range fieldValues {
-				values = append(values, fieldValue.Value)
-			}
-
-			joinedValue := fieldValues[0]
-			joinedValue.Value = strings.Join(values, field.Separator)
-
-			r.addField(joinedValue)
-		} else {
-			for _, fieldValue := range fieldValues {
-				r.addField(fieldValue)
-			}
+		for _, fieldValue := range fieldValues {
+			r.addField(fieldValue)
 		}
 	}
 

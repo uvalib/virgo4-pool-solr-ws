@@ -15,7 +15,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
 	github.com/prometheus/client_golang v1.7.0
 	github.com/sirupsen/logrus v1.6.0 // indirect
-	github.com/uvalib/virgo4-api v0.0.0-20200520202358-c1ac2685f137
+	github.com/uvalib/virgo4-api v0.0.0-20200623191129-1de14634229d
 	github.com/uvalib/virgo4-jwt v0.0.0-20200427141047-8e5c1f68bc8f
 	github.com/uvalib/virgo4-parser v0.0.0-20200603201936-661eb9b3b7bf
 	github.com/zsais/go-gin-prometheus v0.1.0
