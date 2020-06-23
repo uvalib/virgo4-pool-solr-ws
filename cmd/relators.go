@@ -37,7 +37,7 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 	r := relationContext{
 		search:       s,
 		matchTermsRE: regexp.MustCompile(`([\s(]*)([^\s()]+)([\s)]*)`),
-		cleanTermsRE: regexp.MustCompile(`(?i)([\s(]*(` + strings.Join(terms, "|") + `)[\s)]*)`),
+		cleanTermsRE: regexp.MustCompile(`(?i)([\s]*\((` + strings.Join(terms, "|") + `)\)[\s]*)`),
 		cleanDatesRE: regexp.MustCompile(`([\s\[,]*)(\d{4}(-)?(\d{4})?)([\s\]]*)`),
 	}
 
