@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"os"
@@ -361,21 +363,34 @@ func getSortedJSONEnvVars() []string {
 func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
-	// json configs
+	// base64-encoded gzipped json configs
 
 	envs := getSortedJSONEnvVars()
 
 	valid := true
 
 	for _, env := range envs {
-		log.Printf("[CONFIG] loading %s ...", env)
 		if val := os.Getenv(env); val != "" {
-			dec := json.NewDecoder(bytes.NewReader([]byte(val)))
-			dec.DisallowUnknownFields()
+			log.Printf("[CONFIG] loading %s (%d bytes) ...", env, len(val))
 
-			if err := dec.Decode(&cfg); err != nil {
-				log.Printf("error decoding %s: %s", env, err.Error())
+			input := bytes.NewReader([]byte(val))
+
+			b64Dec := base64.NewDecoder(base64.StdEncoding, input)
+
+			gzDec, gzErr := gzip.NewReader(b64Dec)
+			if gzErr != nil {
+				log.Printf("error decoding %s: %s", env, gzErr.Error())
 				valid = false
+				continue
+			}
+
+			jsDec := json.NewDecoder(gzDec)
+			jsDec.DisallowUnknownFields()
+
+			if jsErr := jsDec.Decode(&cfg); jsErr != nil {
+				log.Printf("error decoding %s: %s", env, jsErr.Error())
+				valid = false
+				continue
 			}
 		}
 	}

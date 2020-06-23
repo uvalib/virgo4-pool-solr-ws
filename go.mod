@@ -13,7 +13,7 @@ require (
 	github.com/igorsobreira/titlecase v0.0.0-20140109233139-4156b5b858ac
 	github.com/mitchellh/mapstructure v1.3.2
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
-	github.com/prometheus/client_golang v1.7.0
+	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/uvalib/virgo4-api v0.0.0-20200623191129-1de14634229d
 	github.com/uvalib/virgo4-jwt v0.0.0-20200427141047-8e5c1f68bc8f
