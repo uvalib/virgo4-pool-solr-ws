@@ -581,6 +581,22 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			continue
 		}
 
+		// split single field if configured
+		if len(fieldValues) == 1 && field.SplitOn != "" {
+			origField := fieldValues[0]
+			splitValues := strings.Split(origField.Value, field.SplitOn)
+			if len(splitValues) > 1 {
+				// successful (?) split; go with it
+				fieldValues = []v4api.RecordField{}
+				for _, piece := range splitValues {
+					newField := origField
+					newField.Value = piece
+					fieldValues = append(fieldValues, newField)
+				}
+			}
+		}
+
+		// join multiple fields if configured (but not for RIS output)
 		if r.ris == false && field.Separator != "" {
 			var values []string
 			for _, fieldValue := range fieldValues {
