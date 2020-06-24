@@ -55,14 +55,16 @@ type poolConfigRelators struct {
 type poolConfigCopyrightLabel struct {
 	Text  string `json:"text,omitempty"`
 	Label string `json:"label,omitempty"`
+	Icon  string `json:"icon,omitempty"`
 }
 
 type poolConfigCopyrightLabels struct {
-	Prefix string                     `json:"prefix,omitempty"`
-	Suffix string                     `json:"suffix,omitempty"`
-	Split  string                     `json:"split,omitempty"`
-	Join   string                     `json:"join,omitempty"`
-	Labels []poolConfigCopyrightLabel `json:"labels,omitempty"`
+	Prefix      string                     `json:"prefix,omitempty"`
+	Suffix      string                     `json:"suffix,omitempty"`
+	Split       string                     `json:"split,omitempty"`
+	Join        string                     `json:"join,omitempty"`
+	Labels      []poolConfigCopyrightLabel `json:"labels,omitempty"`
+	DefaultIcon string                     `json:"default_icon,omitempty"`
 }
 
 type poolConfigCopyright struct {
@@ -70,6 +72,8 @@ type poolConfigCopyright struct {
 	Pattern    string                    `json:"pattern,omitempty"`
 	URL        string                    `json:"url,omitempty"`
 	Label      string                    `json:"label,omitempty"`
+	Icon       string                    `json:"icon,omitempty"`
+	IconPath   string                    `json:"icon_path,omitempty"`
 	URLGroup   int                       `json:"url_group,omitempty"`
 	PathGroup  int                       `json:"path_group,omitempty"`
 	PathLabels poolConfigCopyrightLabels `json:"path_labels,omitempty"`

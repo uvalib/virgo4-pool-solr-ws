@@ -143,7 +143,9 @@ func (s *searchContext) getPublisherName(doc *solrDocument) []string {
 	return []string{}
 }
 
-func (s *searchContext) getCopyrightLicense(text string, cfg poolConfigCopyrightLabels) string {
+func (s *searchContext) getCopyrightLabelIcon(text string, cfg poolConfigCopyrightLabels) (string, string) {
+	var icon string
+
 	var texts []string
 	if cfg.Split == "" {
 		texts = []string{text}
@@ -153,9 +155,9 @@ func (s *searchContext) getCopyrightLicense(text string, cfg poolConfigCopyright
 
 	var labels []string
 	for _, txt := range texts {
-		key := strings.ToLower(txt)
 		for _, val := range cfg.Labels {
-			if key == val.Text {
+			if strings.EqualFold(txt, val.Text) == true {
+				icon = val.Icon
 				labels = append(labels, val.Label)
 				continue
 			}
@@ -174,10 +176,16 @@ func (s *searchContext) getCopyrightLicense(text string, cfg poolConfigCopyright
 
 	label := fmt.Sprintf("%s%s%s", prefix, strings.Join(labels, cfg.Join), suffix)
 
-	return label
+	// use default icon if none specified by label map.  this accounts for literal values or
+	// templatized ones ("{code}" is the code portion of the copyright url being matched)
+	if icon == "" {
+		icon = strings.ReplaceAll(cfg.DefaultIcon, "{code}", text)
+	}
+
+	return label, icon
 }
 
-func (s *searchContext) getCopyrightLicenseAndURL(doc *solrDocument) (string, string) {
+func (s *searchContext) getCopyrightLabelURLIcon(doc *solrDocument) (string, string, string) {
 	for _, cr := range s.pool.config.Global.Copyrights {
 		fieldValues := doc.getValuesByTag(cr.Field)
 
@@ -185,28 +193,32 @@ func (s *searchContext) getCopyrightLicenseAndURL(doc *solrDocument) (string, st
 			if groups := cr.re.FindStringSubmatch(fieldValue); len(groups) > 0 {
 				// first, check explicit assignment
 				if cr.Label != "" {
-					return cr.Label, cr.URL
+					return cr.Label, cr.URL, cr.Icon
 				}
 
 				url := groups[cr.URLGroup]
 
-				// next, check path mappings
-				path := groups[cr.PathGroup]
-				if license := s.getCopyrightLicense(path, cr.PathLabels); license != "" {
-					return license, url
+				// next, check path mappings (if specified)
+				if cr.PathGroup > 0 {
+					path := groups[cr.PathGroup]
+					if label, icon := s.getCopyrightLabelIcon(path, cr.PathLabels); label != "" {
+						icon = fmt.Sprintf("%s/%s", cr.IconPath, icon)
+						return label, url, icon
+					}
 				}
 
 				// finally, attempt to map code to a label
 				code := groups[cr.CodeGroup]
-				if license := s.getCopyrightLicense(code, cr.CodeLabels); license != "" {
-					return license, url
+				if label, icon := s.getCopyrightLabelIcon(code, cr.CodeLabels); label != "" {
+					icon = fmt.Sprintf("%s/%s", cr.IconPath, icon)
+					return label, url, icon
 				}
 			}
 		}
 	}
 
 	// no matches found
-	return "", ""
+	return "", "", ""
 }
 
 type recordContext struct {
@@ -331,8 +343,10 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "copyright_and_permissions":
-		if license, uri := s.getCopyrightLicenseAndURL(doc); license != "" {
-			f.Value = fmt.Sprintf(`<a href="%s">%s</a>`, uri, license)
+		if label, url, icon := s.getCopyrightLabelURLIcon(doc); label != "" {
+			f.Value = url
+			f.Item = label
+			f.Icon = icon
 			values = append(values, f)
 		}
 
