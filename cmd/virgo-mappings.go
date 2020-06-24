@@ -221,6 +221,38 @@ func (s *searchContext) getCopyrightLabelURLIcon(doc *solrDocument) (string, str
 	return "", "", ""
 }
 
+func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeAccessURL) []v4api.RecordField {
+	var values []v4api.RecordField
+
+	urlValues := doc.getValuesByTag(cfg.URLField)
+	labelValues := doc.getValuesByTag(cfg.LabelField)
+
+	useLabels := false
+	if len(labelValues) == len(urlValues) {
+		useLabels = true
+	}
+
+	for i, item := range urlValues {
+		f.Value = item
+
+		itemLabel := ""
+		if useLabels == true {
+			itemLabel = labelValues[i]
+		}
+
+		// if not using labels, or this label is not defined, fall back to generic item label
+		if itemLabel == "" {
+			itemLabel = fmt.Sprintf("%s %d", s.client.localize(cfg.DefaultItemXID), i+1)
+		}
+
+		f.Item = strings.TrimSpace(itemLabel)
+
+		values = append(values, f)
+	}
+
+	return values
+}
+
 type recordContext struct {
 	anonOnline         bool
 	authOnline         bool
@@ -251,37 +283,15 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	switch field.Name {
 	case "access_url":
-		if rc.anonOnline == true || rc.authOnline == true {
-			urlValues := doc.getValuesByTag(field.CustomInfo.AccessURL.URLField)
-			labelValues := doc.getValuesByTag(field.CustomInfo.AccessURL.LabelField)
-			providerValues := doc.getValuesByTag(field.CustomInfo.AccessURL.ProviderField)
-
-			f.Provider = firstElementOf(providerValues)
-
-			useLabels := false
-			if len(labelValues) == len(urlValues) {
-				useLabels = true
-			}
-
-			for i, item := range urlValues {
-				f.Value = item
-
-				itemLabel := ""
-
-				if useLabels == true {
-					itemLabel = labelValues[i]
-				}
-
-				// if not using labels, or this label is not defined, fall back to generic item label
-				if itemLabel == "" {
-					itemLabel = fmt.Sprintf("%s %d", s.client.localize(field.CustomInfo.AccessURL.DefaultItemXID), i+1)
-				}
-
-				f.Item = itemLabel
-
-				values = append(values, f)
-			}
+		if rc.anonOnline == false && rc.authOnline == false {
+			return values
 		}
+
+		providerValues := doc.getValuesByTag(field.CustomInfo.AccessURL.ProviderField)
+
+		f.Provider = firstElementOf(providerValues)
+
+		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
 
 		return values
 
@@ -370,6 +380,11 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "online_related":
+		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
+
+		return values
+
 	case "pdf_download_url":
 		pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
 
@@ -432,6 +447,11 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 			f.Value = fieldValue
 			values = append(values, f)
 		}
+
+		return values
+
+	case "related_resources":
+		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
 
 		return values
 

@@ -168,6 +168,7 @@ type solrDocument struct {
 	URLIIIFImage                []string `json:"url_iiif_image_a,omitempty"`
 	URLIIIFManifest             []string `json:"url_iiif_manifest_a,omitempty"`
 	URLLabel                    []string `json:"url_label_a,omitempty"`
+	URLLabelSupplemental        []string `json:"url_label_supp_a,omitempty"`
 	URLSupplemental             []string `json:"url_supp_a,omitempty"`
 	UVAAvailability             []string `json:"uva_availability_a,omitempty"`
 	WorkIdentifier              []string `json:"workIdentifier_a,omitempty"`
