@@ -363,7 +363,7 @@ func getSortedJSONEnvVars() []string {
 func loadConfig() *poolConfig {
 	cfg := poolConfig{}
 
-	// base64-encoded gzipped json configs
+	// contents are either plain text json, or base64-encoded gzipped json
 
 	envs := getSortedJSONEnvVars()
 
@@ -371,27 +371,41 @@ func loadConfig() *poolConfig {
 
 	for _, env := range envs {
 		if val := os.Getenv(env); val != "" {
-			log.Printf("[CONFIG] loading %s (%d bytes) ...", env, len(val))
-
 			input := bytes.NewReader([]byte(val))
+
+			// attempt to read as plain text first
+
+			jsDec := json.NewDecoder(input)
+			jsDec.DisallowUnknownFields()
+
+			if jsErr := jsDec.Decode(&cfg); jsErr == nil {
+				log.Printf("[CONFIG] loaded %s (plain text; %d bytes)", env, len(val))
+				continue
+			}
+
+			// fall back to decoding as base64-encoded gzipped data
+
+			input = bytes.NewReader([]byte(val))
 
 			b64Dec := base64.NewDecoder(base64.StdEncoding, input)
 
 			gzDec, gzErr := gzip.NewReader(b64Dec)
 			if gzErr != nil {
-				log.Printf("error decoding %s: %s", env, gzErr.Error())
+				log.Printf("[CONFIG] %s: error decoding gzipped data: %s", env, gzErr.Error())
 				valid = false
 				continue
 			}
 
-			jsDec := json.NewDecoder(gzDec)
+			jsDec = json.NewDecoder(gzDec)
 			jsDec.DisallowUnknownFields()
 
 			if jsErr := jsDec.Decode(&cfg); jsErr != nil {
-				log.Printf("error decoding %s: %s", env, jsErr.Error())
+				log.Printf("[CONFIG] %s: error decoding json data: %s", env, jsErr.Error())
 				valid = false
 				continue
 			}
+
+			log.Printf("[CONFIG] loaded %s (base64-encoded gzipped data; %d bytes)", env, len(val))
 		}
 	}
 
