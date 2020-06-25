@@ -83,6 +83,7 @@ type solrDocument struct {
 	AuthorFacet                 []string `json:"author_facet_a,omitempty"`
 	AuthorAddedEntry            []string `json:"author_added_entry_a,omitempty"`
 	AuthorCredits               []string `json:"author_credits_a,omitempty"`
+	AuthorVernacular            []string `json:"author_vern_a,omitempty"`
 	AwardsNote                  []string `json:"awards_note_a,omitempty"`
 	BiographicalNote            []string `json:"biographical_note_a,omitempty"`
 	CallNumber                  []string `json:"call_number_a,omitempty"`
@@ -163,6 +164,7 @@ type solrDocument struct {
 	TitleNotes                  []string `json:"title_notes_a,omitempty"`
 	TitlePrevious               []string `json:"title_previous_a,omitempty"`
 	TitleUniform                []string `json:"title_uniform_a,omitempty"`
+	TitleVernacular             []string `json:"title_vern_a,omitempty"`
 	UPC                         []string `json:"upc_a,omitempty"`
 	URL                         []string `json:"url_a,omitempty"`
 	URLIIIFImage                []string `json:"url_iiif_image_a,omitempty"`
