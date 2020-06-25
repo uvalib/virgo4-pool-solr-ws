@@ -158,6 +158,7 @@ type solrDocument struct {
 	ThumbnailURL                []string `json:"thumbnail_url_a,omitempty"`
 	Title                       []string `json:"title_a,omitempty"`
 	TitleAbbreviated            []string `json:"title_abbreviated_a,omitempty"`
+	TitleAddedEntry             []string `json:"title_added_entry_a,omitempty"`
 	TitleAlternate              []string `json:"title_alternate_a,omitempty"`
 	TitleHistorynote            []string `json:"title_history_note_a,omitempty"`
 	TitleLater                  []string `json:"title_later_a,omitempty"`
