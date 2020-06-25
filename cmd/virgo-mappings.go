@@ -272,9 +272,9 @@ type recordContext struct {
 func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, f v4api.RecordField, doc *solrDocument) []v4api.RecordField {
 	var values []v4api.RecordField
 
-	if field.Custom == false {
-		fieldValues := doc.getValuesByTag(field.Field)
+	fieldValues := doc.getValuesByTag(field.Field)
 
+	if field.Custom == false {
 		for i, fieldValue := range fieldValues {
 			f.Value = fieldValue
 			values = append(values, f)
@@ -309,7 +309,13 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "author":
-		for _, authorValue := range rc.relations.authors.name {
+		authorValues := fieldValues
+
+		if len(fieldValues) == 0 {
+			authorValues = rc.relations.authors.name
+		}
+
+		for _, authorValue := range authorValues {
 			f.Value = authorValue
 			values = append(values, f)
 		}
