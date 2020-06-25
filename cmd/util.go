@@ -106,3 +106,20 @@ func isValidURL(s string) bool {
 	u, err := url.Parse(s)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
+
+func uniqueStrings(s []string) []string {
+	var uniq []string
+
+	seen := make(map[string]bool)
+
+	for _, val := range s {
+		key := strings.ToLower(val)
+
+		if seen[key] == false {
+			uniq = append(uniq, val)
+			seen[key] = true
+		}
+	}
+
+	return uniq
+}

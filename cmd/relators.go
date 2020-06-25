@@ -138,49 +138,32 @@ func (r *relationContext) addOther(entry string) {
 	r.relations.others.name = append(r.relations.others.name, p.name...)
 }
 
-func (r *relationContext) removeDuplicateEntries(entries []string) []string {
-	var unique []string
-
-	seen := make(map[string]bool)
-
-	for _, entry := range entries {
-		key := strings.ToLower(entry)
-
-		if seen[key] == false {
-			unique = append(unique, entry)
-			seen[key] = true
-		}
-	}
-
-	return unique
-}
-
 func (r *relationContext) removeDuplicateAuthors() {
-	r.relations.authors.nameDateRelation = r.removeDuplicateEntries(r.relations.authors.nameDateRelation)
-	r.relations.authors.nameDate = r.removeDuplicateEntries(r.relations.authors.nameDate)
-	r.relations.authors.nameRelation = r.removeDuplicateEntries(r.relations.authors.nameRelation)
-	r.relations.authors.name = r.removeDuplicateEntries(r.relations.authors.name)
+	r.relations.authors.nameDateRelation = uniqueStrings(r.relations.authors.nameDateRelation)
+	r.relations.authors.nameDate = uniqueStrings(r.relations.authors.nameDate)
+	r.relations.authors.nameRelation = uniqueStrings(r.relations.authors.nameRelation)
+	r.relations.authors.name = uniqueStrings(r.relations.authors.name)
 }
 
 func (r *relationContext) removeDuplicateAdvisors() {
-	r.relations.advisors.nameDateRelation = r.removeDuplicateEntries(r.relations.advisors.nameDateRelation)
-	r.relations.advisors.nameDate = r.removeDuplicateEntries(r.relations.advisors.nameDate)
-	r.relations.advisors.nameRelation = r.removeDuplicateEntries(r.relations.advisors.nameRelation)
-	r.relations.advisors.name = r.removeDuplicateEntries(r.relations.advisors.name)
+	r.relations.advisors.nameDateRelation = uniqueStrings(r.relations.advisors.nameDateRelation)
+	r.relations.advisors.nameDate = uniqueStrings(r.relations.advisors.nameDate)
+	r.relations.advisors.nameRelation = uniqueStrings(r.relations.advisors.nameRelation)
+	r.relations.advisors.name = uniqueStrings(r.relations.advisors.name)
 }
 
 func (r *relationContext) removeDuplicateEditors() {
-	r.relations.editors.nameDateRelation = r.removeDuplicateEntries(r.relations.editors.nameDateRelation)
-	r.relations.editors.nameDate = r.removeDuplicateEntries(r.relations.editors.nameDate)
-	r.relations.editors.nameRelation = r.removeDuplicateEntries(r.relations.editors.nameRelation)
-	r.relations.editors.name = r.removeDuplicateEntries(r.relations.editors.name)
+	r.relations.editors.nameDateRelation = uniqueStrings(r.relations.editors.nameDateRelation)
+	r.relations.editors.nameDate = uniqueStrings(r.relations.editors.nameDate)
+	r.relations.editors.nameRelation = uniqueStrings(r.relations.editors.nameRelation)
+	r.relations.editors.name = uniqueStrings(r.relations.editors.name)
 }
 
 func (r *relationContext) removeDuplicateOthers() {
-	r.relations.others.nameDateRelation = r.removeDuplicateEntries(r.relations.others.nameDateRelation)
-	r.relations.others.nameDate = r.removeDuplicateEntries(r.relations.others.nameDate)
-	r.relations.others.nameRelation = r.removeDuplicateEntries(r.relations.others.nameRelation)
-	r.relations.others.name = r.removeDuplicateEntries(r.relations.others.name)
+	r.relations.others.nameDateRelation = uniqueStrings(r.relations.others.nameDateRelation)
+	r.relations.others.nameDate = uniqueStrings(r.relations.others.nameDate)
+	r.relations.others.nameRelation = uniqueStrings(r.relations.others.nameRelation)
+	r.relations.others.name = uniqueStrings(r.relations.others.name)
 }
 
 func (r *relationContext) removeDuplicateRelations() {
