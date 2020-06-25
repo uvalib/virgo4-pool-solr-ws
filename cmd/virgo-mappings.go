@@ -233,6 +233,10 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 	}
 
 	for i, item := range urlValues {
+		if isValidURL(item) == false {
+			continue
+		}
+
 		f.Value = item
 
 		itemLabel := ""

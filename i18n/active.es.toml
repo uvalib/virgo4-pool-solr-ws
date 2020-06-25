@@ -373,6 +373,12 @@ other = "Pistas"
 [FieldUniformTitle]
 other = "Título Uniforme"
 
+[FieldVernacularAuthor]
+other = "Autor Vernáculo"
+
+[FieldVernacularTitle]
+other = "Título Vernáculo"
+
 [FieldWorkIdentifier]
 other = "Identificador de Trabajo"
 

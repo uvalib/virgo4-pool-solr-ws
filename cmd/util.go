@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -99,4 +100,9 @@ func isValidSortOrder(s string) bool {
 	}
 
 	return true
+}
+
+func isValidURL(s string) bool {
+	u, err := url.Parse(s)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }

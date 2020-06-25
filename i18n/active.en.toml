@@ -373,6 +373,12 @@ other = "Tracks"
 [FieldUniformTitle]
 other = "Uniform Title"
 
+[FieldVernacularAuthor]
+other = "Vernacular Author"
+
+[FieldVernacularTitle]
+other = "Vernacular Title"
+
 [FieldWorkIdentifier]
 other = "Work Identifier"
 
