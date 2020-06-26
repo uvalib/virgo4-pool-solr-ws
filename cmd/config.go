@@ -312,9 +312,21 @@ type poolConfigMappingsDefinitions struct {
 	Sorts  []poolConfigSort  `json:"sorts,omitempty"`
 }
 
+type poolConfigMappingsHeadingField struct {
+	Name    string `json:"name,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Field   string `json:"field,omitempty"`
+	RISCode string `json:"ris_code,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+}
+
 type poolConfigMappingsConfiguredFields struct {
-	Basic    []string `json:"basic,omitempty"`
-	Detailed []string `json:"detailed,omitempty"`
+	Title            poolConfigMappingsHeadingField `json:"title,omitempty"`
+	TitleVernacular  poolConfigMappingsHeadingField `json:"title_vernacular,omitempty"`
+	Author           poolConfigMappingsHeadingField `json:"author,omitempty"`
+	AuthorVernacular poolConfigMappingsHeadingField `json:"author_vernacular,omitempty"`
+	Basic            []string                       `json:"basic,omitempty"`
+	Detailed         []string                       `json:"detailed,omitempty"`
 }
 
 type poolConfigMappingsConfigured struct {

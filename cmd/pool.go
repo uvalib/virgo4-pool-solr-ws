@@ -794,10 +794,37 @@ func (p *poolContext) initMappings() {
 		fieldMap[fieldDef.Name] = fieldDef
 	}
 
+	// first, add special title/author fields
+	// these will be populated in perhaps the most ugly fashion below
+
+	// these are required
+	basicFieldNames := []string{
+		p.config.Local.Mappings.Configured.FieldNames.Title.Name,
+		p.config.Local.Mappings.Configured.FieldNames.Author.Name,
+	}
+
+	// these are optional
+	if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
+		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
+	}
+
+	if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
+		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
+	}
+
+	headerFields := len(basicFieldNames)
+
 	// build list of unique basic fields by name
-	basicFieldNames := append(p.config.Global.Mappings.Configured.FieldNames.Basic, p.config.Local.Mappings.Configured.FieldNames.Basic...)
+	basicFieldNames = append(basicFieldNames, p.config.Global.Mappings.Configured.FieldNames.Basic...)
+	basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.Basic...)
 	basicFieldNamesSeen := make(map[string]bool)
-	for _, basicFieldName := range basicFieldNames {
+	for i, basicFieldName := range basicFieldNames {
+		if basicFieldName == "" {
+			log.Printf("[INIT] empty basic field name")
+			invalid = true
+			continue
+		}
+
 		if basicFieldNamesSeen[basicFieldName] == true {
 			continue
 		}
@@ -812,6 +839,48 @@ func (p *poolContext) initMappings() {
 
 		basicFieldDef.Properties.Visibility = ""
 
+		if i < headerFields {
+			// we're working with header fields; check which one and set any overrides
+			switch basicFieldName {
+			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
+				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
+				if p.config.Local.Mappings.Configured.FieldNames.Title.Field != "" {
+					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.Title.Field
+				}
+				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
+				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.Title.Limit
+
+			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
+				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
+				if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Field != "" {
+					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Field
+				}
+				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
+				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Limit
+
+			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
+				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
+				if p.config.Local.Mappings.Configured.FieldNames.Author.Field != "" {
+					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.Author.Field
+				}
+				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
+				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.Author.Limit
+
+			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
+				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
+				if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Field != "" {
+					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Field
+				}
+				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
+				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Limit
+
+			default:
+				log.Printf("[INIT] unrecognized header field name: [%s]", basicFieldName)
+				invalid = true
+				continue
+			}
+		}
+
 		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *basicFieldDef)
 
 		basicFieldNamesSeen[basicFieldName] = true
@@ -821,6 +890,12 @@ func (p *poolContext) initMappings() {
 	detailedFieldNames := append(p.config.Global.Mappings.Configured.FieldNames.Detailed, p.config.Local.Mappings.Configured.FieldNames.Detailed...)
 	detailedFieldNamesSeen := make(map[string]bool)
 	for _, detailedFieldName := range detailedFieldNames {
+		if detailedFieldName == "" {
+			log.Printf("[INIT] empty detailed field name")
+			invalid = true
+			continue
+		}
+
 		if basicFieldNamesSeen[detailedFieldName] == true {
 			log.Printf("[INIT] field exists in both basic and detailed lists: [%s]", detailedFieldName)
 			invalid = true
