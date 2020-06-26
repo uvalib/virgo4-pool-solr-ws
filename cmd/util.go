@@ -5,6 +5,9 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"unicode"
+
+	"github.com/igorsobreira/titlecase"
 )
 
 // miscellaneous utility functions
@@ -122,4 +125,29 @@ func uniqueStrings(s []string) []string {
 	}
 
 	return uniq
+}
+
+func titleizeIfUppercase(s string) string {
+	val := s
+
+	hasLower := false
+	hasUpper := false
+
+	for _, r := range s {
+		if unicode.IsLower(r) == true {
+			hasLower = true
+		} else if unicode.IsUpper(r) == true {
+			hasUpper = true
+		}
+
+		if hasLower == true && hasUpper == true {
+			break
+		}
+	}
+
+	if hasUpper == true || hasLower == false {
+		return titlecase.Title(val)
+	}
+
+	return val
 }
