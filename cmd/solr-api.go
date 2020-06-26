@@ -102,6 +102,7 @@ type solrDocument struct {
 	Director                    []string `json:"author_director_a,omitempty"`
 	DissertationNote            []string `json:"dissertation_note_a,omitempty"`
 	Edition                     []string `json:"edition_a,omitempty"`
+	Extent                      []string `json:"extent_a,omitempty"`
 	Feature                     []string `json:"feature_a,omitempty"`
 	FindingAidNote              []string `json:"finding_aid_note_a,omitempty"`
 	Format                      []string `json:"format_a,omitempty"`

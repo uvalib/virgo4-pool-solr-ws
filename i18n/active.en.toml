@@ -181,6 +181,9 @@ other = "Contributor"
 [FieldCopyright]
 other = "Copyright & Permissions"
 
+[FieldCreator]
+other = "Creator"
+
 [FieldCredits]
 other = "Credits"
 
@@ -210,6 +213,9 @@ other = "Dissertation Note"
 
 [FieldEdition]
 other = "Edition"
+
+[FieldExtent]
+other = "Extent"
 
 [FieldFindingAidNote]
 other = "Finding Aid Note"

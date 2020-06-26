@@ -385,6 +385,20 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "creator":
+		authorValues := fieldValues
+
+		if len(authorValues) == 0 {
+			authorValues = rc.relations.authors.name
+		}
+
+		for _, authorValue := range authorValues {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
 	case "digital_content_url":
 		if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
 			f.Value = url
