@@ -495,6 +495,8 @@ func (p *poolContext) validateConfig() {
 
 			case "author":
 
+			case "author_list":
+
 			case "availability":
 
 			case "composer_performer":

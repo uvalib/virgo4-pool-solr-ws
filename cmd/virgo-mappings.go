@@ -275,13 +275,9 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 	fieldValues := doc.getValuesByTag(field.Field)
 
 	if field.Custom == false {
-		for i, fieldValue := range fieldValues {
+		for _, fieldValue := range fieldValues {
 			f.Value = fieldValue
 			values = append(values, f)
-
-			if field.Limit > 0 && i+1 >= field.Limit {
-				break
-			}
 		}
 
 		return values
@@ -316,6 +312,14 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		}
 
 		for _, authorValue := range authorValues {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "author_list":
+		for _, authorValue := range rc.relations.authors.name {
 			f.Value = authorValue
 			values = append(values, f)
 		}
@@ -634,8 +638,12 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			}
 		}
 
-		for _, fieldValue := range fieldValues {
+		for i, fieldValue := range fieldValues {
 			r.addField(fieldValue)
+
+			if field.Limit > 0 && i+1 >= field.Limit {
+				break
+			}
 		}
 	}
 
