@@ -378,14 +378,9 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
 
-	if len(p.config.Local.Solr.AuthorFields) == 0 {
-		log.Printf("[VALIDATE] missing solr author field(s)")
-		invalid = true
-	}
-
-	for _, field := range p.config.Local.Solr.AuthorFields {
-		solrFields.requireValue(field, "solr author field")
-	}
+	solrFields.addValue(p.config.Local.Solr.AuthorFields.InitialField)
+	solrFields.requireValue(p.config.Local.Solr.AuthorFields.PreferredAuthorField, "preferred author field")
+	solrFields.addValue(p.config.Local.Solr.AuthorFields.FallbackAuthorField)
 
 	if p.config.Local.Identity.Mode == "image" {
 		if p.config.Local.Related == nil {
@@ -499,12 +494,6 @@ func (p *poolContext) validateConfig() {
 			case "authenticate":
 
 			case "author":
-
-			case "author_date":
-
-			case "author_date_relation":
-
-			case "author_relation":
 
 			case "availability":
 

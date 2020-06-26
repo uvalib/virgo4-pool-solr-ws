@@ -108,17 +108,23 @@ type poolConfigSolrClients struct {
 	HealthCheck poolConfigSolrClient `json:"healthcheck,omitempty"`
 }
 
+type poolConfigAuthorFields struct {
+	InitialField         string `json:"initial_field,omitempty"`
+	PreferredAuthorField string `json:"preferred_author_field,omitempty"`
+	FallbackAuthorField  string `json:"fallback_author_field,omitempty"`
+}
+
 type poolConfigSolr struct {
-	Host                    string                `json:"host,omitempty"`
-	Core                    string                `json:"core,omitempty"`
-	Clients                 poolConfigSolrClients `json:"clients,omitempty"`
-	Params                  poolConfigSolrParams  `json:"params,omitempty"`
-	GroupField              string                `json:"group_field,omitempty"`
-	RelevanceIntraGroupSort poolConfigSort        `json:"relevance_intra_group_sort,omitempty"`
-	AuthorFields            []string              `json:"author_fields,omitempty"`
-	ExactMatchTitleField    string                `json:"exact_match_title_field,omitempty"`
-	ScoreThresholdMedium    float32               `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh      float32               `json:"score_threshold_high,omitempty"`
+	Host                    string                 `json:"host,omitempty"`
+	Core                    string                 `json:"core,omitempty"`
+	Clients                 poolConfigSolrClients  `json:"clients,omitempty"`
+	Params                  poolConfigSolrParams   `json:"params,omitempty"`
+	GroupField              string                 `json:"group_field,omitempty"`
+	RelevanceIntraGroupSort poolConfigSort         `json:"relevance_intra_group_sort,omitempty"`
+	ExactMatchTitleField    string                 `json:"exact_match_title_field,omitempty"`
+	ScoreThresholdMedium    float32                `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh      float32                `json:"score_threshold_high,omitempty"`
+	AuthorFields            poolConfigAuthorFields `json:"author_fields,omitempty"`
 }
 
 type poolConfigPdfEndpoints struct {

@@ -322,30 +322,6 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
-	case "author_date":
-		for _, authorValue := range rc.relations.authors.nameDate {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
-
-	case "author_date_relation":
-		for _, authorValue := range rc.relations.authors.nameDateRelation {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
-
-	case "author_relation":
-		for _, authorValue := range rc.relations.authors.nameRelation {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
-
 	case "availability":
 		for _, availabilityValue := range rc.availabilityValues {
 			if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
@@ -357,7 +333,13 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "composer_performer":
-		for _, authorValue := range rc.relations.authors.name {
+		authorValues := fieldValues
+
+		if len(fieldValues) == 0 {
+			authorValues = rc.relations.authors.name
+		}
+
+		for _, authorValue := range authorValues {
 			f.Value = authorValue
 			values = append(values, f)
 		}
@@ -580,10 +562,19 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	featureValues := doc.getValuesByTag(s.pool.config.Global.DigitalContent.FeatureField)
 	rc.hasDigitalContent = sliceContainsValueFromSlice(featureValues, s.pool.config.Global.DigitalContent.Features)
 
-	var rawAuthorValues []string
-	for _, authorField := range s.pool.config.Local.Solr.AuthorFields {
-		rawAuthorValues = append(rawAuthorValues, doc.getValuesByTag(authorField)...)
+	// build parsed author lists from configured fields
+
+	initialAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.InitialField)
+	preferredAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredAuthorField)
+	fallbackAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.FallbackAuthorField)
+
+	rawAuthorValues := initialAuthorValues
+	if len(preferredAuthorValues) > 0 {
+		rawAuthorValues = append(rawAuthorValues, preferredAuthorValues...)
+	} else {
+		rawAuthorValues = append(rawAuthorValues, fallbackAuthorValues...)
 	}
+
 	rc.relations = s.parseRelations(rawAuthorValues)
 
 	// field loop
