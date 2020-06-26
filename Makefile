@@ -135,7 +135,7 @@ check-static:
 	@ \
 	echo "[CHECK] static checks" ; \
 	go install honnef.co/go/tools/cmd/staticcheck ; \
-	$(GOBIN)/staticcheck -checks all,-S1002,-ST1003 ./$(SRCDIR)/...
+	$(GOBIN)/staticcheck -checks all,-S1002,-ST1003 -fail all,-U1000 ./$(SRCDIR)/...
 
 check-shadow:
 	@ \
