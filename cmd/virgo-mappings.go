@@ -243,7 +243,11 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 
 		itemLabel := ""
 		if useLabels == true {
-			itemLabel = labelValues[i]
+			itemLabel = strings.TrimSpace(labelValues[i])
+
+			if itemLabel == "GUIDE TO THE COLLECTION AVAILABLE ONLINE:" {
+				itemLabel = "Guide to the Collection - "
+			}
 		}
 
 		// if not using labels, or this label is not defined, fall back to generic item label
