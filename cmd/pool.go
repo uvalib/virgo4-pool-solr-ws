@@ -473,6 +473,21 @@ func (p *poolContext) validateConfig() {
 			}
 
 			switch field.Name {
+			case "abstract":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.Abstract == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.Abstract.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
 			case "access_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)

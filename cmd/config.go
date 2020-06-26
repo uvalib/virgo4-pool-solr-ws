@@ -196,12 +196,17 @@ type poolConfigFieldTypePublisherName struct {
 	AlternateField string `json:"alternate_field,omitempty"`
 }
 
+type poolConfigFieldTypeAbstract struct {
+	AlternateField string `json:"alternate_field,omitempty"`
+}
+
 type poolConfigFieldTypeTitleSubtitleEdition struct {
 	SubtitleField string `json:"subtitle_field,omitempty"`
 	EditionField  string `json:"edition_field,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {
+	Abstract             *poolConfigFieldTypeAbstract             `json:"abstract,omitempty"`
 	AccessURL            *poolConfigFieldTypeAccessURL            `json:"access_url,omitempty"`
 	CoverImageURL        *poolConfigFieldTypeCoverImageURL        `json:"cover_image_url,omitempty"`
 	DigitalContentURL    *poolConfigFieldTypeDigitalContentURL    `json:"digital_content_url,omitempty"`

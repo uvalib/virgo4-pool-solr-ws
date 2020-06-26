@@ -75,6 +75,7 @@ type solrResponseHeader struct {
 
 type solrDocument struct {
 	APlaceholderField           []string `json:"placeholder_a,omitempty"`
+	Abstract                    []string `json:"abstract_a,omitempty"`
 	AccessNote                  []string `json:"access_note_a,omitempty"`
 	Advisor                     []string `json:"creator_a,omitempty"`
 	AlternateID                 []string `json:"alternate_id_a,omitempty"`

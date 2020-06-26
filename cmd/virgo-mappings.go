@@ -284,6 +284,20 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 	}
 
 	switch field.Name {
+	case "abstract":
+		abstractValues := doc.getValuesByTag(field.Field)
+
+		if len(abstractValues) == 0 {
+			abstractValues = doc.getValuesByTag(field.CustomInfo.Abstract.AlternateField)
+		}
+
+		for _, abstractValue := range abstractValues {
+			f.Value = abstractValue
+			values = append(values, f)
+		}
+
+		return values
+
 	case "access_url":
 		if rc.anonOnline == false && rc.authOnline == false {
 			return values
@@ -307,7 +321,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 	case "author":
 		authorValues := fieldValues
 
-		if len(fieldValues) == 0 {
+		if len(authorValues) == 0 {
 			authorValues = rc.relations.authors.name
 		}
 
@@ -339,7 +353,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 	case "composer_performer":
 		authorValues := fieldValues
 
-		if len(fieldValues) == 0 {
+		if len(authorValues) == 0 {
 			authorValues = rc.relations.authors.name
 		}
 
@@ -417,32 +431,32 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "published_location":
-		fieldValues := doc.getValuesByTag(field.Field)
+		pubValues := doc.getValuesByTag(field.Field)
 
-		if len(fieldValues) == 0 {
-			fieldValues = s.getPublishedLocation(doc)
+		if len(pubValues) == 0 {
+			pubValues = s.getPublishedLocation(doc)
 		}
 
-		for _, fieldValue := range fieldValues {
-			f.Value = fieldValue
+		for _, pubValue := range pubValues {
+			f.Value = pubValue
 			values = append(values, f)
 		}
 
 		return values
 
 	case "publisher_name":
-		fieldValues := doc.getValuesByTag(field.Field)
+		pubValues := doc.getValuesByTag(field.Field)
 
-		if len(fieldValues) == 0 {
-			fieldValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
+		if len(pubValues) == 0 {
+			pubValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
 		}
 
-		if len(fieldValues) == 0 {
-			fieldValues = s.getPublisherName(doc)
+		if len(pubValues) == 0 {
+			pubValues = s.getPublisherName(doc)
 		}
 
-		for _, fieldValue := range fieldValues {
-			f.Value = fieldValue
+		for _, pubValue := range pubValues {
+			f.Value = pubValue
 			values = append(values, f)
 		}
 
