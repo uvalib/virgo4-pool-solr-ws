@@ -846,15 +846,13 @@ func (p *poolContext) initMappings() {
 	}
 
 	// these are optional
-	/*
-		if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
-			basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
-		}
+	if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
+		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
+	}
 
-		if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
-			basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
-		}
-	*/
+	if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
+		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
+	}
 
 	headerFields := len(basicFieldNames)
 
