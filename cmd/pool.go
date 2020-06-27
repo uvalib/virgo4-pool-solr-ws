@@ -378,7 +378,8 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
 
-	solrFields.addValue(p.config.Local.Solr.AuthorFields.InitialField)
+	solrFields.addValue(p.config.Local.Solr.AuthorFields.PreferredHeaderField)
+	solrFields.addValue(p.config.Local.Solr.AuthorFields.InitialAuthorField)
 	solrFields.requireValue(p.config.Local.Solr.AuthorFields.PreferredAuthorField, "preferred author field")
 	solrFields.addValue(p.config.Local.Solr.AuthorFields.FallbackAuthorField)
 
@@ -702,6 +703,45 @@ func (p *poolContext) validateConfig() {
 					continue
 				}
 
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
+
+			case "vernacularized_author":
+
+			case "vernacularized_composer_performer":
+
+			case "vernacularized_creator":
+
+			case "vernacularized_title":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.TitleSubtitleEdition == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
+
+			case "vernacularized_title_subtitle_edition":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.TitleSubtitleEdition == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
 				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
 				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
 
@@ -806,13 +846,15 @@ func (p *poolContext) initMappings() {
 	}
 
 	// these are optional
-	if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
-		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
-	}
+	/*
+		if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
+			basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
+		}
 
-	if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
-		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
-	}
+		if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
+			basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
+		}
+	*/
 
 	headerFields := len(basicFieldNames)
 
@@ -846,35 +888,19 @@ func (p *poolContext) initMappings() {
 			switch basicFieldName {
 			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
 				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
-				if p.config.Local.Mappings.Configured.FieldNames.Title.Field != "" {
-					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.Title.Field
-				}
 				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
-				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.Title.Limit
 
 			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
 				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
-				if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Field != "" {
-					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Field
-				}
 				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
-				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Limit
 
 			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
 				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
-				if p.config.Local.Mappings.Configured.FieldNames.Author.Field != "" {
-					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.Author.Field
-				}
 				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
-				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.Author.Limit
 
 			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
 				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
-				if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Field != "" {
-					basicFieldDef.Field = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Field
-				}
 				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
-				basicFieldDef.Limit = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Limit
 
 			default:
 				log.Printf("[INIT] unrecognized header field name: [%s]", basicFieldName)

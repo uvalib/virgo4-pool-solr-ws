@@ -109,7 +109,8 @@ type poolConfigSolrClients struct {
 }
 
 type poolConfigAuthorFields struct {
-	InitialField         string `json:"initial_field,omitempty"`
+	PreferredHeaderField string `json:"preferred_header_field,omitempty"`
+	InitialAuthorField   string `json:"initial_author_field,omitempty"`
 	PreferredAuthorField string `json:"preferred_author_field,omitempty"`
 	FallbackAuthorField  string `json:"fallback_author_field,omitempty"`
 }
@@ -201,6 +202,7 @@ type poolConfigFieldTypeAbstract struct {
 }
 
 type poolConfigFieldTypeTitleSubtitleEdition struct {
+	TitleField    string `json:"title_field,omitempty"`
 	SubtitleField string `json:"subtitle_field,omitempty"`
 	EditionField  string `json:"edition_field,omitempty"`
 }
@@ -315,9 +317,7 @@ type poolConfigMappingsDefinitions struct {
 type poolConfigMappingsHeadingField struct {
 	Name    string `json:"name,omitempty"`
 	Type    string `json:"type,omitempty"`
-	Field   string `json:"field,omitempty"`
 	RISCode string `json:"ris_code,omitempty"`
-	Limit   int    `json:"limit,omitempty"`
 }
 
 type poolConfigMappingsConfiguredFields struct {

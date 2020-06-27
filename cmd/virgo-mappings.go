@@ -286,7 +286,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	switch field.Name {
 	case "abstract":
-		abstractValues := doc.getValuesByTag(field.Field)
+		abstractValues := fieldValues
 
 		if len(abstractValues) == 0 {
 			abstractValues = doc.getValuesByTag(field.CustomInfo.Abstract.AlternateField)
@@ -320,7 +320,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "author":
-		authorValues := fieldValues
+		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
 		if len(authorValues) == 0 {
 			authorValues = rc.relations.authors.name
@@ -352,7 +352,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "composer_performer":
-		authorValues := fieldValues
+		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
 		if len(authorValues) == 0 {
 			authorValues = rc.relations.authors.name
@@ -386,7 +386,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "creator":
-		authorValues := fieldValues
+		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
 		if len(authorValues) == 0 {
 			authorValues = rc.relations.authors.name
@@ -446,7 +446,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "published_location":
-		pubValues := doc.getValuesByTag(field.Field)
+		pubValues := fieldValues
 
 		if len(pubValues) == 0 {
 			pubValues = s.getPublishedLocation(doc)
@@ -460,7 +460,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "publisher_name":
-		pubValues := doc.getValuesByTag(field.Field)
+		pubValues := fieldValues
 
 		if len(pubValues) == 0 {
 			pubValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
@@ -538,7 +538,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "title_subtitle_edition":
-		titleValue := firstElementOf(doc.getValuesByTag(field.Field))
+		titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.TitleField))
 		subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
 		editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
 
@@ -554,6 +554,104 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 			} else {
 				fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
 			}
+		}
+
+		f.Value = fullTitle
+		values = append(values, f)
+
+		return values
+
+	case "vernacularized_author":
+		vernacularValue := firstElementOf(fieldValues)
+		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
+
+		if len(authorValues) == 0 {
+			authorValues = rc.relations.authors.name
+		}
+
+		for _, authorValue := range authorValues {
+			f.Value = authorValue
+			if vernacularValue != "" {
+				f.Value += "<p>" + vernacularValue
+			}
+			values = append(values, f)
+		}
+
+		return values
+
+	case "vernacularized_composer_performer":
+		vernacularValue := firstElementOf(fieldValues)
+		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
+
+		if len(authorValues) == 0 {
+			authorValues = rc.relations.authors.name
+		}
+
+		for _, authorValue := range authorValues {
+			f.Value = authorValue
+			if vernacularValue != "" {
+				f.Value += "<p>" + vernacularValue
+			}
+			values = append(values, f)
+		}
+
+		return values
+
+	case "vernacularized_creator":
+		vernacularValue := firstElementOf(fieldValues)
+		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
+
+		if len(authorValues) == 0 {
+			authorValues = rc.relations.authors.name
+		}
+
+		for _, authorValue := range authorValues {
+			f.Value = authorValue
+			if vernacularValue != "" {
+				f.Value += "<p>" + vernacularValue
+			}
+			values = append(values, f)
+		}
+
+		return values
+
+	case "vernacularized_title":
+		vernacularValue := firstElementOf(fieldValues)
+		titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.TitleField))
+
+		fullTitle := titlecase.Title(titleValue)
+
+		if vernacularValue != "" {
+			fullTitle += "<p>" + vernacularValue
+		}
+
+		f.Value = fullTitle
+		values = append(values, f)
+
+		return values
+
+	case "vernacularized_title_subtitle_edition":
+		vernacularValue := firstElementOf(fieldValues)
+		titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.TitleField))
+		subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
+		editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
+
+		fullTitle := titlecase.Title(titleValue)
+
+		if subtitleValue != "" {
+			fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitleValue))
+		}
+
+		if editionValue != "" {
+			if strings.HasPrefix(editionValue, "(") && strings.HasSuffix(editionValue, ")") {
+				fullTitle = fmt.Sprintf("%s %s", fullTitle, editionValue)
+			} else {
+				fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
+			}
+		}
+
+		if vernacularValue != "" {
+			fullTitle += "<p>" + vernacularValue
 		}
 
 		f.Value = fullTitle
@@ -597,7 +695,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// build parsed author lists from configured fields
 
-	initialAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.InitialField)
+	initialAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.InitialAuthorField)
 	preferredAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredAuthorField)
 	fallbackAuthorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.FallbackAuthorField)
 
