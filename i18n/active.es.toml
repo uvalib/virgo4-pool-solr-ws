@@ -409,7 +409,7 @@ other = "Detalles Físicos del Trabajo"
 [FieldWorkType]
 other = "Tipo de Trabajo"
 
-[ProviderDataverse]
+[ProviderAvalon]
 other = "Avalon A/V Materials"
 
 [ProviderDataverse]
