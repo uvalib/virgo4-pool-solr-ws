@@ -398,6 +398,9 @@ other = "Detalles Físicos del Trabajo"
 other = "Tipo de Trabajo"
 
 [ProviderDataverse]
+other = "Avalon"
+
+[ProviderDataverse]
 other = "Libra Repository"
 
 [ProviderGetty]

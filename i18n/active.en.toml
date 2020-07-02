@@ -397,6 +397,9 @@ other = "Work Physical Details"
 [FieldWorkType]
 other = "Work Type"
 
+[ProviderAvalon]
+other = "Avalon"
+
 [ProviderDataverse]
 other = "Libra Repository"
 
