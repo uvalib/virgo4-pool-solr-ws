@@ -56,6 +56,11 @@ type poolMaps struct {
 	relatorCodes    map[string]string
 }
 
+type poolFields struct {
+	basic    []poolConfigField
+	detailed []poolConfigField
+}
+
 type poolContext struct {
 	randomSource *rand.Rand
 	config       *poolConfig
@@ -66,6 +71,9 @@ type poolContext struct {
 	solr         poolSolr
 	pdf          poolPdf
 	maps         poolMaps
+	fields       poolFields
+	facets       []poolConfigFacet
+	sorts        []poolConfigSort
 }
 
 type stringValidator struct {
@@ -127,8 +135,8 @@ func (p *poolContext) initIdentity() {
 
 	// create sort field map
 	p.maps.sortFields = make(map[string]poolConfigSort)
-	for i := range p.config.Mappings.Definitions.Sorts {
-		s := &p.config.Mappings.Definitions.Sorts[i]
+	for i := range p.sorts {
+		s := &p.sorts[i]
 
 		// FIXME: needs improvement; should not assume relevance sort XID
 		if s.XID == "SortRelevance" {
@@ -223,8 +231,8 @@ func (p *poolContext) initSolr() {
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
 
-	for i := range p.config.Mappings.Definitions.Facets {
-		f := &p.config.Mappings.Definitions.Facets[i]
+	for i := range p.facets {
+		f := &p.facets[i]
 
 		f.Index = i
 
@@ -397,7 +405,7 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for i, val := range p.config.Mappings.Definitions.Sorts {
+	for i, val := range p.sorts {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("sort option %d xid", i))
 		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d group field", i))
 		messageIDs.addValue(val.RecordXID)
@@ -422,7 +430,7 @@ func (p *poolContext) validateConfig() {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("provider %d xid", i))
 	}
 
-	for i, val := range p.config.Mappings.Definitions.Facets {
+	for i, val := range p.facets {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
 		for j, depval := range val.DependentFacetXIDs {
 			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
@@ -446,7 +454,9 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for i, field := range p.config.Mappings.Definitions.Fields {
+	allFields := append(p.fields.basic, p.fields.detailed...)
+
+	for i, field := range allFields {
 		prefix := fmt.Sprintf("field index %d: ", i)
 		postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
 
@@ -745,6 +755,23 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
 				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
 
+			case "wsls_collection_description":
+				if field.CustomInfo == nil {
+					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				if field.CustomInfo.WSLSCollectionDescription == nil {
+					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				solrFields.requireValue(field.CustomInfo.WSLSCollectionDescription.DataSourceField, fmt.Sprintf("%s section data source field", field.Name))
+				miscValues.requireValue(field.CustomInfo.WSLSCollectionDescription.DataSourceValue, fmt.Sprintf("%s section data source value", field.Name))
+				messageIDs.requireValue(field.CustomInfo.WSLSCollectionDescription.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
+
 			default:
 				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", i, field.Name)
 				invalid = true
@@ -793,6 +820,69 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
+func (p *poolContext) populateFieldList(required []string, optional []string, fieldMap map[string]*poolConfigField) ([]poolConfigField, bool) {
+	var fields []poolConfigField
+
+	invalid := false
+
+	requiredFields := len(required)
+	fieldNames := append(required, optional...)
+
+	fieldNamesSeen := make(map[string]bool)
+
+	for i, fieldName := range fieldNames {
+		if fieldName == "" {
+			log.Printf("[INIT] empty field name")
+			invalid = true
+			continue
+		}
+
+		if fieldNamesSeen[fieldName] == true {
+			continue
+		}
+
+		fieldDef := fieldMap[fieldName]
+
+		if fieldDef == nil {
+			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
+			invalid = true
+			continue
+		}
+
+		if i < requiredFields {
+			// we're working with required fields; check which one and set any overrides
+			switch fieldName {
+			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
+				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
+				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
+
+			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
+				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
+				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
+
+			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
+				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
+				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
+
+			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
+				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
+				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
+
+			default:
+				log.Printf("[INIT] unrecognized required field name: [%s]", fieldName)
+				invalid = true
+				continue
+			}
+		}
+
+		fields = append(fields, *fieldDef)
+
+		fieldNamesSeen[fieldName] = true
+	}
+
+	return fields, invalid
+}
+
 func (p *poolContext) initMappings() {
 	invalid := false
 
@@ -823,7 +913,7 @@ func (p *poolContext) initMappings() {
 		// this is used to preserve facet order when building facets response
 		facetDef.Index = len(facetsSeen)
 
-		p.config.Mappings.Definitions.Facets = append(p.config.Mappings.Definitions.Facets, *facetDef)
+		p.facets = append(p.facets, *facetDef)
 
 		facetsSeen[facetXID] = true
 	}
@@ -840,112 +930,31 @@ func (p *poolContext) initMappings() {
 	// these will be populated in perhaps the most ugly fashion below
 
 	// these are required
-	basicFieldNames := []string{
+	requiredFieldNames := []string{
 		p.config.Local.Mappings.Configured.FieldNames.Title.Name,
 		p.config.Local.Mappings.Configured.FieldNames.Author.Name,
 	}
 
 	// these are optional
 	if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
-		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
+		requiredFieldNames = append(requiredFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
 	}
 
 	if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
-		basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
+		requiredFieldNames = append(requiredFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
 	}
 
-	headerFields := len(basicFieldNames)
+	var fieldListInvalid bool
 
 	// build list of unique basic fields by name
-	basicFieldNames = append(basicFieldNames, p.config.Global.Mappings.Configured.FieldNames.Basic...)
-	basicFieldNames = append(basicFieldNames, p.config.Local.Mappings.Configured.FieldNames.Basic...)
-	basicFieldNamesSeen := make(map[string]bool)
-	for i, basicFieldName := range basicFieldNames {
-		if basicFieldName == "" {
-			log.Printf("[INIT] empty basic field name")
-			invalid = true
-			continue
-		}
-
-		if basicFieldNamesSeen[basicFieldName] == true {
-			continue
-		}
-
-		basicFieldDef := fieldMap[basicFieldName]
-
-		if basicFieldDef == nil {
-			log.Printf("[INIT] unrecognized basic field name: [%s]", basicFieldName)
-			invalid = true
-			continue
-		}
-
-		basicFieldDef.Properties.Visibility = ""
-
-		if i < headerFields {
-			// we're working with header fields; check which one and set any overrides
-			switch basicFieldName {
-			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
-				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
-				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
-
-			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
-				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
-				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
-
-			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
-				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
-				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
-
-			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
-				basicFieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
-				basicFieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
-
-			default:
-				log.Printf("[INIT] unrecognized header field name: [%s]", basicFieldName)
-				invalid = true
-				continue
-			}
-		}
-
-		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *basicFieldDef)
-
-		basicFieldNamesSeen[basicFieldName] = true
-	}
+	basicFieldNames := append(p.config.Local.Mappings.Configured.FieldNames.Basic, p.config.Global.Mappings.Configured.FieldNames.Basic...)
+	p.fields.basic, fieldListInvalid = p.populateFieldList(requiredFieldNames, basicFieldNames, fieldMap)
+	invalid = invalid || fieldListInvalid
 
 	// build list of unique detailed fields by name
-	detailedFieldNames := append(p.config.Global.Mappings.Configured.FieldNames.Detailed, p.config.Local.Mappings.Configured.FieldNames.Detailed...)
-	detailedFieldNamesSeen := make(map[string]bool)
-	for _, detailedFieldName := range detailedFieldNames {
-		if detailedFieldName == "" {
-			log.Printf("[INIT] empty detailed field name")
-			invalid = true
-			continue
-		}
-
-		if basicFieldNamesSeen[detailedFieldName] == true {
-			log.Printf("[INIT] field exists in both basic and detailed lists: [%s]", detailedFieldName)
-			invalid = true
-			continue
-		}
-
-		if detailedFieldNamesSeen[detailedFieldName] == true {
-			continue
-		}
-
-		detailedFieldDef := fieldMap[detailedFieldName]
-
-		if detailedFieldDef == nil {
-			log.Printf("[INIT] unrecognized detailed field name: [%s]", detailedFieldName)
-			invalid = true
-			continue
-		}
-
-		detailedFieldDef.Properties.Visibility = "detailed"
-
-		p.config.Mappings.Definitions.Fields = append(p.config.Mappings.Definitions.Fields, *detailedFieldDef)
-
-		detailedFieldNamesSeen[detailedFieldName] = true
-	}
+	detailedFieldNames := append(p.config.Local.Mappings.Configured.FieldNames.Detailed, p.config.Global.Mappings.Configured.FieldNames.Detailed...)
+	p.fields.detailed, fieldListInvalid = p.populateFieldList(requiredFieldNames, detailedFieldNames, fieldMap)
+	invalid = invalid || fieldListInvalid
 
 	// create mapping from sort XIDs to sort definitions, allowing local overrides
 	sortList := append(p.config.Global.Mappings.Definitions.Sorts, p.config.Local.Mappings.Definitions.Sorts...)
@@ -971,7 +980,7 @@ func (p *poolContext) initMappings() {
 			continue
 		}
 
-		p.config.Mappings.Definitions.Sorts = append(p.config.Mappings.Definitions.Sorts, *sortDef)
+		p.sorts = append(p.sorts, *sortDef)
 
 		sortsSeen[sortXID] = true
 	}

@@ -207,17 +207,24 @@ type poolConfigFieldTypeTitleSubtitleEdition struct {
 	EditionField  string `json:"edition_field,omitempty"`
 }
 
+type poolConfigFieldTypeWSLSCollectionDescription struct {
+	DataSourceField string `json:"data_source_field,omitempty"`
+	DataSourceValue string `json:"data_source_value,omitempty"`
+	ValueXID        string `json:"value_xid,omitempty"`
+}
+
 type poolConfigFieldCustomInfo struct {
-	Abstract             *poolConfigFieldTypeAbstract             `json:"abstract,omitempty"`
-	AccessURL            *poolConfigFieldTypeAccessURL            `json:"access_url,omitempty"`
-	CoverImageURL        *poolConfigFieldTypeCoverImageURL        `json:"cover_image_url,omitempty"`
-	DigitalContentURL    *poolConfigFieldTypeDigitalContentURL    `json:"digital_content_url,omitempty"`
-	PdfDownloadURL       *poolConfigFieldTypePdfDownloadURL       `json:"pdf_download_url,omitempty"`
-	PublisherName        *poolConfigFieldTypePublisherName        `json:"publisher_name,omitempty"`
-	RISType              *poolConfigFieldTypeRISType              `json:"ris_type,omitempty"`
-	SirsiURL             *poolConfigFieldTypeSirsiURL             `json:"sirsi_url,omitempty"`
-	ThumbnailURL         *poolConfigFieldTypeThumbnailURL         `json:"thumbnail_url,omitempty"`
-	TitleSubtitleEdition *poolConfigFieldTypeTitleSubtitleEdition `json:"title_subtitle_edition,omitempty"`
+	Abstract                  *poolConfigFieldTypeAbstract                  `json:"abstract,omitempty"`
+	AccessURL                 *poolConfigFieldTypeAccessURL                 `json:"access_url,omitempty"`
+	CoverImageURL             *poolConfigFieldTypeCoverImageURL             `json:"cover_image_url,omitempty"`
+	DigitalContentURL         *poolConfigFieldTypeDigitalContentURL         `json:"digital_content_url,omitempty"`
+	PdfDownloadURL            *poolConfigFieldTypePdfDownloadURL            `json:"pdf_download_url,omitempty"`
+	PublisherName             *poolConfigFieldTypePublisherName             `json:"publisher_name,omitempty"`
+	RISType                   *poolConfigFieldTypeRISType                   `json:"ris_type,omitempty"`
+	SirsiURL                  *poolConfigFieldTypeSirsiURL                  `json:"sirsi_url,omitempty"`
+	ThumbnailURL              *poolConfigFieldTypeThumbnailURL              `json:"thumbnail_url,omitempty"`
+	TitleSubtitleEdition      *poolConfigFieldTypeTitleSubtitleEdition      `json:"title_subtitle_edition,omitempty"`
+	WSLSCollectionDescription *poolConfigFieldTypeWSLSCollectionDescription `json:"wsls_collection_description,omitempty"`
 }
 
 type poolConfigField struct {
@@ -367,9 +374,8 @@ type poolConfigLocal struct {
 }
 
 type poolConfig struct {
-	Global   poolConfigGlobal   `json:"global,omitempty"`
-	Local    poolConfigLocal    `json:"local,omitempty"`
-	Mappings poolConfigMappings `json:"-"` // built from global/local mappings
+	Global poolConfigGlobal `json:"global,omitempty"`
+	Local  poolConfigLocal  `json:"local,omitempty"`
 }
 
 func getSortedJSONEnvVars() []string {

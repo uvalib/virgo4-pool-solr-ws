@@ -147,7 +147,6 @@ type solrDocument struct {
 	ResponsibilityStatement     []string `json:"responsibility_statement_a,omitempty"`
 	Rights                      []string `json:"rights_a,omitempty"`
 	RightsStatementURI          []string `json:"rs_uri_a,omitempty"`
-	RunTime                     []string `json:"video_run_time_a,omitempty"`
 	Score                       float32  `json:"score,omitempty"`
 	Series                      []string `json:"title_series_a,omitempty"`
 	SponsoringAgency            []string `json:"sponsoring_agency_a,omitempty"`
@@ -177,6 +176,9 @@ type solrDocument struct {
 	URLLabelSupplemental        []string `json:"url_label_supp_a,omitempty"`
 	URLSupplemental             []string `json:"url_supp_a,omitempty"`
 	UVAAvailability             []string `json:"uva_availability_a,omitempty"`
+	VideoColor                  []string `json:"video_color_a,omitempty"`
+	VideoRunTime                []string `json:"video_run_time_a,omitempty"`
+	VideoSound                  []string `json:"video_sound_a,omitempty"`
 	WorkIdentifier              []string `json:"workIdentifier_a,omitempty"`
 	WorkLocation                []string `json:"workLocation_a,omitempty"`
 	WorkPhysicalDetails         []string `json:"workPhysicalDetails_a,omitempty"`

@@ -658,6 +658,16 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		values = append(values, f)
 
 		return values
+
+	case "wsls_collection_description":
+		dataSourceValues := doc.getValuesByTag(field.CustomInfo.WSLSCollectionDescription.DataSourceField)
+
+		if sliceContainsString(dataSourceValues, field.CustomInfo.WSLSCollectionDescription.DataSourceValue) == true {
+			f.Value = s.client.localize(field.CustomInfo.WSLSCollectionDescription.ValueXID)
+			values = append(values, f)
+		}
+
+		return values
 	}
 
 	return values
@@ -710,13 +720,12 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// field loop
 
-	for _, field := range s.pool.config.Mappings.Definitions.Fields {
-		/*
-			if field.Properties.Visibility == "detailed" && s.itemDetails == false {
-				continue
-			}
-		*/
+	fields := s.pool.fields.basic
+	if s.itemDetails == true {
+		fields = s.pool.fields.detailed
+	}
 
+	for _, field := range fields {
 		if field.DetailsOnly == true && s.itemDetails == false {
 			continue
 		}
