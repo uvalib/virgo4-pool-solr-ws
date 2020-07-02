@@ -184,6 +184,9 @@ other = "Contribuyente"
 [FieldCopyright]
 other = "Copyright y Permisos"
 
+[FieldCopyrightNotice]
+other = "Aviso de Copyright"
+
 [FieldCreator]
 other = "Creador"
 
@@ -339,6 +342,9 @@ other = "Rights Statement (derechos estandarizadas)"
 
 [FieldRunTime]
 other = "tiempo de ejecución"
+
+[FieldScriptExcerpt]
+other = "Extracto de Guion"
 
 [FieldSeries]
 other = "Serie"

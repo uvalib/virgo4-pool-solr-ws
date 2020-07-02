@@ -267,6 +267,7 @@ type recordContext struct {
 	isAvailableOnShelf bool
 	anonRequest        bool
 	hasDigitalContent  bool
+	isWSLS             bool
 	relations          categorizedRelations
 }
 
@@ -660,9 +661,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "wsls_collection_description":
-		dataSourceValues := doc.getValuesByTag(field.CustomInfo.WSLSCollectionDescription.DataSourceField)
-
-		if sliceContainsString(dataSourceValues, field.CustomInfo.WSLSCollectionDescription.DataSourceValue) == true {
+		if rc.isWSLS == true {
 			f.Value = s.client.localize(field.CustomInfo.WSLSCollectionDescription.ValueXID)
 			values = append(values, f)
 		}
@@ -700,8 +699,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		rc.anonRequest = false
 	}
 
-	featureValues := doc.getValuesByTag(s.pool.config.Global.DigitalContent.FeatureField)
-	rc.hasDigitalContent = sliceContainsValueFromSlice(featureValues, s.pool.config.Global.DigitalContent.Features)
+	featureValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.DigitalContent.Field)
+	rc.hasDigitalContent = sliceContainsValueFromSlice(featureValues, s.pool.config.Global.RecordAttributes.DigitalContent.Contains)
+
+	dataSourceValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.WSLS.Field)
+	rc.isWSLS = sliceContainsValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.WSLS.Contains)
 
 	// build parsed author lists from configured fields
 
@@ -726,10 +728,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	}
 
 	for _, field := range fields {
-		if field.DetailsOnly == true && s.itemDetails == false {
-			continue
-		}
-
 		if field.OnShelfOnly == true && rc.isAvailableOnShelf == false {
 			continue
 		}
@@ -750,7 +748,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		}
 
 		if field.XID != "" {
-			f.Label = s.client.localize(field.XID)
+			if field.WSLSXID != "" && rc.isWSLS == true {
+				f.Label = s.client.localize(field.WSLSXID)
+			} else {
+				f.Label = s.client.localize(field.XID)
+			}
 		}
 
 		fieldValues := s.getFieldValues(rc, field, f, doc)
@@ -774,12 +776,19 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			}
 		}
 
-		for i, fieldValue := range fieldValues {
+		i := 0
+		for _, fieldValue := range fieldValues {
+			if fieldValue.Value == "" {
+				continue
+			}
+
 			r.addField(fieldValue)
 
 			if field.Limit > 0 && i+1 >= field.Limit {
 				break
 			}
+
+			i++
 		}
 	}
 

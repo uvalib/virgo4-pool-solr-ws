@@ -454,6 +454,9 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
+	solrFields.requireValue(p.config.Global.RecordAttributes.DigitalContent.Field, "record attribute: digital content feature field")
+	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
+
 	allFields := append(p.fields.basic, p.fields.detailed...)
 
 	for i, field := range allFields {
@@ -471,12 +474,9 @@ func (p *poolContext) validateConfig() {
 		// start validating
 
 		messageIDs.addValue(field.XID)
+		messageIDs.addValue(field.WSLSXID)
 
 		miscValues.requireValue(field.Name, "name")
-
-		if field.DigitalContentOnly == true {
-			solrFields.requireValue(p.config.Global.DigitalContent.FeatureField, "digital content feature field")
-		}
 
 		if field.Custom == true {
 			if field.Field != "" {
@@ -768,8 +768,6 @@ func (p *poolContext) validateConfig() {
 					continue
 				}
 
-				solrFields.requireValue(field.CustomInfo.WSLSCollectionDescription.DataSourceField, fmt.Sprintf("%s section data source field", field.Name))
-				miscValues.requireValue(field.CustomInfo.WSLSCollectionDescription.DataSourceValue, fmt.Sprintf("%s section data source value", field.Name))
 				messageIDs.requireValue(field.CustomInfo.WSLSCollectionDescription.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
 
 			default:

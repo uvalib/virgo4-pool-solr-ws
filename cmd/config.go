@@ -26,11 +26,6 @@ type poolConfigURLTemplates struct {
 	DigitalContent poolConfigURLTemplate `json:"digital_content,omitempty"`
 }
 
-type poolConfigDigitalContent struct {
-	FeatureField string   `json:"feature_field,omitempty"`
-	Features     []string `json:"features,omitempty"`
-}
-
 type poolConfigPublisher struct {
 	ID        string `json:"id,omitempty"`
 	Field     string `json:"field,omitempty"`
@@ -208,9 +203,7 @@ type poolConfigFieldTypeTitleSubtitleEdition struct {
 }
 
 type poolConfigFieldTypeWSLSCollectionDescription struct {
-	DataSourceField string `json:"data_source_field,omitempty"`
-	DataSourceValue string `json:"data_source_value,omitempty"`
-	ValueXID        string `json:"value_xid,omitempty"`
+	ValueXID string `json:"value_xid,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {
@@ -230,13 +223,13 @@ type poolConfigFieldCustomInfo struct {
 type poolConfigField struct {
 	Name               string                     `json:"name,omitempty"` // required; v4 field name, and key for common fields
 	XID                string                     `json:"xid,omitempty"`
+	WSLSXID            string                     `json:"wsls_xid,omitempty"` // for wsls fields with alternate labels
 	Field              string                     `json:"field,omitempty"`
 	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
 	RISCodes           []string                   `json:"ris_codes,omitempty"`
 	Limit              int                        `json:"limit,omitempty"`
 	SplitOn            string                     `json:"split_on,omitempty"`
 	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
-	DetailsOnly        bool                       `json:"details_only,omitempty"`
 	DigitalContentOnly bool                       `json:"digital_content_only,omitempty"`
 	Custom             bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
 	CustomInfo         *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
@@ -353,17 +346,27 @@ type poolConfigRISType struct {
 	re      *regexp.Regexp
 }
 
+type poolConfigRecordAttribute struct {
+	Field    string   `json:"field,omitempty"`
+	Contains []string `json:"contains,omitempty"`
+}
+
+type poolConfigRecordAttributes struct {
+	DigitalContent poolConfigRecordAttribute `json:"digital_content,omitempty"`
+	WSLS           poolConfigRecordAttribute `json:"wsls,omitempty"`
+}
+
 type poolConfigGlobal struct {
-	Service        poolConfigService        `json:"service,omitempty"`
-	Attributes     []string                 `json:"attributes,omitempty"`
-	Providers      []poolConfigProvider     `json:"providers,omitempty"`
-	Availability   poolConfigAvailability   `json:"availability,omitempty"`
-	RISTypes       []poolConfigRISType      `json:"ris_types,omitempty"`
-	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
-	Publishers     []poolConfigPublisher    `json:"publishers,omitempty"`
-	Relators       poolConfigRelators       `json:"relators,omitempty"`
-	Copyrights     []poolConfigCopyright    `json:"copyrights,omitempty"`
-	Mappings       poolConfigMappings       `json:"mappings,omitempty"`
+	Service          poolConfigService          `json:"service,omitempty"`
+	Attributes       []string                   `json:"attributes,omitempty"`
+	Providers        []poolConfigProvider       `json:"providers,omitempty"`
+	Availability     poolConfigAvailability     `json:"availability,omitempty"`
+	RISTypes         []poolConfigRISType        `json:"ris_types,omitempty"`
+	RecordAttributes poolConfigRecordAttributes `json:"record_attributes,omitempty"`
+	Publishers       []poolConfigPublisher      `json:"publishers,omitempty"`
+	Relators         poolConfigRelators         `json:"relators,omitempty"`
+	Copyrights       []poolConfigCopyright      `json:"copyrights,omitempty"`
+	Mappings         poolConfigMappings         `json:"mappings,omitempty"`
 }
 
 type poolConfigLocal struct {

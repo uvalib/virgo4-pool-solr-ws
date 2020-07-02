@@ -148,6 +148,7 @@ type solrDocument struct {
 	Rights                      []string `json:"rights_a,omitempty"`
 	RightsStatementURI          []string `json:"rs_uri_a,omitempty"`
 	Score                       float32  `json:"score,omitempty"`
+	ScriptExcerpt               []string `json:"script_excerpt_a,omitempty"`
 	Series                      []string `json:"title_series_a,omitempty"`
 	SponsoringAgency            []string `json:"sponsoring_agency_a,omitempty"`
 	Subject                     []string `json:"subject_a,omitempty"`
@@ -174,6 +175,7 @@ type solrDocument struct {
 	URLIIIFManifest             []string `json:"url_iiif_manifest_a,omitempty"`
 	URLLabel                    []string `json:"url_label_a,omitempty"`
 	URLLabelSupplemental        []string `json:"url_label_supp_a,omitempty"`
+	URLOEMBEDStored             string   `json:"url_oembed_stored,omitempty"`
 	URLSupplemental             []string `json:"url_supp_a,omitempty"`
 	UVAAvailability             []string `json:"uva_availability_a,omitempty"`
 	VideoColor                  []string `json:"video_color_a,omitempty"`
