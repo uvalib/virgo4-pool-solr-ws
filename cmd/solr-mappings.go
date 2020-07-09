@@ -9,7 +9,7 @@ import (
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, availableFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
+func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
 	if len(filterGroups) == 0 {
 		return
 	}
@@ -19,7 +19,7 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, availableFacets 
 	filterGroup := filterGroups[0]
 
 	for _, filter := range filterGroup.Facets {
-		solrFacet := availableFacets[filter.FacetID]
+		solrFacet := internalFacets[filter.FacetID]
 
 		// remove this selected filter if it depends on other filters, none of which are selected
 
@@ -57,6 +57,17 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, availableFacets 
 				solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 			}
 
+		case "component":
+			filterValue = filter.Value
+			q := solrFacet.config.queryMap[filterValue]
+
+			if q == nil {
+				s.meta.client.log("[FILTER] unable to map component value to a component query: [%s]", filterValue)
+				continue
+			}
+
+			solrFilter = q.Query
+
 		default:
 			filterValue = filter.Value
 			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
@@ -79,15 +90,16 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, availableFacets 
 	}
 }
 
-func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
+func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet, map[string]solrRequestFacet) {
 	// build customized/personalized available facets from facets definition
 
-	availableFacets := make(map[string]solrRequestFacet)
+	internalFacets := make(map[string]solrRequestFacet)
+	requestFacets := make(map[string]solrRequestFacet)
 
 	auth := s.client.isAuthenticated()
 
-	for i := range s.pool.maps.availableFacets {
-		facet := s.pool.maps.availableFacets[i]
+	for i := range s.pool.maps.externalFacets {
+		facet := s.pool.maps.externalFacets[i]
 
 		f := solrRequestFacet{
 			Type:   facet.Solr.Type,
@@ -103,10 +115,22 @@ func (s *searchContext) solrAvailableFacets() map[string]solrRequestFacet {
 			f.Field = facet.Solr.FieldAuth
 		}
 
-		availableFacets[facet.XID] = f
+		internalFacets[facet.XID] = f
+
+		switch facet.Type {
+		case "component":
+			for _, q := range facet.ComponentQueries {
+				qf := f
+				qf.Query = q.Query
+				requestFacets[q.XID] = qf
+			}
+
+		default:
+			requestFacets[facet.XID] = f
+		}
 	}
 
-	return availableFacets
+	return internalFacets, requestFacets
 }
 
 func (s *searchContext) solrRequestWithDefaults() searchResponse {
@@ -138,13 +162,13 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	// add facets/filters
 
-	availableFacets := s.solrAvailableFacets()
+	solrReq.meta.internalFacets, solrReq.meta.requestFacets = s.solrInternalRequestFacets()
 
-	if s.virgo.flags.requestFacets == true && len(availableFacets) > 0 {
-		solrReq.json.Facets = availableFacets
+	if s.virgo.flags.requestFacets == true && len(solrReq.meta.requestFacets) > 0 {
+		solrReq.json.Facets = solrReq.meta.requestFacets
 	}
 
-	solrReq.buildFilters(s.virgo.req.Filters, availableFacets, s.pool.config.Global.Availability)
+	solrReq.buildFilters(s.virgo.req.Filters, solrReq.meta.internalFacets, s.pool.config.Global.Availability)
 
 	if s.client.opts.debug == true {
 		solrReq.json.Params.DebugQuery = "on"

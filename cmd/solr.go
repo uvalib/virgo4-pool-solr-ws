@@ -23,7 +23,7 @@ func (s *searchContext) convertFacets() error {
 	// a map[string]solrResponseFacet type.
 
 	facetsRaw := make(map[string]interface{})
-	var facets solrResponseFacets
+	var facets map[string]solrResponseFacet
 
 	for key, val := range s.solr.res.FacetsRaw {
 		switch val.(type) {

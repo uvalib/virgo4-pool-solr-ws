@@ -221,7 +221,7 @@ func (s *searchContext) getCopyrightLabelURLIcon(doc *solrDocument) (string, str
 	return "", "", ""
 }
 
-func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeGeneric) []v4api.RecordField {
+func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeCustom) []v4api.RecordField {
 	var values []v4api.RecordField
 
 	urlValues := doc.getValuesByTag(cfg.URLField)
@@ -882,19 +882,65 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 	return facet
 }
 
-func (s *searchContext) populateFacetList(solrFacets solrResponseFacets) []v4api.Facet {
+func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFacet) []v4api.Facet {
 	type indexedFacet struct {
 		index int
 		facet v4api.Facet
 	}
 
+	// first, convert component query facets back to internal facets by
+	// creating buckets for each component with the translated value
+
+	mergedFacets := make(map[string]solrResponseFacet)
+	componentQueries := make(map[string]map[string]*solrResponseFacet)
+
+	// add normal facets; track component facets
+	for key := range solrFacets {
+		val := solrFacets[key]
+
+		switch s.solr.req.meta.requestFacets[key].config.Type {
+		case "component":
+			xid := s.solr.req.meta.requestFacets[key].config.XID
+			if componentQueries[xid] == nil {
+				componentQueries[xid] = make(map[string]*solrResponseFacet)
+			}
+			componentQueries[xid][key] = &val
+
+		default:
+			mergedFacets[key] = val
+		}
+	}
+
+	// add component query facets, in the order they were defined
+	for key, val := range componentQueries {
+		var facet solrResponseFacet
+
+		for _, q := range s.solr.req.meta.internalFacets[key].config.ComponentQueries {
+			qval := val[q.XID]
+			if qval == nil {
+				continue
+			}
+
+			bucket := solrBucket{
+				Val:        s.client.localize(q.XID),
+				Count:      qval.Count,
+				GroupCount: qval.GroupCount,
+			}
+
+			facet.Buckets = append(facet.Buckets, bucket)
+		}
+
+		mergedFacets[key] = facet
+	}
+
+	// now, convert these to external facets
 	var orderedFacets []indexedFacet
 
 	gotFacet := false
 
-	for key, val := range solrFacets {
+	for key, val := range mergedFacets {
 		if len(val.Buckets) > 0 {
-			facetDef := s.pool.maps.availableFacets[key]
+			facetDef := s.pool.maps.externalFacets[key]
 
 			// add this facet to the response as long as one of its dependent facets is selected
 

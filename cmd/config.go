@@ -145,7 +145,7 @@ type poolConfigFieldProperties struct {
 	Provider   string `json:"provider,omitempty"`
 }
 
-type poolConfigFieldTypeGeneric struct {
+type poolConfigFieldTypeCustom struct {
 	AlternateField string `json:"alternate_field,omitempty"` // field names
 	EditionField   string `json:"edition_field,omitempty"`
 	FormatField    string `json:"format_field,omitempty"`
@@ -170,17 +170,17 @@ type poolConfigFieldTypeGeneric struct {
 }
 
 type poolConfigFieldCustomInfo struct {
-	Abstract                  *poolConfigFieldTypeGeneric `json:"abstract,omitempty"`
-	AccessURL                 *poolConfigFieldTypeGeneric `json:"access_url,omitempty"`
-	CoverImageURL             *poolConfigFieldTypeGeneric `json:"cover_image_url,omitempty"`
-	DigitalContentURL         *poolConfigFieldTypeGeneric `json:"digital_content_url,omitempty"`
-	PdfDownloadURL            *poolConfigFieldTypeGeneric `json:"pdf_download_url,omitempty"`
-	PublisherName             *poolConfigFieldTypeGeneric `json:"publisher_name,omitempty"`
-	RISType                   *poolConfigFieldTypeGeneric `json:"ris_type,omitempty"`
-	SirsiURL                  *poolConfigFieldTypeGeneric `json:"sirsi_url,omitempty"`
-	ThumbnailURL              *poolConfigFieldTypeGeneric `json:"thumbnail_url,omitempty"`
-	TitleSubtitleEdition      *poolConfigFieldTypeGeneric `json:"title_subtitle_edition,omitempty"`
-	WSLSCollectionDescription *poolConfigFieldTypeGeneric `json:"wsls_collection_description,omitempty"`
+	Abstract                  *poolConfigFieldTypeCustom `json:"abstract,omitempty"`
+	AccessURL                 *poolConfigFieldTypeCustom `json:"access_url,omitempty"`
+	CoverImageURL             *poolConfigFieldTypeCustom `json:"cover_image_url,omitempty"`
+	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
+	PdfDownloadURL            *poolConfigFieldTypeCustom `json:"pdf_download_url,omitempty"`
+	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
+	RISType                   *poolConfigFieldTypeCustom `json:"ris_type,omitempty"`
+	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`
+	ThumbnailURL              *poolConfigFieldTypeCustom `json:"thumbnail_url,omitempty"`
+	TitleSubtitleEdition      *poolConfigFieldTypeCustom `json:"title_subtitle_edition,omitempty"`
+	WSLSCollectionDescription *poolConfigFieldTypeCustom `json:"wsls_collection_description,omitempty"`
 }
 
 type poolConfigField struct {
@@ -226,16 +226,23 @@ type poolConfigFacetSolr struct {
 	Offset    int    `json:"offset,omitempty"`
 }
 
+type poolConfigFacetQuery struct {
+	XID   string `json:"xid,omitempty"`
+	Query string `json:"query,omitempty"`
+}
+
 type poolConfigFacet struct {
-	XID                string              `json:"xid,omitempty"` // translation ID
-	Solr               poolConfigFacetSolr `json:"solr,omitempty"`
-	Type               string              `json:"type,omitempty"`
-	Format             string              `json:"format,omitempty"`
-	ExposedValues      []string            `json:"exposed_values,omitempty"`
-	DependentFacetXIDs []string            `json:"dependent_facets,omitempty"`
-	IsAvailability     bool                `json:"is_availability,omitempty"`
-	BucketSort         string              `json:"bucket_sort,omitempty"`
-	Index              int                 `json:"-"`
+	XID                string                 `json:"xid,omitempty"` // translation ID
+	Solr               poolConfigFacetSolr    `json:"solr,omitempty"`
+	Type               string                 `json:"type,omitempty"`
+	Format             string                 `json:"format,omitempty"`
+	ExposedValues      []string               `json:"exposed_values,omitempty"`
+	DependentFacetXIDs []string               `json:"dependent_facet_xids,omitempty"`
+	ComponentQueries   []poolConfigFacetQuery `json:"component_queries,omitempty"`
+	IsAvailability     bool                   `json:"is_availability,omitempty"`
+	BucketSort         string                 `json:"bucket_sort,omitempty"`
+	Index              int                    `json:"-"`
+	queryMap           map[string]*poolConfigFacetQuery
 }
 
 type poolConfigSort struct {

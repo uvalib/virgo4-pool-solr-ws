@@ -49,11 +49,11 @@ type poolTranslations struct {
 }
 
 type poolMaps struct {
-	sortFields      map[string]poolConfigSort
-	attributes      map[string]v4api.PoolAttribute
-	availableFacets map[string]poolConfigFacet
-	relatorTerms    map[string]string
-	relatorCodes    map[string]string
+	sortFields     map[string]poolConfigSort
+	attributes     map[string]v4api.PoolAttribute
+	externalFacets map[string]poolConfigFacet
+	relatorTerms   map[string]string
+	relatorCodes   map[string]string
 }
 
 type poolFields struct {
@@ -224,7 +224,7 @@ func (p *poolContext) initSolr() {
 	}
 
 	// create facet map
-	p.maps.availableFacets = make(map[string]poolConfigFacet)
+	p.maps.externalFacets = make(map[string]poolConfigFacet)
 
 	p.config.Global.Availability.ExposedValues = []string{}
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
@@ -243,7 +243,7 @@ func (p *poolContext) initSolr() {
 			f.ExposedValues = p.config.Global.Availability.ExposedValues
 		}
 
-		p.maps.availableFacets[f.XID] = *f
+		p.maps.externalFacets[f.XID] = *f
 	}
 
 	p.solr = poolSolr{
@@ -432,8 +432,14 @@ func (p *poolContext) validateConfig() {
 
 	for i, val := range p.facets {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
+
 		for j, depval := range val.DependentFacetXIDs {
 			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
+		}
+
+		for j, q := range val.ComponentQueries {
+			messageIDs.requireValue(q.XID, fmt.Sprintf("facet %d component query xid %d", i, j))
+			miscValues.requireValue(q.Query, fmt.Sprintf("facet %d component query query %d", i, j))
 		}
 	}
 
@@ -819,6 +825,48 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
+func (p *poolContext) initFacets() {
+	// for component query facets, create mappings from any
+	// possible translated value back to the query definition
+
+	tags := p.translations.bundle.LanguageTags()
+
+	invalid := false
+
+	for i := range p.facets {
+		facet := &p.facets[i]
+
+		if len(facet.ComponentQueries) == 0 {
+			continue
+		}
+
+		facet.queryMap = make(map[string]*poolConfigFacetQuery)
+
+		for j := range facet.ComponentQueries {
+			q := &facet.ComponentQueries[j]
+
+			for _, tag := range tags {
+				lang := tag.String()
+				localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+				msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
+
+				if err != nil {
+					log.Printf("[FACET] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
+					invalid = true
+					continue
+				}
+
+				facet.queryMap[msg] = q
+			}
+		}
+	}
+
+	if invalid == true {
+		log.Printf("[FACET] exiting due to error(s) above")
+		os.Exit(1)
+	}
+}
+
 func (p *poolContext) populateFieldList(required []string, optional []string, fieldMap map[string]*poolConfigField) ([]poolConfigField, bool) {
 	var fields []poolConfigField
 
@@ -1018,6 +1066,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initIdentity()
 	p.initProviders()
 	p.initVersion()
+	p.initFacets()
 	p.initSolr()
 	p.initPdf()
 	p.initRIS()

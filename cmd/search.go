@@ -354,10 +354,8 @@ func (s *searchContext) validateSearchRequest() error {
 
 		filterGroup := s.virgo.req.Filters[0]
 
-		availableFacets := s.solrAvailableFacets()
-
 		for _, filter := range filterGroup.Facets {
-			if _, ok := availableFacets[filter.FacetID]; ok == false {
+			if _, ok := s.pool.maps.externalFacets[filter.FacetID]; ok == false {
 				return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
 			}
 		}

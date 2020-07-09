@@ -82,6 +82,24 @@ other = "Composition Era"
 [FacetDate]
 other = "Date"
 
+[FacetDateThisYear]
+other = "This year"
+
+[FacetDateLast12Months]
+other = "Last 12 months"
+
+[FacetDateLast3Years]
+other = "Last 3 years"
+
+[FacetDateLast10Years]
+other = "Last 10 years"
+
+[FacetDateLast50Years]
+other = "Last 50 years"
+
+[FacetDateMoreThan50YearsAgo]
+other = "More than 50 years ago"
+
 [FacetDepartment]
 other = "Department"
 

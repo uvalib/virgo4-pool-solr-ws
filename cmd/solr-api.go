@@ -26,15 +26,14 @@ type solrRequestParams struct {
 	DebugQuery string   `json:"debugQuery,omitempty"`
 }
 
-type solrRequestFacets map[string]solrRequestFacet
-
 type solrRequestSubFacet struct {
 	GroupCount string `json:"group_count"`
 }
 
 type solrRequestFacet struct {
-	Type   string              `json:"type"`
-	Field  string              `json:"field"`
+	Type   string              `json:"type,omitempty"`
+	Field  string              `json:"field,omitempty"`
+	Query  string              `json:"query,omitempty"`
 	Sort   string              `json:"sort,omitempty"`
 	Offset int                 `json:"offset,omitempty"`
 	Limit  int                 `json:"limit,omitempty"`
@@ -43,24 +42,26 @@ type solrRequestFacet struct {
 }
 
 type solrRequestJSON struct {
-	Params solrRequestParams `json:"params"`
-	Facets solrRequestFacets `json:"facet,omitempty"`
+	Params solrRequestParams           `json:"params"`
+	Facets map[string]solrRequestFacet `json:"facet,omitempty"`
 }
 
 type solrMeta struct {
-	client       *clientContext
-	parserInfo   *solrParserInfo
-	warnings     []string
-	maxScore     float32
-	firstDoc     *solrDocument
-	start        int
-	numGroups    int                          // for grouped records
-	totalGroups  int                          // for grouped records
-	numRecords   int                          // for grouped or ungrouped records
-	totalRecords int                          // for grouped or ungrouped records
-	numRows      int                          // for client pagination -- numGroups or numRecords
-	totalRows    int                          // for client pagination -- totalGroups or totalRecords
-	selectionMap map[string]map[string]string // to track what filters have been applied by the client
+	client         *clientContext
+	parserInfo     *solrParserInfo
+	warnings       []string
+	maxScore       float32
+	firstDoc       *solrDocument
+	start          int
+	numGroups      int                          // for grouped records
+	totalGroups    int                          // for grouped records
+	numRecords     int                          // for grouped or ungrouped records
+	totalRecords   int                          // for grouped or ungrouped records
+	numRows        int                          // for client pagination -- numGroups or numRecords
+	totalRows      int                          // for client pagination -- totalGroups or totalRecords
+	selectionMap   map[string]map[string]string // to track what filters have been applied by the client
+	internalFacets map[string]solrRequestFacet  // to track internal facet info for externally-advertised facets
+	requestFacets  map[string]solrRequestFacet  // to track facets sent in the solr request
 }
 
 type solrRequest struct {
@@ -197,10 +198,10 @@ type solrBucket struct {
 }
 
 type solrResponseFacet struct {
-	Buckets []solrBucket `json:"buckets,omitempty"`
+	Count      int          `json:"count"`
+	GroupCount int          `json:"group_count"`
+	Buckets    []solrBucket `json:"buckets,omitempty"`
 }
-
-type solrResponseFacets map[string]solrResponseFacet
 
 type solrResponseDocuments struct {
 	NumFound int            `json:"numFound,omitempty"`
@@ -217,12 +218,12 @@ type solrError struct {
 
 // a catch-all for search and ping responses
 type solrResponse struct {
-	ResponseHeader solrResponseHeader     `json:"responseHeader,omitempty"`
-	Response       solrResponseDocuments  `json:"response,omitempty"`
-	Debug          interface{}            `json:"debug,omitempty"`
-	FacetsRaw      map[string]interface{} `json:"facets,omitempty"`
-	Facets         solrResponseFacets     // will be parsed from FacetsRaw
-	Error          solrError              `json:"error,omitempty"`
-	Status         string                 `json:"status,omitempty"`
-	meta           *solrMeta              // pointer to struct in corresponding solrRequest
+	ResponseHeader solrResponseHeader           `json:"responseHeader,omitempty"`
+	Response       solrResponseDocuments        `json:"response,omitempty"`
+	Debug          interface{}                  `json:"debug,omitempty"`
+	FacetsRaw      map[string]interface{}       `json:"facets,omitempty"`
+	Facets         map[string]solrResponseFacet // will be parsed from FacetsRaw
+	Error          solrError                    `json:"error,omitempty"`
+	Status         string                       `json:"status,omitempty"`
+	meta           *solrMeta                    // pointer to struct in corresponding solrRequest
 }
