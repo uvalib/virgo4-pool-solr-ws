@@ -145,79 +145,42 @@ type poolConfigFieldProperties struct {
 	Provider   string `json:"provider,omitempty"`
 }
 
-type poolConfigFieldTypeAccessURL struct {
-	URLField       string `json:"url_field,omitempty"`
-	LabelField     string `json:"label_field,omitempty"`
-	ProviderField  string `json:"provider_field,omitempty"`
-	DefaultItemXID string `json:"default_item_xid,omitempty"`
-}
-
-type poolConfigFieldTypeCoverImageURL struct {
-	ThumbnailField string `json:"thumbnail_field,omitempty"`
+type poolConfigFieldTypeGeneric struct {
+	AlternateField string `json:"alternate_field,omitempty"` // field names
+	EditionField   string `json:"edition_field,omitempty"`
+	FormatField    string `json:"format_field,omitempty"`
 	IDField        string `json:"id_field,omitempty"`
-	TitleField     string `json:"title_field,omitempty"`
-	PoolField      string `json:"pool_field,omitempty"`
 	ISBNField      string `json:"isbn_field,omitempty"`
-	OCLCField      string `json:"oclc_field,omitempty"`
 	LCCNField      string `json:"lccn_field,omitempty"`
+	LabelField     string `json:"label_field,omitempty"`
+	OCLCField      string `json:"oclc_field,omitempty"`
+	PIDField       string `json:"pid_field,omitempty"`
+	PoolField      string `json:"pool_field,omitempty"`
+	ProviderField  string `json:"provider_field,omitempty"`
+	SubtitleField  string `json:"subtitle_field,omitempty"`
+	ThumbnailField string `json:"thumbnail_field,omitempty"`
+	TitleField     string `json:"title_field,omitempty"`
 	UPCField       string `json:"upc_field,omitempty"`
+	URLField       string `json:"url_field,omitempty"`
+	DefaultItemXID string `json:"default_item_xid,omitempty"` // translation ids
+	ValueXID       string `json:"value_xid,omitempty"`
+	IDPrefix       string `json:"id_prefix,omitempty"` // misc
 	MusicPool      string `json:"music_pool,omitempty"`
-}
-
-type poolConfigFieldTypeSirsiURL struct {
-	IDField  string `json:"id_field,omitempty"`
-	IDPrefix string `json:"id_prefix,omitempty"`
-}
-
-type poolConfigFieldTypeDigitalContentURL struct {
-	IDField string `json:"id_field,omitempty"`
-}
-
-type poolConfigFieldTypePdfDownloadURL struct {
-	URLField     string `json:"url_field,omitempty"`
-	PIDField     string `json:"pid_field,omitempty"`
-	MaxSupported int    `json:"max_supported,omitempty"`
-}
-
-type poolConfigFieldTypeThumbnailURL struct {
-	URLField     string `json:"url_field,omitempty"`
-	MaxSupported int    `json:"max_supported,omitempty"`
-}
-
-type poolConfigFieldTypeRISType struct {
-	FormatField string `json:"format_field,omitempty"`
-}
-
-type poolConfigFieldTypePublisherName struct {
-	AlternateField string `json:"alternate_field,omitempty"`
-}
-
-type poolConfigFieldTypeAbstract struct {
-	AlternateField string `json:"alternate_field,omitempty"`
-}
-
-type poolConfigFieldTypeTitleSubtitleEdition struct {
-	TitleField    string `json:"title_field,omitempty"`
-	SubtitleField string `json:"subtitle_field,omitempty"`
-	EditionField  string `json:"edition_field,omitempty"`
-}
-
-type poolConfigFieldTypeWSLSCollectionDescription struct {
-	ValueXID string `json:"value_xid,omitempty"`
+	MaxSupported   int    `json:"max_supported,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {
-	Abstract                  *poolConfigFieldTypeAbstract                  `json:"abstract,omitempty"`
-	AccessURL                 *poolConfigFieldTypeAccessURL                 `json:"access_url,omitempty"`
-	CoverImageURL             *poolConfigFieldTypeCoverImageURL             `json:"cover_image_url,omitempty"`
-	DigitalContentURL         *poolConfigFieldTypeDigitalContentURL         `json:"digital_content_url,omitempty"`
-	PdfDownloadURL            *poolConfigFieldTypePdfDownloadURL            `json:"pdf_download_url,omitempty"`
-	PublisherName             *poolConfigFieldTypePublisherName             `json:"publisher_name,omitempty"`
-	RISType                   *poolConfigFieldTypeRISType                   `json:"ris_type,omitempty"`
-	SirsiURL                  *poolConfigFieldTypeSirsiURL                  `json:"sirsi_url,omitempty"`
-	ThumbnailURL              *poolConfigFieldTypeThumbnailURL              `json:"thumbnail_url,omitempty"`
-	TitleSubtitleEdition      *poolConfigFieldTypeTitleSubtitleEdition      `json:"title_subtitle_edition,omitempty"`
-	WSLSCollectionDescription *poolConfigFieldTypeWSLSCollectionDescription `json:"wsls_collection_description,omitempty"`
+	Abstract                  *poolConfigFieldTypeGeneric `json:"abstract,omitempty"`
+	AccessURL                 *poolConfigFieldTypeGeneric `json:"access_url,omitempty"`
+	CoverImageURL             *poolConfigFieldTypeGeneric `json:"cover_image_url,omitempty"`
+	DigitalContentURL         *poolConfigFieldTypeGeneric `json:"digital_content_url,omitempty"`
+	PdfDownloadURL            *poolConfigFieldTypeGeneric `json:"pdf_download_url,omitempty"`
+	PublisherName             *poolConfigFieldTypeGeneric `json:"publisher_name,omitempty"`
+	RISType                   *poolConfigFieldTypeGeneric `json:"ris_type,omitempty"`
+	SirsiURL                  *poolConfigFieldTypeGeneric `json:"sirsi_url,omitempty"`
+	ThumbnailURL              *poolConfigFieldTypeGeneric `json:"thumbnail_url,omitempty"`
+	TitleSubtitleEdition      *poolConfigFieldTypeGeneric `json:"title_subtitle_edition,omitempty"`
+	WSLSCollectionDescription *poolConfigFieldTypeGeneric `json:"wsls_collection_description,omitempty"`
 }
 
 type poolConfigField struct {
@@ -353,6 +316,7 @@ type poolConfigRecordAttribute struct {
 
 type poolConfigRecordAttributes struct {
 	DigitalContent poolConfigRecordAttribute `json:"digital_content,omitempty"`
+	Sirsi          poolConfigRecordAttribute `json:"sirsi,omitempty"`
 	WSLS           poolConfigRecordAttribute `json:"wsls,omitempty"`
 }
 

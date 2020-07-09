@@ -221,7 +221,7 @@ func (s *searchContext) getCopyrightLabelURLIcon(doc *solrDocument) (string, str
 	return "", "", ""
 }
 
-func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeAccessURL) []v4api.RecordField {
+func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeGeneric) []v4api.RecordField {
 	var values []v4api.RecordField
 
 	urlValues := doc.getValuesByTag(cfg.URLField)
@@ -267,6 +267,7 @@ type recordContext struct {
 	isAvailableOnShelf bool
 	anonRequest        bool
 	hasDigitalContent  bool
+	isSirsi            bool
 	isWSLS             bool
 	relations          categorizedRelations
 }
@@ -511,14 +512,16 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "sirsi_url":
-		idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))
-		idPrefix := field.CustomInfo.SirsiURL.IDPrefix
+		if rc.isSirsi == true {
+			idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))
+			idPrefix := field.CustomInfo.SirsiURL.IDPrefix
 
-		if strings.HasPrefix(idValue, idPrefix) {
-			sirsiID := idValue[len(idPrefix):]
-			if url := s.getSirsiURL(sirsiID); url != "" {
-				f.Value = url
-				values = append(values, f)
+			if strings.HasPrefix(idValue, idPrefix) {
+				sirsiID := idValue[len(idPrefix):]
+				if url := s.getSirsiURL(sirsiID); url != "" {
+					f.Value = url
+					values = append(values, f)
+				}
 			}
 		}
 
@@ -703,6 +706,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	rc.hasDigitalContent = sliceContainsValueFromSlice(featureValues, s.pool.config.Global.RecordAttributes.DigitalContent.Contains)
 
 	dataSourceValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.WSLS.Field)
+	rc.isSirsi = sliceContainsValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.Sirsi.Contains)
 	rc.isWSLS = sliceContainsValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.WSLS.Contains)
 
 	// build parsed author lists from configured fields

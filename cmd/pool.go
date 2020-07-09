@@ -455,6 +455,7 @@ func (p *poolContext) validateConfig() {
 	}
 
 	solrFields.requireValue(p.config.Global.RecordAttributes.DigitalContent.Field, "record attribute: digital content feature field")
+	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
 
 	allFields := append(p.fields.basic, p.fields.detailed...)
