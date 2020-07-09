@@ -917,7 +917,7 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 		for _, q := range s.solr.req.meta.internalFacets[key].config.ComponentQueries {
 			qval := val[q.XID]
-			if qval == nil {
+			if qval == nil || qval.GroupCount == 0 {
 				continue
 			}
 
