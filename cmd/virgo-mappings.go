@@ -239,9 +239,20 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 			continue
 		}
 
-		// prepend proxy URL if configured and not already present
-		if cfg.ProxyURL != "" && strings.HasPrefix(item, cfg.ProxyURL) == false {
-			f.Value = cfg.ProxyURL + item
+		// prepend proxy URL if configured, not already present, and matches a proxifiable domain
+		proxify := false
+
+		if cfg.ProxyPrefix != "" && strings.HasPrefix(item, cfg.ProxyPrefix) == false {
+			for _, domain := range cfg.ProxyDomains {
+				if strings.Contains(item, fmt.Sprintf("%s/", domain)) == true {
+					proxify = true
+					break
+				}
+			}
+		}
+
+		if proxify == true {
+			f.Value = cfg.ProxyPrefix + item
 		} else {
 			f.Value = item
 		}
