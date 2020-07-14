@@ -271,6 +271,9 @@ other = "Idioma"
 [FieldLaterTitle]
 other = "Título Posterior"
 
+[FieldLCCN]
+other = "LCCN"
+
 [FieldLibrary]
 other = "Biblioteca"
 
@@ -288,6 +291,9 @@ other = "Ubicación del Original"
 
 [FieldNotes]
 other = "Notas"
+
+[FieldOCLC]
+other = "OCLC"
 
 [FieldOnlineRelated]
 other = "Relacionado en Línea"
