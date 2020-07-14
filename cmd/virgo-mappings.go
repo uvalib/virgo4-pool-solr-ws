@@ -751,6 +751,10 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			Provider:   field.Properties.Provider,
 		}
 
+		if s.itemDetails == true {
+			f.Visibility = "detailed"
+		}
+
 		if field.XID != "" {
 			if field.WSLSXID != "" && rc.isWSLS == true {
 				f.Label = s.client.localize(field.WSLSXID)
