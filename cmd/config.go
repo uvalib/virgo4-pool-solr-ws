@@ -166,6 +166,7 @@ type poolConfigFieldTypeCustom struct {
 	ValueXID       string `json:"value_xid,omitempty"`
 	IDPrefix       string `json:"id_prefix,omitempty"` // misc
 	MusicPool      string `json:"music_pool,omitempty"`
+	ProxyURL       string `json:"proxy_url,omitempty"`
 	MaxSupported   int    `json:"max_supported,omitempty"`
 }
 

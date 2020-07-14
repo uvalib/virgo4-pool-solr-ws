@@ -239,7 +239,12 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 			continue
 		}
 
-		f.Value = item
+		// prepend proxy URL if configured and not already present
+		if cfg.ProxyURL != "" && strings.HasPrefix(item, cfg.ProxyURL) == false {
+			f.Value = cfg.ProxyURL + item
+		} else {
+			f.Value = item
+		}
 
 		itemLabel := ""
 		if useLabels == true {
