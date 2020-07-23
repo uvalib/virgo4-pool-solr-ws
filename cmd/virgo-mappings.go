@@ -226,6 +226,7 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 
 	urlValues := doc.getValuesByTag(cfg.URLField)
 	labelValues := doc.getValuesByTag(cfg.LabelField)
+	providerValues := doc.getValuesByTag(cfg.ProviderField)
 
 	useLabels := false
 	if len(labelValues) == len(urlValues) {
@@ -239,10 +240,10 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 			continue
 		}
 
-		// prepend proxy URL if configured, not already present, and matches a proxifiable domain
+		// prepend proxy URL if configured, not already present, is from a provider not specifically excluded, and matches a proxifiable domain
 		proxify := false
 
-		if cfg.ProxyPrefix != "" && strings.HasPrefix(item, cfg.ProxyPrefix) == false {
+		if cfg.ProxyPrefix != "" && strings.HasPrefix(item, cfg.ProxyPrefix) == false && sliceContainsValueFromSlice(providerValues, cfg.NoProxyProviders) == false {
 			for _, domain := range cfg.ProxyDomains {
 				if strings.Contains(item, fmt.Sprintf("%s/", domain)) == true {
 					proxify = true
