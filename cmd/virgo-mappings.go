@@ -867,7 +867,7 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 					selected = true
 				}
 
-				buckets = append(buckets, v4api.FacetBucket{Value: b.Val, Count: b.GroupCount, Selected: selected})
+				buckets = append(buckets, v4api.FacetBucket{Value: b.Val, Count: b.Count, Selected: selected})
 			}
 		}
 
@@ -938,7 +938,7 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 		for _, q := range s.solr.req.meta.internalFacets[key].config.ComponentQueries {
 			qval := val[q.XID]
-			if qval == nil || qval.GroupCount == 0 {
+			if qval == nil || qval.Count == 0 {
 				continue
 			}
 
