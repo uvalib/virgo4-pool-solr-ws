@@ -254,6 +254,7 @@ type poolConfigSort struct {
 	Order       string `json:"order,omitempty"`
 	RecordXID   string `json:"record_xid,omitempty"`
 	RecordOrder string `json:"record_order,omitempty"`
+	Ungroup     bool   `json:"ungroup,omitempty"`
 }
 
 type poolConfigIdentity struct {
