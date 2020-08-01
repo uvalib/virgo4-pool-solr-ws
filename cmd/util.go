@@ -151,3 +151,17 @@ func titleizeIfUppercase(s string) string {
 
 	return val
 }
+
+func chunkStrings(list []string, size int) [][]string {
+	var chunks [][]string
+
+	for size < len(list) {
+		list, chunks = list[size:], append(chunks, list[0:size:size])
+	}
+
+	if len(list) > 0 {
+		chunks = append(chunks, list)
+	}
+
+	return chunks
+}

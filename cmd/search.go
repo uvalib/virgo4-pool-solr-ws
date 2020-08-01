@@ -309,18 +309,25 @@ func (s *searchContext) populateGroups() error {
 		groups = append(groups, v4api.Group{Value: groupValue, Records: []v4api.Record{}})
 	}
 
-	r, err := s.newSearchWithRecordListForGroups(s.virgo.solrQuery, groupValues)
-	if err != nil {
-		return err
-	}
+	// client might load more than 20 at a time, for instance when reloading a specific page of a search.
+	// process groups in batches of 1000 to avoid Solr maxBooleanClause error
 
-	// loop through records to route to correct group
+	chunks := chunkStrings(groupValues, 1000)
 
-	for i, record := range r.virgo.poolRes.Groups[0].Records {
-		groupRecord := r.solr.res.Response.Docs[i]
-		groupValue := s.getSolrGroupFieldValue(&groupRecord)
-		v := groupValueMap[groupValue]
-		groups[v].Records = append(groups[v].Records, record)
+	for _, chunk := range chunks {
+		r, err := s.newSearchWithRecordListForGroups(s.virgo.solrQuery, chunk)
+		if err != nil {
+			return err
+		}
+
+		// loop through records to route to correct group
+
+		for i, record := range r.virgo.poolRes.Groups[0].Records {
+			groupRecord := r.solr.res.Response.Docs[i]
+			groupValue := s.getSolrGroupFieldValue(&groupRecord)
+			v := groupValueMap[groupValue]
+			groups[v].Records = append(groups[v].Records, record)
+		}
 	}
 
 	// loop through groups to assign count and fields
