@@ -249,12 +249,12 @@ type poolConfigFacet struct {
 }
 
 type poolConfigSort struct {
-	XID         string `json:"xid,omitempty"` // translation ID
-	Field       string `json:"field,omitempty"`
-	Order       string `json:"order,omitempty"`
-	RecordXID   string `json:"record_xid,omitempty"`
-	RecordOrder string `json:"record_order,omitempty"`
-	Ungroup     bool   `json:"ungroup,omitempty"`
+	XID          string `json:"xid,omitempty"` // translation ID
+	Field        string `json:"field,omitempty"`
+	Order        string `json:"order,omitempty"`
+	RecordXID    string `json:"record_xid,omitempty"`
+	RecordOrder  string `json:"record_order,omitempty"`
+	GroupResults bool   `json:"group_results,omitempty"`
 }
 
 type poolConfigIdentity struct {

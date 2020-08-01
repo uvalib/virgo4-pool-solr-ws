@@ -475,7 +475,7 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 	}
 
 	// group or not based on sort being applied
-	s.virgo.flags.groupResults = !s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Ungroup
+	s.virgo.flags.groupResults = s.pool.maps.sortFields[s.virgo.req.Sort.SortID].GroupResults
 
 	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
 		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
