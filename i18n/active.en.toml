@@ -10,6 +10,12 @@ other = "Books"
 [PoolCatalogDescription]
 other = "Physical and electronic books from UVA’s collection."
 
+[PoolHathiTrustName]
+other = "Hathi Trust"
+
+[PoolHathiTrustDescription]
+other = "Items from Hathi Trust."
+
 [PoolImagesName]
 other = "Images"
 
@@ -51,6 +57,12 @@ other = "Theses"
 
 [PoolThesisDescription]
 other = "Theses and dissertations completed at the University of Virginia."
+
+[PoolUVALibraryName]
+other = "UVA Library"
+
+[PoolUVALibraryDescription]
+other = "Items from UVA Library."
 
 [PoolVideoName]
 other = "Video"
