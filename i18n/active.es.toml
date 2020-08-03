@@ -11,10 +11,10 @@ other = "Libros"
 other = "Libros físicos y electrónicos de la colección de UVA."
 
 [PoolHathiTrustName]
-other = "Hathi Trust"
+other = "HathiTrust"
 
 [PoolHathiTrustDescription]
-other = "Artículos de Hathi Trust."
+other = "Artículos de HathiTrust."
 
 [PoolImagesName]
 other = "Imágenes"
@@ -461,7 +461,7 @@ other = "Libra Repository"
 other = "Getty Publications Virtual Library"
 
 [ProviderHathiTrust]
-other = "Hathi Trust Digital Library"
+other = "HathiTrust Digital Library"
 
 [ProviderKanopy]
 other = "Kanopy Online Video Collection"
