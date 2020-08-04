@@ -171,6 +171,8 @@ func (s *searchContext) solrQuery() error {
 
 	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, ctx.url, elapsedMS)
 
+	s.log("[SOLR] endpoint: %-8s  qtime: %5d  elapsed: %5d  overhead: %5d", s.virgo.endpoint, solrRes.ResponseHeader.QTime, elapsedMS, elapsedMS-int64(solrRes.ResponseHeader.QTime))
+
 	s.solr.res = &solrRes
 
 	s.convertFacets()

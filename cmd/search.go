@@ -24,6 +24,7 @@ type virgoDialog struct {
 	solrQuery  string          // holds the solr query (either parsed or specified)
 	parserInfo *solrParserInfo // holds the information for parsed queries
 	flags      virgoFlags
+	endpoint   string
 }
 
 type solrDialog struct {
@@ -467,6 +468,8 @@ func (s *searchContext) determineSortOptions() searchResponse {
 }
 
 func (s *searchContext) handleSearchRequest() searchResponse {
+	s.virgo.endpoint = "search"
+
 	var errData v4api.PoolResult
 
 	if resp := s.parseSearchOrFacetsRequest(); resp.err != nil {
@@ -497,6 +500,8 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 }
 
 func (s *searchContext) handleFacetsRequest() searchResponse {
+	s.virgo.endpoint = "facets"
+
 	var errData v4api.PoolFacets
 
 	if resp := s.parseSearchOrFacetsRequest(); resp.err != nil {
@@ -527,6 +532,8 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 }
 
 func (s *searchContext) handleRecordRequest() searchResponse {
+	s.virgo.endpoint = "resource"
+
 	// override these values from defaults.  specify two rows to catch
 	// the (impossible?) scenario of multiple records with the same id
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 2}
@@ -569,6 +576,8 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 }
 
 func (s *searchContext) handlePingRequest() searchResponse {
+	s.virgo.endpoint = "ping"
+
 	if err := s.solrPing(); err != nil {
 		s.err("ping execution error: %s", err.Error())
 		return searchResponse{status: http.StatusInternalServerError, err: err}
