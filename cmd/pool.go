@@ -692,6 +692,8 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
 
+			case "summary_holdings":
+
 			case "thumbnail_url":
 				if field.CustomInfo == nil {
 					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
@@ -808,9 +810,16 @@ func (p *poolContext) validateConfig() {
 		langs = append(langs, lang)
 		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
 		for _, id := range messageIDs.Values() {
-			if _, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: id}); err != nil {
-				log.Printf("[VALIDATE] [%s] missing translation for message ID: [%s] (%s)", lang, id, err.Error())
+			_, xtag, xerr := localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: id})
+			if xerr != nil {
+				log.Printf("[VALIDATE] [%s] [%s] translation error: %s", lang, id, err.Error())
 				invalid = true
+				continue
+			}
+			if xtag != tag {
+				log.Printf("[VALIDATE] [%s] [%s] translated message has unexpected language (%s); missing translation?", lang, id, xtag)
+				invalid = true
+				continue
 			}
 		}
 	}

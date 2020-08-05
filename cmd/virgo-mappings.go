@@ -544,6 +544,24 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "summary_holdings":
+		for _, fieldValue := range fieldValues {
+			parts := strings.Split(fieldValue, "|")
+			if len(parts) != 6 {
+				s.log("unexpected summary holding entry: [%s]", fieldValue)
+				continue
+			}
+			f.SummaryLibrary = parts[0]
+			f.SummaryLocation = parts[1]
+			f.SummaryText = parts[2]
+			f.SummaryNote = parts[3]
+			f.SummaryLabel = parts[4]
+			f.SummaryCallNumber = parts[5]
+			values = append(values, f)
+		}
+
+		return values
+
 	case "thumbnail_url":
 		urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)
 
@@ -803,7 +821,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 		i := 0
 		for _, fieldValue := range fieldValues {
-			if fieldValue.Value == "" {
+			if field.Custom == false && fieldValue.Value == "" {
 				continue
 			}
 

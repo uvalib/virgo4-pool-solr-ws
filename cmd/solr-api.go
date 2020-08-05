@@ -157,6 +157,7 @@ type solrDocument struct {
 	SubjectSummary              []string `json:"subject_summary_a,omitempty"`
 	Subtitle                    []string `json:"title_sub_a,omitempty"`
 	SudocNumber                 []string `json:"sudoc_number_a,omitempty"`
+	SummaryHoldings             []string `json:"summary_holdings_a,omitempty"`
 	TargetAudience              []string `json:"target_audience_a,omitempty"`
 	TermsOfUse                  []string `json:"terms_of_use_a,omitempty"`
 	ThumbnailURL                []string `json:"thumbnail_url_a,omitempty"`
