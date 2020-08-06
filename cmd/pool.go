@@ -145,7 +145,7 @@ func (p *poolContext) initIdentity() {
 		}
 
 		p.maps.sortFields[s.XID] = *s
-		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID})
+		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID, Asc: s.AscXID, Desc: s.DescXID})
 	}
 
 	// create attribute map
@@ -408,6 +408,8 @@ func (p *poolContext) validateConfig() {
 	for i, val := range p.sorts {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("sort option %d xid", i))
 		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d group field", i))
+		messageIDs.addValue(val.AscXID)
+		messageIDs.addValue(val.DescXID)
 		messageIDs.addValue(val.RecordXID)
 
 		if val.RecordXID != "" && p.maps.sortFields[val.RecordXID].XID == "" {
@@ -812,7 +814,7 @@ func (p *poolContext) validateConfig() {
 		for _, id := range messageIDs.Values() {
 			_, xtag, xerr := localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: id})
 			if xerr != nil {
-				log.Printf("[VALIDATE] [%s] [%s] translation error: %s", lang, id, err.Error())
+				log.Printf("[VALIDATE] [%s] [%s] translation error: %s", lang, id, xerr.Error())
 				invalid = true
 				continue
 			}

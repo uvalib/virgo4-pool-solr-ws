@@ -490,11 +490,20 @@ other = "Virgo Classic"
 [SortCallNumber]
 other = "Call Number"
 
+[SortCallNumberAscending]
+other = "A-Z"
+
+[SortCallNumberDescending]
+other = "Z-A"
+
 [SortDatePublished]
 other = "Date Published"
 
-[SortDateReceived]
-other = "Date Received"
+[SortDatePublishedAscending]
+other = "oldest first"
+
+[SortDatePublishedDescending]
+other = "newest first"
 
 [SortRelevance]
 other = "Relevance"

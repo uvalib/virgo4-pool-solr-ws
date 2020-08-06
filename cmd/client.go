@@ -131,6 +131,14 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) v4api.PoolIdentity
 		opt := &id.SortOptions[i]
 
 		opt.Label = c.localize(opt.ID)
+
+		if opt.Asc != "" {
+			opt.Asc = c.localize(opt.Asc)
+		}
+
+		if opt.Desc != "" {
+			opt.Desc = c.localize(opt.Desc)
+		}
 	}
 
 	return id

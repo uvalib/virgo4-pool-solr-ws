@@ -250,10 +250,12 @@ type poolConfigFacet struct {
 }
 
 type poolConfigSort struct {
-	XID          string `json:"xid,omitempty"` // translation ID
+	XID          string `json:"xid,omitempty"`      // translation ID
+	AscXID       string `json:"asc_xid,omitempty"`  // translation ID
+	DescXID      string `json:"desc_xid,omitempty"` // translation ID
 	Field        string `json:"field,omitempty"`
 	Order        string `json:"order,omitempty"`
-	RecordXID    string `json:"record_xid,omitempty"`
+	RecordXID    string `json:"record_xid,omitempty"` // translation ID
 	RecordOrder  string `json:"record_order,omitempty"`
 	GroupResults bool   `json:"group_results,omitempty"`
 }
