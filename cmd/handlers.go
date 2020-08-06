@@ -172,3 +172,21 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 
 	c.Set("claims", claims)
 }
+
+func (p *poolContext) adminHandler(c *gin.Context) {
+	val, ok := c.Get("claims")
+
+	if ok == false {
+		log.Printf("no claims")
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	claims := val.(*v4jwt.V4Claims)
+
+	if claims.Role.String() != "admin" {
+		log.Printf("insufficient permissions")
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+}
