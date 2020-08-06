@@ -132,12 +132,14 @@ func (c *clientContext) localizedPoolIdentity(p *poolContext) v4api.PoolIdentity
 
 		opt.Label = c.localize(opt.ID)
 
-		if opt.Asc != "" {
-			opt.Asc = c.localize(opt.Asc)
+		cfg := p.maps.sortFields[opt.ID]
+
+		if cfg.AscXID != "" {
+			opt.Asc = c.localize(cfg.AscXID)
 		}
 
-		if opt.Desc != "" {
-			opt.Desc = c.localize(opt.Desc)
+		if cfg.DescXID != "" {
+			opt.Desc = c.localize(cfg.DescXID)
 		}
 	}
 
