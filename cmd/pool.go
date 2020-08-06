@@ -910,19 +910,31 @@ func (p *poolContext) populateFieldList(required []string, optional []string, fi
 			switch fieldName {
 			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
-				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
+				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.Title.CitationPart
+				if p.config.Local.Mappings.Configured.FieldNames.Title.RISCode != "" {
+					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
+				}
 
 			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
-				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
+				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.CitationPart
+				if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode != "" {
+					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
+				}
 
 			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
-				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
+				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.Author.CitationPart
+				if p.config.Local.Mappings.Configured.FieldNames.Author.RISCode != "" {
+					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
+				}
 
 			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
-				fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
+				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.CitationPart
+				if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode != "" {
+					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
+				}
 
 			default:
 				log.Printf("[INIT] unrecognized required field name: [%s]", fieldName)

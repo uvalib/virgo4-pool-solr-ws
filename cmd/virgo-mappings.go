@@ -59,26 +59,40 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 
 type poolRecord struct {
 	record   v4api.Record
+	citation bool
 	ris      bool
 	risCodes []string
 }
 
 func (r *poolRecord) addField(field v4api.RecordField) {
-	// non-RIS mode; add field as-is
-	if r.ris == false {
-		r.record.Fields = append(r.record.Fields, field)
-		return
-	}
+	switch {
+	case r.ris == true:
+		// RIS mode; for each RIS code, output a minimal field with that code and the field value
+		for _, code := range r.risCodes {
+			risField := v4api.RecordField{
+				Name:    field.Name,
+				Value:   field.Value,
+				RISCode: code,
+			}
 
-	// RIS mode; for each RIS code, output a minimal field with that code and the field value
-	for _, code := range r.risCodes {
-		risField := v4api.RecordField{
-			Name:    field.Name,
-			Value:   field.Value,
-			RISCode: code,
+			r.record.Fields = append(r.record.Fields, risField)
 		}
 
-		r.record.Fields = append(r.record.Fields, risField)
+	case r.citation == true:
+		// citation parts mode (supercedes RIS); if the field has a citation part, output a minimal field
+		if field.CitationPart != "" {
+			citationField := v4api.RecordField{
+				Name:         field.Name,
+				Value:        field.Value,
+				CitationPart: field.CitationPart,
+			}
+
+			r.record.Fields = append(r.record.Fields, citationField)
+		}
+
+	default:
+		// normal mode; add field as-is
+		r.record.Fields = append(r.record.Fields, field)
 	}
 }
 
@@ -711,7 +725,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
-	r := poolRecord{ris: s.client.opts.ris}
+	r := poolRecord{ris: s.client.opts.ris, citation: s.client.opts.citation}
 
 	var rc recordContext
 
@@ -778,12 +792,13 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		r.risCodes = field.RISCodes
 
 		f := v4api.RecordField{
-			Name:       field.Name,
-			Type:       field.Properties.Type,
-			Separator:  field.Properties.Separator,
-			Visibility: field.Properties.Visibility,
-			Display:    field.Properties.Display,
-			Provider:   field.Properties.Provider,
+			Name:         field.Name,
+			Type:         field.Properties.Type,
+			Separator:    field.Properties.Separator,
+			Visibility:   field.Properties.Visibility,
+			Display:      field.Properties.Display,
+			Provider:     field.Properties.Provider,
+			CitationPart: field.Properties.CitationPart,
 		}
 
 		if s.itemDetails == true {

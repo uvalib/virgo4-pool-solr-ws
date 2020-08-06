@@ -138,11 +138,12 @@ type poolConfigPdf struct {
 }
 
 type poolConfigFieldProperties struct {
-	Type       string `json:"type,omitempty"`
-	Separator  string `json:"separator,omitempty"`
-	Display    string `json:"display,omitempty"`
-	Visibility string `json:"visibility,omitempty"`
-	Provider   string `json:"provider,omitempty"`
+	Type         string `json:"type,omitempty"`
+	Separator    string `json:"separator,omitempty"`
+	Display      string `json:"display,omitempty"`
+	Visibility   string `json:"visibility,omitempty"`
+	Provider     string `json:"provider,omitempty"`
+	CitationPart string `json:"citation_part,omitempty"`
 }
 
 type poolConfigFieldTypeCustom struct {
@@ -258,11 +259,12 @@ type poolConfigSort struct {
 }
 
 type poolConfigIdentity struct {
-	NameXID    string   `json:"name_xid,omitempty"`   // translation ID
-	DescXID    string   `json:"desc_xid,omitempty"`   // translation ID
-	Mode       string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
-	Attributes []string `json:"attributes,omitempty"` // pool attributes (what it supports)
-	RISType    string   `json:"ris_type,omitempty"`
+	NameXID      string   `json:"name_xid,omitempty"`   // translation ID
+	DescXID      string   `json:"desc_xid,omitempty"`   // translation ID
+	Mode         string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Attributes   []string `json:"attributes,omitempty"` // pool attributes (what it supports)
+	CitationType string   `json:"citation_type,omitempty"`
+	RISType      string   `json:"ris_type,omitempty"`
 }
 
 type poolConfigProvider struct {
@@ -289,9 +291,10 @@ type poolConfigMappingsDefinitions struct {
 }
 
 type poolConfigMappingsHeadingField struct {
-	Name    string `json:"name,omitempty"`
-	Type    string `json:"type,omitempty"`
-	RISCode string `json:"ris_code,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Type         string `json:"type,omitempty"`
+	CitationPart string `json:"citation_part,omitempty"`
+	RISCode      string `json:"ris_code,omitempty"`
 }
 
 type poolConfigMappingsConfiguredFields struct {
