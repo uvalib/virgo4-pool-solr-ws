@@ -387,9 +387,15 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
 
 	solrFields.addValue(p.config.Local.Solr.AuthorFields.PreferredHeaderField)
-	solrFields.addValue(p.config.Local.Solr.AuthorFields.InitialAuthorField)
-	solrFields.requireValue(p.config.Local.Solr.AuthorFields.PreferredAuthorField, "preferred author field")
-	solrFields.addValue(p.config.Local.Solr.AuthorFields.FallbackAuthorField)
+	for _, val := range p.config.Local.Solr.AuthorFields.InitialAuthorFields {
+		solrFields.requireValue(val, "initial author field")
+	}
+	for _, val := range p.config.Local.Solr.AuthorFields.PreferredAuthorFields {
+		solrFields.requireValue(val, "preferred author field")
+	}
+	for _, val := range p.config.Local.Solr.AuthorFields.FallbackAuthorFields {
+		solrFields.requireValue(val, "fallback author field")
+	}
 
 	if p.config.Local.Identity.Mode == "image" {
 		if p.config.Local.Related == nil {

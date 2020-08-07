@@ -104,10 +104,10 @@ type poolConfigSolrClients struct {
 }
 
 type poolConfigAuthorFields struct {
-	PreferredHeaderField string `json:"preferred_header_field,omitempty"`
-	InitialAuthorField   string `json:"initial_author_field,omitempty"`
-	PreferredAuthorField string `json:"preferred_author_field,omitempty"`
-	FallbackAuthorField  string `json:"fallback_author_field,omitempty"`
+	PreferredHeaderField  string   `json:"preferred_header_field,omitempty"`
+	InitialAuthorFields   []string `json:"initial_author_fields,omitempty"`
+	PreferredAuthorFields []string `json:"preferred_author_fields,omitempty"`
+	FallbackAuthorFields  []string `json:"fallback_author_fields,omitempty"`
 }
 
 type poolConfigSolr struct {
