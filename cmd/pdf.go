@@ -33,7 +33,7 @@ func (s *searchContext) getPdfStatus(url string) (string, error) {
 		}
 
 		s.log("[PDF] client.Do() failed: %s", resErr.Error())
-		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, url, status, errMsg, elapsedMS)
+		s.log("WARNING: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, url, status, errMsg, elapsedMS)
 		return "", fmt.Errorf("failed to receive PDF status response")
 	}
 
@@ -42,7 +42,7 @@ func (s *searchContext) getPdfStatus(url string) (string, error) {
 	if res.StatusCode != http.StatusOK {
 		errMsg := fmt.Errorf("unexpected status code %d", res.StatusCode)
 		s.log("[PDF] unexpected status code %d", res.StatusCode)
-		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, url, res.StatusCode, errMsg, elapsedMS)
+		s.log("WARNING: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, url, res.StatusCode, errMsg, elapsedMS)
 		return "", fmt.Errorf("received PDF status response code %d", res.StatusCode)
 	}
 
