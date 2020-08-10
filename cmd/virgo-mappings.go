@@ -60,26 +60,12 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 type poolRecord struct {
 	record   v4api.Record
 	citation bool
-	ris      bool
-	risCodes []string
 }
 
 func (r *poolRecord) addField(field v4api.RecordField) {
 	switch {
-	case r.ris == true:
-		// RIS mode; for each RIS code, output a minimal field with that code and the field value
-		for _, code := range r.risCodes {
-			risField := v4api.RecordField{
-				Name:    field.Name,
-				Value:   field.Value,
-				RISCode: code,
-			}
-
-			r.record.Fields = append(r.record.Fields, risField)
-		}
-
 	case r.citation == true:
-		// citation parts mode (supercedes RIS); if the field has a citation part, output a minimal field
+		// citation parts mode; if the field has a citation part, output a minimal field
 		if field.CitationPart != "" {
 			citationField := v4api.RecordField{
 				Name:         field.Name,
@@ -96,33 +82,33 @@ func (r *poolRecord) addField(field v4api.RecordField) {
 	}
 }
 
-func (s *searchContext) getRISType(formats []string) string {
-	// use configured RIS type for pool, if defined
-	if s.pool.config.Local.Identity.RISType != "" {
-		return s.pool.config.Local.Identity.RISType
+func (s *searchContext) getCitationFormat(formats []string) string {
+	// use configured citation format for pool, if defined
+	if s.pool.config.Local.Identity.CitationFormat != "" {
+		return s.pool.config.Local.Identity.CitationFormat
 	}
 
-	// point to last entry (which by configuration should be GEN for generic)
-	best := len(s.pool.config.Global.RISTypes) - 1
+	// point to last entry (which by configuration is the fallback value)
+	best := len(s.pool.config.Global.CitationFormats) - 1
 
 	// check each format to try to find better type match
 	for _, format := range formats {
-		for i := range s.pool.config.Global.RISTypes {
+		for i := range s.pool.config.Global.CitationFormats {
 			// no need to check worse possibilities
 			if i >= best {
 				continue
 			}
 
-			ristype := &s.pool.config.Global.RISTypes[i]
+			citationFormat := &s.pool.config.Global.CitationFormats[i]
 
-			if ristype.re.MatchString(format) == true {
+			if citationFormat.re.MatchString(format) == true {
 				best = i
 				break
 			}
 		}
 	}
 
-	return s.pool.config.Global.RISTypes[best].Type
+	return s.pool.config.Global.CitationFormats[best].Format
 }
 
 func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
@@ -386,6 +372,12 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "citation_format":
+		f.Value = s.getCitationFormat(fieldValues)
+		values = append(values, f)
+
+		return values
+
 	case "composer_performer":
 		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
@@ -518,33 +510,6 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "related_resources":
 		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
-
-		return values
-
-	case "ris_additional_author":
-		for i, authorValue := range rc.relations.authors.name {
-			if i == 0 {
-				continue
-			}
-
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
-
-	case "ris_author":
-		if len(rc.relations.authors.name) > 0 {
-			f.Value = rc.relations.authors.name[0]
-			values = append(values, f)
-		}
-
-		return values
-
-	case "ris_type":
-		formatValues := doc.getValuesByTag(field.CustomInfo.RISType.FormatField)
-		f.Value = s.getRISType(formatValues)
-		values = append(values, f)
 
 		return values
 
@@ -731,7 +696,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
-	r := poolRecord{ris: s.client.opts.ris, citation: s.client.opts.citation}
+	r := poolRecord{citation: s.client.opts.citation}
 
 	var rc recordContext
 
@@ -805,8 +770,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		if field.DigitalContentOnly == true && rc.hasDigitalContent == false {
 			continue
 		}
-
-		r.risCodes = field.RISCodes
 
 		f := v4api.RecordField{
 			Name:         field.Name,

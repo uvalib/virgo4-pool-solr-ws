@@ -267,27 +267,27 @@ func (p *poolContext) initPdf() {
 	}
 }
 
-func (p *poolContext) initRIS() {
+func (p *poolContext) initCitationFormats() {
 	invalid := false
 
-	for i := range p.config.Global.RISTypes {
-		ristype := &p.config.Global.RISTypes[i]
+	for i := range p.config.Global.CitationFormats {
+		citationFormat := &p.config.Global.CitationFormats[i]
 
 		var err error
 
-		if ristype.Type == "" {
-			log.Printf("[INIT] empty type in RIS type entry %d", i)
+		if citationFormat.Format == "" {
+			log.Printf("[INIT] empty format in citation format entry %d", i)
 			invalid = true
 		}
 
-		if ristype.Pattern == "" {
-			log.Printf("[INIT] empty pattern in RIS type entry %d (type: %s)", i, ristype.Type)
+		if citationFormat.Pattern == "" {
+			log.Printf("[INIT] empty pattern in citation format entry %d (format: %s)", i, citationFormat.Format)
 			invalid = true
 			continue
 		}
 
-		if ristype.re, err = regexp.Compile(ristype.Pattern); err != nil {
-			log.Printf("[INIT] pattern compilation error in RIS type entry %d (type: %s): %s", i, ristype.Type, err.Error())
+		if citationFormat.re, err = regexp.Compile(citationFormat.Pattern); err != nil {
+			log.Printf("[INIT] pattern compilation error in citation format entry %d (format: %s): %s", i, citationFormat.Format, err.Error())
 			invalid = true
 			continue
 		}
@@ -540,6 +540,8 @@ func (p *poolContext) validateConfig() {
 
 			case "availability":
 
+			case "citation_format":
+
 			case "composer_performer":
 
 			case "copyright_and_permissions":
@@ -660,25 +662,6 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
 				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-			case "ris_additional_author":
-
-			case "ris_author":
-
-			case "ris_type":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.RISType == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.RISType.FormatField, fmt.Sprintf("%s section format field", field.Name))
 
 			case "sirsi_url":
 				if field.CustomInfo == nil {
@@ -919,30 +902,18 @@ func (p *poolContext) populateFieldList(required []string, optional []string, fi
 			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
 				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.Title.CitationPart
-				if p.config.Local.Mappings.Configured.FieldNames.Title.RISCode != "" {
-					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Title.RISCode}
-				}
 
 			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
 				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.CitationPart
-				if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode != "" {
-					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.RISCode}
-				}
 
 			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
 				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.Author.CitationPart
-				if p.config.Local.Mappings.Configured.FieldNames.Author.RISCode != "" {
-					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.Author.RISCode}
-				}
 
 			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
 				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
 				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.CitationPart
-				if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode != "" {
-					fieldDef.RISCodes = []string{p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.RISCode}
-				}
 
 			default:
 				log.Printf("[INIT] unrecognized required field name: [%s]", fieldName)
@@ -1098,7 +1069,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initFacets()
 	p.initSolr()
 	p.initPdf()
-	p.initRIS()
+	p.initCitationFormats()
 
 	p.validateConfig()
 

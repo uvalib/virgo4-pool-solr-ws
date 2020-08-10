@@ -180,7 +180,6 @@ type poolConfigFieldCustomInfo struct {
 	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
 	PdfDownloadURL            *poolConfigFieldTypeCustom `json:"pdf_download_url,omitempty"`
 	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
-	RISType                   *poolConfigFieldTypeCustom `json:"ris_type,omitempty"`
 	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`
 	ThumbnailURL              *poolConfigFieldTypeCustom `json:"thumbnail_url,omitempty"`
 	TitleSubtitleEdition      *poolConfigFieldTypeCustom `json:"title_subtitle_edition,omitempty"`
@@ -193,7 +192,6 @@ type poolConfigField struct {
 	WSLSXID            string                     `json:"wsls_xid,omitempty"` // for wsls fields with alternate labels
 	Field              string                     `json:"field,omitempty"`
 	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
-	RISCodes           []string                   `json:"ris_codes,omitempty"`
 	Limit              int                        `json:"limit,omitempty"`
 	SplitOn            string                     `json:"split_on,omitempty"`
 	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
@@ -261,12 +259,11 @@ type poolConfigSort struct {
 }
 
 type poolConfigIdentity struct {
-	NameXID      string   `json:"name_xid,omitempty"`   // translation ID
-	DescXID      string   `json:"desc_xid,omitempty"`   // translation ID
-	Mode         string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
-	Attributes   []string `json:"attributes,omitempty"` // pool attributes (what it supports)
-	CitationType string   `json:"citation_type,omitempty"`
-	RISType      string   `json:"ris_type,omitempty"`
+	NameXID        string   `json:"name_xid,omitempty"`   // translation ID
+	DescXID        string   `json:"desc_xid,omitempty"`   // translation ID
+	Mode           string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Attributes     []string `json:"attributes,omitempty"` // pool attributes (what it supports)
+	CitationFormat string   `json:"citation_format,omitempty"`
 }
 
 type poolConfigProvider struct {
@@ -296,7 +293,6 @@ type poolConfigMappingsHeadingField struct {
 	Name         string `json:"name,omitempty"`
 	Type         string `json:"type,omitempty"`
 	CitationPart string `json:"citation_part,omitempty"`
-	RISCode      string `json:"ris_code,omitempty"`
 }
 
 type poolConfigMappingsConfiguredFields struct {
@@ -319,8 +315,8 @@ type poolConfigMappings struct {
 	Configured  poolConfigMappingsConfigured  `json:"configured,omitempty"`
 }
 
-type poolConfigRISType struct {
-	Type    string `json:"type,omitempty"`
+type poolConfigCitationFormat struct {
+	Format  string `json:"format,omitempty"`
 	Pattern string `json:"pattern,omitempty"`
 	re      *regexp.Regexp
 }
@@ -341,7 +337,7 @@ type poolConfigGlobal struct {
 	Attributes       []string                   `json:"attributes,omitempty"`
 	Providers        []poolConfigProvider       `json:"providers,omitempty"`
 	Availability     poolConfigAvailability     `json:"availability,omitempty"`
-	RISTypes         []poolConfigRISType        `json:"ris_types,omitempty"`
+	CitationFormats  []poolConfigCitationFormat `json:"citation_formats,omitempty"`
 	RecordAttributes poolConfigRecordAttributes `json:"record_attributes,omitempty"`
 	Publishers       []poolConfigPublisher      `json:"publishers,omitempty"`
 	Relators         poolConfigRelators         `json:"relators,omitempty"`
