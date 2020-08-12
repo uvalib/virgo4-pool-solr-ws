@@ -405,11 +405,17 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "cover_image_url":
-		if s.pool.maps.attributes["cover_images"].Supported == true {
-			if url := s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, rc.relations.authors.name); url != "" {
-				f.Value = url
-				values = append(values, f)
-			}
+		coverImageURL := ""
+
+		if len(fieldValues) > 0 {
+			coverImageURL = firstElementOf(fieldValues)
+		} else {
+			coverImageURL = s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, rc.relations.authors.name)
+		}
+
+		if coverImageURL != "" {
+			f.Value = coverImageURL
+			values = append(values, f)
 		}
 
 		return values
@@ -543,20 +549,6 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 			f.SummaryLabel = parts[4]
 			f.SummaryCallNumber = parts[5]
 			values = append(values, f)
-		}
-
-		return values
-
-	case "thumbnail_url":
-		urlValues := doc.getValuesByTag(field.CustomInfo.ThumbnailURL.URLField)
-
-		if len(urlValues) <= field.CustomInfo.ThumbnailURL.MaxSupported {
-			for _, url := range urlValues {
-				if url != "" {
-					f.Value = url
-					values = append(values, f)
-				}
-			}
 		}
 
 		return values

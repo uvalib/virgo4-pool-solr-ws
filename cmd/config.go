@@ -159,7 +159,6 @@ type poolConfigFieldTypeCustom struct {
 	PoolField        string   `json:"pool_field,omitempty"`
 	ProviderField    string   `json:"provider_field,omitempty"`
 	SubtitleField    string   `json:"subtitle_field,omitempty"`
-	ThumbnailField   string   `json:"thumbnail_field,omitempty"`
 	TitleField       string   `json:"title_field,omitempty"`
 	UPCField         string   `json:"upc_field,omitempty"`
 	URLField         string   `json:"url_field,omitempty"`
@@ -181,7 +180,6 @@ type poolConfigFieldCustomInfo struct {
 	PdfDownloadURL            *poolConfigFieldTypeCustom `json:"pdf_download_url,omitempty"`
 	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
 	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`
-	ThumbnailURL              *poolConfigFieldTypeCustom `json:"thumbnail_url,omitempty"`
 	TitleSubtitleEdition      *poolConfigFieldTypeCustom `json:"title_subtitle_edition,omitempty"`
 	WSLSCollectionDescription *poolConfigFieldTypeCustom `json:"wsls_collection_description,omitempty"`
 }

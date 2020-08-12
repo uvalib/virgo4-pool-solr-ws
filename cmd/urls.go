@@ -18,15 +18,7 @@ func (s *searchContext) getSirsiURL(id string) string {
 }
 
 func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCustom, doc *solrDocument, authorValues []string) string {
-	// use solr-provided url if present
-
-	thumbnailValues := doc.getValuesByTag(cfg.ThumbnailField)
-
-	if thumbnailURL := firstElementOf(thumbnailValues); thumbnailURL != "" {
-		return thumbnailURL
-	}
-
-	// otherwise, compose a url to the cover image service
+	// compose a url to the cover image service
 
 	idValues := doc.getValuesByTag(cfg.IDField)
 
