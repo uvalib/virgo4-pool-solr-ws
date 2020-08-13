@@ -342,7 +342,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
 		if len(authorValues) == 0 {
-			authorValues = append(authorValues, rc.relations.authors.nameRelation...)
+			authorValues = append(authorValues, rc.relations.authors.name...)
 			authorValues = append(authorValues, rc.relations.editors.nameRelation...)
 			authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
 		}
@@ -382,7 +382,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
 		if len(authorValues) == 0 {
-			authorValues = append(authorValues, rc.relations.authors.nameRelation...)
+			authorValues = append(authorValues, rc.relations.authors.name...)
 			authorValues = append(authorValues, rc.relations.editors.nameRelation...)
 			authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
 		}
@@ -424,7 +424,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
 		if len(authorValues) == 0 {
-			authorValues = append(authorValues, rc.relations.authors.nameRelation...)
+			authorValues = append(authorValues, rc.relations.authors.name...)
 			authorValues = append(authorValues, rc.relations.editors.nameRelation...)
 			authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
 		}
