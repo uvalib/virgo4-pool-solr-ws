@@ -146,6 +146,7 @@ type solrDocument struct {
 	ReleaseDate                 []string `json:"release_a,omitempty"`
 	ReproductionNote            []string `json:"reproduction_note_a,omitempty"`
 	ResponsibilityStatement     []string `json:"responsibility_statement_a,omitempty"`
+	ResponsibiltyStatement      []string `json:"responsibilty_statement_a,omitempty"`
 	Rights                      []string `json:"rights_a,omitempty"`
 	RightsStatementURI          []string `json:"rs_uri_a,omitempty"`
 	Score                       float32  `json:"score,omitempty"`
