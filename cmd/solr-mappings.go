@@ -32,11 +32,11 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets m
 			}
 
 			if numSelected == 0 {
-				s.meta.client.log("[FILTER] omitting filter [%s] due to lack of selected dependent filters", filter.FacetID)
+				s.meta.client.log("FILTER: omitting filter [%s] due to lack of selected dependent filters", filter.FacetID)
 				continue
 			}
 
-			s.meta.client.log("[FILTER] including filter [%s] due to %d selected dependent filters", filter.FacetID, numSelected)
+			s.meta.client.log("FILTER: including filter [%s] due to %d selected dependent filters", filter.FacetID, numSelected)
 		}
 
 		var solrFilter string
@@ -62,7 +62,7 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets m
 			q := solrFacet.config.queryMap[filterValue]
 
 			if q == nil {
-				s.meta.client.log("[FILTER] unable to map component value to a component query: [%s]", filterValue)
+				s.meta.client.log("FILTER: unable to map component value to a component query: [%s]", filterValue)
 				continue
 			}
 
@@ -85,7 +85,7 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets m
 
 	for filterID := range s.meta.selectionMap {
 		for _, solrFilter := range s.meta.selectionMap[filterID] {
-			s.meta.client.log("[FILTER] applying filter: %-20s : %s", filterID, solrFilter)
+			s.meta.client.log("FILTER: applying filter: %-20s : %s", filterID, solrFilter)
 		}
 	}
 }

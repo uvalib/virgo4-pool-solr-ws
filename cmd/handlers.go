@@ -22,10 +22,6 @@ func (p *poolContext) searchHandler(c *gin.Context) {
 	resp := s.handleSearchRequest()
 	cl.logResponse(resp)
 
-	if resp.err != nil {
-		s.err("searchHandler: error: %s", resp.err.Error())
-	}
-
 	c.JSON(resp.status, resp.data)
 }
 
@@ -39,10 +35,6 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 	cl.logRequest()
 	resp := s.handleFacetsRequest()
 	cl.logResponse(resp)
-
-	if resp.err != nil {
-		s.err("facetsHandler: error: %s", resp.err.Error())
-	}
 
 	c.JSON(resp.status, resp.data)
 }
@@ -66,7 +58,6 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	cl.logResponse(resp)
 
 	if resp.err != nil {
-		s.err("resourceHandler: error: %s", resp.err.Error())
 		c.String(resp.status, resp.err.Error())
 		return
 	}
@@ -170,6 +161,7 @@ func (p *poolContext) authenticateHandler(c *gin.Context) {
 		return
 	}
 
+	c.Set("token", token)
 	c.Set("claims", claims)
 }
 

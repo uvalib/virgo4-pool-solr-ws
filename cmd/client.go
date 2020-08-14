@@ -21,6 +21,8 @@ type clientOpts struct {
 
 type clientContext struct {
 	reqID       string          // internally generated
+	ip          string          // from gin context
+	brokenToken string          // unique-ish snippet of user token
 	start       time.Time       // internally set
 	opts        clientOpts      // options set by client
 	claims      *v4jwt.V4Claims // information about this user
@@ -46,6 +48,14 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 
 	c.start = time.Now()
 	c.reqID = fmt.Sprintf("%08x", p.randomSource.Uint32())
+	c.ip = ctx.ClientIP()
+
+	// get token, if any, and use the last bits for logging
+	if val, ok := ctx.Get("token"); ok == true {
+		str := "--------" + val.(string)
+		str = str[len(str)-8:]
+		c.brokenToken = str
+	}
 
 	// get claims, if any
 	if val, ok := ctx.Get("claims"); ok == true {
@@ -72,8 +82,6 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 }
 
 func (c *clientContext) logRequest() {
-	c.log("------------------------------[ NEW REQUEST ]------------------------------")
-
 	query := ""
 	if c.ginCtx.Request.URL.RawQuery != "" {
 		query = fmt.Sprintf("?%s", c.ginCtx.Request.URL.RawQuery)
@@ -84,11 +92,11 @@ func (c *clientContext) logRequest() {
 		claimsStr = fmt.Sprintf("  [%s; %s; %s; %v]", c.claims.UserID, c.claims.Role, c.claims.AuthMethod, c.claims.IsUVA)
 	}
 
-	c.log("[REQUEST] %s %s%s  (%s) => (%s)%s", c.ginCtx.Request.Method, c.ginCtx.Request.URL.Path, query, c.acceptLang, c.contentLang, claimsStr)
+	c.log("REQUEST: %s %s%s  (%s) => (%s)%s", c.ginCtx.Request.Method, c.ginCtx.Request.URL.Path, query, c.acceptLang, c.contentLang, claimsStr)
 }
 
 func (c *clientContext) logResponse(resp searchResponse) {
-	msg := fmt.Sprintf("[RESPONSE] status: %d", resp.status)
+	msg := fmt.Sprintf("RESPONSE: status: %d", resp.status)
 
 	if resp.err != nil {
 		msg = msg + fmt.Sprintf(", error: %s", resp.err.Error())
@@ -98,13 +106,27 @@ func (c *clientContext) logResponse(resp searchResponse) {
 }
 
 func (c *clientContext) printf(prefix, format string, args ...interface{}) {
-	str := fmt.Sprintf(format, args...)
+	var parts []string
 
-	if prefix != "" {
-		str = strings.Join([]string{prefix, str}, " ")
+	if c.ip != "" {
+		parts = append(parts, c.ip)
 	}
 
-	log.Printf("[%s] %s", c.reqID, str)
+	if c.reqID != "" {
+		parts = append(parts, fmt.Sprintf("[%s]", c.reqID))
+	}
+
+	if c.brokenToken != "" {
+		parts = append(parts, fmt.Sprintf("[%s]", c.brokenToken))
+	}
+
+	if prefix != "" {
+		parts = append(parts, prefix)
+	}
+
+	parts = append(parts, fmt.Sprintf(format, args...))
+
+	log.Printf("%s", strings.Join(parts, " "))
 }
 
 func (c *clientContext) log(format string, args ...interface{}) {

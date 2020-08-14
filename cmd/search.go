@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -25,6 +27,7 @@ type virgoDialog struct {
 	parserInfo *solrParserInfo // holds the information for parsed queries
 	flags      virgoFlags
 	endpoint   string
+	body       string
 }
 
 type solrDialog struct {
@@ -80,6 +83,8 @@ func (s *searchContext) copySearchContext() *searchContext {
 	v := s.virgo.req
 	sc.virgo.req = v
 
+	sc.virgo.endpoint = s.virgo.endpoint
+
 	return sc
 }
 
@@ -92,7 +97,7 @@ func (s *searchContext) err(format string, args ...interface{}) {
 }
 
 func (s *searchContext) performQuery() searchResponse {
-	s.log("**********  START SOLR QUERY  **********")
+	//s.log("**********  START SOLR QUERY  **********")
 
 	if resp := s.solrSearchRequest(); resp.err != nil {
 		s.err("query creation error: %s", resp.err.Error())
@@ -101,7 +106,7 @@ func (s *searchContext) performQuery() searchResponse {
 
 	err := s.solrQuery()
 
-	s.log("**********   END SOLR QUERY   **********")
+	//s.log("**********   END SOLR QUERY   **********")
 
 	if err != nil {
 		s.err("query execution error: %s", err.Error())
@@ -164,7 +169,7 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 	// accurate confidence level in the original query's results.
 
 	if s.virgo.req.Pagination.Start != 0 {
-		s.log("[SEARCH] determining true confidence level for title search")
+		s.log("SEARCH: determining true confidence level for title search")
 
 		return s.newSearchWithTopResult(s.virgo.req.Query)
 	}
@@ -249,7 +254,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 		}
 	}
 
-	s.log("[SORT] intra-group sort: %#v", sortOpt)
+	//s.log("SORT: intra-group sort: %#v", sortOpt)
 
 	c.virgo.req.Sort = sortOpt
 
@@ -373,7 +378,17 @@ func (s *searchContext) validateSearchRequest() error {
 }
 
 func (s *searchContext) parseSearchOrFacetsRequest() searchResponse {
-	if err := s.client.ginCtx.BindJSON(&s.virgo.req); err != nil {
+	body, err := s.client.ginCtx.GetRawData()
+	if err != nil {
+		return searchResponse{status: http.StatusInternalServerError, err: err}
+	}
+
+	s.virgo.body = string(body)
+	s.log("SEARCH: raw body: [%s]", s.virgo.body)
+
+	dec := json.NewDecoder(bytes.NewReader(body))
+
+	if err = dec.Decode(&s.virgo.req); err != nil {
 		// "Invalid Request" instead?
 		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
@@ -385,7 +400,7 @@ func (s *searchContext) handleSearchOrFacetsRequest() searchResponse {
 	var err error
 	var top *searchContext
 
-	s.log("[SEARCH] query: [%s]", s.virgo.req.Query)
+	s.log("SEARCH: v4 query: [%s]", s.virgo.req.Query)
 
 	if err = s.validateSearchRequest(); err != nil {
 		return searchResponse{status: http.StatusBadRequest, err: err}
@@ -416,7 +431,7 @@ func (s *searchContext) handleSearchOrFacetsRequest() searchResponse {
 
 	// restore actual confidence
 	if confidenceIndex(top.confidence) > confidenceIndex(s.virgo.poolRes.Confidence) {
-		s.log("[SEARCH] overriding confidence [%s] with [%s]", s.virgo.poolRes.Confidence, top.confidence)
+		s.log("SEARCH: overriding confidence [%s] with [%s]", s.virgo.poolRes.Confidence, top.confidence)
 		s.virgo.poolRes.Confidence = top.confidence
 	}
 
@@ -459,8 +474,6 @@ func (s *searchContext) determineSortOptions() searchResponse {
 
 		sortOpt = s.virgo.req.Sort
 	}
-
-	s.log("[SORT] inter-group sort: %#v", sortOpt)
 
 	s.virgo.req.Sort = sortOpt
 

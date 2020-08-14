@@ -979,11 +979,11 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 				}
 
 				if numSelected == 0 {
-					s.log("[FACET] omitting facet [%s] due to lack of selected dependent filters", facetDef.XID)
+					s.log("FACET: omitting facet [%s] due to lack of selected dependent filters", facetDef.XID)
 					continue
 				}
 
-				s.log("[FACET] including facet [%s] due to %d selected dependent filters", facetDef.XID, numSelected)
+				s.log("FACET: including facet [%s] due to %d selected dependent filters", facetDef.XID, numSelected)
 			}
 
 			gotFacet = true

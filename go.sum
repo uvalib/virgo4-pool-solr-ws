@@ -13,8 +13,6 @@ github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuy
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk541a8SKzHPHnH3zbiI+7dagKZ0cgpgrD7Fyho=
-github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f h1:0cEys61Sr2hUBEXfNV8eyQP01oZuBgoMeHunebPirK8=
-github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
 github.com/antlr/antlr4 v0.0.0-20200801005519-2ba38605b949 h1:lySaGvyXH0TAjHe0mFryow2GxNzLaetxK40mQZzWCe4=
 github.com/antlr/antlr4 v0.0.0-20200801005519-2ba38605b949/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
@@ -341,8 +339,8 @@ github.com/uvalib/virgo4-api v0.0.0-20200810195030-c2e6838e3fd0 h1:BGqSP8DlKDI78
 github.com/uvalib/virgo4-api v0.0.0-20200810195030-c2e6838e3fd0/go.mod h1:p+LmQBQahBom6DErthL8iGZU6NgRJ9aN2wM7EE6VBSE=
 github.com/uvalib/virgo4-jwt v0.0.0-20200812155832-7443daa580fd h1:ox1gpbYRXB0fFS+JiMa560a6wn4Y5+MrJc4G0ASCk7E=
 github.com/uvalib/virgo4-jwt v0.0.0-20200812155832-7443daa580fd/go.mod h1:pPSHBTeq1RftpQGB6H1GaihwPZtl5RpGCEeov0eH05Y=
-github.com/uvalib/virgo4-parser v0.0.0-20200804201336-f19184e8140c h1:e0vr3mUXHmqOHbaPwNFnuimGa/P94a57E7hQH0ZPy50=
-github.com/uvalib/virgo4-parser v0.0.0-20200804201336-f19184e8140c/go.mod h1:oD6YA1ao3Eo5QVI5q6AoZKgWH/2NBWTa4e9dzQ9okw8=
+github.com/uvalib/virgo4-parser v0.0.0-20200813233709-4355972a61e6 h1:57k3f5CLBoywhnoZLooY1XZ0gtaTNLFPIG0md/kSRdg=
+github.com/uvalib/virgo4-parser v0.0.0-20200813233709-4355972a61e6/go.mod h1:DzueWZFRSrgLjXaNlmZ4VjkrjcOjb+xFk4YYNG1imfM=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/zsais/go-gin-prometheus v0.1.0 h1:bkLv1XCdzqVgQ36ScgRi09MA2UC1t3tAB6nsfErsGO4=
 github.com/zsais/go-gin-prometheus v0.1.0/go.mod h1:Slirjzuz8uM8Cw0jmPNqbneoqcUtY2GGjn2bEd4NRLY=

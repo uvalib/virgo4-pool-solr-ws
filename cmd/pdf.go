@@ -11,7 +11,7 @@ import (
 func (s *searchContext) getPdfStatus(url string) (string, error) {
 	req, reqErr := http.NewRequest("GET", url, nil)
 	if reqErr != nil {
-		s.log("[PDF] NewRequest() failed: %s", reqErr.Error())
+		s.log("PDF: NewRequest() failed: %s", reqErr.Error())
 		return "", fmt.Errorf("failed to create PDF status request")
 	}
 
@@ -32,7 +32,7 @@ func (s *searchContext) getPdfStatus(url string) (string, error) {
 			errMsg = fmt.Sprintf("%s refused connection", url)
 		}
 
-		s.log("[PDF] client.Do() failed: %s", resErr.Error())
+		s.log("PDF: client.Do() failed: %s", resErr.Error())
 		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, url, status, errMsg, elapsedMS)
 		return "", fmt.Errorf("failed to receive PDF status response")
 	}
@@ -41,7 +41,7 @@ func (s *searchContext) getPdfStatus(url string) (string, error) {
 
 	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNotFound {
 		errMsg := fmt.Errorf("unexpected status code %d", res.StatusCode)
-		s.log("[PDF] unexpected status code %d", res.StatusCode)
+		s.log("PDF: unexpected status code %d", res.StatusCode)
 		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, url, res.StatusCode, errMsg, elapsedMS)
 		return "", fmt.Errorf("received PDF status response code %d", res.StatusCode)
 	}
@@ -53,7 +53,7 @@ func (s *searchContext) getPdfStatus(url string) (string, error) {
 	status, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		s.log("[PDF] error reading pdf status response (%s)", err.Error())
+		s.log("PDF: error reading pdf status response (%s)", err.Error())
 		return "", fmt.Errorf("error reading pdf status response")
 	}
 

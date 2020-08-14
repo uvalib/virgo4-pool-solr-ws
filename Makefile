@@ -124,12 +124,17 @@ clean:
 
 dep:
 	@ \
-	echo "[DEP] $(GOGET)" ; \
+	echo "[DEP] GOPROXY=$(GOPROXY) $(GOGET)" ; \
 	$(GOGET) -u ./$(SRCDIR)/... ; \
 	echo "[DEP] $(GOMOD) tidy" ; \
 	$(GOMOD) tidy ; \
 	echo "[DEP] $(GOMOD) verify" ; \
 	$(GOMOD) verify
+
+DEP: goproxy-direct dep
+
+goproxy-direct:
+	$(eval GOPROXY = direct)
 
 check-static:
 	@ \
