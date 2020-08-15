@@ -339,13 +339,11 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "author":
-		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
+		var authorValues []string
 
-		if len(authorValues) == 0 {
-			authorValues = append(authorValues, rc.relations.authors.name...)
-			authorValues = append(authorValues, rc.relations.editors.nameRelation...)
-			authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
-		}
+		authorValues = append(authorValues, rc.relations.authors.name...)
+		authorValues = append(authorValues, rc.relations.editors.nameRelation...)
+		authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
 
 		for _, authorValue := range authorValues {
 			f.Value = authorValue
@@ -379,13 +377,11 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "composer_performer":
-		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
+		var authorValues []string
 
-		if len(authorValues) == 0 {
-			authorValues = append(authorValues, rc.relations.authors.name...)
-			authorValues = append(authorValues, rc.relations.editors.nameRelation...)
-			authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
-		}
+		authorValues = append(authorValues, rc.relations.authors.name...)
+		authorValues = append(authorValues, rc.relations.editors.nameRelation...)
+		authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
 
 		for _, authorValue := range authorValues {
 			f.Value = authorValue
@@ -421,13 +417,11 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "creator":
-		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
+		var authorValues []string
 
-		if len(authorValues) == 0 {
-			authorValues = append(authorValues, rc.relations.authors.name...)
-			authorValues = append(authorValues, rc.relations.editors.nameRelation...)
-			authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
-		}
+		authorValues = append(authorValues, rc.relations.authors.name...)
+		authorValues = append(authorValues, rc.relations.editors.nameRelation...)
+		authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
 
 		for _, authorValue := range authorValues {
 			f.Value = authorValue
@@ -579,11 +573,8 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "vernacularized_author":
 		vernacularValue := firstElementOf(fieldValues)
-		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
-		if len(authorValues) == 0 {
-			authorValues = rc.relations.authors.name
-		}
+		authorValues := rc.relations.authors.name
 
 		for _, authorValue := range authorValues {
 			f.Value = authorValue
@@ -597,11 +588,8 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "vernacularized_composer_performer":
 		vernacularValue := firstElementOf(fieldValues)
-		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
-		if len(authorValues) == 0 {
-			authorValues = rc.relations.authors.name
-		}
+		authorValues := rc.relations.authors.name
 
 		for _, authorValue := range authorValues {
 			f.Value = authorValue
@@ -615,11 +603,8 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "vernacularized_creator":
 		vernacularValue := firstElementOf(fieldValues)
-		authorValues := doc.getValuesByTag(s.pool.config.Local.Solr.AuthorFields.PreferredHeaderField)
 
-		if len(authorValues) == 0 {
-			authorValues = rc.relations.authors.name
-		}
+		authorValues := rc.relations.authors.name
 
 		for _, authorValue := range authorValues {
 			f.Value = authorValue
@@ -723,26 +708,19 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// build parsed author lists from configured fields
 
-	var initialAuthorValues []string
-	for _, field := range s.pool.config.Local.Solr.AuthorFields.InitialAuthorFields {
-		initialAuthorValues = append(initialAuthorValues, doc.getValuesByTag(field)...)
-	}
-
 	var preferredAuthorValues []string
-	for _, field := range s.pool.config.Local.Solr.AuthorFields.PreferredAuthorFields {
+	for _, field := range s.pool.config.Local.Solr.AuthorFields.Preferred {
 		preferredAuthorValues = append(preferredAuthorValues, doc.getValuesByTag(field)...)
 	}
 
 	var fallbackAuthorValues []string
-	for _, field := range s.pool.config.Local.Solr.AuthorFields.FallbackAuthorFields {
+	for _, field := range s.pool.config.Local.Solr.AuthorFields.Fallback {
 		fallbackAuthorValues = append(fallbackAuthorValues, doc.getValuesByTag(field)...)
 	}
 
-	rawAuthorValues := initialAuthorValues
-	if len(preferredAuthorValues) > 0 {
-		rawAuthorValues = append(rawAuthorValues, preferredAuthorValues...)
-	} else {
-		rawAuthorValues = append(rawAuthorValues, fallbackAuthorValues...)
+	rawAuthorValues := preferredAuthorValues
+	if len(rawAuthorValues) == 0 {
+		rawAuthorValues = fallbackAuthorValues
 	}
 
 	rc.relations = s.parseRelations(rawAuthorValues)

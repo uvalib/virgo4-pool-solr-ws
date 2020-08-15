@@ -386,14 +386,10 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
 
-	solrFields.addValue(p.config.Local.Solr.AuthorFields.PreferredHeaderField)
-	for _, val := range p.config.Local.Solr.AuthorFields.InitialAuthorFields {
-		solrFields.requireValue(val, "initial author field")
-	}
-	for _, val := range p.config.Local.Solr.AuthorFields.PreferredAuthorFields {
+	for _, val := range p.config.Local.Solr.AuthorFields.Preferred {
 		solrFields.requireValue(val, "preferred author field")
 	}
-	for _, val := range p.config.Local.Solr.AuthorFields.FallbackAuthorFields {
+	for _, val := range p.config.Local.Solr.AuthorFields.Fallback {
 		solrFields.requireValue(val, "fallback author field")
 	}
 
