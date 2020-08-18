@@ -117,6 +117,7 @@ type solrDocument struct {
 	Identifier                  []string `json:"identifier_a,omitempty"`
 	LCCN                        []string `json:"lccn_a,omitempty"`
 	Language                    []string `json:"language_a,omitempty"`
+	LanguageNote                []string `json:"language_note_a,omitempty"`
 	Library                     []string `json:"library_a,omitempty"`
 	LocalNote                   []string `json:"local_note_a,omitempty"`
 	LocatedIn                   []string `json:"located_in_a,omitempty"`

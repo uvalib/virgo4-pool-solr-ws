@@ -438,6 +438,20 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "language":
+		languageValues := fieldValues
+
+		if len(languageValues) == 0 {
+			languageValues = doc.getValuesByTag(field.CustomInfo.Language.AlternateField)
+		}
+
+		for _, languageValue := range languageValues {
+			f.Value = languageValue
+			values = append(values, f)
+		}
+
+		return values
+
 	case "online_related":
 		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
 

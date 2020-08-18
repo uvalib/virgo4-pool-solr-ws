@@ -175,6 +175,7 @@ type poolConfigFieldCustomInfo struct {
 	AccessURL                 *poolConfigFieldTypeCustom `json:"access_url,omitempty"`
 	CoverImageURL             *poolConfigFieldTypeCustom `json:"cover_image_url,omitempty"`
 	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
+	Language                  *poolConfigFieldTypeCustom `json:"language,omitempty"`
 	PdfDownloadURL            *poolConfigFieldTypeCustom `json:"pdf_download_url,omitempty"`
 	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
 	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`

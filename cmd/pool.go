@@ -496,14 +496,8 @@ func (p *poolContext) validateConfig() {
 
 			switch field.Name {
 			case "abstract":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.Abstract == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.Abstract == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -511,14 +505,8 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.Abstract.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
 
 			case "access_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.AccessURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -543,14 +531,8 @@ func (p *poolContext) validateConfig() {
 			case "copyright_and_permissions":
 
 			case "cover_image_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.CoverImageURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.CoverImageURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -573,14 +555,8 @@ func (p *poolContext) validateConfig() {
 			case "creator":
 
 			case "digital_content_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.DigitalContentURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.DigitalContentURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -591,15 +567,18 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
 
-			case "online_related":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
+			case "language":
+				if field.CustomInfo == nil || field.CustomInfo.Language == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
 
-				if field.CustomInfo.AccessURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				solrFields.requireValue(field.CustomInfo.Language.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+			case "online_related":
+				if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -609,14 +588,8 @@ func (p *poolContext) validateConfig() {
 				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 
 			case "pdf_download_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.PdfDownloadURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.PdfDownloadURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -627,14 +600,8 @@ func (p *poolContext) validateConfig() {
 			case "published_location":
 
 			case "publisher_name":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.PublisherName == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.PublisherName == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -642,14 +609,8 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.PublisherName.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
 
 			case "related_resources":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.AccessURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -659,14 +620,8 @@ func (p *poolContext) validateConfig() {
 				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 
 			case "sirsi_url":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.SirsiURL == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.SirsiURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -681,14 +636,8 @@ func (p *poolContext) validateConfig() {
 			case "summary_holdings":
 
 			case "title_subtitle_edition":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.TitleSubtitleEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -704,14 +653,8 @@ func (p *poolContext) validateConfig() {
 			case "vernacularized_creator":
 
 			case "vernacularized_title":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.TitleSubtitleEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -719,14 +662,8 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
 
 			case "vernacularized_title_subtitle_edition":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.TitleSubtitleEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
@@ -736,14 +673,8 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
 
 			case "wsls_collection_description":
-				if field.CustomInfo == nil {
-					log.Printf("[VALIDATE] missing field index %d %s custom_info section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				if field.CustomInfo.WSLSCollectionDescription == nil {
-					log.Printf("[VALIDATE] missing field index %d %s section", i, field.Name)
+				if field.CustomInfo == nil || field.CustomInfo.WSLSCollectionDescription == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
 					invalid = true
 					continue
 				}
