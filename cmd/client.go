@@ -20,16 +20,16 @@ type clientOpts struct {
 }
 
 type clientContext struct {
-	reqID       string          // internally generated
-	ip          string          // from gin context
-	brokenToken string          // unique-ish snippet of user token
-	start       time.Time       // internally set
-	opts        clientOpts      // options set by client
-	claims      *v4jwt.V4Claims // information about this user
-	localizer   *i18n.Localizer // per-request localization
-	ginCtx      *gin.Context    // gin context
-	acceptLang  string          // first language requested by client
-	contentLang string          // actual language we are responding with
+	reqID        string          // internally generated
+	ip           string          // from gin context
+	tokenSnippet string          // unique-ish snippet of user token
+	start        time.Time       // internally set
+	opts         clientOpts      // options set by client
+	claims       *v4jwt.V4Claims // information about this user
+	localizer    *i18n.Localizer // per-request localization
+	ginCtx       *gin.Context    // gin context
+	acceptLang   string          // first language requested by client
+	contentLang  string          // actual language we are responding with
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -51,10 +51,11 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.ip = ctx.ClientIP()
 
 	// get token, if any, and use the last bits for logging
+	c.tokenSnippet = "no_token"
 	if val, ok := ctx.Get("token"); ok == true {
 		str := "--------" + val.(string)
 		str = str[len(str)-8:]
-		c.brokenToken = str
+		c.tokenSnippet = str
 	}
 
 	// get claims, if any
@@ -105,36 +106,23 @@ func (c *clientContext) logResponse(resp searchResponse) {
 	c.log(msg)
 }
 
-func (c *clientContext) printf(prefix, format string, args ...interface{}) {
-	var parts []string
-
-	if c.ip != "" {
-		parts = append(parts, c.ip)
+func (c *clientContext) log(format string, args ...interface{}) {
+	parts := []string{
+		fmt.Sprintf("[ip:%s]", c.ip),
+		fmt.Sprintf("[req:%s]", c.reqID),
+		fmt.Sprintf("[tok:%s]", c.tokenSnippet),
+		fmt.Sprintf(format, args...),
 	}
-
-	if c.reqID != "" {
-		parts = append(parts, fmt.Sprintf("[%s]", c.reqID))
-	}
-
-	if c.brokenToken != "" {
-		parts = append(parts, fmt.Sprintf("[%s]", c.brokenToken))
-	}
-
-	if prefix != "" {
-		parts = append(parts, prefix)
-	}
-
-	parts = append(parts, fmt.Sprintf(format, args...))
 
 	log.Printf("%s", strings.Join(parts, " "))
 }
 
-func (c *clientContext) log(format string, args ...interface{}) {
-	c.printf("", format, args...)
+func (c *clientContext) warn(format string, args ...interface{}) {
+	c.log("WARNING: "+format, args...)
 }
 
 func (c *clientContext) err(format string, args ...interface{}) {
-	c.printf("ERROR:", format, args...)
+	c.log("ERROR: "+format, args...)
 }
 
 func (c *clientContext) localize(id string) string {

@@ -92,6 +92,10 @@ func (s *searchContext) log(format string, args ...interface{}) {
 	s.client.log(format, args...)
 }
 
+func (s *searchContext) warn(format string, args ...interface{}) {
+	s.client.warn(format, args...)
+}
+
 func (s *searchContext) err(format string, args ...interface{}) {
 	s.client.err(format, args...)
 }

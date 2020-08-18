@@ -47,7 +47,7 @@ func (s *searchContext) getPdfStatus(url string) (string, error) {
 	}
 
 	if res.StatusCode == http.StatusNotFound {
-		s.log("WARNING: PDF does not (yet) exist: %s", url)
+		s.warn("PDF does not (yet) exist: %s", url)
 	}
 
 	status, err := ioutil.ReadAll(res.Body)
