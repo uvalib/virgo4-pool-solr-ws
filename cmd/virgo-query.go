@@ -8,7 +8,7 @@ func virgoQueryConvertToSolr(virgoQuery string) (*solrParserInfo, error) {
 	var sp solrParserInfo
 	var err error
 
-	if sp.query, err = v4parser.ConvertToSolrWithParser(&sp.parser, virgoQuery); err != nil {
+	if sp.query, err = v4parser.ConvertToSolrWithParserAndTimeout(&sp.parser, virgoQuery, 10); err != nil {
 		return nil, err
 	}
 
