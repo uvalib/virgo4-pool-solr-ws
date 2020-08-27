@@ -210,6 +210,24 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 	return s, nil
 }
 
+func (s *searchContext) newSearchWithRecordCountOnly() (*searchContext, error) {
+	// NOTE: groups passed in are quoted strings
+
+	c := s.copySearchContext()
+
+	// just want record count
+	c.virgo.flags.groupResults = false
+	c.virgo.req.Pagination.Rows = 0
+
+	c.virgo.flags.requestFacets = false
+
+	if resp := c.getPoolQueryResults(); resp.err != nil {
+		return nil, resp.err
+	}
+
+	return c, nil
+}
+
 func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, groups []string) (*searchContext, error) {
 	// NOTE: groups passed in are quoted strings
 
@@ -348,6 +366,15 @@ func (s *searchContext) populateGroups() error {
 	}
 
 	s.virgo.poolRes.Groups = groups
+
+	// finally replace group counts with record counts
+
+	r, err := s.newSearchWithRecordCountOnly()
+	if err != nil {
+		return err
+	}
+
+	s.virgo.poolRes.Pagination.Total = r.solr.res.meta.totalRows
 
 	return nil
 }
