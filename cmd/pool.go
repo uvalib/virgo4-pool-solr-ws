@@ -526,6 +526,10 @@ func (p *poolContext) validateConfig() {
 
 			case "citation_format":
 
+			case "citation_subtitle":
+
+			case "citation_title":
+
 			case "composer_performer":
 
 			case "copyright_and_permissions":

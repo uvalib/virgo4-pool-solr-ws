@@ -376,6 +376,20 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "citation_subtitle":
+		subtitle := firstElementOf(fieldValues)
+		f.Value = titlecase.Title(subtitle)
+		values = append(values, f)
+
+		return values
+
+	case "citation_title":
+		title := firstElementOf(fieldValues)
+		f.Value = titlecase.Title(title)
+		values = append(values, f)
+
+		return values
+
 	case "composer_performer":
 		var authorValues []string
 
