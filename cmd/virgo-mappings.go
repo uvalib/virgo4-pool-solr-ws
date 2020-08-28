@@ -370,6 +370,30 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "citation_advisor":
+		for _, advisorValue := range rc.relations.advisors.name {
+			f.Value = advisorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "citation_author":
+		for _, authorValue := range rc.relations.authors.name {
+			f.Value = authorValue
+			values = append(values, f)
+		}
+
+		return values
+
+	case "citation_editor":
+		for _, editorValue := range rc.relations.editors.name {
+			f.Value = editorValue
+			values = append(values, f)
+		}
+
+		return values
+
 	case "citation_format":
 		f.Value = s.getCitationFormat(fieldValues)
 		values = append(values, f)

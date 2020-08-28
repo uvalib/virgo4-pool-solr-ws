@@ -524,6 +524,12 @@ func (p *poolContext) validateConfig() {
 
 			case "availability":
 
+			case "citation_advisor":
+
+			case "citation_author":
+
+			case "citation_editor":
+
 			case "citation_format":
 
 			case "citation_subtitle":
