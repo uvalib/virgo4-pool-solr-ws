@@ -154,7 +154,7 @@ other = "Título abreviado"
 [FieldAbstract]
 other = "Abstracto"
 
-[FieldAccessRestriction]
+[FieldAccessNote]
 other = "Restricción de Acceso"
 
 [FieldAccessURL]

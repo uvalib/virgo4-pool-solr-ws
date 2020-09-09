@@ -86,6 +86,7 @@ type solrDocument struct {
 	AuthorAddedEntry            []string `json:"author_added_entry_a,omitempty"`
 	AuthorCredits               []string `json:"author_credits_a,omitempty"`
 	AuthorVernacular            []string `json:"author_vern_a,omitempty"`
+	Availability                []string `json:"availability_a,omitempty"`
 	AwardsNote                  []string `json:"awards_note_a,omitempty"`
 	BiographicalNote            []string `json:"biographical_note_a,omitempty"`
 	CallNumber                  []string `json:"call_number_a,omitempty"`
