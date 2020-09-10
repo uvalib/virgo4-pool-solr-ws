@@ -126,7 +126,7 @@ func (p *poolContext) initIdentity() {
 
 	for _, attribute := range p.config.Global.Attributes {
 		supported := false
-		if sliceContainsString(p.config.Local.Identity.Attributes, attribute) {
+		if sliceContainsString(p.config.Local.Identity.Attributes, attribute, true) {
 			supported = true
 		}
 
@@ -345,7 +345,7 @@ func (p *poolContext) validateConfig() {
 	var miscValues stringValidator
 
 	for _, attribute := range p.config.Local.Identity.Attributes {
-		if sliceContainsString(p.config.Global.Attributes, attribute) == false {
+		if sliceContainsString(p.config.Global.Attributes, attribute, true) == false {
 			log.Printf("[VALIDATE] attribute [%s] not found in global attribute list", attribute)
 			invalid = true
 		}
@@ -523,6 +523,17 @@ func (p *poolContext) validateConfig() {
 			case "author_list":
 
 			case "availability":
+
+			case "citation_access":
+				if field.CustomInfo == nil || field.CustomInfo.CitationAccess == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				for j, f := range field.CustomInfo.CitationAccess.OnlineFields {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, j))
+				}
 
 			case "citation_advisor":
 

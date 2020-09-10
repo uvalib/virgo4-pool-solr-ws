@@ -23,9 +23,21 @@ func firstElementOf(s []string) string {
 	return val
 }
 
-func sliceContainsString(haystack []string, needle string) bool {
+func sliceContainsString(haystack []string, needle string, insensitive bool) bool {
+	if len(haystack) == 0 {
+		return false
+	}
+
 	for _, item := range haystack {
-		if item == needle {
+		a := item
+		b := needle
+
+		if insensitive == true {
+			a = strings.ToLower(item)
+			b = strings.ToLower(needle)
+		}
+
+		if a == b {
 			return true
 		}
 	}
@@ -33,14 +45,44 @@ func sliceContainsString(haystack []string, needle string) bool {
 	return false
 }
 
-func sliceContainsValueFromSlice(haystack []string, needles []string) bool {
+func sliceContainsAnyValueFromSlice(haystack []string, needles []string, insensitive bool) bool {
+	if len(haystack) == 0 || len(needles) == 0 {
+		return false
+	}
+
 	for _, needle := range needles {
-		if sliceContainsString(haystack, needle) {
+		if sliceContainsString(haystack, needle, insensitive) == true {
 			return true
 		}
 	}
 
 	return false
+}
+
+func sliceContainsAllValuesFromSlice(haystack []string, needles []string, insensitive bool) bool {
+	if len(haystack) == 0 || len(needles) == 0 {
+		return false
+	}
+
+	for _, needle := range needles {
+		if sliceContainsString(haystack, needle, insensitive) == false {
+			return false
+		}
+	}
+
+	return true
+}
+
+func slicesAreEqual(haystack []string, needles []string, insensitive bool) bool {
+	if sliceContainsAllValuesFromSlice(haystack, needles, insensitive) == false {
+		return false
+	}
+
+	if len(haystack) != len(needles) {
+		return false
+	}
+
+	return true
 }
 
 func restrictValue(field string, val int, min int, fallback int) int {

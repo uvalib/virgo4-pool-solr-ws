@@ -111,6 +111,30 @@ func (s *searchContext) getCitationFormat(formats []string) string {
 	return s.pool.config.Global.CitationFormats[best].Format
 }
 
+func (s *searchContext) isOnlineOnly(doc *solrDocument, fields []poolConfigOnlineField) bool {
+	for _, field := range fields {
+		fieldValues := doc.getValuesByTag(field.Field)
+
+		for _, values := range field.Contains {
+			s.log("[SLICE] [%s] %v contains %v ?", field.Field, fieldValues, values)
+			if sliceContainsAllValuesFromSlice(fieldValues, values, true) == true {
+				s.log("[SLICE] %v is a subset of %v", values, fieldValues)
+				return true
+			}
+		}
+
+		for _, values := range field.Matches {
+			s.log("[SLICE] [%s] %v equals %v ?", field.Field, fieldValues, values)
+			if slicesAreEqual(fieldValues, values, true) == true {
+				s.log("[SLICE] %v is equal to %v", values, fieldValues)
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
 	for i := range s.pool.config.Global.Publishers {
 		publisher := &s.pool.config.Global.Publishers[i]
@@ -243,7 +267,7 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 		// prepend proxy URL if configured, not already present, is from a provider not specifically excluded, and matches a proxifiable domain
 		proxify := false
 
-		if cfg.ProxyPrefix != "" && strings.HasPrefix(item, cfg.ProxyPrefix) == false && sliceContainsValueFromSlice(providerValues, cfg.NoProxyProviders) == false {
+		if cfg.ProxyPrefix != "" && strings.HasPrefix(item, cfg.ProxyPrefix) == false && sliceContainsAnyValueFromSlice(providerValues, cfg.NoProxyProviders, true) == false {
 			for _, domain := range cfg.ProxyDomains {
 				if strings.Contains(item, fmt.Sprintf("%s/", domain)) == true {
 					proxify = true
@@ -362,10 +386,18 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "availability":
 		for _, availabilityValue := range rc.availabilityValues {
-			if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue) {
+			if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue, true) {
 				f.Value = availabilityValue
 				values = append(values, f)
 			}
+		}
+
+		return values
+
+	case "citation_access":
+		if s.isOnlineOnly(doc, field.CustomInfo.CitationAccess.OnlineFields) == true {
+			f.Value = "online_only"
+			values = append(values, f)
 		}
 
 		return values
@@ -518,7 +550,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 					return values
 				}
 
-				if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus) == true {
+				if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus, true) == true {
 					downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
 					f.Value = downloadURL
 					values = append(values, f)
@@ -732,12 +764,12 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	// availability setup
 
 	anonValues := doc.getValuesByTag(s.pool.config.Global.Availability.Anon.Field)
-	anonOnShelf := sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.OnShelf)
-	rc.anonOnline = sliceContainsValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online)
+	anonOnShelf := sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.OnShelf, true)
+	rc.anonOnline = sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online, true)
 
 	authValues := doc.getValuesByTag(s.pool.config.Global.Availability.Auth.Field)
-	authOnShelf := sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.OnShelf)
-	rc.authOnline = sliceContainsValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online)
+	authOnShelf := sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.Values.OnShelf, true)
+	rc.authOnline = sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online, true)
 
 	// determine which availability field to use
 
@@ -752,11 +784,11 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	}
 
 	featureValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.DigitalContent.Field)
-	rc.hasDigitalContent = sliceContainsValueFromSlice(featureValues, s.pool.config.Global.RecordAttributes.DigitalContent.Contains)
+	rc.hasDigitalContent = sliceContainsAnyValueFromSlice(featureValues, s.pool.config.Global.RecordAttributes.DigitalContent.Contains, true)
 
 	dataSourceValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.WSLS.Field)
-	rc.isSirsi = sliceContainsValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.Sirsi.Contains)
-	rc.isWSLS = sliceContainsValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.WSLS.Contains)
+	rc.isSirsi = sliceContainsAnyValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.Sirsi.Contains, true)
+	rc.isWSLS = sliceContainsAnyValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.WSLS.Contains, true)
 
 	// build parsed author lists from configured fields
 
@@ -896,7 +928,7 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 
 	default:
 		for _, b := range value.Buckets {
-			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, b.Val) {
+			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, b.Val, false) {
 				selected := false
 				if s.solr.req.meta.selectionMap[facetDef.XID][b.Val] != "" {
 					selected = true

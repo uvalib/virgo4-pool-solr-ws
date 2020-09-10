@@ -122,7 +122,8 @@ type solrDocument struct {
 	Library                     []string `json:"library_a,omitempty"`
 	LocalNote                   []string `json:"local_note_a,omitempty"`
 	LocatedIn                   []string `json:"located_in_a,omitempty"`
-	Location                    []string `json:"location2_a,omitempty"`
+	Location                    []string `json:"location_a,omitempty"`
+	Location2                   []string `json:"location2_a,omitempty"`
 	LocationOfOriginals         []string `json:"location_of_originals_a,omitempty"`
 	MSSWorkKeySort              string   `json:"mss_work_key_sort,omitempty"`
 	Note                        []string `json:"note_a,omitempty"`
@@ -131,6 +132,7 @@ type solrDocument struct {
 	OriginalVersion             []string `json:"original_version_a,omitempty"`
 	OtherArchivalMaterials      []string `json:"other_archival_materials_a,omitempty"`
 	OtherForms                  []string `json:"other_forms_a,omitempty"`
+	PdaCOUTTS                   []string `json:"pda_coutts_a,omitempty"`
 	PdfURL                      []string `json:"pdf_url_a,omitempty"`
 	Performers                  []string `json:"performers_a,omitempty"`
 	Pool                        []string `json:"pool_a,omitempty"`
@@ -153,6 +155,7 @@ type solrDocument struct {
 	Score                       float32  `json:"score,omitempty"`
 	ScriptExcerpt               []string `json:"script_excerpt_a,omitempty"`
 	Series                      []string `json:"title_series_a,omitempty"`
+	Source                      []string `json:"source_a,omitempty"`
 	SponsoringAgency            []string `json:"sponsoring_agency_a,omitempty"`
 	Subject                     []string `json:"subject_a,omitempty"`
 	SubjectAbstract             []string `json:"subject_abstract_a,omitempty"`

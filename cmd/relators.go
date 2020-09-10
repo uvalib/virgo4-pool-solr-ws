@@ -45,13 +45,13 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 		code := r.getRelatorCode(entry)
 
 		switch {
-		case sliceContainsString(s.pool.config.Global.Relators.AuthorCodes, code):
+		case sliceContainsString(s.pool.config.Global.Relators.AuthorCodes, code, true):
 			r.addAuthor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Relators.AdvisorCodes, code):
+		case sliceContainsString(s.pool.config.Global.Relators.AdvisorCodes, code, true):
 			r.addAdvisor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Relators.EditorCodes, code):
+		case sliceContainsString(s.pool.config.Global.Relators.EditorCodes, code, true):
 			r.addEditor(entry)
 
 		default:

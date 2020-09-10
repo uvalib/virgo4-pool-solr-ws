@@ -144,35 +144,43 @@ type poolConfigFieldProperties struct {
 	CitationPart string `json:"citation_part,omitempty"`
 }
 
+type poolConfigOnlineField struct {
+	Field    string     `json:"field,omitempty"`
+	Contains [][]string `json:"contains,omitempty"`
+	Matches  [][]string `json:"matches,omitempty"`
+}
+
 type poolConfigFieldTypeCustom struct {
-	AlternateField   string   `json:"alternate_field,omitempty"` // field names
-	EditionField     string   `json:"edition_field,omitempty"`
-	FormatField      string   `json:"format_field,omitempty"`
-	IDField          string   `json:"id_field,omitempty"`
-	ISBNField        string   `json:"isbn_field,omitempty"`
-	LCCNField        string   `json:"lccn_field,omitempty"`
-	LabelField       string   `json:"label_field,omitempty"`
-	OCLCField        string   `json:"oclc_field,omitempty"`
-	PIDField         string   `json:"pid_field,omitempty"`
-	PoolField        string   `json:"pool_field,omitempty"`
-	ProviderField    string   `json:"provider_field,omitempty"`
-	SubtitleField    string   `json:"subtitle_field,omitempty"`
-	TitleField       string   `json:"title_field,omitempty"`
-	UPCField         string   `json:"upc_field,omitempty"`
-	URLField         string   `json:"url_field,omitempty"`
-	DefaultItemXID   string   `json:"default_item_xid,omitempty"` // translation ids
-	ValueXID         string   `json:"value_xid,omitempty"`
-	IDPrefix         string   `json:"id_prefix,omitempty"` // misc
-	MusicPool        string   `json:"music_pool,omitempty"`
-	ProxyPrefix      string   `json:"proxy_prefix,omitempty"`
-	ProxyDomains     []string `json:"proxy_domains,omitempty"`
-	NoProxyProviders []string `json:"noproxy_providers,omitempty"`
-	MaxSupported     int      `json:"max_supported,omitempty"`
+	AlternateField   string                  `json:"alternate_field,omitempty"` // field names
+	EditionField     string                  `json:"edition_field,omitempty"`
+	FormatField      string                  `json:"format_field,omitempty"`
+	IDField          string                  `json:"id_field,omitempty"`
+	ISBNField        string                  `json:"isbn_field,omitempty"`
+	LCCNField        string                  `json:"lccn_field,omitempty"`
+	LabelField       string                  `json:"label_field,omitempty"`
+	OCLCField        string                  `json:"oclc_field,omitempty"`
+	PIDField         string                  `json:"pid_field,omitempty"`
+	PoolField        string                  `json:"pool_field,omitempty"`
+	ProviderField    string                  `json:"provider_field,omitempty"`
+	SubtitleField    string                  `json:"subtitle_field,omitempty"`
+	TitleField       string                  `json:"title_field,omitempty"`
+	UPCField         string                  `json:"upc_field,omitempty"`
+	URLField         string                  `json:"url_field,omitempty"`
+	DefaultItemXID   string                  `json:"default_item_xid,omitempty"` // translation ids
+	ValueXID         string                  `json:"value_xid,omitempty"`
+	IDPrefix         string                  `json:"id_prefix,omitempty"` // misc
+	MusicPool        string                  `json:"music_pool,omitempty"`
+	ProxyPrefix      string                  `json:"proxy_prefix,omitempty"`
+	ProxyDomains     []string                `json:"proxy_domains,omitempty"`
+	NoProxyProviders []string                `json:"noproxy_providers,omitempty"`
+	OnlineFields     []poolConfigOnlineField `json:"online_fields,omitempty"`
+	MaxSupported     int                     `json:"max_supported,omitempty"`
 }
 
 type poolConfigFieldCustomInfo struct {
 	Abstract                  *poolConfigFieldTypeCustom `json:"abstract,omitempty"`
 	AccessURL                 *poolConfigFieldTypeCustom `json:"access_url,omitempty"`
+	CitationAccess            *poolConfigFieldTypeCustom `json:"citation_access,omitempty"`
 	CoverImageURL             *poolConfigFieldTypeCustom `json:"cover_image_url,omitempty"`
 	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
 	Language                  *poolConfigFieldTypeCustom `json:"language,omitempty"`
