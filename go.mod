@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/antlr/antlr4 v0.0.0-20200910175512-49ac9d066ace // indirect
+	github.com/antlr/antlr4 v0.0.0-20200910195715-aa5a0d2891ef // indirect
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.2
 	github.com/gin-contrib/pprof v1.3.0

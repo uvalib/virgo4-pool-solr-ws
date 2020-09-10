@@ -57,31 +57,6 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 	return firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.GroupField))
 }
 
-type poolRecord struct {
-	record   v4api.Record
-	citation bool
-}
-
-func (r *poolRecord) addField(field v4api.RecordField) {
-	switch {
-	case r.citation == true:
-		// citation parts mode; if the field has a citation part, output a minimal field
-		if field.CitationPart != "" {
-			citationField := v4api.RecordField{
-				Name:         field.Name,
-				Value:        field.Value,
-				CitationPart: field.CitationPart,
-			}
-
-			r.record.Fields = append(r.record.Fields, citationField)
-		}
-
-	default:
-		// normal mode; add field as-is
-		r.record.Fields = append(r.record.Fields, field)
-	}
-}
-
 func (s *searchContext) getCitationFormat(formats []string) string {
 	// use configured citation format for pool, if defined
 	if s.pool.config.Local.Identity.CitationFormat != "" {
@@ -111,22 +86,18 @@ func (s *searchContext) getCitationFormat(formats []string) string {
 	return s.pool.config.Global.CitationFormats[best].Format
 }
 
-func (s *searchContext) isOnlineOnly(doc *solrDocument, fields []poolConfigOnlineField) bool {
+func (s *searchContext) compareFields(doc *solrDocument, fields []poolConfigFieldComparison) bool {
 	for _, field := range fields {
 		fieldValues := doc.getValuesByTag(field.Field)
 
 		for _, values := range field.Contains {
-			s.log("[SLICE] [%s] %v contains %v ?", field.Field, fieldValues, values)
 			if sliceContainsAllValuesFromSlice(fieldValues, values, true) == true {
-				s.log("[SLICE] %v is a subset of %v", values, fieldValues)
 				return true
 			}
 		}
 
 		for _, values := range field.Matches {
-			s.log("[SLICE] [%s] %v equals %v ?", field.Field, fieldValues, values)
 			if slicesAreEqual(fieldValues, values, true) == true {
-				s.log("[SLICE] %v is equal to %v", values, fieldValues)
 				return true
 			}
 		}
@@ -394,14 +365,6 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
-	case "citation_access":
-		if s.isOnlineOnly(doc, field.CustomInfo.CitationAccess.OnlineFields) == true {
-			f.Value = "online_only"
-			values = append(values, f)
-		}
-
-		return values
-
 	case "citation_advisor":
 		for _, advisorValue := range rc.relations.advisors.name {
 			f.Value = advisorValue
@@ -428,6 +391,28 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 	case "citation_format":
 		f.Value = s.getCitationFormat(fieldValues)
+		values = append(values, f)
+
+		return values
+
+	case "citation_is_online_only":
+		if s.compareFields(doc, field.CustomInfo.CitationOnlineOnly.ComparisonFields) == true {
+			f.Value = "true"
+		} else {
+			f.Value = "false"
+		}
+
+		values = append(values, f)
+
+		return values
+
+	case "citation_is_virgo_url":
+		if s.compareFields(doc, field.CustomInfo.CitationVirgoURL.ComparisonFields) == true {
+			f.Value = "true"
+		} else {
+			f.Value = "false"
+		}
+
 		values = append(values, f)
 
 		return values
@@ -757,7 +742,7 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
-	r := poolRecord{citation: s.client.opts.citation}
+	var record v4api.Record
 
 	var rc recordContext
 
@@ -874,7 +859,24 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				continue
 			}
 
-			r.addField(fieldValue)
+			if s.client.opts.citation == true {
+				if fieldValue.CitationPart != "" {
+					rf := v4api.RecordField{
+						Name:         fieldValue.Name,
+						Value:        fieldValue.Value,
+						CitationPart: fieldValue.CitationPart,
+					}
+
+					record.Fields = append(record.Fields, rf)
+				}
+			} else {
+				if field.CitationOnly == false {
+					rf := fieldValue
+					rf.CitationPart = ""
+
+					record.Fields = append(record.Fields, rf)
+				}
+			}
 
 			if field.Limit > 0 && i+1 >= field.Limit {
 				break
@@ -886,14 +888,14 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// add internal info
 
-	r.record.GroupValue = s.getSolrGroupFieldValue(doc)
+	record.GroupValue = s.getSolrGroupFieldValue(doc)
 
 	if s.client.opts.debug == true {
-		r.record.Debug = make(map[string]interface{})
-		r.record.Debug["score"] = doc.Score
+		record.Debug = make(map[string]interface{})
+		record.Debug["score"] = doc.Score
 	}
 
-	return r.record
+	return record
 }
 
 func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []v4api.Record {

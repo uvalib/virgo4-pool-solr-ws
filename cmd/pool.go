@@ -524,17 +524,6 @@ func (p *poolContext) validateConfig() {
 
 			case "availability":
 
-			case "citation_access":
-				if field.CustomInfo == nil || field.CustomInfo.CitationAccess == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				for j, f := range field.CustomInfo.CitationAccess.OnlineFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, j))
-				}
-
 			case "citation_advisor":
 
 			case "citation_author":
@@ -542,6 +531,28 @@ func (p *poolContext) validateConfig() {
 			case "citation_editor":
 
 			case "citation_format":
+
+			case "citation_is_online_only":
+				if field.CustomInfo == nil || field.CustomInfo.CitationOnlineOnly == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				for j, f := range field.CustomInfo.CitationOnlineOnly.ComparisonFields {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, j))
+				}
+
+			case "citation_is_virgo_url":
+				if field.CustomInfo == nil || field.CustomInfo.CitationVirgoURL == nil {
+					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
+					invalid = true
+					continue
+				}
+
+				for j, f := range field.CustomInfo.CitationVirgoURL.ComparisonFields {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, j))
+				}
 
 			case "citation_subtitle":
 
