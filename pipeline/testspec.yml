@@ -8,6 +8,7 @@ env:
   variables:
     pool_solr_archival_endpoint:         https://pool-solr-ws-archival-dev.internal.lib.virginia.edu
     pool_solr_catalog_endpoint:          https://pool-solr-ws-catalog-dev.internal.lib.virginia.edu
+    pool_solr_hatitrust_endpoint:        https://pool-solr-ws-hathitrust-dev.internal.lib.virginia.edu
     pool_solr_images_endpoint:           https://pool-solr-ws-images-dev.internal.lib.virginia.edu
     pool_solr_maps_endpoint:             https://pool-solr-ws-maps-dev.internal.lib.virginia.edu
     pool_solr_music_recordings_endpoint: https://pool-solr-ws-music-recordings-dev.internal.lib.virginia.edu
@@ -15,6 +16,7 @@ env:
     pool_solr_serials_endpoint:          https://pool-solr-ws-serials-dev.internal.lib.virginia.edu
     pool_solr_sound_recordings_endpoint: https://pool-solr-ws-sound-recordings-dev.internal.lib.virginia.edu
     pool_solr_thesis_endpoint:           https://pool-solr-ws-thesis-dev.internal.lib.virginia.edu
+    pool_solr_uva_library_endpoint:      https://pool-solr-ws-uva-library-dev.internal.lib.virginia.edu
     pool_solr_video_endpoint:            https://pool-solr-ws-video-dev.internal.lib.virginia.edu
 
 phases:
@@ -33,6 +35,7 @@ phases:
       - cd standard-ws-tester;
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_archival_endpoint          make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_catalog_endpoint           make test
+      - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_hatitrust_endpoint         make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_images_endpoint            make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_maps_endpoint              make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_music_recordings_endpoint  make test
@@ -40,6 +43,7 @@ phases:
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_serials_endpoint           make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_sound_recordings_endpoint  make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_thesis_endpoint            make test
+      - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_uva_library_endpoint       make test
       - unset GOPATH; unset GOROOT; TC_ENDPOINT=$pool_solr_video_endpoint             make test
 
 #  post_build:
