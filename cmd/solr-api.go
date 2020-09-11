@@ -97,7 +97,6 @@ type solrDocument struct {
 	Contributor                 []string `json:"contributor_a,omitempty"`
 	CreativeCommonsURI          []string `json:"cc_uri_a,omitempty"`
 	DataSource                  []string `json:"data_source_a,omitempty"`
-	DataSourceFacet             []string `json:"data_source_f,omitempty"`
 	Degree                      []string `json:"degree_a,omitempty"`
 	Department                  []string `json:"department_a,omitempty"`
 	Description                 []string `json:"description_a,omitempty"`
