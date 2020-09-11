@@ -528,6 +528,8 @@ func (p *poolContext) validateConfig() {
 
 			case "citation_author":
 
+			case "citation_compiler":
+
 			case "citation_editor":
 
 			case "citation_format":
@@ -557,6 +559,8 @@ func (p *poolContext) validateConfig() {
 			case "citation_subtitle":
 
 			case "citation_title":
+
+			case "citation_translator":
 
 			case "composer_performer":
 

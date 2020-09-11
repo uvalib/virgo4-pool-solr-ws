@@ -13,10 +13,12 @@ type parsedRelation struct {
 }
 
 type categorizedRelations struct {
-	authors  parsedRelation
-	advisors parsedRelation
-	editors  parsedRelation
-	others   parsedRelation
+	authors     parsedRelation
+	advisors    parsedRelation
+	editors     parsedRelation
+	compilers   parsedRelation
+	translators parsedRelation
+	others      parsedRelation
 }
 
 type relationContext struct {
@@ -53,6 +55,12 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 
 		case sliceContainsString(s.pool.config.Global.Relators.EditorCodes, code, true):
 			r.addEditor(entry)
+
+		case sliceContainsString(s.pool.config.Global.Relators.CompilerCodes, code, true):
+			r.addCompiler(entry)
+
+		case sliceContainsString(s.pool.config.Global.Relators.TranslatorCodes, code, true):
+			r.addTranslator(entry)
 
 		default:
 			r.addOther(entry)
@@ -129,6 +137,24 @@ func (r *relationContext) addEditor(entry string) {
 	r.relations.editors.name = append(r.relations.editors.name, p.name...)
 }
 
+func (r *relationContext) addCompiler(entry string) {
+	p := r.parseEntry(entry)
+
+	r.relations.compilers.nameDateRelation = append(r.relations.compilers.nameDateRelation, p.nameDateRelation...)
+	r.relations.compilers.nameDate = append(r.relations.compilers.nameDate, p.nameDate...)
+	r.relations.compilers.nameRelation = append(r.relations.compilers.nameRelation, p.nameRelation...)
+	r.relations.compilers.name = append(r.relations.compilers.name, p.name...)
+}
+
+func (r *relationContext) addTranslator(entry string) {
+	p := r.parseEntry(entry)
+
+	r.relations.translators.nameDateRelation = append(r.relations.translators.nameDateRelation, p.nameDateRelation...)
+	r.relations.translators.nameDate = append(r.relations.translators.nameDate, p.nameDate...)
+	r.relations.translators.nameRelation = append(r.relations.translators.nameRelation, p.nameRelation...)
+	r.relations.translators.name = append(r.relations.translators.name, p.name...)
+}
+
 func (r *relationContext) addOther(entry string) {
 	p := r.parseEntry(entry)
 
@@ -159,6 +185,20 @@ func (r *relationContext) removeDuplicateEditors() {
 	r.relations.editors.name = uniqueStrings(r.relations.editors.name)
 }
 
+func (r *relationContext) removeDuplicateCompilers() {
+	r.relations.compilers.nameDateRelation = uniqueStrings(r.relations.compilers.nameDateRelation)
+	r.relations.compilers.nameDate = uniqueStrings(r.relations.compilers.nameDate)
+	r.relations.compilers.nameRelation = uniqueStrings(r.relations.compilers.nameRelation)
+	r.relations.compilers.name = uniqueStrings(r.relations.compilers.name)
+}
+
+func (r *relationContext) removeDuplicateTranslators() {
+	r.relations.translators.nameDateRelation = uniqueStrings(r.relations.translators.nameDateRelation)
+	r.relations.translators.nameDate = uniqueStrings(r.relations.translators.nameDate)
+	r.relations.translators.nameRelation = uniqueStrings(r.relations.translators.nameRelation)
+	r.relations.translators.name = uniqueStrings(r.relations.translators.name)
+}
+
 func (r *relationContext) removeDuplicateOthers() {
 	r.relations.others.nameDateRelation = uniqueStrings(r.relations.others.nameDateRelation)
 	r.relations.others.nameDate = uniqueStrings(r.relations.others.nameDate)
@@ -170,5 +210,7 @@ func (r *relationContext) removeDuplicateRelations() {
 	r.removeDuplicateAuthors()
 	r.removeDuplicateAdvisors()
 	r.removeDuplicateEditors()
+	r.removeDuplicateCompilers()
+	r.removeDuplicateTranslators()
 	r.removeDuplicateOthers()
 }

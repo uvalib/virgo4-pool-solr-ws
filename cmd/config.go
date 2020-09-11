@@ -41,10 +41,12 @@ type poolConfigRelator struct {
 }
 
 type poolConfigRelators struct {
-	AuthorCodes  []string            `json:"author_codes,omitempty"`
-	AdvisorCodes []string            `json:"advisor_codes,omitempty"`
-	EditorCodes  []string            `json:"editor_codes,omitempty"`
-	Map          []poolConfigRelator `json:"map,omitempty"`
+	AuthorCodes     []string            `json:"author_codes,omitempty"`
+	AdvisorCodes    []string            `json:"advisor_codes,omitempty"`
+	EditorCodes     []string            `json:"editor_codes,omitempty"`
+	CompilerCodes   []string            `json:"compiler_codes,omitempty"`
+	TranslatorCodes []string            `json:"translator_codes,omitempty"`
+	Map             []poolConfigRelator `json:"map,omitempty"`
 }
 
 type poolConfigCopyrightLabel struct {

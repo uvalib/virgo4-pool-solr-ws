@@ -381,6 +381,14 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 
 		return values
 
+	case "citation_compiler":
+		for _, compilerValue := range rc.relations.compilers.name {
+			f.Value = compilerValue
+			values = append(values, f)
+		}
+
+		return values
+
 	case "citation_editor":
 		for _, editorValue := range rc.relations.editors.name {
 			f.Value = editorValue
@@ -428,6 +436,14 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		title := firstElementOf(fieldValues)
 		f.Value = titlecase.Title(title)
 		values = append(values, f)
+
+		return values
+
+	case "citation_translator":
+		for _, translatorValue := range rc.relations.translators.name {
+			f.Value = translatorValue
+			values = append(values, f)
+		}
 
 		return values
 
