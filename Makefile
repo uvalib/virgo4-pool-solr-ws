@@ -125,7 +125,7 @@ clean:
 dep:
 	@ \
 	echo "[DEP] GOPROXY=$(GOPROXY) $(GOGET)" ; \
-	$(GOGET) -u ./$(SRCDIR)/... ; \
+	GOPROXY=$(GOPROXY) $(GOGET) -u ./$(SRCDIR)/... ; \
 	echo "[DEP] $(GOMOD) tidy" ; \
 	$(GOMOD) tidy ; \
 	echo "[DEP] $(GOMOD) verify" ; \

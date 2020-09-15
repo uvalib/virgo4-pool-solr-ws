@@ -272,6 +272,96 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 	return values
 }
 
+func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
+	type summaryCallNumber struct {
+		CallNumber string   `json:"call_number"`
+		Texts      []string `json:"text,omitempty"`
+	}
+
+	type summaryLocation struct {
+		Location    string              `json:"location"`
+		CallNumbers []summaryCallNumber `json:"call_numbers,omitempty"`
+	}
+
+	type summaryLibrary struct {
+		Library   string            `json:"library"`
+		Locations []summaryLocation `json:"locations,omitempty"`
+	}
+
+	type summaryHoldings struct {
+		Libraries []summaryLibrary `json:"libraries,omitempty"`
+	}
+
+	type summaryResp struct {
+		Holdings summaryHoldings `json:"holdings,omitempty"`
+	}
+
+	var resp summaryResp
+
+	// maps, from which the final structure will be made
+
+	libraries := make(map[string]map[string]map[string][]string)
+
+	lastCallNumber := ""
+
+	for _, fieldValue := range fieldValues {
+		parts := strings.Split(fieldValue, "|")
+		if len(parts) != 6 {
+			s.log("unexpected summary holding entry: [%s]", fieldValue)
+			continue
+		}
+
+		library := parts[0]
+		location := parts[1]
+		text := parts[2]
+		//note := parts[3]
+		//label := parts[4]
+		callNumber := parts[5]
+
+		if library != "" && libraries[library] == nil {
+			libraries[library] = make(map[string]map[string][]string)
+		}
+
+		if library != "" && location != "" && libraries[library][location] == nil {
+			libraries[library][location] = make(map[string][]string)
+		}
+
+		if callNumber != "" && callNumber != lastCallNumber {
+			lastCallNumber = callNumber
+		}
+
+		if text != "" {
+			libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], text)
+		}
+	}
+
+	// if no data, return nil so the field can easily be omitted from the response
+	if len(libraries) == 0 {
+		return nil
+	}
+
+	// build holdings structure from collected maps
+
+	for klib, vlib := range libraries {
+		nlib := summaryLibrary{Library: klib}
+
+		for kloc, vloc := range vlib {
+			nloc := summaryLocation{Location: kloc}
+
+			for knum, vnum := range vloc {
+				nnum := summaryCallNumber{CallNumber: knum, Texts: vnum}
+				nloc.CallNumbers = append(nloc.CallNumbers, nnum)
+			}
+
+			nlib.Locations = append(nlib.Locations, nloc)
+		}
+
+		resp.Holdings.Libraries = append(resp.Holdings.Libraries, nlib)
+	}
+
+	return resp
+}
+
 type recordContext struct {
 	anonOnline         bool
 	authOnline         bool
@@ -615,18 +705,8 @@ func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, 
 		return values
 
 	case "summary_holdings":
-		for _, fieldValue := range fieldValues {
-			parts := strings.Split(fieldValue, "|")
-			if len(parts) != 6 {
-				s.log("unexpected summary holding entry: [%s]", fieldValue)
-				continue
-			}
-			f.SummaryLibrary = parts[0]
-			f.SummaryLocation = parts[1]
-			f.SummaryText = parts[2]
-			f.SummaryNote = parts[3]
-			f.SummaryLabel = parts[4]
-			f.SummaryCallNumber = parts[5]
+		if summaryHoldings := s.getSummaryHoldings(fieldValues); summaryHoldings != nil {
+			f.StructuredValue = summaryHoldings
 			values = append(values, f)
 		}
 
