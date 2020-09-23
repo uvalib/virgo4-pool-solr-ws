@@ -439,6 +439,9 @@ other = "Colección Digital"
 [FieldWSLSDigitalCollectionDescription]
 other = "La WSLS-TV News Film Collection, 1951-1971, comprende guiones de anclaje y una película de noticias de 16 mm creada por la estación de televisión WSLS de Roanoke, Virginia. Una subvención del National Endowment for the Humanities financió la preservación y digitalización de esta colección."
 
+[FieldWorkCreationDate]
+other = "Fecha de creación del trabajo"
+
 [FieldWorkIdentifier]
 other = "Identificador de Trabajo"
 
@@ -450,6 +453,9 @@ other = "Detalles Físicos del Trabajo"
 
 [FieldWorkType]
 other = "Tipo de Trabajo"
+
+[ProviderArtstor]
+other = "Artstor"
 
 [ProviderAvalon]
 other = "Avalon"

@@ -439,6 +439,9 @@ other = "Digital Collection"
 [FieldWSLSDigitalCollectionDescription]
 other = "The WSLS-TV News Film Collection, 1951-1971, comprises anchor scripts and 16mm news film created by Roanoke, Va., television station WSLS. A grant from the National Endowment for the Humanities funded the preservation and digitization of this collection."
 
+[FieldWorkCreationDate]
+other = "Work Creation Date"
+
 [FieldWorkIdentifier]
 other = "Work Identifier"
 
@@ -450,6 +453,9 @@ other = "Work Physical Details"
 
 [FieldWorkType]
 other = "Work Type"
+
+[ProviderArtstor]
+other = "Artstor"
 
 [ProviderAvalon]
 other = "Avalon"
