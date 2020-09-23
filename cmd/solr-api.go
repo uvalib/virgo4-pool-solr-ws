@@ -188,6 +188,7 @@ type solrDocument struct {
 	VideoColor                  []string `json:"video_color_a,omitempty"`
 	VideoRunTime                []string `json:"video_run_time_a,omitempty"`
 	VideoSound                  []string `json:"video_sound_a,omitempty"`
+	WorkCreationDate            []string `json:"work_creation_date_a,omitempty"`
 	WorkIdentifier              []string `json:"workIdentifier_a,omitempty"`
 	WorkLocation                []string `json:"workLocation_a,omitempty"`
 	WorkPhysicalDetails         []string `json:"workPhysicalDetails_a,omitempty"`
