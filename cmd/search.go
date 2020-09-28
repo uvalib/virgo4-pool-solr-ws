@@ -42,30 +42,12 @@ type searchContext struct {
 	solr        solrDialog
 	confidence  string
 	itemDetails bool
-	shelfBrowse bool
 }
 
 type searchResponse struct {
 	status int         // http status code
 	data   interface{} // data to return as JSON
 	err    error       // error, if any
-}
-
-type shelfBrowseRequest struct {
-	ID    string `json:"id,omitempty"`
-	Range int    `json:"range,omitempty"`
-}
-
-type shelfBrowseItem struct {
-	record     *v4api.Record
-	forwardKey string
-	reverseKey string
-}
-
-type shelfBrowseResponse struct {
-	Items         []map[string]string `json:"items,omitempty"`
-	StatusCode    int                 `json:"status_code"`
-	StatusMessage string              `json:"status_msg,omitempty"`
 }
 
 func confidenceIndex(s string) int {
@@ -663,142 +645,6 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 	}
 
 	return searchResponse{status: http.StatusOK, data: s.virgo.recordRes}
-}
-
-func (s *searchContext) getShelfBrowseItemDetails(query string) (shelfBrowseItem, searchResponse) {
-	var item shelfBrowseItem
-
-	s.virgo.solrQuery = query
-	s.virgo.flags.groupResults = false
-
-	if resp := s.getRecordQueryResults(); resp.err != nil {
-		return item, resp
-	}
-
-	doc := s.solr.res.Response.Docs[0]
-
-	item.record = s.virgo.recordRes
-	item.forwardKey = doc.getFirstString(s.pool.config.Local.Solr.ShelfBrowse.ForwardKey)
-	item.reverseKey = doc.getFirstString(s.pool.config.Local.Solr.ShelfBrowse.ReverseKey)
-
-	return item, searchResponse{status: http.StatusOK}
-}
-
-func (s *searchContext) handleShelfBrowseRequest() searchResponse {
-	s.virgo.endpoint = "shelf-browse"
-
-	// mark this as a shelf browse request
-	s.shelfBrowse = true
-
-	var req shelfBrowseRequest
-
-	// read and validate client request
-	if resp := s.parseRequest(&req); resp.err != nil {
-		resp.data = shelfBrowseResponse{StatusCode: resp.status, StatusMessage: resp.err.Error()}
-		return resp
-	}
-
-	if req.ID == "" {
-		resp := searchResponse{status: http.StatusInternalServerError, err: errors.New("missing ID")}
-		resp.data = shelfBrowseResponse{StatusCode: resp.status, StatusMessage: resp.err.Error()}
-		return resp
-	}
-
-	// ensure requested range is reasonable
-	limit := req.Range
-	switch {
-	case limit <= 0:
-		limit = s.pool.config.Local.Solr.ShelfBrowse.DefaultItems
-	case limit > s.pool.config.Local.Solr.ShelfBrowse.MaxItems:
-		limit = s.pool.config.Local.Solr.ShelfBrowse.MaxItems
-	}
-
-	//s.log("id: [%s]  range: [%d] => [%d]", req.ID, req.Range, limit)
-
-	thisItem, thisResp := s.getShelfBrowseItemDetails(fmt.Sprintf(`id:"%s"`, req.ID))
-
-	if thisResp.err != nil {
-		resp := thisResp
-		resp.data = shelfBrowseResponse{StatusCode: resp.status, StatusMessage: resp.err.Error()}
-		return resp
-	}
-
-	// get forward/reverse shelf keys for this item via solr terms query
-
-	fwdKeys, fwdErr := s.solrTerms(s.pool.config.Local.Solr.ShelfBrowse.ForwardKey, thisItem.forwardKey, limit)
-	if fwdErr != nil {
-		resp := searchResponse{status: http.StatusInternalServerError, err: fwdErr}
-		resp.data = shelfBrowseResponse{StatusCode: resp.status, StatusMessage: resp.err.Error()}
-		return resp
-	}
-
-	revKeys, revErr := s.solrTerms(s.pool.config.Local.Solr.ShelfBrowse.ReverseKey, thisItem.reverseKey, limit)
-	if revErr != nil {
-		resp := searchResponse{status: http.StatusInternalServerError, err: revErr}
-		resp.data = shelfBrowseResponse{StatusCode: resp.status, StatusMessage: resp.err.Error()}
-		return resp
-	}
-
-	// build sequential list of items
-
-	var items []shelfBrowseItem
-
-	for _, key := range revKeys {
-		//s.log("reverse key: [%s]", key)
-		q := fmt.Sprintf(`%s:"%s"`, s.pool.config.Local.Solr.ShelfBrowse.ReverseKey, key)
-		if revItem, revResp := s.getShelfBrowseItemDetails(q); revResp.err == nil {
-			items = append([]shelfBrowseItem{revItem}, items...)
-		}
-	}
-
-	items = append(items, thisItem)
-
-	for _, key := range fwdKeys {
-		//s.log("forward key: [%s]", key)
-		q := fmt.Sprintf(`%s:"%s"`, s.pool.config.Local.Solr.ShelfBrowse.ForwardKey, key)
-		if fwdItem, fwdResp := s.getShelfBrowseItemDetails(q); fwdResp.err == nil {
-			items = append(items, fwdItem)
-		}
-	}
-
-	// populate each item
-
-	var itemMap []map[string]string
-
-	for _, item := range items {
-		newItem := make(map[string]string)
-
-		for _, fieldCfg := range s.pool.fields.shelfBrowse {
-			name := fieldCfg.FlatName
-			if name == "" {
-				name = fieldCfg.Name
-			}
-
-			var values []string
-
-			// extract our field value(s) from v4 record
-			for _, field := range item.record.Fields {
-				if field.Name == fieldCfg.Name {
-					values = append(values, field.Value)
-				}
-			}
-
-			// just use first value (most/all have just one anyway?)
-			value := firstElementOf(values)
-
-			if value != "" {
-				newItem[name] = value
-			}
-		}
-
-		itemMap = append(itemMap, newItem)
-	}
-
-	// build response
-
-	res := shelfBrowseResponse{Items: itemMap, StatusCode: http.StatusOK}
-
-	return searchResponse{status: http.StatusOK, data: res}
 }
 
 func (s *searchContext) handlePingRequest() searchResponse {

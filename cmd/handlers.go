@@ -58,20 +58,6 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	c.JSON(resp.status, resp.data)
 }
 
-func (p *poolContext) shelfBrowseHandler(c *gin.Context) {
-	cl := clientContext{}
-	cl.init(p, c)
-
-	s := searchContext{}
-	s.init(p, &cl)
-
-	cl.logRequest()
-	resp := s.handleShelfBrowseRequest()
-	cl.logResponse(resp)
-
-	c.JSON(resp.status, resp.data)
-}
-
 func (p *poolContext) ignoreHandler(c *gin.Context) {
 }
 

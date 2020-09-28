@@ -284,9 +284,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	case s.itemDetails == true:
 		fieldCfgs = s.pool.fields.detailed
 
-	case s.shelfBrowse == true:
-		fieldCfgs = s.pool.fields.shelfBrowse
-
 	default:
 		fieldCfgs = s.pool.fields.basic
 	}
