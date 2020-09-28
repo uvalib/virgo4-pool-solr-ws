@@ -74,129 +74,7 @@ type solrResponseHeader struct {
 	QTime  int `json:"QTime,omitempty"`
 }
 
-type solrDocument struct {
-	APlaceholderField           []string `json:"placeholder_a,omitempty"`
-	Abstract                    []string `json:"abstract_a,omitempty"`
-	AccessNote                  []string `json:"access_note_a,omitempty"`
-	Advisor                     []string `json:"creator_a,omitempty"`
-	AlternateID                 []string `json:"alternate_id_a,omitempty"`
-	AnonAvailability            []string `json:"anon_availability_a,omitempty"`
-	Author                      []string `json:"author_a,omitempty"`
-	AuthorFacet                 []string `json:"author_facet_a,omitempty"`
-	AuthorAddedEntry            []string `json:"author_added_entry_a,omitempty"`
-	AuthorCredits               []string `json:"author_credits_a,omitempty"`
-	AuthorVernacular            []string `json:"author_vern_a,omitempty"`
-	Availability                []string `json:"availability_a,omitempty"`
-	AwardsNote                  []string `json:"awards_note_a,omitempty"`
-	BiographicalNote            []string `json:"biographical_note_a,omitempty"`
-	CallNumber                  []string `json:"call_number_a,omitempty"`
-	CallNumberSort              string   `json:"call_number_sort,omitempty"`
-	CartographicMath            []string `json:"cartographic_math_a,omitempty"`
-	CitationNote                []string `json:"citation_note_a,omitempty"`
-	Collection                  []string `json:"collection_a,omitempty"`
-	Contributor                 []string `json:"contributor_a,omitempty"`
-	CreativeCommonsURI          []string `json:"cc_uri_a,omitempty"`
-	DataSource                  []string `json:"data_source_a,omitempty"`
-	Degree                      []string `json:"degree_a,omitempty"`
-	Department                  []string `json:"department_a,omitempty"`
-	Description                 []string `json:"description_a,omitempty"`
-	DigitalCollection           []string `json:"digital_collection_a,omitempty"`
-	Director                    []string `json:"author_director_a,omitempty"`
-	DissertationNote            []string `json:"dissertation_note_a,omitempty"`
-	Edition                     []string `json:"edition_a,omitempty"`
-	Extent                      []string `json:"extent_a,omitempty"`
-	Feature                     []string `json:"feature_a,omitempty"`
-	FindingAidNote              []string `json:"finding_aid_note_a,omitempty"`
-	Format                      []string `json:"format_a,omitempty"`
-	FullRecord                  string   `json:"fullrecord,omitempty"`
-	FullTitle                   []string `json:"full_title_a,omitempty"`
-	Genre                       []string `json:"topic_form_genre_a,omitempty"`
-	GrantInformation            []string `json:"grant_info_a,omitempty"`
-	ID                          string   `json:"id,omitempty"`
-	ISBN                        []string `json:"isbn_a,omitempty"`
-	ISSN                        []string `json:"issn_a,omitempty"`
-	Identifier                  []string `json:"identifier_a,omitempty"`
-	LCCN                        []string `json:"lccn_a,omitempty"`
-	Language                    []string `json:"language_a,omitempty"`
-	LanguageNote                []string `json:"language_note_a,omitempty"`
-	Library                     []string `json:"library_a,omitempty"`
-	LocalNote                   []string `json:"local_note_a,omitempty"`
-	LocatedIn                   []string `json:"located_in_a,omitempty"`
-	Location                    []string `json:"location_a,omitempty"`
-	Location2                   []string `json:"location2_a,omitempty"`
-	LocationOfOriginals         []string `json:"location_of_originals_a,omitempty"`
-	MSSWorkKeySort              string   `json:"mss_work_key_sort,omitempty"`
-	Note                        []string `json:"note_a,omitempty"`
-	OCLC                        []string `json:"oclc_a,omitempty"`
-	OrganizationArrangementNote []string `json:"organization_arrangement_note_a,omitempty"`
-	OriginalVersion             []string `json:"original_version_a,omitempty"`
-	OtherArchivalMaterials      []string `json:"other_archival_materials_a,omitempty"`
-	OtherForms                  []string `json:"other_forms_a,omitempty"`
-	PdaCOUTTS                   []string `json:"pda_coutts_a,omitempty"`
-	PdfURL                      []string `json:"pdf_url_a,omitempty"`
-	Performers                  []string `json:"performers_a,omitempty"`
-	Pool                        []string `json:"pool_a,omitempty"`
-	PublicationDate             string   `json:"published_date,omitempty"`
-	PublicationFrequency        []string `json:"publication_frequency_a,omitempty"`
-	PublicationHistory          []string `json:"publication_history_a,omitempty"`
-	Published                   []string `json:"published_a,omitempty"`
-	PublishedDisplay            []string `json:"published_display_a,omitempty"`
-	PublishedLocation           []string `json:"published_location_a,omitempty"`
-	PublisherName               []string `json:"publisher_name_a,omitempty"`
-	PublisherNumber             []string `json:"publisher_number_a,omitempty"`
-	RecordingInfo               []string `json:"recording_info_a,omitempty"`
-	ReferencesNote              []string `json:"references_note_a,omitempty"`
-	Region                      []string `json:"region_a,omitempty"`
-	ReleaseDate                 []string `json:"release_a,omitempty"`
-	ReproductionNote            []string `json:"reproduction_note_a,omitempty"`
-	ResponsibilityStatement     []string `json:"responsibility_statement_a,omitempty"`
-	Rights                      []string `json:"rights_a,omitempty"`
-	RightsStatementURI          []string `json:"rs_uri_a,omitempty"`
-	Score                       float32  `json:"score,omitempty"`
-	ScriptExcerpt               []string `json:"script_excerpt_a,omitempty"`
-	Series                      []string `json:"title_series_a,omitempty"`
-	Source                      []string `json:"source_a,omitempty"`
-	SponsoringAgency            []string `json:"sponsoring_agency_a,omitempty"`
-	Subject                     []string `json:"subject_a,omitempty"`
-	SubjectAbstract             []string `json:"subject_abstract_a,omitempty"`
-	SubjectSummary              []string `json:"subject_summary_a,omitempty"`
-	Subtitle                    []string `json:"title_sub_a,omitempty"`
-	SudocNumber                 []string `json:"sudoc_number_a,omitempty"`
-	SummaryHoldings             []string `json:"summary_holdings_a,omitempty"`
-	TargetAudience              []string `json:"target_audience_a,omitempty"`
-	TermsOfUse                  []string `json:"terms_of_use_a,omitempty"`
-	ThumbnailURL                []string `json:"thumbnail_url_a,omitempty"`
-	Title                       []string `json:"title_a,omitempty"`
-	TitleAbbreviated            []string `json:"title_abbreviated_a,omitempty"`
-	TitleAddedEntry             []string `json:"title_added_entry_a,omitempty"`
-	TitleAlternate              []string `json:"title_alternate_a,omitempty"`
-	TitleHistorynote            []string `json:"title_history_note_a,omitempty"`
-	TitleLater                  []string `json:"title_later_a,omitempty"`
-	TitleNotes                  []string `json:"title_notes_a,omitempty"`
-	TitlePrevious               []string `json:"title_previous_a,omitempty"`
-	TitleUniform                []string `json:"title_uniform_a,omitempty"`
-	TitleVernacular             []string `json:"title_vern_a,omitempty"`
-	UPC                         []string `json:"upc_a,omitempty"`
-	URL                         []string `json:"url_a,omitempty"`
-	URLIIIFImage                []string `json:"url_iiif_image_a,omitempty"`
-	URLIIIFManifest             []string `json:"url_iiif_manifest_a,omitempty"`
-	URLLabel                    []string `json:"url_label_a,omitempty"`
-	URLLabelSupplemental        []string `json:"url_label_supp_a,omitempty"`
-	URLOEMBEDStored             string   `json:"url_oembed_stored,omitempty"`
-	URLSupplemental             []string `json:"url_supp_a,omitempty"`
-	UVAAvailability             []string `json:"uva_availability_a,omitempty"`
-	VideoColor                  []string `json:"video_color_a,omitempty"`
-	VideoRunTime                []string `json:"video_run_time_a,omitempty"`
-	VideoSound                  []string `json:"video_sound_a,omitempty"`
-	WorkCreationDate            []string `json:"work_creation_date_a,omitempty"`
-	WorkIdentifier              []string `json:"workIdentifier_a,omitempty"`
-	WorkLocation                []string `json:"workLocation_a,omitempty"`
-	WorkPhysicalDetails         []string `json:"workPhysicalDetails_a,omitempty"`
-	WorkPrimaryAuthor           []string `json:"work_primary_author_a,omitempty"`
-	WorkTitle2KeySort           string   `json:"work_title2_key_sort,omitempty"`
-	WorkTitle3KeySort           string   `json:"work_title3_key_sort,omitempty"`
-	WorkType                    []string `json:"workType_a,omitempty"`
-}
+type solrDocument map[string]interface{}
 
 type solrBucket struct {
 	Val        string `json:"val"`
@@ -230,6 +108,7 @@ type solrResponse struct {
 	Debug          interface{}                  `json:"debug,omitempty"`
 	FacetsRaw      map[string]interface{}       `json:"facets,omitempty"`
 	Facets         map[string]solrResponseFacet // will be parsed from FacetsRaw
+	Terms          map[string][]interface{}     `json:"terms,omitempty"`
 	Error          solrError                    `json:"error,omitempty"`
 	Status         string                       `json:"status,omitempty"`
 	meta           *solrMeta                    // pointer to struct in corresponding solrRequest

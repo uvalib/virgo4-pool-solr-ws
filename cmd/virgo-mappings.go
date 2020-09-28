@@ -3,366 +3,20 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"reflect"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/igorsobreira/titlecase"
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
-// functions that map solr data into virgo data
-
-func (s *solrDocument) getFieldByTag(tag string) interface{} {
-	rt := reflect.TypeOf(*s)
-
-	if rt.Kind() != reflect.Struct {
-		return nil
-	}
-
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		v := strings.Split(f.Tag.Get("json"), ",")[0]
-		if v == tag {
-			return reflect.ValueOf(*s).Field(i).Interface()
-		}
-	}
-
-	return nil
-}
-
-func (s *solrDocument) getValuesByTag(tag string) []string {
-	// turn all potential values into string slices
-
-	v := s.getFieldByTag(tag)
-
-	switch t := v.(type) {
-	case []string:
-		return t
-
-	case string:
-		return []string{t}
-
-	case float32:
-		// in case this is ever called for fields such as 'score'
-		return []string{fmt.Sprintf("%0.8f", t)}
-
-	default:
-		return []string{}
-	}
-}
-
-func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
-	return firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.GroupField))
-}
-
-func (s *searchContext) getCitationFormat(formats []string) string {
-	// use configured citation format for pool, if defined
-	if s.pool.config.Local.Identity.CitationFormat != "" {
-		return s.pool.config.Local.Identity.CitationFormat
-	}
-
-	// point to last entry (which by configuration is the fallback value)
-	best := len(s.pool.config.Global.CitationFormats) - 1
-
-	// check each format to try to find better type match
-	for _, format := range formats {
-		for i := range s.pool.config.Global.CitationFormats {
-			// no need to check worse possibilities
-			if i >= best {
-				continue
-			}
-
-			citationFormat := &s.pool.config.Global.CitationFormats[i]
-
-			if citationFormat.re.MatchString(format) == true {
-				best = i
-				break
-			}
-		}
-	}
-
-	return s.pool.config.Global.CitationFormats[best].Format
-}
-
-func (s *searchContext) compareFields(doc *solrDocument, fields []poolConfigFieldComparison) bool {
-	for _, field := range fields {
-		fieldValues := doc.getValuesByTag(field.Field)
-
-		for _, values := range field.Contains {
-			if sliceContainsAllValuesFromSlice(fieldValues, values, true) == true {
-				return true
-			}
-		}
-
-		for _, values := range field.Matches {
-			if slicesAreEqual(fieldValues, values, true) == true {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
-	for i := range s.pool.config.Global.Publishers {
-		publisher := &s.pool.config.Global.Publishers[i]
-
-		fieldValues := doc.getValuesByTag(publisher.Field)
-
-		for _, fieldValue := range fieldValues {
-			if publisher.re.MatchString(fieldValue) == true {
-				return publisher
-			}
-		}
-	}
-
-	return nil
-}
-
-func (s *searchContext) getPublishedLocation(doc *solrDocument) []string {
-	if publisher := s.getPublisherEntry(doc); publisher != nil {
-		return []string{publisher.Place}
-	}
-
-	return []string{}
-}
-
-func (s *searchContext) getPublisherName(doc *solrDocument) []string {
-	if publisher := s.getPublisherEntry(doc); publisher != nil {
-		return []string{publisher.Publisher}
-	}
-
-	return []string{}
-}
-
-func (s *searchContext) getCopyrightLabelIcon(text string, cfg poolConfigCopyrightLabels) (string, string) {
-	var icon string
-
-	var texts []string
-	if cfg.Split == "" {
-		texts = []string{text}
-	} else {
-		texts = strings.Split(text, cfg.Split)
-	}
-
-	var labels []string
-	for _, txt := range texts {
-		for _, val := range cfg.Labels {
-			if strings.EqualFold(txt, val.Text) == true {
-				icon = val.Icon
-				labels = append(labels, val.Label)
-				continue
-			}
-		}
-	}
-
-	prefix := ""
-	if cfg.Prefix != "" {
-		prefix = cfg.Prefix + " "
-	}
-
-	suffix := ""
-	if cfg.Suffix != "" {
-		suffix = " " + cfg.Suffix
-	}
-
-	label := fmt.Sprintf("%s%s%s", prefix, strings.Join(labels, cfg.Join), suffix)
-
-	// use default icon if none specified by label map.  this accounts for literal values or
-	// templatized ones ("{code}" is the code portion of the copyright url being matched)
-	if icon == "" {
-		icon = strings.ReplaceAll(cfg.DefaultIcon, "{code}", text)
-	}
-
-	return label, icon
-}
-
-func (s *searchContext) getCopyrightLabelURLIcon(doc *solrDocument) (string, string, string) {
-	for _, cr := range s.pool.config.Global.Copyrights {
-		fieldValues := doc.getValuesByTag(cr.Field)
-
-		for _, fieldValue := range fieldValues {
-			if groups := cr.re.FindStringSubmatch(fieldValue); len(groups) > 0 {
-				// first, check explicit assignment
-				if cr.Label != "" {
-					return cr.Label, cr.URL, cr.Icon
-				}
-
-				url := groups[cr.URLGroup]
-
-				// next, check path mappings (if specified)
-				if cr.PathGroup > 0 {
-					path := groups[cr.PathGroup]
-					if label, icon := s.getCopyrightLabelIcon(path, cr.PathLabels); label != "" {
-						icon = fmt.Sprintf("%s/%s", cr.IconPath, icon)
-						return label, url, icon
-					}
-				}
-
-				// finally, attempt to map code to a label
-				code := groups[cr.CodeGroup]
-				if label, icon := s.getCopyrightLabelIcon(code, cr.CodeLabels); label != "" {
-					icon = fmt.Sprintf("%s/%s", cr.IconPath, icon)
-					return label, url, icon
-				}
-			}
-		}
-	}
-
-	// no matches found
-	return "", "", ""
-}
-
-func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeCustom) []v4api.RecordField {
-	var values []v4api.RecordField
-
-	urlValues := doc.getValuesByTag(cfg.URLField)
-	labelValues := doc.getValuesByTag(cfg.LabelField)
-	providerValues := doc.getValuesByTag(cfg.ProviderField)
-
-	useLabels := false
-	if len(labelValues) == len(urlValues) {
-		useLabels = true
-	}
-
-	for i, item := range urlValues {
-		item = strings.TrimSpace(item)
-
-		if isValidURL(item) == false {
-			continue
-		}
-
-		// prepend proxy URL if configured, not already present, is from a provider not specifically excluded, and matches a proxifiable domain
-		proxify := false
-
-		if cfg.ProxyPrefix != "" && strings.HasPrefix(item, cfg.ProxyPrefix) == false && sliceContainsAnyValueFromSlice(providerValues, cfg.NoProxyProviders, true) == false {
-			for _, domain := range cfg.ProxyDomains {
-				if strings.Contains(item, fmt.Sprintf("%s/", domain)) == true {
-					proxify = true
-					break
-				}
-			}
-		}
-
-		if proxify == true {
-			f.Value = cfg.ProxyPrefix + item
-		} else {
-			f.Value = item
-		}
-
-		itemLabel := ""
-		if useLabels == true {
-			itemLabel = strings.TrimSpace(labelValues[i])
-			//itemLabel = titleizeIfUppercase(itemLabel)
-		}
-
-		// if not using labels, or this label is not defined, fall back to generic item label
-		if itemLabel == "" {
-			itemLabel = fmt.Sprintf("%s %d", s.client.localize(cfg.DefaultItemXID), i+1)
-		}
-
-		f.Item = strings.TrimSpace(itemLabel)
-
-		values = append(values, f)
-	}
-
-	return values
-}
-
-func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
-	type summaryCallNumber struct {
-		CallNumber string   `json:"call_number"`
-		Texts      []string `json:"text,omitempty"`
-	}
-
-	type summaryLocation struct {
-		Location    string              `json:"location"`
-		CallNumbers []summaryCallNumber `json:"call_numbers,omitempty"`
-	}
-
-	type summaryLibrary struct {
-		Library   string            `json:"library"`
-		Locations []summaryLocation `json:"locations,omitempty"`
-	}
-
-	type summaryHoldings struct {
-		Libraries []summaryLibrary `json:"libraries,omitempty"`
-	}
-
-	type summaryResp struct {
-		Holdings summaryHoldings `json:"holdings,omitempty"`
-	}
-
-	var resp summaryResp
-
-	// maps, from which the final structure will be made
-
-	libraries := make(map[string]map[string]map[string][]string)
-
-	lastCallNumber := ""
-
-	for _, fieldValue := range fieldValues {
-		parts := strings.Split(fieldValue, "|")
-		if len(parts) != 6 {
-			s.log("unexpected summary holding entry: [%s]", fieldValue)
-			continue
-		}
-
-		library := parts[0]
-		location := parts[1]
-		text := parts[2]
-		//note := parts[3]
-		//label := parts[4]
-		callNumber := parts[5]
-
-		if library != "" && libraries[library] == nil {
-			libraries[library] = make(map[string]map[string][]string)
-		}
-
-		if library != "" && location != "" && libraries[library][location] == nil {
-			libraries[library][location] = make(map[string][]string)
-		}
-
-		if callNumber != "" && callNumber != lastCallNumber {
-			lastCallNumber = callNumber
-		}
-
-		if text != "" {
-			libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], text)
-		}
-	}
-
-	// if no data, return nil so the field can easily be omitted from the response
-	if len(libraries) == 0 {
-		return nil
-	}
-
-	// build holdings structure from collected maps
-
-	for klib, vlib := range libraries {
-		nlib := summaryLibrary{Library: klib}
-
-		for kloc, vloc := range vlib {
-			nloc := summaryLocation{Location: kloc}
-
-			for knum, vnum := range vloc {
-				nnum := summaryCallNumber{CallNumber: knum, Texts: vnum}
-				nloc.CallNumbers = append(nloc.CallNumbers, nnum)
-			}
-
-			nlib.Locations = append(nlib.Locations, nloc)
-		}
-
-		resp.Holdings.Libraries = append(resp.Holdings.Libraries, nlib)
-	}
-
-	return resp
+type fieldContext struct {
+	config poolConfigField
+	field  v4api.RecordField
 }
 
 type recordContext struct {
+	doc                *solrDocument
 	anonOnline         bool
 	authOnline         bool
 	availabilityValues []string
@@ -372,483 +26,207 @@ type recordContext struct {
 	isSirsi            bool
 	isWSLS             bool
 	relations          categorizedRelations
+	fieldCtx           fieldContext
 }
 
-func (s *searchContext) getFieldValues(rc recordContext, field poolConfigField, f v4api.RecordField, doc *solrDocument) []v4api.RecordField {
-	var values []v4api.RecordField
+// functions that map solr data into virgo data
 
-	fieldValues := doc.getValuesByTag(field.Field)
+func (s *solrDocument) getRawValue(field string) interface{} {
+	return (*s)[field]
+}
 
-	if field.Custom == false {
-		for _, fieldValue := range fieldValues {
-			f.Value = fieldValue
-			values = append(values, f)
+func (s *solrDocument) getStrings(field string) []string {
+	// turn all potential values into string slices
+
+	v := s.getRawValue(field)
+
+	switch t := v.(type) {
+	case []interface{}:
+		vals := make([]string, len(t))
+		for i, val := range t {
+			vals[i] = val.(string)
+		}
+		return vals
+
+	case []string:
+		return t
+
+	case string:
+		return []string{t}
+
+	case float32:
+		return []string{fmt.Sprintf("%0.8f", t)}
+
+	default:
+		return []string{}
+	}
+}
+
+func (s *solrDocument) getFirstString(field string) string {
+	// shortcut to get first value for multi-value fields that really only ever contain one value
+	return firstElementOf(s.getStrings(field))
+}
+
+func (s *solrDocument) getFloat(field string) float32 {
+	v := s.getRawValue(field)
+
+	switch t := v.(type) {
+	case float32:
+		return t
+
+	default:
+		return 0.0
+	}
+}
+
+func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
+	return doc.getFirstString(s.pool.config.Local.Solr.GroupField)
+}
+
+func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
+	var fields []v4api.RecordField
+
+	// non-custom fields just return the raw solr values
+
+	if rc.fieldCtx.config.Custom == false {
+		for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+			rc.fieldCtx.field.Value = value
+			fields = append(fields, rc.fieldCtx.field)
 		}
 
-		return values
+		return fields
 	}
 
-	switch field.Name {
+	// custom fields have per-field handling
+
+	switch rc.fieldCtx.config.Name {
 	case "abstract":
-		abstractValues := fieldValues
-
-		if len(abstractValues) == 0 {
-			abstractValues = doc.getValuesByTag(field.CustomInfo.Abstract.AlternateField)
-		}
-
-		for _, abstractValue := range abstractValues {
-			f.Value = abstractValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldAbstract(rc)
 
 	case "access_url":
-		if rc.anonOnline == false && rc.authOnline == false {
-			return values
-		}
-
-		providerValues := doc.getValuesByTag(field.CustomInfo.AccessURL.ProviderField)
-
-		f.Provider = firstElementOf(providerValues)
-
-		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
-
-		return values
+		return s.getCustomFieldAccessURL(rc)
 
 	case "authenticate":
-		if rc.anonRequest == true && rc.anonOnline == false && rc.authOnline == true {
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldAuthenticate(rc)
 
 	case "author":
-		var authorValues []string
-
-		authorValues = append(authorValues, rc.relations.authors.name...)
-		authorValues = append(authorValues, rc.relations.editors.nameRelation...)
-		authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
-
-		for _, authorValue := range authorValues {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldAuthor(rc)
 
 	case "author_list":
-		for _, authorValue := range rc.relations.authors.name {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldAuthorList(rc)
 
 	case "availability":
-		for _, availabilityValue := range rc.availabilityValues {
-			if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, availabilityValue, true) {
-				f.Value = availabilityValue
-				values = append(values, f)
-			}
-		}
-
-		return values
+		return s.getCustomFieldAvailability(rc)
 
 	case "citation_advisor":
-		for _, advisorValue := range rc.relations.advisors.name {
-			f.Value = advisorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCitationAdvisor(rc)
 
 	case "citation_author":
-		for _, authorValue := range rc.relations.authors.name {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCitationAuthor(rc)
 
 	case "citation_compiler":
-		for _, compilerValue := range rc.relations.compilers.name {
-			f.Value = compilerValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCitationCompiler(rc)
 
 	case "citation_editor":
-		for _, editorValue := range rc.relations.editors.name {
-			f.Value = editorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCitationEditor(rc)
 
 	case "citation_format":
-		f.Value = s.getCitationFormat(fieldValues)
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldCitationFormat(rc)
 
 	case "citation_is_online_only":
-		if s.compareFields(doc, field.CustomInfo.CitationOnlineOnly.ComparisonFields) == true {
-			f.Value = "true"
-		} else {
-			f.Value = "false"
-		}
-
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldCitationIsOnlineOnly(rc)
 
 	case "citation_is_virgo_url":
-		if s.compareFields(doc, field.CustomInfo.CitationVirgoURL.ComparisonFields) == true {
-			f.Value = "true"
-		} else {
-			f.Value = "false"
-		}
-
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldCitationIsVirgoURL(rc)
 
 	case "citation_subtitle":
-		subtitle := firstElementOf(fieldValues)
-		f.Value = titlecase.Title(subtitle)
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldCitationSubtitle(rc)
 
 	case "citation_title":
-		title := firstElementOf(fieldValues)
-		f.Value = titlecase.Title(title)
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldCitationTitle(rc)
 
 	case "citation_translator":
-		for _, translatorValue := range rc.relations.translators.name {
-			f.Value = translatorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCitationTranslator(rc)
 
 	case "composer_performer":
-		var authorValues []string
-
-		authorValues = append(authorValues, rc.relations.authors.name...)
-		authorValues = append(authorValues, rc.relations.editors.nameRelation...)
-		authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
-
-		for _, authorValue := range authorValues {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldComposerPerformer(rc)
 
 	case "copyright_and_permissions":
-		if label, url, icon := s.getCopyrightLabelURLIcon(doc); label != "" {
-			f.Value = url
-			f.Item = label
-			f.Icon = icon
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCopyrightAndPermissions(rc)
 
 	case "cover_image_url":
-		coverImageURL := ""
-
-		if len(fieldValues) > 0 {
-			coverImageURL = firstElementOf(fieldValues)
-		} else {
-			coverImageURL = s.getCoverImageURL(field.CustomInfo.CoverImageURL, doc, rc.relations.authors.name)
-		}
-
-		if coverImageURL != "" {
-			f.Value = coverImageURL
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCoverImageURL(rc)
 
 	case "creator":
-		var authorValues []string
-
-		authorValues = append(authorValues, rc.relations.authors.name...)
-		authorValues = append(authorValues, rc.relations.editors.nameRelation...)
-		authorValues = append(authorValues, rc.relations.advisors.nameRelation...)
-
-		for _, authorValue := range authorValues {
-			f.Value = authorValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldCreator(rc)
 
 	case "digital_content_url":
-		if url := s.getDigitalContentURL(doc, field.CustomInfo.DigitalContentURL.IDField); url != "" {
-			f.Value = url
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldDigitalContentURL(rc)
 
 	case "language":
-		languageValues := fieldValues
-
-		if len(languageValues) == 0 {
-			languageValues = doc.getValuesByTag(field.CustomInfo.Language.AlternateField)
-		}
-
-		for _, languageValue := range languageValues {
-			f.Value = languageValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldLanguage(rc)
 
 	case "online_related":
-		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
-
-		return values
+		return s.getCustomFieldOnlineRelated(rc)
 
 	case "pdf_download_url":
-		pidValues := doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.PIDField)
-
-		if len(pidValues) <= field.CustomInfo.PdfDownloadURL.MaxSupported {
-			pdfURL := firstElementOf(doc.getValuesByTag(field.CustomInfo.PdfDownloadURL.URLField))
-
-			if pdfURL == "" {
-				return values
-			}
-
-			for _, pid := range pidValues {
-				if pid == "" {
-					return values
-				}
-
-				statusURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Status)
-
-				pdfStatus, pdfErr := s.getPdfStatus(statusURL)
-
-				if pdfErr != nil {
-					return values
-				}
-
-				if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus, true) == true {
-					downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
-					f.Value = downloadURL
-					values = append(values, f)
-				}
-			}
-		}
-
-		return values
+		return s.getCustomFieldPdfDownloadURL(rc)
 
 	case "published_location":
-		pubValues := fieldValues
-
-		if len(pubValues) == 0 {
-			pubValues = s.getPublishedLocation(doc)
-		}
-
-		for _, pubValue := range pubValues {
-			f.Value = pubValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldPublishedLocation(rc)
 
 	case "publisher_name":
-		pubValues := fieldValues
-
-		if len(pubValues) == 0 {
-			pubValues = doc.getValuesByTag(field.CustomInfo.PublisherName.AlternateField)
-		}
-
-		if len(pubValues) == 0 {
-			pubValues = s.getPublisherName(doc)
-		}
-
-		for _, pubValue := range pubValues {
-			f.Value = pubValue
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldPublisherName(rc)
 
 	case "related_resources":
-		values = s.getLabelledURLs(f, doc, field.CustomInfo.AccessURL)
-
-		return values
+		return s.getCustomFieldRelatedResources(rc)
 
 	case "sirsi_url":
-		if rc.isSirsi == true {
-			idValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.SirsiURL.IDField))
-			idPrefix := field.CustomInfo.SirsiURL.IDPrefix
-
-			if strings.HasPrefix(idValue, idPrefix) {
-				sirsiID := idValue[len(idPrefix):]
-				if url := s.getSirsiURL(sirsiID); url != "" {
-					f.Value = url
-					values = append(values, f)
-				}
-			}
-		}
-
-		return values
+		return s.getCustomFieldSirsiURL(rc)
 
 	case "summary_holdings":
-		if summaryHoldings := s.getSummaryHoldings(fieldValues); summaryHoldings != nil {
-			f.StructuredValue = summaryHoldings
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldSummaryHoldings(rc)
 
 	case "title_subtitle_edition":
-		titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.TitleField))
-		subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
-		editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
-
-		fullTitle := titlecase.Title(titleValue)
-
-		if subtitleValue != "" {
-			fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitleValue))
-		}
-
-		if editionValue != "" {
-			if strings.HasPrefix(editionValue, "(") && strings.HasSuffix(editionValue, ")") {
-				fullTitle = fmt.Sprintf("%s %s", fullTitle, editionValue)
-			} else {
-				fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
-			}
-		}
-
-		f.Value = fullTitle
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldTitleSubtitleEdition(rc)
 
 	case "vernacularized_author":
-		vernacularValue := firstElementOf(fieldValues)
-
-		authorValues := rc.relations.authors.name
-
-		for _, authorValue := range authorValues {
-			f.Value = authorValue
-			if vernacularValue != "" {
-				f.Value += "<p>" + vernacularValue
-			}
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldVernacularizedAuthor(rc)
 
 	case "vernacularized_composer_performer":
-		vernacularValue := firstElementOf(fieldValues)
-
-		authorValues := rc.relations.authors.name
-
-		for _, authorValue := range authorValues {
-			f.Value = authorValue
-			if vernacularValue != "" {
-				f.Value += "<p>" + vernacularValue
-			}
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldVernacularizedComposerPerformer(rc)
 
 	case "vernacularized_creator":
-		vernacularValue := firstElementOf(fieldValues)
-
-		authorValues := rc.relations.authors.name
-
-		for _, authorValue := range authorValues {
-			f.Value = authorValue
-			if vernacularValue != "" {
-				f.Value += "<p>" + vernacularValue
-			}
-			values = append(values, f)
-		}
-
-		return values
+		return s.getCustomFieldVernacularizedCreator(rc)
 
 	case "vernacularized_title":
-		vernacularValue := firstElementOf(fieldValues)
-		titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.TitleField))
-
-		fullTitle := titlecase.Title(titleValue)
-
-		if vernacularValue != "" {
-			fullTitle += "<p>" + vernacularValue
-		}
-
-		f.Value = fullTitle
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldVernacularizedTitle(rc)
 
 	case "vernacularized_title_subtitle_edition":
-		vernacularValue := firstElementOf(fieldValues)
-		titleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.TitleField))
-		subtitleValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.SubtitleField))
-		editionValue := firstElementOf(doc.getValuesByTag(field.CustomInfo.TitleSubtitleEdition.EditionField))
-
-		fullTitle := titlecase.Title(titleValue)
-
-		if subtitleValue != "" {
-			fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitleValue))
-		}
-
-		if editionValue != "" {
-			if strings.HasPrefix(editionValue, "(") && strings.HasSuffix(editionValue, ")") {
-				fullTitle = fmt.Sprintf("%s %s", fullTitle, editionValue)
-			} else {
-				fullTitle = fmt.Sprintf("%s (%s)", fullTitle, editionValue)
-			}
-		}
-
-		if vernacularValue != "" {
-			fullTitle += "<p>" + vernacularValue
-		}
-
-		f.Value = fullTitle
-		values = append(values, f)
-
-		return values
+		return s.getCustomFieldVernacularizedTitleSubtitleEdition(rc)
 
 	case "wsls_collection_description":
-		if rc.isWSLS == true {
-			f.Value = s.client.localize(field.CustomInfo.WSLSCollectionDescription.ValueXID)
-			values = append(values, f)
-		}
+		return s.getCustomFieldWSLSCollectionDescription(rc)
 
-		return values
+	default:
+		s.warn("unhandled custom field: [%s]", rc.fieldCtx.config.Name)
 	}
 
-	return values
+	return fields
 }
 
-func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
-	var record v4api.Record
-
+func (s *searchContext) initializeRecordContext(doc *solrDocument) recordContext {
 	var rc recordContext
+
+	rc.doc = doc
 
 	// availability setup
 
-	anonValues := doc.getValuesByTag(s.pool.config.Global.Availability.Anon.Field)
+	anonValues := doc.getStrings(s.pool.config.Global.Availability.Anon.Field)
 	anonOnShelf := sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.OnShelf, true)
 	rc.anonOnline = sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online, true)
 
-	authValues := doc.getValuesByTag(s.pool.config.Global.Availability.Auth.Field)
+	authValues := doc.getStrings(s.pool.config.Global.Availability.Auth.Field)
 	authOnShelf := sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.Values.OnShelf, true)
 	rc.authOnline = sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online, true)
 
@@ -864,10 +242,10 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		rc.anonRequest = false
 	}
 
-	featureValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.DigitalContent.Field)
+	featureValues := doc.getStrings(s.pool.config.Global.RecordAttributes.DigitalContent.Field)
 	rc.hasDigitalContent = sliceContainsAnyValueFromSlice(featureValues, s.pool.config.Global.RecordAttributes.DigitalContent.Contains, true)
 
-	dataSourceValues := doc.getValuesByTag(s.pool.config.Global.RecordAttributes.WSLS.Field)
+	dataSourceValues := doc.getStrings(s.pool.config.Global.RecordAttributes.WSLS.Field)
 	rc.isSirsi = sliceContainsAnyValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.Sirsi.Contains, true)
 	rc.isWSLS = sliceContainsAnyValueFromSlice(dataSourceValues, s.pool.config.Global.RecordAttributes.WSLS.Contains, true)
 
@@ -875,12 +253,12 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	var preferredAuthorValues []string
 	for _, field := range s.pool.config.Local.Solr.AuthorFields.Preferred {
-		preferredAuthorValues = append(preferredAuthorValues, doc.getValuesByTag(field)...)
+		preferredAuthorValues = append(preferredAuthorValues, doc.getStrings(field)...)
 	}
 
 	var fallbackAuthorValues []string
 	for _, field := range s.pool.config.Local.Solr.AuthorFields.Fallback {
-		fallbackAuthorValues = append(fallbackAuthorValues, doc.getValuesByTag(field)...)
+		fallbackAuthorValues = append(fallbackAuthorValues, doc.getStrings(field)...)
 	}
 
 	rawAuthorValues := preferredAuthorValues
@@ -890,54 +268,74 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	rc.relations = s.parseRelations(rawAuthorValues)
 
-	// field loop
+	return rc
+}
 
-	fields := s.pool.fields.basic
-	if s.itemDetails == true {
-		fields = s.pool.fields.detailed
+func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
+	var record v4api.Record
+
+	rc := s.initializeRecordContext(doc)
+
+	// determine what fields we are extracting from the document
+
+	var fieldCfgs []poolConfigField
+
+	switch {
+	case s.itemDetails == true:
+		fieldCfgs = s.pool.fields.detailed
+
+	case s.shelfBrowse == true:
+		fieldCfgs = s.pool.fields.shelfBrowse
+
+	default:
+		fieldCfgs = s.pool.fields.basic
 	}
 
-	for _, field := range fields {
-		if field.OnShelfOnly == true && rc.isAvailableOnShelf == false {
+	// field loop
+
+	for _, fieldCfg := range fieldCfgs {
+		if fieldCfg.OnShelfOnly == true && rc.isAvailableOnShelf == false {
 			continue
 		}
 
-		if field.DigitalContentOnly == true && rc.hasDigitalContent == false {
+		if fieldCfg.DigitalContentOnly == true && rc.hasDigitalContent == false {
 			continue
 		}
 
 		f := v4api.RecordField{
-			Name:         field.Name,
-			Type:         field.Properties.Type,
-			Separator:    field.Properties.Separator,
-			Visibility:   field.Properties.Visibility,
-			Display:      field.Properties.Display,
-			Provider:     field.Properties.Provider,
-			CitationPart: field.Properties.CitationPart,
+			Name:         fieldCfg.Name,
+			Type:         fieldCfg.Properties.Type,
+			Separator:    fieldCfg.Properties.Separator,
+			Visibility:   fieldCfg.Properties.Visibility,
+			Display:      fieldCfg.Properties.Display,
+			Provider:     fieldCfg.Properties.Provider,
+			CitationPart: fieldCfg.Properties.CitationPart,
 		}
 
 		if s.itemDetails == true {
 			f.Visibility = "detailed"
 		}
 
-		if field.XID != "" {
-			if field.WSLSXID != "" && rc.isWSLS == true {
-				f.Label = s.client.localize(field.WSLSXID)
+		if fieldCfg.XID != "" {
+			if fieldCfg.WSLSXID != "" && rc.isWSLS == true {
+				f.Label = s.client.localize(fieldCfg.WSLSXID)
 			} else {
-				f.Label = s.client.localize(field.XID)
+				f.Label = s.client.localize(fieldCfg.XID)
 			}
 		}
 
-		fieldValues := s.getFieldValues(rc, field, f, doc)
+		rc.fieldCtx = fieldContext{config: fieldCfg, field: f}
+
+		fieldValues := s.getFieldValues(&rc)
 
 		if len(fieldValues) == 0 {
 			continue
 		}
 
 		// split single field if configured
-		if len(fieldValues) == 1 && field.SplitOn != "" {
+		if len(fieldValues) == 1 && fieldCfg.SplitOn != "" {
 			origField := fieldValues[0]
-			splitValues := strings.Split(origField.Value, field.SplitOn)
+			splitValues := strings.Split(origField.Value, fieldCfg.SplitOn)
 			if len(splitValues) > 1 {
 				// successful (?) split; go with it
 				fieldValues = []v4api.RecordField{}
@@ -951,7 +349,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 		i := 0
 		for _, fieldValue := range fieldValues {
-			if field.Custom == false && fieldValue.Value == "" {
+			if fieldCfg.Custom == false && fieldValue.Value == "" {
 				continue
 			}
 
@@ -966,7 +364,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 					record.Fields = append(record.Fields, rf)
 				}
 			} else {
-				if field.CitationOnly == false {
+				if fieldCfg.CitationOnly == false {
 					rf := fieldValue
 					rf.CitationPart = ""
 
@@ -974,7 +372,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				}
 			}
 
-			if field.Limit > 0 && i+1 >= field.Limit {
+			if fieldCfg.Limit > 0 && i+1 >= fieldCfg.Limit {
 				break
 			}
 
@@ -988,7 +386,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	if s.client.opts.debug == true {
 		record.Debug = make(map[string]interface{})
-		record.Debug["score"] = doc.Score
+		record.Debug["score"] = doc.getFloat("score")
 	}
 
 	return record
@@ -1187,7 +585,7 @@ func (s *searchContext) itemIsExactMatch(doc *solrDocument) bool {
 
 	// case 1: a single title search query matches the first title in this document
 	if s.solr.res.meta.parserInfo.isSingleTitleSearch == true {
-		firstTitleResult := firstElementOf(doc.getValuesByTag(s.pool.config.Local.Solr.ExactMatchTitleField))
+		firstTitleResult := doc.getFirstString(s.pool.config.Local.Solr.ExactMatchTitleField)
 
 		titleQueried := firstElementOf(s.solr.res.meta.parserInfo.titles)
 
@@ -1285,18 +683,7 @@ func (s *searchContext) buildPoolSearchResponse() searchResponse {
 }
 
 func (s *searchContext) buildPoolRecordResponse() searchResponse {
-	var r v4api.Record
-
-	switch s.solr.res.meta.numRecords {
-	case 0:
-		return searchResponse{status: http.StatusNotFound, err: fmt.Errorf("record not found")}
-
-	case 1:
-		r = s.populateRecord(s.solr.res.meta.firstDoc)
-
-	default:
-		return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("multiple records found")}
-	}
+	r := s.populateRecord(s.solr.res.meta.firstDoc)
 
 	s.virgo.recordRes = &r
 

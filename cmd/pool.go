@@ -35,7 +35,8 @@ type poolSolrContext struct {
 
 type poolSolr struct {
 	service              poolSolrContext
-	healthcheck          poolSolrContext
+	healthCheck          poolSolrContext
+	shelfBrowse          poolSolrContext
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
 }
@@ -57,8 +58,9 @@ type poolMaps struct {
 }
 
 type poolFields struct {
-	basic    []poolConfigField
-	detailed []poolConfigField
+	basic       []poolConfigField
+	detailed    []poolConfigField
+	shelfBrowse []poolConfigField
 }
 
 type poolContext struct {
@@ -223,6 +225,11 @@ func (p *poolContext) initSolr() {
 		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, p.config.Local.Solr.Clients.HealthCheck.ReadTimeout),
 	}
 
+	shelfBrowseCtx := poolSolrContext{
+		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.ShelfBrowse.Endpoint),
+		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.ShelfBrowse.ConnTimeout, p.config.Local.Solr.Clients.ShelfBrowse.ReadTimeout),
+	}
+
 	// create facet map
 	p.maps.externalFacets = make(map[string]poolConfigFacet)
 
@@ -248,13 +255,15 @@ func (p *poolContext) initSolr() {
 
 	p.solr = poolSolr{
 		service:              serviceCtx,
-		healthcheck:          healthCtx,
+		healthCheck:          healthCtx,
+		shelfBrowse:          shelfBrowseCtx,
 		scoreThresholdMedium: p.config.Local.Solr.ScoreThresholdMedium,
 		scoreThresholdHigh:   p.config.Local.Solr.ScoreThresholdHigh,
 	}
 
 	log.Printf("[POOL] solr.service.url          = [%s]", p.solr.service.url)
-	log.Printf("[POOL] solr.healthcheck.url      = [%s]", p.solr.healthcheck.url)
+	log.Printf("[POOL] solr.healthCheck.url      = [%s]", p.solr.healthCheck.url)
+	log.Printf("[POOL] solr.shelfBrowse.url      = [%s]", p.solr.shelfBrowse.url)
 	log.Printf("[POOL] solr.scoreThresholdMedium = [%0.1f]", p.solr.scoreThresholdMedium)
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
 }
@@ -468,7 +477,7 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
 
-	allFields := append(p.fields.basic, p.fields.detailed...)
+	allFields := append(append(p.fields.basic, p.fields.detailed...), p.fields.shelfBrowse...)
 
 	for i, field := range allFields {
 		prefix := fmt.Sprintf("field index %d: ", i)
@@ -727,17 +736,6 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	// validate solr fields can actually be found in a solr document
-
-	doc := solrDocument{}
-
-	for _, tag := range solrFields.Values() {
-		if val := doc.getFieldByTag(tag); val == nil {
-			log.Printf("[VALIDATE] field not found in Solr document struct tags: [%s]", tag)
-			invalid = true
-		}
-	}
-
 	// validate xids can actually be translated
 
 	langs := []string{}
@@ -948,6 +946,11 @@ func (p *poolContext) initMappings() {
 	// build list of unique detailed fields by name
 	detailedFieldNames := append(p.config.Local.Mappings.Configured.FieldNames.Detailed, p.config.Global.Mappings.Configured.FieldNames.Detailed...)
 	p.fields.detailed, fieldListInvalid = p.populateFieldList(requiredFieldNames, detailedFieldNames, fieldMap)
+	invalid = invalid || fieldListInvalid
+
+	// build list of unique shelf browse fields by name
+	shelfBrowseFieldNames := append(p.config.Local.Mappings.Configured.FieldNames.ShelfBrowse, p.config.Global.Mappings.Configured.FieldNames.ShelfBrowse...)
+	p.fields.shelfBrowse, fieldListInvalid = p.populateFieldList([]string{}, shelfBrowseFieldNames, fieldMap)
 	invalid = invalid || fieldListInvalid
 
 	// create mapping from sort XIDs to sort definitions, allowing local overrides

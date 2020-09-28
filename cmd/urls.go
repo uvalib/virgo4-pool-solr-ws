@@ -20,9 +20,9 @@ func (s *searchContext) getSirsiURL(id string) string {
 func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCustom, doc *solrDocument, authorValues []string) string {
 	// compose a url to the cover image service
 
-	idValues := doc.getValuesByTag(cfg.IDField)
+	id := doc.getFirstString(cfg.IDField)
 
-	url := getGenericURL(s.pool.config.Global.Service.URLTemplates.CoverImages, firstElementOf(idValues))
+	url := getGenericURL(s.pool.config.Global.Service.URLTemplates.CoverImages, id)
 
 	if url == "" {
 		return ""
@@ -42,12 +42,11 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCustom, doc *so
 
 	qp := req.URL.Query()
 
-	titleValues := doc.getValuesByTag(cfg.TitleField)
-	poolValues := doc.getValuesByTag(cfg.PoolField)
+	title := doc.getFirstString(cfg.TitleField)
+	poolValues := doc.getStrings(cfg.PoolField)
 
 	// remove extraneous dates from author
 	author := strings.Trim(strings.Split(firstElementOf(authorValues), "[")[0], " ")
-	title := firstElementOf(titleValues)
 
 	if sliceContainsString(poolValues, cfg.MusicPool, true) == true {
 		// music
@@ -73,22 +72,22 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCustom, doc *so
 
 	// always throw these optional values at the cover image service
 
-	isbnValues := doc.getValuesByTag(cfg.ISBNField)
+	isbnValues := doc.getStrings(cfg.ISBNField)
 	if len(isbnValues) > 0 {
 		qp.Add("isbn", strings.Join(isbnValues, ","))
 	}
 
-	oclcValues := doc.getValuesByTag(cfg.OCLCField)
+	oclcValues := doc.getStrings(cfg.OCLCField)
 	if len(oclcValues) > 0 {
 		qp.Add("oclc", strings.Join(oclcValues, ","))
 	}
 
-	lccnValues := doc.getValuesByTag(cfg.LCCNField)
+	lccnValues := doc.getStrings(cfg.LCCNField)
 	if len(lccnValues) > 0 {
 		qp.Add("lccn", strings.Join(lccnValues, ","))
 	}
 
-	upcValues := doc.getValuesByTag(cfg.UPCField)
+	upcValues := doc.getStrings(cfg.UPCField)
 	if len(upcValues) > 0 {
 		qp.Add("upc", strings.Join(upcValues, ","))
 	}
@@ -99,9 +98,7 @@ func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCustom, doc *so
 }
 
 func (s *searchContext) getDigitalContentURL(doc *solrDocument, idField string) string {
-	idValues := doc.getValuesByTag(idField)
-
-	id := firstElementOf(idValues)
+	id := doc.getFirstString(idField)
 
 	return getGenericURL(s.pool.config.Global.Service.URLTemplates.DigitalContent, id)
 }

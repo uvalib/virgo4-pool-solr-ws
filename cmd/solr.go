@@ -195,7 +195,7 @@ func (s *searchContext) solrQuery() error {
 }
 
 func (s *searchContext) solrPing() error {
-	ctx := s.pool.solr.healthcheck
+	ctx := s.pool.solr.healthCheck
 
 	req, reqErr := http.NewRequest("GET", ctx.url, nil)
 	if reqErr != nil {
@@ -258,4 +258,89 @@ func (s *searchContext) solrPing() error {
 	}
 
 	return nil
+}
+
+func (s *searchContext) solrTerms(field, key string, limit int) ([]string, error) {
+	ctx := s.pool.solr.shelfBrowse
+
+	req, reqErr := http.NewRequest("GET", ctx.url, nil)
+	if reqErr != nil {
+		s.log("SOLR: NewRequest() failed: %s", reqErr.Error())
+		return nil, fmt.Errorf("failed to create Solr request")
+	}
+
+	qp := req.URL.Query()
+
+	qp.Add("terms.fl", field)
+	qp.Add("terms.lower", key)
+	qp.Add("terms.lower.incl", "false")
+	qp.Add("terms.limit", fmt.Sprintf("%d", limit))
+	qp.Add("terms.sort", "index")
+
+	req.URL.RawQuery = qp.Encode()
+
+	if s.client.opts.verbose == true {
+		s.log("SOLR: req: [%s]", req.URL.String())
+	}
+
+	start := time.Now()
+	res, resErr := ctx.client.Do(req)
+	elapsedMS := int64(time.Since(start) / time.Millisecond)
+
+	// external service failure logging (scenario 1)
+
+	if resErr != nil {
+		status := http.StatusBadRequest
+		errMsg := resErr.Error()
+		if strings.Contains(errMsg, "Timeout") {
+			status = http.StatusRequestTimeout
+			errMsg = fmt.Sprintf("%s timed out", ctx.url)
+		} else if strings.Contains(errMsg, "connection refused") {
+			status = http.StatusServiceUnavailable
+			errMsg = fmt.Sprintf("%s refused connection", ctx.url)
+		}
+
+		s.log("SOLR: client.Do() failed: %s", resErr.Error())
+		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, status, errMsg, elapsedMS)
+		return nil, fmt.Errorf("failed to receive Solr response")
+	}
+
+	defer res.Body.Close()
+
+	var solrRes solrResponse
+
+	decoder := json.NewDecoder(res.Body)
+
+	// external service failure logging (scenario 2)
+
+	if decErr := decoder.Decode(&solrRes); decErr != nil {
+		s.log("SOLR: Decode() failed: %s", decErr.Error())
+		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
+		return nil, fmt.Errorf("failed to decode Solr response")
+	}
+
+	// external service success logging
+
+	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, ctx.url, elapsedMS)
+
+	logHeader := fmt.Sprintf("SOLR: res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
+
+	// quick validation
+	if solrRes.ResponseHeader.Status != 0 {
+		s.log("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
+		return nil, fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
+	}
+
+	// build terms list
+
+	var terms []string
+
+	for i, term := range solrRes.Terms[field] {
+		if i%2 == 0 {
+			s.log("[TERM] %s: [%s]", field, term)
+			terms = append(terms, term.(string))
+		}
+	}
+
+	return terms, nil
 }

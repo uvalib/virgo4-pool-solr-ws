@@ -46,13 +46,6 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
-	// fill out Solr query directly, bypassing query syntax parser
-	s.virgo.solrQuery = fmt.Sprintf(`id:"%s"`, c.Param("id"))
-	s.virgo.flags.groupResults = false
-
-	// mark this as a resource request
-	s.itemDetails = true
-
 	cl.logRequest()
 	resp := s.handleRecordRequest()
 	cl.logResponse(resp)
@@ -61,6 +54,20 @@ func (p *poolContext) resourceHandler(c *gin.Context) {
 		c.String(resp.status, resp.err.Error())
 		return
 	}
+
+	c.JSON(resp.status, resp.data)
+}
+
+func (p *poolContext) shelfBrowseHandler(c *gin.Context) {
+	cl := clientContext{}
+	cl.init(p, c)
+
+	s := searchContext{}
+	s.init(p, &cl)
+
+	cl.logRequest()
+	resp := s.handleShelfBrowseRequest()
+	cl.logResponse(resp)
 
 	c.JSON(resp.status, resp.data)
 }

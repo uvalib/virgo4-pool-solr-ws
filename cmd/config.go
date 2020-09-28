@@ -94,6 +94,13 @@ type poolConfigSolrParams struct {
 	Fl      []string `json:"fl,omitempty"`
 }
 
+type poolConfigSolrShelfBrowse struct {
+	ForwardKey   string `json:"forward_key,omitempty"`
+	ReverseKey   string `json:"reverse_key,omitempty"`
+	DefaultItems int    `json:"default_items,omitempty"`
+	MaxItems     int    `json:"max_items,omitempty"`
+}
+
 type poolConfigSolrClient struct {
 	Endpoint    string `json:"endpoint,omitempty"`
 	ConnTimeout string `json:"conn_timeout,omitempty"`
@@ -103,6 +110,7 @@ type poolConfigSolrClient struct {
 type poolConfigSolrClients struct {
 	Service     poolConfigSolrClient `json:"service,omitempty"`
 	HealthCheck poolConfigSolrClient `json:"healthcheck,omitempty"`
+	ShelfBrowse poolConfigSolrClient `json:"shelf_browse,omitempty"`
 }
 
 type poolConfigAuthorFields struct {
@@ -111,16 +119,17 @@ type poolConfigAuthorFields struct {
 }
 
 type poolConfigSolr struct {
-	Host                    string                 `json:"host,omitempty"`
-	Core                    string                 `json:"core,omitempty"`
-	Clients                 poolConfigSolrClients  `json:"clients,omitempty"`
-	Params                  poolConfigSolrParams   `json:"params,omitempty"`
-	GroupField              string                 `json:"group_field,omitempty"`
-	RelevanceIntraGroupSort poolConfigSort         `json:"relevance_intra_group_sort,omitempty"`
-	ExactMatchTitleField    string                 `json:"exact_match_title_field,omitempty"`
-	ScoreThresholdMedium    float32                `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh      float32                `json:"score_threshold_high,omitempty"`
-	AuthorFields            poolConfigAuthorFields `json:"author_fields,omitempty"`
+	Host                    string                    `json:"host,omitempty"`
+	Core                    string                    `json:"core,omitempty"`
+	Clients                 poolConfigSolrClients     `json:"clients,omitempty"`
+	Params                  poolConfigSolrParams      `json:"params,omitempty"`
+	ShelfBrowse             poolConfigSolrShelfBrowse `json:"shelf_browse,omitempty"`
+	GroupField              string                    `json:"group_field,omitempty"`
+	RelevanceIntraGroupSort poolConfigSort            `json:"relevance_intra_group_sort,omitempty"`
+	ExactMatchTitleField    string                    `json:"exact_match_title_field,omitempty"`
+	ScoreThresholdMedium    float32                   `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh      float32                   `json:"score_threshold_high,omitempty"`
+	AuthorFields            poolConfigAuthorFields    `json:"author_fields,omitempty"`
 }
 
 type poolConfigPdfEndpoints struct {
@@ -205,6 +214,7 @@ type poolConfigField struct {
 	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
 	DigitalContentOnly bool                       `json:"digital_content_only,omitempty"`
 	CitationOnly       bool                       `json:"citation_only,omitempty"`
+	FlatName           string                     `json:"flat_name,omitempty"`
 	Custom             bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
 	CustomInfo         *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
 }
@@ -311,6 +321,7 @@ type poolConfigMappingsConfiguredFields struct {
 	AuthorVernacular poolConfigMappingsHeadingField `json:"author_vernacular,omitempty"`
 	Basic            []string                       `json:"basic,omitempty"`
 	Detailed         []string                       `json:"detailed,omitempty"`
+	ShelfBrowse      []string                       `json:"shelf_browse,omitempty"`
 }
 
 type poolConfigMappingsConfigured struct {
