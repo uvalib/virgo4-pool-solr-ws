@@ -253,6 +253,9 @@ other = "Edición"
 [FieldExtent]
 other = "Grado"
 
+[FieldExtentOfDigitization]
+other = "Alcance de la Digitalización"
+
 [FieldFindingAidNote]
 other = "Encontrar Nota de Ayuda"
 

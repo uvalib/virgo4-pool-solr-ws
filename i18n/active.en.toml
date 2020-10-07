@@ -253,6 +253,9 @@ other = "Edition"
 [FieldExtent]
 other = "Extent"
 
+[FieldExtentOfDigitization]
+other = "Extent of Digitization"
+
 [FieldFindingAidNote]
 other = "Finding Aid Note"
 
