@@ -74,6 +74,7 @@ type poolContext struct {
 	fields       poolFields
 	facets       []poolConfigFacet
 	sorts        []poolConfigSort
+	titleizer    *titleizeContext
 }
 
 type stringValidator struct {
@@ -991,6 +992,10 @@ func (p *poolContext) initMappings() {
 	}
 }
 
+func (p *poolContext) initTitleizer() {
+	p.titleizer = newTitleizeContext()
+}
+
 func initializePool(cfg *poolConfig) *poolContext {
 	p := poolContext{}
 
@@ -1006,6 +1011,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initSolr()
 	p.initPdf()
 	p.initCitationFormats()
+	p.initTitleizer()
 
 	p.validateConfig()
 

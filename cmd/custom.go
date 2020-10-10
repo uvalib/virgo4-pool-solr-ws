@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/igorsobreira/titlecase"
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
@@ -207,7 +206,6 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 		itemLabel := ""
 		if useLabels == true {
 			itemLabel = strings.TrimSpace(labelValues[i])
-			//itemLabel = titleizeIfUppercase(itemLabel)
 		}
 
 		// if not using labels, or this label is not defined, fall back to generic item label
@@ -314,10 +312,10 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 }
 
 func (s *searchContext) buildTitle(title, subtitle, edition, vernacular string) string {
-	fullTitle := titlecase.Title(title)
+	fullTitle := s.pool.titleizer.titleize(title)
 
 	if subtitle != "" {
-		fullTitle = fmt.Sprintf("%s: %s", fullTitle, titlecase.Title(subtitle))
+		fullTitle = fmt.Sprintf("%s: %s", fullTitle, s.pool.titleizer.titleize(subtitle))
 	}
 
 	if edition != "" {
@@ -508,7 +506,7 @@ func (s *searchContext) getCustomFieldCitationSubtitle(rc *recordContext) []v4ap
 
 	subtitle := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
-	rc.fieldCtx.field.Value = titlecase.Title(subtitle)
+	rc.fieldCtx.field.Value = s.pool.titleizer.titleize(subtitle)
 
 	fv = append(fv, rc.fieldCtx.field)
 
@@ -520,7 +518,7 @@ func (s *searchContext) getCustomFieldCitationTitle(rc *recordContext) []v4api.R
 
 	title := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
-	rc.fieldCtx.field.Value = titlecase.Title(title)
+	rc.fieldCtx.field.Value = s.pool.titleizer.titleize(title)
 
 	fv = append(fv, rc.fieldCtx.field)
 

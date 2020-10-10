@@ -5,9 +5,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"unicode"
-
-	"github.com/igorsobreira/titlecase"
 )
 
 // miscellaneous utility functions
@@ -169,31 +166,6 @@ func uniqueStrings(s []string) []string {
 	return uniq
 }
 
-func titleizeIfUppercase(s string) string {
-	val := s
-
-	hasLower := false
-	hasUpper := false
-
-	for _, r := range s {
-		if unicode.IsLower(r) == true {
-			hasLower = true
-		} else if unicode.IsUpper(r) == true {
-			hasUpper = true
-		}
-
-		if hasLower == true && hasUpper == true {
-			break
-		}
-	}
-
-	if hasUpper == true || hasLower == false {
-		return titlecase.Title(val)
-	}
-
-	return val
-}
-
 func chunkStrings(list []string, size int) [][]string {
 	var chunks [][]string
 
@@ -206,4 +178,24 @@ func chunkStrings(list []string, size int) [][]string {
 	}
 
 	return chunks
+}
+
+func hasAnyPrefix(s string, prefixes []string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(s, prefix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hasAnySuffix(s string, suffixes []string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(s, suffix) {
+			return true
+		}
+	}
+
+	return false
 }
