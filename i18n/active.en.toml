@@ -223,6 +223,9 @@ other = "Creator"
 [FieldCredits]
 other = "Credits"
 
+[FieldCulture]
+other = "Culture"
+
 [FieldDateIndexed]
 other = "Date Indexed"
 
@@ -304,6 +307,9 @@ other = "Location"
 [FieldLocationOfOriginal]
 other = "Location of Original"
 
+[FieldMaterial]
+other = "Material"
+
 [FieldNotes]
 other = "Notes"
 
@@ -319,6 +325,9 @@ other = "Online Version"
 [FieldOriginalVersion]
 other = "Original Version"
 
+[FieldOrigDateCreated]
+other = "Original Creation Date"
+
 [FieldOtherArchivalMaterials]
 other = "Other Archival Materials"
 
@@ -327,6 +336,9 @@ other = "Other Forms"
 
 [FieldPerformers]
 other = "Performers"
+
+[FieldPeriod]
+other = "Period"
 
 [FieldPreviousTitle]
 other = "Previous Title"
@@ -442,8 +454,17 @@ other = "Digital Collection"
 [FieldWSLSDigitalCollectionDescription]
 other = "The WSLS-TV News Film Collection, 1951-1971, comprises anchor scripts and 16mm news film created by Roanoke, Va., television station WSLS. A grant from the National Endowment for the Humanities funded the preservation and digitization of this collection."
 
+[FieldWorkAbstractSummary]
+other = "Work Abstract"
+
 [FieldWorkCreationDate]
 other = "Work Creation Date"
+
+[FieldWorkDate]
+other = "Work Date"
+
+[FieldWorkDescription]
+other = "Work Description"
 
 [FieldWorkIdentifier]
 other = "Work Identifier"
@@ -453,6 +474,9 @@ other = "Work Location"
 
 [FieldWorkPhysicalDetails]
 other = "Work Physical Details"
+
+[FieldWorkRelatedWork]
+other = "Releated Work"
 
 [FieldWorkType]
 other = "Work Type"

@@ -223,6 +223,9 @@ other = "Creador"
 [FieldCredits]
 other = "Créditos"
 
+[FieldCulture]
+other = "Cultura"
+
 [FieldDateIndexed]
 other = "Fecha Indexada"
 
@@ -304,6 +307,9 @@ other = "Ubicación"
 [FieldLocationOfOriginal]
 other = "Ubicación del Original"
 
+[FieldMaterial]
+other = "Material"
+
 [FieldNotes]
 other = "Notas"
 
@@ -319,6 +325,9 @@ other = "Versión en Línea"
 [FieldOriginalVersion]
 other = "Versión original"
 
+[FieldOrigDateCreated]
+other = "Fecha de creación original"
+
 [FieldOtherArchivalMaterials]
 other = "Otros Materiales de Archivo"
 
@@ -327,6 +336,9 @@ other = "Otras Formas"
 
 [FieldPerformers]
 other = "Artistas Intérpretes o Ejecutantes"
+
+[FieldPeriod]
+other = "Período"
 
 [FieldPreviousTitle]
 other = "Título Anterior"
@@ -445,6 +457,15 @@ other = "La WSLS-TV News Film Collection, 1951-1971, comprende guiones de anclaj
 [FieldWorkCreationDate]
 other = "Fecha de creación del trabajo"
 
+[FieldWorkAbstractSummary]
+other = "Trabajo Abstracta"
+
+[FieldWorkDate]
+other = "Fecha de creación"
+
+[FieldWorkDescription]
+other = "Descripción del Edificio"
+
 [FieldWorkIdentifier]
 other = "Identificador de Trabajo"
 
@@ -453,6 +474,9 @@ other = "Ubicación de Trabajo"
 
 [FieldWorkPhysicalDetails]
 other = "Detalles Físicos del Trabajo"
+
+[FieldWorkRelatedWork]
+other = "Edificio Relacionado"
 
 [FieldWorkType]
 other = "Tipo de Trabajo"
