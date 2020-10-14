@@ -326,7 +326,7 @@ other = "Online Version"
 other = "Original Version"
 
 [FieldOrigDateCreated]
-other = "Original Creation Date"
+other = "Image Date"
 
 [FieldOtherArchivalMaterials]
 other = "Other Archival Materials"
