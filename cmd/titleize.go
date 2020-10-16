@@ -10,22 +10,34 @@ import (
 
 // titleization logic
 
+type titleizeConfig struct {
+	debug           bool
+	wordDelimiters  string
+	partDelimiters  string
+	mixedCaseWords  []string
+	upperCaseWords  []string
+	lowerCaseWords  []string
+	multiPartWords  []string
+	ordinalPatterns []string
+}
+
 type titleizeREs struct {
-	wordSeparators    *regexp.Regexp
-	partExtractor     *regexp.Regexp
-	mixedCaseWords    *regexp.Regexp
-	upperCaseWords    *regexp.Regexp
-	lowerCaseWords    *regexp.Regexp
-	ordinalPatterns   *regexp.Regexp
-	treatAsUnit       *regexp.Regexp
-	spaceWords        *regexp.Regexp
-	spaceWordsMatcher *regexp.Regexp
-	initials          *regexp.Regexp
-	hasUpperCase      *regexp.Regexp
-	hasLowerCase      *regexp.Regexp
-	allUpperCase      *regexp.Regexp
-	allLowerCase      *regexp.Regexp
-	isCapitalizable   *regexp.Regexp
+	wordSeparator    *regexp.Regexp
+	partSeparator    *regexp.Regexp
+	partExtractor    *regexp.Regexp
+	mixedCaseWords   *regexp.Regexp
+	upperCaseWords   *regexp.Regexp
+	lowerCaseWords   *regexp.Regexp
+	multiPartWords   *regexp.Regexp
+	ordinalPatterns  *regexp.Regexp
+	inseparableParts *regexp.Regexp
+	inseparableWords *regexp.Regexp
+	areInitials      *regexp.Regexp
+	hasUpperCase     *regexp.Regexp
+	hasLowerCase     *regexp.Regexp
+	allUpperCase     *regexp.Regexp
+	allLowerCase     *regexp.Regexp
+	isCapitalizable  *regexp.Regexp
 }
 
 type titleizeContext struct {
@@ -35,359 +47,300 @@ type titleizeContext struct {
 	debug        bool
 }
 
-func newTitleizeContext() *titleizeContext {
+func newTitleizeContext(cfg *titleizeConfig) *titleizeContext {
 	t := titleizeContext{
+		debug:       cfg.debug,
 		placeHolder: `}}}!!!{{{`,
 	}
 
-	mixedCaseWords := []string{
-		`da Vinci`,
-		`Los Angeles`,
-		`Va\.`,
-		`Va`,
+	// ensure sane defaults for missing values
+
+	wordDelimiters := `[:space:]`
+	if len(cfg.wordDelimiters) > 0 {
+		wordDelimiters = cfg.wordDelimiters
 	}
 
-	upperCaseWords := []string{
-		`TAHPERD`,
-		`ICASE`,
-		`ICPSR`,
-		`JSTOR`,
-		`NIOSH`,
-		`USITC`,
-		`XVIII`,
-		`AHRQ`,
-		`DHEW`,
-		`DHHS`,
-		`IEEE`,
-		`ISBN`,
-		`ISSN`,
-		`NASA`,
-		`NATO`,
-		`NCAA`,
-		`NIMH`,
-		`NTIA`,
-		`PLOS`,
-		`SPIE`,
-		`USAF`,
-		`USMC`,
-		`VIII`,
-		`VTRC`,
-		`XIII`,
-		`XVII`,
-		`A & E`,
-		`ABA`,
-		`ABC`,
-		`AEI`,
-		`ASI`,
-		`BMJ`,
-		`CBO`,
-		`CLE`,
-		`CMH`,
-		`CNN`,
-		`DNA`,
-		`HHS`,
-		`IBM`,
-		`III`,
-		`MIT`,
-		`NAA`,
-		`NIH`,
-		`OCS`,
-		`PBS`,
-		`R&D`,
-		`SSA`,
-		`USA`,
-		`USN`,
-		`VII`,
-		`WTO`,
-		`XII`,
-		`XIV`,
-		`XIX`,
-		`XVI`,
-		`DA`,
-		`II`,
-		`IV`,
-		`IX`,
-		`UK`,
-		`XI`,
-		`XV`,
-		`XX`,
-		`I`,
+	partDelimiters := `:;/+-`
+	if len(cfg.partDelimiters) > 0 {
+		partDelimiters = cfg.partDelimiters
 	}
 
-	lowerCaseWords := []string{
-		`van der`,
-		`van den`,
-		`and`,
-		`ca\.`,
-		`del`,
-		`des`,
-		`etc`,
-		`for`,
-		`les`,
-		`los`,
-		`nor`,
-		`pp\.`,
-		`the`,
-		`und`,
-		`van`,
-		`von`,
-		`vs\.`,
-		`an`,
-		`as`,
-		`at`,
-		`by`,
-		`de`,
-		`di`,
-		`du`,
-		`el`,
-		`et`,
-		`in`,
-		`la`,
-		`le`,
-		`of`,
-		`on`,
-		`or`,
-		`to`,
-		`v\.`,
-		`a`,
-		`à`,
-		`e`,
-		`o`,
-		`y`,
-	}
+	// set up word/part regexps
 
-	ordinalPatterns := []string{
-		`1st`,
-		`2nd`,
-		`3rd`,
-		`[04-9]th`,
-		`\d*1\dth`,
-		`\d*[2-9]1st`,
-		`\d*[2-9]2nd`,
-		`\d*[2-9]3rd`,
-		`\d*[2-9][4-9]th`,
-	}
+	t.re.wordSeparator = t.newRegex(fmt.Sprintf("[%s]+", wordDelimiters))
+	t.re.partSeparator = t.newRegex(fmt.Sprintf("[%s]+", partDelimiters))
+	t.re.partExtractor = t.newRegex(fmt.Sprintf("[^%s]+", partDelimiters))
 
-	// phrases containing parts separator(s) that should be treated as a unit
-	treatAsUnit := []string{
-		`n/a`,
-	}
-
-	t.mixedCaseMap = make(map[string]string)
-	for _, word := range mixedCaseWords {
-		t.mixedCaseMap[strings.ToLower(word)] = word
-	}
+	// within all configured word lists, find:
+	// * strings containing word delimiter(s) that should be treated as a unit
+	// * strings containing part delimiter(s) that should be treated as a unit
 
 	var allWords []string
-	allWords = append(allWords, mixedCaseWords...)
-	allWords = append(allWords, upperCaseWords...)
-	allWords = append(allWords, lowerCaseWords...)
-	allWords = append(allWords, ordinalPatterns...)
+	allWords = append(allWords, cfg.mixedCaseWords...)
+	allWords = append(allWords, cfg.upperCaseWords...)
+	allWords = append(allWords, cfg.lowerCaseWords...)
+	allWords = append(allWords, cfg.multiPartWords...)
 
-	var spaceWords []string
+	var inseparableWords []string
+	var inseparableParts []string
 
-	for _, word := range allWords {
-		if strings.Contains(word, " ") {
-			spaceWords = append(spaceWords, word)
+	for _, str := range allWords {
+		if t.re.wordSeparator.MatchString(str) {
+			inseparableWords = append(inseparableWords, str)
+		}
+
+		if t.re.partSeparator.MatchString(str) {
+			inseparableParts = append(inseparableParts, str)
 		}
 	}
 
-	t.re.wordSeparators = t.newRegex(`[[:space:]]+`)
-	t.re.partExtractor = t.newRegex(`[^:;/+-]+`)
+	// create mapping to restore case of mixed-case words
+
+	t.mixedCaseMap = make(map[string]string)
+	for _, word := range cfg.mixedCaseWords {
+		t.mixedCaseMap[strings.ToLower(word)] = word
+	}
+
+	// non-configureable regexps
+
+	// matches strings containing upper- or lower-case letters
 	t.re.hasUpperCase = t.newRegex(`.*[[:upper:]].*`)
 	t.re.hasLowerCase = t.newRegex(`.*[[:lower:]].*`)
-	t.re.isCapitalizable = t.newRegex(`^[[:lower:]]($|[[:lower:]])`)
-	//t.re.IsCapitalizable = t.newRegex(`^[[:lower:]][[:lower:][:space:]]`)
 
-	t.re.initials = t.newRegex(t.makePattern([]string{`(?:[[:alpha:]]\.)+`}))
+	// matches strings that begin with an upper- or lower-case letter,
+	// and does not contain any characters of the opposite case
 	t.re.allUpperCase = t.newRegex(`^[[:upper:]][^[:lower:]]*$`)
 	t.re.allLowerCase = t.newRegex(`^[[:lower:]][^[:upper:]]*$`)
 
-	t.re.mixedCaseWords = t.newRegex(t.makePattern(mixedCaseWords))
-	t.re.upperCaseWords = t.newRegex(t.makePattern(upperCaseWords))
-	t.re.lowerCaseWords = t.newRegex(t.makePattern(lowerCaseWords))
-	t.re.ordinalPatterns = t.newRegex(t.makePattern(ordinalPatterns))
-	t.re.treatAsUnit = t.newRegex(t.makePattern(treatAsUnit))
+	// matches strings that are either:
+	// * a single lower-case letter, or
+	// * start with two lower-case letters, or
+	// * start with a lower-case letter followed by an apostrophe and a lower-case letter
+	t.re.isCapitalizable = t.newRegex(`^[[:lower:]]($|('|)[[:lower:]])`)
 
-	if len(spaceWords) > 0 {
-		pattern := fmt.Sprintf(`(?i)(%s)`, strings.Join(spaceWords, "|"))
-		t.re.spaceWords = t.newRegex(pattern)
+	// matches strings that are composed entirely of alternating alphabetical/period characters
+	t.re.areInitials = t.newRegex(t.makeCaseInsensitiveWordPattern([]string{`(?:[[:alpha:]]\.)+`}))
 
-		pattern = fmt.Sprintf(`(?i)([^[:alnum:]]*)(%s)([^[:alnum:]]*)`, strings.Join(spaceWords, "|"))
-		t.re.spaceWordsMatcher = t.newRegex(pattern)
+	// matches strings in each configured word list
+
+	neverMatch := t.newRegex(`^\b$`)
+
+	t.re.mixedCaseWords = neverMatch
+	if len(cfg.mixedCaseWords) > 0 {
+		t.re.mixedCaseWords = t.newRegex(t.makeCaseInsensitiveWordPattern(cfg.mixedCaseWords))
+	}
+
+	t.re.upperCaseWords = neverMatch
+	if len(cfg.upperCaseWords) > 0 {
+		t.re.upperCaseWords = t.newRegex(t.makeCaseInsensitiveWordPattern(cfg.upperCaseWords))
+	}
+
+	t.re.lowerCaseWords = neverMatch
+	if len(cfg.lowerCaseWords) > 0 {
+		t.re.lowerCaseWords = t.newRegex(t.makeCaseInsensitiveWordPattern(cfg.lowerCaseWords))
+	}
+
+	t.re.multiPartWords = neverMatch
+	if len(cfg.multiPartWords) > 0 {
+		t.re.multiPartWords = t.newRegex(t.makeCaseInsensitiveWordPattern(cfg.multiPartWords))
+	}
+
+	t.re.ordinalPatterns = neverMatch
+	if len(cfg.ordinalPatterns) > 0 {
+		t.re.ordinalPatterns = t.newRegex(t.makeCaseInsensitiveWordPattern(cfg.ordinalPatterns))
+	}
+
+	// matches strings in computed word lists
+
+	t.re.inseparableWords = neverMatch
+	if len(inseparableWords) > 0 {
+		words := strings.Join(inseparableWords, "|")
+		t.re.inseparableWords = t.newRegex(fmt.Sprintf(`(?i)([^[:alnum:]]*?)(%s)([^[:alnum:]]*)`, words))
+	}
+
+	t.re.inseparableParts = neverMatch
+	if len(inseparableParts) > 0 {
+		parts := strings.Join(inseparableParts, "|")
+		t.re.inseparableParts = t.newRegex(fmt.Sprintf(`(?i)^(%s)$`, parts))
 	}
 
 	return &t
 }
 
-func (t *titleizeContext) capitalize(b []byte) []byte {
-	if t.re.isCapitalizable.Match(b) {
-		r := []rune(string(b))
+func (t *titleizeContext) capitalize(s string) string {
+	if t.re.isCapitalizable.MatchString(s) {
+		r := []rune(s)
 		r[0] = unicode.ToUpper(r[0])
-		return []byte(string(r))
+		return string(r)
 	}
 
-	return b
+	return s
 }
 
-func (t *titleizeContext) mixedcase(b []byte) []byte {
-	s := string(b)
-	return []byte(t.mixedCaseMap[strings.ToLower(s)])
+func (t *titleizeContext) toMixedCase(s string) string {
+	return t.mixedCaseMap[strings.ToLower(s)]
 }
 
-func (t *titleizeContext) upcase(b []byte) []byte {
-	s := string(b)
-	return []byte(strings.ToUpper(s))
+func (t *titleizeContext) toUpperCase(s string) string {
+	return strings.ToUpper(s)
 }
 
-func (t *titleizeContext) downcase(b []byte) []byte {
-	s := string(b)
-	return []byte(strings.ToLower(s))
+func (t *titleizeContext) toLowerCase(s string) string {
+	return strings.ToLower(s)
 }
 
 func (t *titleizeContext) titleize(s string) string {
 	t.log("====================================================================================================")
 
-	t.log("[TITLEIZE] old: [%s]", s)
+	t.log("old: [%s]", s)
 
 	str := s
 
-	placeHolder := ""
+	// first, convert word deliminters between inseparable words so that we can treat them as a word "unit" below
+	// e.g. if "da vinci" is an inseparable word, then "the da vinci code" becomes "the da}}}!!!{{{vinci code"
+	joinedWords := false
 
-	if t.re.spaceWords != nil {
-		placeHolder = t.placeHolder
+	str = t.re.inseparableWords.ReplaceAllStringFunc(str, func(match string) string {
+		joinedWords = true
 
-		newBytes := t.re.spaceWordsMatcher.ReplaceAllFunc([]byte(str), func(match []byte) []byte {
-			newMatch := t.re.spaceWords.ReplaceAllFunc([]byte(match), func(phrase []byte) []byte {
-				newPhrase := strings.ReplaceAll(string(phrase), " ", placeHolder)
-				//t.log("[TITLEIZE] space phrase: [%s] => [%s]", phrase, newPhrase)
-				return []byte(newPhrase)
-			})
+		groups := t.re.inseparableWords.FindStringSubmatch(match)
 
-			//t.log("[TITLEIZE] space match: [%s] => [%s]", string(match), string(newMatch))
-			return newMatch
-		})
+		// group 2 contains the exactly-matched phrase
+		joinedMatch := groups[1] + strings.ReplaceAll(groups[2], " ", t.placeHolder) + groups[3]
 
-		str = string(newBytes)
-	}
+		return joinedMatch
+	})
 
-	words := t.re.wordSeparators.Split(str, -1)
+	t.log("now: [%s]", str)
 
-	noUpper := (t.re.hasUpperCase.MatchString(str) == false)
-	noLower := (t.re.hasLowerCase.MatchString(str) == false)
-	uniform := (noUpper != noLower) && (len(words) > 1)
+	// split out all of the words in the (modified?) input string according to word delimiters
+	words := t.re.wordSeparator.Split(str, -1)
+
+	// determine case attributes of this string
+	hasNoUpper := (t.re.hasUpperCase.MatchString(str) == false)
+	hasNoLower := (t.re.hasLowerCase.MatchString(str) == false)
+	isUniform := (hasNoUpper != hasNoLower) && (len(words) > 1)
+
+	t.log("hasNoUpper = %v  hasNoLower = %v  isUniform = %v  len(words) = %d", hasNoUpper, hasNoLower, isUniform, len(words))
 
 	var newWords []string
 
-	newPhrase := true
+	isNewPhrase := true
 
 	for _, word := range words {
-		if placeHolder != "" {
-			word = strings.ReplaceAll(word, placeHolder, " ")
+		// undo any text replacement for inseparable words, e.g. in the example above,
+		// the word "da}}}!!!{{{vinci" would become "da vinci" again
+		if joinedWords == true {
+			word = strings.ReplaceAll(word, t.placeHolder, " ")
 		}
 
-		capitalizeLowerCase := newPhrase || hasAnyPrefix(word, []string{"`", "'", `"`})
-		newPhrase = hasAnySuffix(word, []string{":", ";", "/", "?", "."})
+		// determine whether to capitalize this word if it begins with a lower case letter,
+		// depending on surrounding characters
+		capitalizeLowercase := isNewPhrase || hasAnyPrefix(word, []string{"`", "'", `"`})
+		isNewPhrase = hasAnySuffix(word, []string{":", ";", "/", "?", "."})
 
-		//t.log("[TITLEIZE] word: [%s]  capitalizeLowerCase: %v", word, capitalizeLowerCase)
+		t.log("this word: [%s]  capitalizeLowercase: %v", word, capitalizeLowercase)
 
-		var newBytes []byte
+		newWord := word
 
-		if t.re.treatAsUnit.MatchString(word) {
+		if t.re.inseparableParts.MatchString(word) {
+			// this word contains a part delimiter that we want to treat as a unit
+			// e.g. if "/" is a part delimiter, and "n/a" is a multi-part word
 			switch {
 			case t.re.mixedCaseWords.MatchString(word):
-				newBytes = t.mixedcase([]byte(word))
-				t.log("[TITLEIZE] word: [%s] => always mixed => [%s]", word, string(newBytes))
+				newWord = t.toMixedCase(word)
+				t.log("inseparable word: [%s] => always mixed => [%s]", word, newWord)
 
 			case t.re.upperCaseWords.MatchString(word):
-				t.log("[TITLEIZE] word: [%s] => always upper => [%s]", word, string(newBytes))
-				newBytes = t.upcase([]byte(word))
+				newWord = t.toUpperCase(word)
+				t.log("inseparable word: [%s] => always upper => [%s]", word, newWord)
 
 			case t.re.lowerCaseWords.MatchString(word):
-				t.log("[TITLEIZE] word: [%s] => always lower => [%s]", word, string(newBytes))
-				newBytes = t.downcase([]byte(word))
+				newWord = t.toLowerCase(word)
+				t.log("inseparable word: [%s] => always lower => [%s]", word, newWord)
 
 			default:
-				if capitalizeLowerCase == true {
-					newBytes = t.upcase([]byte(word))
-				} else {
-					newBytes = t.downcase([]byte(word))
-				}
-				t.log("[TITLEIZE] word: [%s] => other => [%s] (capitalize = %v)", word, string(newBytes), capitalizeLowerCase)
+				// this word is not in a case-specific word list, so there is not enough
+				// context to decide how to treat it.  just pass it through
+				t.log("inseparable word: [%s] => passthrough => [%s]", word, newWord)
 			}
 		} else {
-			newBytes = t.re.partExtractor.ReplaceAllFunc([]byte(word), func(part []byte) []byte {
-				res := part
+			// extract the word parts according to the part delimiters, and convert each part
+			// according to its content and/or surrounding context
+			newWord = t.re.partExtractor.ReplaceAllStringFunc(word, func(part string) string {
+				newPart := part
 
 				switch {
-				case t.re.mixedCaseWords.Match(part):
-					res = t.mixedcase(part)
-					if capitalizeLowerCase == true {
-						res = t.capitalize(res)
+				case t.re.mixedCaseWords.MatchString(part):
+					newPart = t.toMixedCase(part)
+					if capitalizeLowercase == true {
+						newPart = t.capitalize(newPart)
 					}
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => always mixed => [%s]", word, string(part), string(res))
+					t.log("word: [%s]  part: [%s] => always mixed => [%s]", word, part, newPart)
 
-				case t.re.upperCaseWords.Match(part):
-					res = t.upcase(part)
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => always upper => [%s]", word, string(part), string(res))
+				case t.re.upperCaseWords.MatchString(part):
+					newPart = t.toUpperCase(part)
+					t.log("word: [%s]  part: [%s] => always upper => [%s]", word, part, newPart)
 
-				case t.re.initials.Match(part):
-					res = t.upcase(part)
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => initials => [%s]", word, string(part), string(res))
+				case t.re.areInitials.MatchString(part):
+					newPart = t.toUpperCase(part)
+					t.log("word: [%s]  part: [%s] => initials => [%s]", word, part, newPart)
 
-				case t.re.lowerCaseWords.Match(part):
-					if capitalizeLowerCase == true {
-						res = t.capitalize(part)
+				case t.re.lowerCaseWords.MatchString(part):
+					if capitalizeLowercase == true {
+						newPart = t.capitalize(part)
 					} else {
-						res = t.downcase(part)
+						newPart = t.toLowerCase(part)
 					}
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => always lower => [%s] (capitalize = %v)", word, string(part), string(res), capitalizeLowerCase)
+					t.log("word: [%s]  part: [%s] => always lower => [%s] (capitalize = %v)", word, part, newPart, capitalizeLowercase)
 
-				case t.re.ordinalPatterns.Match(part):
-					if uniform == false {
-						res = t.downcase(part)
+				case t.re.ordinalPatterns.MatchString(part):
+					if isUniform == false {
+						newPart = t.toLowerCase(part)
 					}
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => ordinal => [%s] (uniform = %v)", word, string(part), string(res), uniform)
+					t.log("word: [%s]  part: [%s] => ordinal => [%s] (isUniform = %v)", word, part, newPart, isUniform)
 
-				case t.re.allUpperCase.Match(part):
+				case t.re.allUpperCase.MatchString(part):
 					// what is this really checking?
-					if uniform == true {
-						res = t.capitalize(part)
+					if isUniform == true {
+						// i mean, it's all upper case, and so is the entire input string, so this is redundant?
+						newPart = t.capitalize(part)
 					}
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => all upper => [%s] (uniform = %v)", word, string(part), string(res), uniform)
+					t.log("word: [%s]  part: [%s] => all upper => [%s] (isUniform = %v)", word, part, newPart, isUniform)
 
-				case t.re.allLowerCase.Match(part):
-					res = t.capitalize(part)
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => all lower => [%s]", word, string(part), string(res))
+				case t.re.allLowerCase.MatchString(part):
+					newPart = t.capitalize(part)
+					t.log("word: [%s]  part: [%s] => all lower => [%s]", word, part, newPart)
 
 				default:
-					t.log("[TITLEIZE] word: [%s]  part: [%s] => passthrough => [%s]", word, string(part), string(res))
+					t.log("word: [%s]  part: [%s] => passthrough => [%s]", word, part, newPart)
 				}
 
-				capitalizeLowerCase = false
+				// do not capitalize remaining parts in the word
+				capitalizeLowercase = false
 
-				return res
+				return newPart
 			})
 		}
 
-		newWords = append(newWords, string(newBytes))
+		newWords = append(newWords, newWord)
 	}
 
 	res := strings.Join(newWords, " ")
 
-	t.log("[TITLEIZE] new: [%s]", res)
+	t.log("new: [%s]", res)
 
 	return res
 }
 
-func (t *titleizeContext) makePattern(words []string) string {
+func (t *titleizeContext) makeCaseInsensitiveWordPattern(words []string) string {
 	pattern := fmt.Sprintf("(?i)^([^[:alnum:]]*?)(%s)([^[:alnum:]]*)$", strings.Join(words, "|"))
 
 	return pattern
 }
 
 func (t *titleizeContext) newRegex(pattern string) *regexp.Regexp {
-	//t.log("pattern: [%s]", pattern)
+	t.log("pattern: %s", pattern)
 
 	return regexp.MustCompile(pattern)
 }
