@@ -993,7 +993,18 @@ func (p *poolContext) initMappings() {
 }
 
 func (p *poolContext) initTitleizer() {
-	p.titleizer = newTitleizeContext()
+	cfg := titleizeConfig{
+		debug:           false,
+		wordDelimiters:  p.config.Global.Titleization.CharacterSets.WordDelimiters,
+		partDelimiters:  p.config.Global.Titleization.CharacterSets.PartDelimiters,
+		mixedCaseWords:  p.config.Global.Titleization.WordLists.MixedCaseWords,
+		upperCaseWords:  p.config.Global.Titleization.WordLists.UpperCaseWords,
+		lowerCaseWords:  p.config.Global.Titleization.WordLists.LowerCaseWords,
+		multiPartWords:  p.config.Global.Titleization.WordLists.MultiPartWords,
+		ordinalPatterns: p.config.Global.Titleization.WordLists.OrdinalPatterns,
+	}
+
+	p.titleizer = newTitleizeContext(&cfg)
 }
 
 func initializePool(cfg *poolConfig) *poolContext {

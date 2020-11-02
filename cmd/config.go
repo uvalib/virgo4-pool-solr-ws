@@ -49,6 +49,24 @@ type poolConfigRelators struct {
 	Map             []poolConfigRelator `json:"map,omitempty"`
 }
 
+type poolConfigTitleizationCharacterSets struct {
+	WordDelimiters string `json:"word_delimiters,omitempty"`
+	PartDelimiters string `json:"part_delimiters,omitempty"`
+}
+
+type poolConfigTitleizationWordLists struct {
+	MixedCaseWords  []string `json:"mixed_case_words,omitempty"`
+	UpperCaseWords  []string `json:"upper_case_words,omitempty"`
+	LowerCaseWords  []string `json:"lower_case_words,omitempty"`
+	MultiPartWords  []string `json:"multi_part_words,omitempty"`
+	OrdinalPatterns []string `json:"ordinal_patterns,omitempty"`
+}
+
+type poolConfigTitleization struct {
+	CharacterSets poolConfigTitleizationCharacterSets `json:"character_sets,omitempty"`
+	WordLists     poolConfigTitleizationWordLists     `json:"word_lists,omitempty"`
+}
+
 type poolConfigCopyrightLabel struct {
 	Text  string `json:"text,omitempty"`
 	Label string `json:"label,omitempty"`
@@ -351,6 +369,7 @@ type poolConfigGlobal struct {
 	RecordAttributes poolConfigRecordAttributes `json:"record_attributes,omitempty"`
 	Publishers       []poolConfigPublisher      `json:"publishers,omitempty"`
 	Relators         poolConfigRelators         `json:"relators,omitempty"`
+	Titleization     poolConfigTitleization     `json:"titleization,omitempty"`
 	Copyrights       []poolConfigCopyright      `json:"copyrights,omitempty"`
 	Mappings         poolConfigMappings         `json:"mappings,omitempty"`
 }
