@@ -85,9 +85,11 @@ other = "FacetCirculating"
 [FacetCollection]
 other = "Colección"
 
+[FieldCollectionCallNumber]
+other = "Número de Llamada de Colección
+
 [FieldCollectionLocation]
 other = "Ubicación de la Colección"
-
 
 [FacetComposerPerformer]
 other = "Compositor/Intérprete"
