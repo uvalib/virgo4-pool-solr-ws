@@ -328,6 +328,9 @@ other = "Versión original"
 [FieldOrigDateCreated]
 other = "Fecha de la Imagen"
 
+[FieldOrigIdentifier]
+other = "Identificador de imagen (original)"
+
 [FieldOtherArchivalMaterials]
 other = "Otros Materiales de Archivo"
 
