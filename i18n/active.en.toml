@@ -485,7 +485,7 @@ other = "Work Location"
 other = "Work Physical Details"
 
 [FieldWorkRelatedWork]
-other = "Releated Work"
+other = "Related Work"
 
 [FieldWorkType]
 other = "Work Type"
