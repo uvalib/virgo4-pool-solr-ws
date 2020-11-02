@@ -202,9 +202,6 @@ other = "Citar como"
 [FieldCitedIn]
 other = "Citado en"
 
-[FieldCollection]
-other = "Colección"
-
 [FieldColor]
 other = "Color"
 
