@@ -86,7 +86,7 @@ other = "FacetCirculating"
 other = "Colección"
 
 [FieldCollectionCallNumber]
-other = "Número de Llamada de Colección
+other = "Número de Llamada de Colección"
 
 [FieldCollectionLocation]
 other = "Ubicación de la Colección"
