@@ -199,6 +199,9 @@ other = "Cited in"
 [FieldCollection]
 other = "Collection"
 
+[FieldCollectionLocation]
+other = "Collection Location"
+
 [FieldColor]
 other = "Color"
 
