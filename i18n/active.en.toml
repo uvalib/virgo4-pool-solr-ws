@@ -457,6 +457,9 @@ other = "The WSLS-TV News Film Collection, 1951-1971, comprises anchor scripts a
 [FieldWorkAbstractSummary]
 other = "Work Abstract"
 
+[FieldWorkContentType]
+other = "Work Type"
+
 [FieldWorkCreationDate]
 other = "Work Creation Date"
 
