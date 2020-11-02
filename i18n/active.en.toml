@@ -202,6 +202,9 @@ other = "Collection Call Number"
 [FieldCollectionLocation]
 other = "Collection Location"
 
+[FieldCollectionNotes]
+other = "Collection Notes"
+
 [FieldColor]
 other = "Color"
 
@@ -378,6 +381,9 @@ other = "Rating"
 
 [FieldRecordingInfo]
 other = "Recording Info"
+
+[FieldReel]
+other = "Microfilm Reel"
 
 [FieldRegion]
 other = "Geographic Location"

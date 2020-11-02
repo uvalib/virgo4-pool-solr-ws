@@ -85,12 +85,6 @@ other = "FacetCirculating"
 [FacetCollection]
 other = "Colección"
 
-[FieldCollectionCallNumber]
-other = "Número de Llamada de Colección"
-
-[FieldCollectionLocation]
-other = "Ubicación de la Colección"
-
 [FacetComposerPerformer]
 other = "Compositor/Intérprete"
 
@@ -201,6 +195,15 @@ other = "Citar como"
 
 [FieldCitedIn]
 other = "Citado en"
+
+[FieldCollectionCallNumber]
+other = "Número de Llamada de Colección"
+
+[FieldCollectionLocation]
+other = "Ubicación de la Colección"
+
+[FieldCollectionNotes]
+other = "Notas de la Colección"
 
 [FieldColor]
 other = "Color"
@@ -378,6 +381,9 @@ other = "Clasificación"
 
 [FieldRecordingInfo]
 other = "Información de Grabación"
+
+[FieldReel]
+other = "Carrete de Microfilm"
 
 [FieldRegion]
 other = "Ubicación Geográfica"
