@@ -331,6 +331,9 @@ other = "Image Date"
 [FieldOrigIdentifier]
 other = "Image Identifier (original)"
 
+[FieldOrigNegativeIdentifier]
+other = "Negative Number"
+
 [FieldOtherArchivalMaterials]
 other = "Other Archival Materials"
 
