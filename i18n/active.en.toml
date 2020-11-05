@@ -331,6 +331,9 @@ other = "Online Version"
 [FieldOriginalVersion]
 other = "Original Version"
 
+[FieldOrigCarrierType]
+other = "Materials"
+
 [FieldOrigDateCreated]
 other = "Original Date"
 

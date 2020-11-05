@@ -331,6 +331,9 @@ other = "Versión en Línea"
 [FieldOriginalVersion]
 other = "Versión original"
 
+[FieldOrigCarrierType]
+other = "Materiales"
+
 [FieldOrigDateCreated]
 other = "Fecha de la original"
 
