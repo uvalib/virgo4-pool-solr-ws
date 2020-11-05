@@ -328,14 +328,17 @@ other = "Relacionado en Línea"
 [FieldOnlineVersion]
 other = "Versión en Línea"
 
-[FieldOriginalVersion]
-other = "Versión original"
-
 [FieldOrigCarrierType]
-other = "Materiales"
+other = "Tipo de Transportista"
 
 [FieldOrigDateCreated]
 other = "Fecha de la original"
+
+[FieldOrigPhysicalDetails]
+other = "Materiales"
+
+[FieldOriginalVersion]
+other = "Versión original"
 
 [FieldOrigIdentifier]
 other = "Identificador de imagen (original)"

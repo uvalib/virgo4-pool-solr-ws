@@ -332,7 +332,7 @@ other = "Online Version"
 other = "Original Version"
 
 [FieldOrigCarrierType]
-other = "Materials"
+other = "Carrier Type"
 
 [FieldOrigDateCreated]
 other = "Original Date"
@@ -342,6 +342,9 @@ other = "Image Identifier (original)"
 
 [FieldOrigNegativeIdentifier]
 other = "Negative Number"
+
+[FieldOrigPhysicalDetails]
+other = "Materials"
 
 [FieldOtherArchivalMaterials]
 other = "Other Archival Materials"
