@@ -344,7 +344,7 @@ other = "Image Identifier (original)"
 other = "Negative Number"
 
 [FieldOrigPhysicalDetails]
-other = "Materials"
+other = "Physical Details"
 
 [FieldOtherArchivalMaterials]
 other = "Other Archival Materials"

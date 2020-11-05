@@ -335,7 +335,7 @@ other = "Tipo de Transportista"
 other = "Fecha de la original"
 
 [FieldOrigPhysicalDetails]
-other = "Materiales"
+other = "Detalles Físicos"
 
 [FieldOriginalVersion]
 other = "Versión original"
