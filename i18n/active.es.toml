@@ -332,7 +332,7 @@ other = "Versión en Línea"
 other = "Versión original"
 
 [FieldOrigDateCreated]
-other = "Fecha de la Imagen"
+other = "Fecha de la original"
 
 [FieldOrigIdentifier]
 other = "Identificador de imagen (original)"

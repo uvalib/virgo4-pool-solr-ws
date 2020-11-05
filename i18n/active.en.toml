@@ -332,7 +332,7 @@ other = "Online Version"
 other = "Original Version"
 
 [FieldOrigDateCreated]
-other = "Image Date"
+other = "Original Date"
 
 [FieldOrigIdentifier]
 other = "Image Identifier (original)"
