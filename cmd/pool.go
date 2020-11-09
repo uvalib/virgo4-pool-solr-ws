@@ -40,6 +40,10 @@ type poolSolr struct {
 	scoreThresholdHigh   float32
 }
 
+type poolDigitalContent struct {
+	client *http.Client
+}
+
 type poolPdf struct {
 	client *http.Client
 }
@@ -62,19 +66,20 @@ type poolFields struct {
 }
 
 type poolContext struct {
-	randomSource *rand.Rand
-	config       *poolConfig
-	translations poolTranslations
-	identity     v4api.PoolIdentity
-	providers    v4api.PoolProviders
-	version      poolVersion
-	solr         poolSolr
-	pdf          poolPdf
-	maps         poolMaps
-	fields       poolFields
-	facets       []poolConfigFacet
-	sorts        []poolConfigSort
-	titleizer    *titleizeContext
+	randomSource   *rand.Rand
+	config         *poolConfig
+	translations   poolTranslations
+	identity       v4api.PoolIdentity
+	providers      v4api.PoolProviders
+	version        poolVersion
+	solr           poolSolr
+	pdf            poolPdf
+	digitalContent poolDigitalContent
+	maps           poolMaps
+	fields         poolFields
+	facets         []poolConfigFacet
+	sorts          []poolConfigSort
+	titleizer      *titleizeContext
 }
 
 type stringValidator struct {
@@ -258,6 +263,14 @@ func (p *poolContext) initSolr() {
 	log.Printf("[POOL] solr.healthCheck.url      = [%s]", p.solr.healthCheck.url)
 	log.Printf("[POOL] solr.scoreThresholdMedium = [%0.1f]", p.solr.scoreThresholdMedium)
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
+}
+
+func (p *poolContext) initDigitalContent() {
+	// client setup
+
+	p.digitalContent = poolDigitalContent{
+		client: httpClientWithTimeouts(p.config.Global.Service.DigitalContent.ConnTimeout, p.config.Global.Service.DigitalContent.ReadTimeout),
+	}
 }
 
 func (p *poolContext) initPdf() {
@@ -631,8 +644,7 @@ func (p *poolContext) validateConfig() {
 					continue
 				}
 
-				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.PIDField, fmt.Sprintf("%s section pid field", field.Name))
+				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.IDField, fmt.Sprintf("%s section id field", field.Name))
 
 			case "published_location":
 
@@ -1021,6 +1033,7 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initFacets()
 	p.initSolr()
 	p.initPdf()
+	p.initDigitalContent()
 	p.initCitationFormats()
 	p.initTitleizer()
 

@@ -149,7 +149,7 @@ func (s *searchContext) solrQuery() error {
 		}
 
 		s.log("SOLR: client.Do() failed: %s", resErr.Error())
-		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, status, errMsg, elapsedMS)
+		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, status, errMsg, elapsedMS)
 		return fmt.Errorf("failed to receive Solr response")
 	}
 
@@ -163,7 +163,7 @@ func (s *searchContext) solrQuery() error {
 
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
 		s.log("SOLR: Decode() failed: %s", decErr.Error())
-		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
+		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("failed to decode Solr response")
 	}
 
@@ -221,7 +221,7 @@ func (s *searchContext) solrPing() error {
 		}
 
 		s.log("SOLR: client.Do() failed: %s", resErr.Error())
-		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, status, errMsg, elapsedMS)
+		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, status, errMsg, elapsedMS)
 		return fmt.Errorf("failed to receive Solr response")
 	}
 
@@ -235,7 +235,7 @@ func (s *searchContext) solrPing() error {
 
 	if decErr := decoder.Decode(&solrRes); decErr != nil {
 		s.log("SOLR: Decode() failed: %s", decErr.Error())
-		s.log("ERROR: Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
+		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("failed to decode Solr response")
 	}
 

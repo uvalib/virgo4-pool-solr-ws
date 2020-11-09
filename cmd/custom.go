@@ -635,33 +635,31 @@ func (s *searchContext) getCustomFieldOnlineRelated(rc *recordContext) []v4api.R
 func (s *searchContext) getCustomFieldPdfDownloadURL(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	pidValues := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.PdfDownloadURL.PIDField)
+	url := s.getDigitalContentURL(rc.doc, rc.fieldCtx.config.CustomInfo.PdfDownloadURL.IDField)
+	if url == "" {
+		return fv
+	}
 
-	if len(pidValues) <= rc.fieldCtx.config.CustomInfo.PdfDownloadURL.MaxSupported {
-		pdfURL := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.PdfDownloadURL.URLField)
+	cache, err := s.getDigitalContentCache(url)
 
-		if pdfURL == "" {
-			return fv
+	if err != nil {
+		return fv
+	}
+
+	// only grab PDF statuses for records with at most MaxSupported digital items
+	if len(cache.Parts) > rc.fieldCtx.config.CustomInfo.PdfDownloadURL.MaxSupported {
+		return fv
+	}
+
+	for _, part := range cache.Parts {
+		pdfStatus, pdfErr := s.getPdfStatus(part.PDF.URLs.Status)
+		if pdfErr != nil {
+			continue
 		}
 
-		for _, pid := range pidValues {
-			if pid == "" {
-				return fv
-			}
-
-			statusURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Status)
-
-			pdfStatus, pdfErr := s.getPdfStatus(statusURL)
-
-			if pdfErr != nil {
-				return fv
-			}
-
-			if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus, true) == true {
-				downloadURL := fmt.Sprintf("%s/%s%s", pdfURL, pid, s.pool.config.Global.Service.Pdf.Endpoints.Download)
-				rc.fieldCtx.field.Value = downloadURL
-				fv = append(fv, rc.fieldCtx.field)
-			}
+		if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus, true) == true {
+			rc.fieldCtx.field.Value = part.PDF.URLs.Download
+			fv = append(fv, rc.fieldCtx.field)
 		}
 	}
 

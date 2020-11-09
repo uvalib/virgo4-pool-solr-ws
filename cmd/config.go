@@ -98,11 +98,12 @@ type poolConfigCopyright struct {
 }
 
 type poolConfigService struct {
-	Port         string                 `json:"port,omitempty"`
-	JWTKey       string                 `json:"jwt_key,omitempty"`
-	DefaultSort  poolConfigSort         `json:"default_sort,omitempty"`
-	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
-	Pdf          poolConfigPdf          `json:"pdf,omitempty"`
+	Port           string                   `json:"port,omitempty"`
+	JWTKey         string                   `json:"jwt_key,omitempty"`
+	DefaultSort    poolConfigSort           `json:"default_sort,omitempty"`
+	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
+	Pdf            poolConfigPdf            `json:"pdf,omitempty"`
+	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
 }
 
 type poolConfigSolrParams struct {
@@ -155,6 +156,11 @@ type poolConfigPdf struct {
 	ReadyValues []string               `json:"ready_values,omitempty"`
 }
 
+type poolConfigDigitalContent struct {
+	ConnTimeout string `json:"conn_timeout,omitempty"`
+	ReadTimeout string `json:"read_timeout,omitempty"`
+}
+
 type poolConfigFieldProperties struct {
 	Type         string `json:"type,omitempty"`
 	Separator    string `json:"separator,omitempty"`
@@ -179,7 +185,6 @@ type poolConfigFieldTypeCustom struct {
 	LCCNField        string                      `json:"lccn_field,omitempty"`
 	LabelField       string                      `json:"label_field,omitempty"`
 	OCLCField        string                      `json:"oclc_field,omitempty"`
-	PIDField         string                      `json:"pid_field,omitempty"`
 	PoolField        string                      `json:"pool_field,omitempty"`
 	ProviderField    string                      `json:"provider_field,omitempty"`
 	SubtitleField    string                      `json:"subtitle_field,omitempty"`
