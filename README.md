@@ -1,6 +1,6 @@
 # Virgo4 Solr Search Pool Web Service
 
-This is a web service to search a Solr pool for Virgo 4.
+This is a web service to search a Solr instance for Virgo 4.
 It implements portions of the
 [Virgo4 Pool Search API](https://github.com/uvalib/v4-api/blob/master/pool-search-api-OAS3.json),
 integrating with the
