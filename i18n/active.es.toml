@@ -517,6 +517,9 @@ other = "Libra Repository"
 [ProviderGetty]
 other = "Getty Publications Virtual Library"
 
+[ProviderEtext]
+other = "Electronic Text Center"
+
 [ProviderHathiTrust]
 other = "HathiTrust Digital Library"
 

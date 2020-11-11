@@ -511,6 +511,9 @@ other = "Artstor"
 [ProviderAvalon]
 other = "Avalon"
 
+[ProviderEtext]
+other = "Electronic Text Center"
+
 [ProviderDataverse]
 other = "Libra Repository"
 
