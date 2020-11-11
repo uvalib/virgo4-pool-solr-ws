@@ -632,40 +632,6 @@ func (s *searchContext) getCustomFieldOnlineRelated(rc *recordContext) []v4api.R
 	return s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomInfo.AccessURL)
 }
 
-func (s *searchContext) getCustomFieldPdfDownloadURL(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	url := s.getDigitalContentURL(rc.doc, rc.fieldCtx.config.CustomInfo.PdfDownloadURL.IDField)
-	if url == "" {
-		return fv
-	}
-
-	cache, err := s.getDigitalContentCache(url)
-
-	if err != nil {
-		return fv
-	}
-
-	// only grab PDF statuses for records with at most MaxSupported digital items
-	if len(cache.Parts) > rc.fieldCtx.config.CustomInfo.PdfDownloadURL.MaxSupported {
-		return fv
-	}
-
-	for _, part := range cache.Parts {
-		pdfStatus, pdfErr := s.getPdfStatus(part.PDF.URLs.Status)
-		if pdfErr != nil {
-			continue
-		}
-
-		if sliceContainsString(s.pool.config.Global.Service.Pdf.ReadyValues, pdfStatus, true) == true {
-			rc.fieldCtx.field.Value = part.PDF.URLs.Download
-			fv = append(fv, rc.fieldCtx.field)
-		}
-	}
-
-	return fv
-}
-
 func (s *searchContext) getCustomFieldPublishedLocation(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 

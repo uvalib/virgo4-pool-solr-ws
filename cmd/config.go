@@ -98,12 +98,10 @@ type poolConfigCopyright struct {
 }
 
 type poolConfigService struct {
-	Port           string                   `json:"port,omitempty"`
-	JWTKey         string                   `json:"jwt_key,omitempty"`
-	DefaultSort    poolConfigSort           `json:"default_sort,omitempty"`
-	URLTemplates   poolConfigURLTemplates   `json:"url_templates,omitempty"`
-	Pdf            poolConfigPdf            `json:"pdf,omitempty"`
-	DigitalContent poolConfigDigitalContent `json:"digital_content,omitempty"`
+	Port         string                 `json:"port,omitempty"`
+	JWTKey       string                 `json:"jwt_key,omitempty"`
+	DefaultSort  poolConfigSort         `json:"default_sort,omitempty"`
+	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
 }
 
 type poolConfigSolrParams struct {
@@ -140,25 +138,6 @@ type poolConfigSolr struct {
 	ScoreThresholdMedium    float32                `json:"score_threshold_medium,omitempty"`
 	ScoreThresholdHigh      float32                `json:"score_threshold_high,omitempty"`
 	AuthorFields            poolConfigAuthorFields `json:"author_fields,omitempty"`
-}
-
-type poolConfigPdfEndpoints struct {
-	Generate string `json:"generate,omitempty"`
-	Status   string `json:"status,omitempty"`
-	Download string `json:"download,omitempty"`
-	Delete   string `json:"delete,omitempty"`
-}
-
-type poolConfigPdf struct {
-	ConnTimeout string                 `json:"conn_timeout,omitempty"`
-	ReadTimeout string                 `json:"read_timeout,omitempty"`
-	Endpoints   poolConfigPdfEndpoints `json:"endpoints,omitempty"`
-	ReadyValues []string               `json:"ready_values,omitempty"`
-}
-
-type poolConfigDigitalContent struct {
-	ConnTimeout string `json:"conn_timeout,omitempty"`
-	ReadTimeout string `json:"read_timeout,omitempty"`
 }
 
 type poolConfigFieldProperties struct {
@@ -210,7 +189,6 @@ type poolConfigFieldCustomInfo struct {
 	CoverImageURL             *poolConfigFieldTypeCustom `json:"cover_image_url,omitempty"`
 	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
 	Language                  *poolConfigFieldTypeCustom `json:"language,omitempty"`
-	PdfDownloadURL            *poolConfigFieldTypeCustom `json:"pdf_download_url,omitempty"`
 	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
 	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`
 	TitleSubtitleEdition      *poolConfigFieldTypeCustom `json:"title_subtitle_edition,omitempty"`

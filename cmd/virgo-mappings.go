@@ -169,9 +169,6 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 	case "online_related":
 		return s.getCustomFieldOnlineRelated(rc)
 
-	case "pdf_download_url":
-		return s.getCustomFieldPdfDownloadURL(rc)
-
 	case "published_location":
 		return s.getCustomFieldPublishedLocation(rc)
 

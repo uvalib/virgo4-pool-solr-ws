@@ -40,14 +40,6 @@ type poolSolr struct {
 	scoreThresholdHigh   float32
 }
 
-type poolDigitalContent struct {
-	client *http.Client
-}
-
-type poolPdf struct {
-	client *http.Client
-}
-
 type poolTranslations struct {
 	bundle *i18n.Bundle
 }
@@ -66,20 +58,18 @@ type poolFields struct {
 }
 
 type poolContext struct {
-	randomSource   *rand.Rand
-	config         *poolConfig
-	translations   poolTranslations
-	identity       v4api.PoolIdentity
-	providers      v4api.PoolProviders
-	version        poolVersion
-	solr           poolSolr
-	pdf            poolPdf
-	digitalContent poolDigitalContent
-	maps           poolMaps
-	fields         poolFields
-	facets         []poolConfigFacet
-	sorts          []poolConfigSort
-	titleizer      *titleizeContext
+	randomSource *rand.Rand
+	config       *poolConfig
+	translations poolTranslations
+	identity     v4api.PoolIdentity
+	providers    v4api.PoolProviders
+	version      poolVersion
+	solr         poolSolr
+	maps         poolMaps
+	fields       poolFields
+	facets       []poolConfigFacet
+	sorts        []poolConfigSort
+	titleizer    *titleizeContext
 }
 
 type stringValidator struct {
@@ -263,22 +253,6 @@ func (p *poolContext) initSolr() {
 	log.Printf("[POOL] solr.healthCheck.url      = [%s]", p.solr.healthCheck.url)
 	log.Printf("[POOL] solr.scoreThresholdMedium = [%0.1f]", p.solr.scoreThresholdMedium)
 	log.Printf("[POOL] solr.scoreThresholdHigh   = [%0.1f]", p.solr.scoreThresholdHigh)
-}
-
-func (p *poolContext) initDigitalContent() {
-	// client setup
-
-	p.digitalContent = poolDigitalContent{
-		client: httpClientWithTimeouts(p.config.Global.Service.DigitalContent.ConnTimeout, p.config.Global.Service.DigitalContent.ReadTimeout),
-	}
-}
-
-func (p *poolContext) initPdf() {
-	// client setup
-
-	p.pdf = poolPdf{
-		client: httpClientWithTimeouts(p.config.Global.Service.Pdf.ConnTimeout, p.config.Global.Service.Pdf.ReadTimeout),
-	}
 }
 
 func (p *poolContext) initCitationFormats() {
@@ -636,15 +610,6 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
 				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-			case "pdf_download_url":
-				if field.CustomInfo == nil || field.CustomInfo.PdfDownloadURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.PdfDownloadURL.IDField, fmt.Sprintf("%s section id field", field.Name))
 
 			case "published_location":
 
@@ -1032,8 +997,6 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initVersion()
 	p.initFacets()
 	p.initSolr()
-	p.initPdf()
-	p.initDigitalContent()
 	p.initCitationFormats()
 	p.initTitleizer()
 
