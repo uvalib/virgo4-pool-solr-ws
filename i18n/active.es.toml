@@ -211,6 +211,9 @@ other = "Color"
 [FieldComposerPerformer]
 other = "Compositor/Intérprete"
 
+[FieldCompositionEra]
+other = "Era de la Composición"
+
 [FieldContents]
 other = "Contenido"
 
