@@ -216,7 +216,7 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 
 	// parse original query to determine query type
 
-	if parsedQuery, err = virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
+	if parsedQuery, err = s.virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
 		return nil, err
 	}
 

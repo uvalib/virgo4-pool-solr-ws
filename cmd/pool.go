@@ -50,6 +50,7 @@ type poolMaps struct {
 	externalFacets map[string]poolConfigFacet
 	relatorTerms   map[string]string
 	relatorCodes   map[string]string
+	filters        map[string]*poolConfigFilter
 }
 
 type poolFields struct {
@@ -116,6 +117,7 @@ func (p *poolContext) initIdentity() {
 		Name:        p.config.Local.Identity.NameXID,
 		Description: p.config.Local.Identity.DescXID,
 		Mode:        p.config.Local.Identity.Mode,
+		Source:      "solr",
 	}
 
 	// populate supported attributes
@@ -961,6 +963,15 @@ func (p *poolContext) initMappings() {
 
 		p.maps.relatorTerms[r.Code] = r.Term
 		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
+	}
+
+	// filter map
+	p.maps.filters = make(map[string]*poolConfigFilter)
+
+	for i := range p.config.Global.Mappings.Definitions.Filters {
+		filter := &p.config.Global.Mappings.Definitions.Filters[i]
+
+		p.maps.filters[filter.XID] = filter
 	}
 
 	if invalid == true {

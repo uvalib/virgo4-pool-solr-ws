@@ -1,16 +1,36 @@
 package main
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/uvalib/virgo4-parser/v4parser"
 )
 
-func virgoQueryConvertToSolr(virgoQuery string) (*solrParserInfo, error) {
+func (s *searchContext) virgoQueryConvertToSolr(virgoQuery string) (*solrParserInfo, error) {
 	var sp solrParserInfo
 	var err error
+	var query string
 
-	if sp.query, err = v4parser.ConvertToSolrWithParserAndTimeout(&sp.parser, virgoQuery, 10); err != nil {
+	if query, err = v4parser.ConvertToSolrWithParserAndTimeout(&sp.parser, virgoQuery, 10); err != nil {
 		return nil, err
 	}
+
+	// validate any filter IDs, and convert them to solr fields
+
+	for _, filterClause := range sp.parser.FieldValues["filter"] {
+		filterID := strings.Split(filterClause, ":")[0]
+		filter := s.pool.maps.filters[filterID]
+
+		if filter == nil {
+			s.log("abandoning query conversion due to unsupported filter ID: [%s]", filterID)
+			return nil, errors.New("query contains unsupported filter ID")
+		}
+
+		query = strings.ReplaceAll(query, filterID+":", filter.Field+":")
+	}
+
+	sp.query = query
 
 	// do some pre-analysis
 

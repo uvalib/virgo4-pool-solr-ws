@@ -258,6 +258,11 @@ type poolConfigFacet struct {
 	queryMap           map[string]*poolConfigFacetQuery
 }
 
+type poolConfigFilter struct {
+	XID   string `json:"xid,omitempty"` // translation ID
+	Field string `json:"field,omitempty"`
+}
+
 type poolConfigSort struct {
 	XID          string `json:"xid,omitempty"`      // translation ID
 	AscXID       string `json:"asc_xid,omitempty"`  // translation ID
@@ -295,9 +300,10 @@ type poolConfigRelated struct {
 }
 
 type poolConfigMappingsDefinitions struct {
-	Fields []poolConfigField `json:"fields,omitempty"`
-	Facets []poolConfigFacet `json:"facets,omitempty"`
-	Sorts  []poolConfigSort  `json:"sorts,omitempty"`
+	Fields  []poolConfigField  `json:"fields,omitempty"`
+	Facets  []poolConfigFacet  `json:"facets,omitempty"`
+	Sorts   []poolConfigSort   `json:"sorts,omitempty"`
+	Filters []poolConfigFilter `json:"filters,omitempty"`
 }
 
 type poolConfigMappingsHeadingField struct {

@@ -186,7 +186,7 @@ func (s *searchContext) solrSearchRequest() searchResponse {
 
 	// caller might have already supplied a Solr query
 	if s.virgo.solrQuery == "" {
-		if p, err = virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
+		if p, err = s.virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
 			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
 		}
 
