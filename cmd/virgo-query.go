@@ -20,14 +20,14 @@ func (s *searchContext) virgoQueryConvertToSolr(virgoQuery string) (*solrParserI
 
 	for _, filterClause := range sp.parser.FieldValues["filter"] {
 		filterID := strings.Split(filterClause, ":")[0]
-		filter := s.pool.maps.filters[filterID]
+		filter, ok := s.pool.maps.filters[filterID]
 
-		if filter == nil {
+		if ok == false {
 			s.log("abandoning query conversion due to unsupported filter ID: [%s]", filterID)
 			return nil, errors.New("query contains unsupported filter ID")
 		}
 
-		query = strings.ReplaceAll(query, filterID+":", filter.Field+":")
+		query = strings.ReplaceAll(query, filterID+":", filter.Solr.Field+":")
 	}
 
 	sp.query = query

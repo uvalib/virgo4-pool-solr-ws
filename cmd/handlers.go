@@ -39,6 +39,20 @@ func (p *poolContext) facetsHandler(c *gin.Context) {
 	c.JSON(resp.status, resp.data)
 }
 
+func (p *poolContext) filtersHandler(c *gin.Context) {
+	cl := clientContext{}
+	cl.init(p, c)
+
+	s := searchContext{}
+	s.init(p, &cl)
+
+	cl.logRequest()
+	resp := s.handleFiltersRequest()
+	cl.logResponse(resp)
+
+	c.JSON(resp.status, resp.data)
+}
+
 func (p *poolContext) resourceHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)

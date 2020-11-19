@@ -518,7 +518,12 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 	for key, val := range mergedFacets {
 		if len(val.Buckets) > 0 {
-			facetDef := s.pool.maps.externalFacets[key]
+			var facetDef poolConfigFacet
+			if s.virgo.flags.preSearchFilters == true {
+				facetDef = s.pool.maps.filters[key]
+			} else {
+				facetDef = s.pool.maps.facets[key]
+			}
 
 			// add this facet to the response as long as one of its dependent facets is selected
 

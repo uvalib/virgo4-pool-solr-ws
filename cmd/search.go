@@ -14,8 +14,9 @@ import (
 )
 
 type virgoFlags struct {
-	groupResults  bool
-	requestFacets bool
+	groupResults     bool
+	requestFacets    bool
+	preSearchFilters bool
 }
 
 type virgoDialog struct {
@@ -241,6 +242,7 @@ func (s *searchContext) newSearchWithRecordCountOnly() (*searchContext, error) {
 	c.virgo.req.Pagination.Rows = 0
 
 	c.virgo.flags.requestFacets = false
+	c.virgo.flags.preSearchFilters = false
 
 	if resp := c.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
@@ -276,6 +278,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	c.virgo.req.Query = ""
 	c.virgo.solrQuery = newQuery
 	c.virgo.flags.requestFacets = false
+	c.virgo.flags.preSearchFilters = false
 
 	// get everything!  even bible (5000+)
 	c.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 100000}
@@ -420,7 +423,7 @@ func (s *searchContext) validateSearchRequest() error {
 		filterGroup := s.virgo.req.Filters[0]
 
 		for _, filter := range filterGroup.Facets {
-			if _, ok := s.pool.maps.externalFacets[filter.FacetID]; ok == false {
+			if _, ok := s.pool.maps.facets[filter.FacetID]; ok == false {
 				return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
 			}
 		}
@@ -580,10 +583,39 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 	s.virgo.flags.requestFacets = true
+	s.virgo.flags.preSearchFilters = false
 
 	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
 		errData = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		resp.data = errData
+		return resp
+	}
+
+	s.virgo.facetsRes = &v4api.PoolFacets{
+		FacetList:  s.virgo.poolRes.FacetList,
+		ElapsedMS:  s.virgo.poolRes.ElapsedMS,
+		StatusCode: http.StatusOK,
+	}
+
+	return searchResponse{status: http.StatusOK, data: s.virgo.facetsRes}
+}
+
+func (s *searchContext) handleFiltersRequest() searchResponse {
+	// for now, this simply returns the preconfigured filters as
+	// a facets response for a keyword:{*} query
+
+	s.virgo.endpoint = "filters"
+
+	// override these values from the original search query, since we are
+	// only interested in filters (derived from facets), not records
+
+	s.virgo.req.Query = "keyword:{*}"
+	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
+	s.virgo.flags.requestFacets = true
+	s.virgo.flags.preSearchFilters = true
+
+	// now do the search
+	if resp := s.getPoolQueryResults(); resp.err != nil {
 		return resp
 	}
 

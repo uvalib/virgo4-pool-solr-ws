@@ -57,6 +57,7 @@ func main() {
 		api.POST("/search/facets", pool.facetsHandler)
 		api.GET("/resource/:id", pool.resourceHandler)
 		api.GET("/providers", pool.providersHandler)
+		api.GET("/filters", pool.filtersHandler)
 	}
 
 	if admin := router.Group("/admin", pool.authenticateHandler, pool.adminHandler); admin != nil {

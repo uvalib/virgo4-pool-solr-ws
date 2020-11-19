@@ -80,7 +80,7 @@ other = "Disponibilidad"
 other = "Rango de Número de Llamada"
 
 [FacetCirculating]
-other = "FacetCirculating"
+other = "Circulante"
 
 [FacetCollection]
 other = "Colección"
@@ -507,6 +507,39 @@ other = "Edificio Relacionado"
 
 [FieldWorkType]
 other = "Tipo de Trabajo"
+
+[FilterCallNumberRange]
+other = "Rango de Número de Llamada"
+
+[FilterCollection]
+other = "Colección"
+
+[FilterDigitalCollection]
+other = "Colección Digital"
+
+[FilterFormat]
+other = "Formato"
+
+[FilterFundCode]
+other = "Código de Fondo"
+
+[FilterGeographicLocation]
+other = "Ubicación Geográfica"
+
+[FilterLanguage]
+other = "Idioma"
+
+[FilterLibrary]
+other = "Biblioteca"
+
+[FilterLicense]
+other = "Licencia"
+
+[FilterPermissions]
+other = "Permisos"
+
+[FilterShelfLocation]
+other = "Ubicación del Estante"
 
 [ProviderArtstor]
 other = "Artstor"

@@ -508,6 +508,39 @@ other = "Related Work"
 [FieldWorkType]
 other = "Work Type"
 
+[FilterCallNumberRange]
+other = "Call Number Range"
+
+[FilterCollection]
+other = "Collection"
+
+[FilterDigitalCollection]
+other = "Digital Collection"
+
+[FilterFormat]
+other = "Format"
+
+[FilterFundCode]
+other = "Fund Code"
+
+[FilterGeographicLocation]
+other = "Geographic Location"
+
+[FilterLanguage]
+other = "Language"
+
+[FilterLibrary]
+other = "Library"
+
+[FilterLicense]
+other = "License"
+
+[FilterPermissions]
+other = "Permissions"
+
+[FilterShelfLocation]
+other = "Shelf Location"
+
 [ProviderArtstor]
 other = "Artstor"
 

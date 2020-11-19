@@ -258,11 +258,6 @@ type poolConfigFacet struct {
 	queryMap           map[string]*poolConfigFacetQuery
 }
 
-type poolConfigFilter struct {
-	XID   string `json:"xid,omitempty"` // translation ID
-	Field string `json:"field,omitempty"`
-}
-
 type poolConfigSort struct {
 	XID          string `json:"xid,omitempty"`      // translation ID
 	AscXID       string `json:"asc_xid,omitempty"`  // translation ID
@@ -300,10 +295,10 @@ type poolConfigRelated struct {
 }
 
 type poolConfigMappingsDefinitions struct {
-	Fields  []poolConfigField  `json:"fields,omitempty"`
-	Facets  []poolConfigFacet  `json:"facets,omitempty"`
-	Sorts   []poolConfigSort   `json:"sorts,omitempty"`
-	Filters []poolConfigFilter `json:"filters,omitempty"`
+	Fields  []poolConfigField `json:"fields,omitempty"`
+	Facets  []poolConfigFacet `json:"facets,omitempty"`
+	Filters []poolConfigFacet `json:"filters,omitempty"` // pre-search filters (facets in disguise)
+	Sorts   []poolConfigSort  `json:"sorts,omitempty"`
 }
 
 type poolConfigMappingsHeadingField struct {
@@ -324,6 +319,7 @@ type poolConfigMappingsConfiguredFields struct {
 type poolConfigMappingsConfigured struct {
 	FieldNames poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
 	FacetXIDs  []string                           `json:"facet_xids,omitempty"`
+	FilterXIDs []string                           `json:"filter_xids,omitempty"`
 	SortXIDs   []string                           `json:"sort_xids,omitempty"`
 }
 
@@ -351,6 +347,7 @@ type poolConfigRecordAttributes struct {
 
 type poolConfigGlobal struct {
 	Service          poolConfigService          `json:"service,omitempty"`
+	Solr             poolConfigSolr             `json:"solr,omitempty"`
 	Attributes       []string                   `json:"attributes,omitempty"`
 	Providers        []poolConfigProvider       `json:"providers,omitempty"`
 	Availability     poolConfigAvailability     `json:"availability,omitempty"`

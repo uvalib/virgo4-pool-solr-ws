@@ -45,12 +45,12 @@ type poolTranslations struct {
 }
 
 type poolMaps struct {
-	sortFields     map[string]poolConfigSort
-	attributes     map[string]v4api.PoolAttribute
-	externalFacets map[string]poolConfigFacet
-	relatorTerms   map[string]string
-	relatorCodes   map[string]string
-	filters        map[string]*poolConfigFilter
+	sortFields   map[string]poolConfigSort
+	attributes   map[string]v4api.PoolAttribute
+	facets       map[string]poolConfigFacet
+	filters      map[string]poolConfigFacet // pre-search filters (facets in disguise)
+	relatorTerms map[string]string
+	relatorCodes map[string]string
 }
 
 type poolFields struct {
@@ -69,6 +69,7 @@ type poolContext struct {
 	maps         poolMaps
 	fields       poolFields
 	facets       []poolConfigFacet
+	filters      []poolConfigFacet // pre-search filters (facets in disguise)
 	sorts        []poolConfigSort
 	titleizer    *titleizeContext
 }
@@ -222,7 +223,7 @@ func (p *poolContext) initSolr() {
 	}
 
 	// create facet map
-	p.maps.externalFacets = make(map[string]poolConfigFacet)
+	p.maps.facets = make(map[string]poolConfigFacet)
 
 	p.config.Global.Availability.ExposedValues = []string{}
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
@@ -241,7 +242,7 @@ func (p *poolContext) initSolr() {
 			f.ExposedValues = p.config.Global.Availability.ExposedValues
 		}
 
-		p.maps.externalFacets[f.XID] = *f
+		p.maps.facets[f.XID] = *f
 	}
 
 	p.solr = poolSolr{
@@ -435,6 +436,11 @@ func (p *poolContext) validateConfig() {
 			messageIDs.requireValue(q.XID, fmt.Sprintf("facet %d component query xid %d", i, j))
 			miscValues.requireValue(q.Query, fmt.Sprintf("facet %d component query query %d", i, j))
 		}
+	}
+
+	for i, val := range p.filters {
+		messageIDs.requireValue(val.XID, fmt.Sprintf("filter %d xid", i))
+		solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter %d solr field", i))
 	}
 
 	for i, val := range p.config.Global.Publishers {
@@ -965,12 +971,42 @@ func (p *poolContext) initMappings() {
 		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
 	}
 
+	// create mapping from filter XIDs to filter definitions
+	filterList := p.config.Global.Mappings.Definitions.Filters
+	filterMap := make(map[string]*poolConfigFacet)
+	for i := range filterList {
+		filterDef := &filterList[i]
+		filterMap[filterDef.XID] = filterDef
+	}
+
+	// build list of unique filters by XID
+	filterXIDs := p.config.Global.Mappings.Configured.FilterXIDs
+	filtersSeen := make(map[string]bool)
+	for _, filterXID := range filterXIDs {
+		if filtersSeen[filterXID] == true {
+			continue
+		}
+
+		filterDef := filterMap[filterXID]
+
+		if filterDef == nil {
+			log.Printf("[INIT] unrecognized filter xid: [%s]", filterXID)
+			invalid = true
+			continue
+		}
+
+		// this is used to preserve filter order when building filters response
+		filterDef.Index = len(filtersSeen)
+
+		p.filters = append(p.filters, *filterDef)
+
+		filtersSeen[filterXID] = true
+	}
+
 	// filter map
-	p.maps.filters = make(map[string]*poolConfigFilter)
+	p.maps.filters = make(map[string]poolConfigFacet)
 
-	for i := range p.config.Global.Mappings.Definitions.Filters {
-		filter := &p.config.Global.Mappings.Definitions.Filters[i]
-
+	for _, filter := range p.filters {
 		p.maps.filters[filter.XID] = filter
 	}
 

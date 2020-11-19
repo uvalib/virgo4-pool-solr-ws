@@ -98,8 +98,17 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet
 
 	auth := s.client.isAuthenticated()
 
-	for i := range s.pool.maps.externalFacets {
-		facet := s.pool.maps.externalFacets[i]
+	// should we request facets or pre-search filters?
+
+	var sourceFacets map[string]poolConfigFacet
+	if s.virgo.flags.preSearchFilters == true {
+		sourceFacets = s.pool.maps.filters
+	} else {
+		sourceFacets = s.pool.maps.facets
+	}
+
+	for i := range sourceFacets {
+		facet := sourceFacets[i]
 
 		f := solrRequestFacet{
 			Type:   facet.Solr.Type,
@@ -146,10 +155,15 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	solrReq.json.Params.Q = s.virgo.solrQuery
 	solrReq.json.Params.Qt = s.pool.config.Local.Solr.Params.Qt
 	solrReq.json.Params.DefType = s.pool.config.Local.Solr.Params.DefType
-	solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
 	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
 	solrReq.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
 	solrReq.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
+
+	if s.virgo.flags.preSearchFilters == true {
+		solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Global.Solr.Params.Fq)
+	} else {
+		solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
+	}
 
 	if s.virgo.req.Sort.SortID != "" {
 		solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
