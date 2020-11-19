@@ -273,6 +273,7 @@ type poolConfigIdentity struct {
 	NameXID        string   `json:"name_xid,omitempty"`   // translation ID
 	DescXID        string   `json:"desc_xid,omitempty"`   // translation ID
 	Mode           string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
+	Source         string   `json:"source,omitempty"`     // pool source (where its data comes from -- probably should be a unique value per core, e.g. "solr" for catalog stuff, "solr-images" for image stuff, etc.)
 	Attributes     []string `json:"attributes,omitempty"` // pool attributes (what it supports)
 	CitationFormat string   `json:"citation_format,omitempty"`
 }

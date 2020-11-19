@@ -118,7 +118,7 @@ func (p *poolContext) initIdentity() {
 		Name:        p.config.Local.Identity.NameXID,
 		Description: p.config.Local.Identity.DescXID,
 		Mode:        p.config.Local.Identity.Mode,
-		Source:      "solr",
+		Source:      p.config.Local.Identity.Source,
 	}
 
 	// populate supported attributes
