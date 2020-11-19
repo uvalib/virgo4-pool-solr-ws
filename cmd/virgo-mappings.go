@@ -405,6 +405,11 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 	facet.Name = s.client.localize(facet.ID)
 	facet.Type = facetDef.Type
 
+	facet.Sort = facetDef.Solr.Sort
+	if facet.Sort == "index" {
+		facet.Sort = "alpha"
+	}
+
 	var buckets []v4api.FacetBucket
 
 	switch facetDef.Type {

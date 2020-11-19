@@ -16,12 +16,12 @@ require (
 	github.com/prometheus/common v0.15.0 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/ugorji/go v1.2.0 // indirect
-	github.com/uvalib/virgo4-api v0.0.0-20201117181440-d6f114d71c80
+	github.com/uvalib/virgo4-api v0.0.0-20201119181753-d6a8af771dcb
 	github.com/uvalib/virgo4-jwt v0.0.0-20200812155832-7443daa580fd
 	github.com/uvalib/virgo4-parser v0.0.0-20201110191926-097433955fee
 	github.com/zsais/go-gin-prometheus v0.1.0
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
-	golang.org/x/sys v0.0.0-20201118182958-a01c418693c7 // indirect
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 	golang.org/x/text v0.3.4
 	google.golang.org/protobuf v1.25.0 // indirect
 )
