@@ -523,9 +523,6 @@ other = "Format"
 [FilterFundCode]
 other = "Fund Code"
 
-[FilterGeographicLocation]
-other = "Geographic Location"
-
 [FilterLanguage]
 other = "Language"
 
@@ -540,6 +537,9 @@ other = "Permissions"
 
 [FilterShelfLocation]
 other = "Shelf Location"
+
+[FilterSubjectGeographic]
+other = "Geographic Location"
 
 [ProviderArtstor]
 other = "Artstor"

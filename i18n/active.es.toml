@@ -523,9 +523,6 @@ other = "Formato"
 [FilterFundCode]
 other = "Código de Fondo"
 
-[FilterGeographicLocation]
-other = "Ubicación Geográfica"
-
 [FilterLanguage]
 other = "Idioma"
 
@@ -540,6 +537,9 @@ other = "Permisos"
 
 [FilterShelfLocation]
 other = "Ubicación del Estante"
+
+[FilterSubjectGeographic]
+other = "Ubicación Geográfica"
 
 [ProviderArtstor]
 other = "Artstor"
