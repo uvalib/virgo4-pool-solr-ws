@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/uvalib/virgo4-parser/v4parser"
@@ -23,8 +22,9 @@ func (s *searchContext) virgoQueryConvertToSolr(virgoQuery string) (*solrParserI
 		filter, ok := s.pool.maps.filters[filterID]
 
 		if ok == false {
-			s.log("abandoning query conversion due to unsupported filter ID: [%s]", filterID)
-			return nil, errors.New("query contains unsupported filter ID")
+			s.log("query contains unsupported filter ID: [%s]", filterID)
+			sp.containsUnsupportedFilters = true
+			continue
 		}
 
 		query = strings.ReplaceAll(query, filterID+":", filter.Solr.Field+":")

@@ -143,52 +143,48 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet
 }
 
 func (s *searchContext) solrRequestWithDefaults() searchResponse {
-	var solrReq solrRequest
+	s.solr.req.meta.client = s.client
+	s.solr.req.meta.parserInfo = s.virgo.parserInfo
 
-	solrReq.meta.client = s.client
-	solrReq.meta.parserInfo = s.virgo.parserInfo
-
-	solrReq.meta.selectionMap = make(map[string]map[string]string)
+	s.solr.req.meta.selectionMap = make(map[string]map[string]string)
 
 	// fill out as much as we can for a generic request
 
-	solrReq.json.Params.Q = s.virgo.solrQuery
-	solrReq.json.Params.Qt = s.pool.config.Local.Solr.Params.Qt
-	solrReq.json.Params.DefType = s.pool.config.Local.Solr.Params.DefType
-	solrReq.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
-	solrReq.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
-	solrReq.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
+	s.solr.req.json.Params.Q = s.virgo.solrQuery
+	s.solr.req.json.Params.Qt = s.pool.config.Local.Solr.Params.Qt
+	s.solr.req.json.Params.DefType = s.pool.config.Local.Solr.Params.DefType
+	s.solr.req.json.Params.Fl = nonemptyValues(s.pool.config.Local.Solr.Params.Fl)
+	s.solr.req.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
+	s.solr.req.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
 
 	if s.virgo.flags.preSearchFilters == true {
-		solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Global.Solr.Params.Fq)
+		s.solr.req.json.Params.Fq = nonemptyValues(s.pool.config.Global.Solr.Params.Fq)
 	} else {
-		solrReq.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
+		s.solr.req.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
 	}
 
 	if s.virgo.req.Sort.SortID != "" {
-		solrReq.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
+		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
 	if s.virgo.flags.groupResults == true && s.virgo.flags.requestFacets == false {
 		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.GroupField)
-		solrReq.json.Params.Fq = append(solrReq.json.Params.Fq, grouping)
+		s.solr.req.json.Params.Fq = append(s.solr.req.json.Params.Fq, grouping)
 	}
 
 	// add facets/filters
 
-	solrReq.meta.internalFacets, solrReq.meta.requestFacets = s.solrInternalRequestFacets()
+	s.solr.req.meta.internalFacets, s.solr.req.meta.requestFacets = s.solrInternalRequestFacets()
 
-	if s.virgo.flags.requestFacets == true && len(solrReq.meta.requestFacets) > 0 {
-		solrReq.json.Facets = solrReq.meta.requestFacets
+	if s.virgo.flags.requestFacets == true && len(s.solr.req.meta.requestFacets) > 0 {
+		s.solr.req.json.Facets = s.solr.req.meta.requestFacets
 	}
 
-	solrReq.buildFilters(s.virgo.req.Filters, solrReq.meta.internalFacets, s.pool.config.Global.Availability)
+	s.solr.req.buildFilters(s.virgo.req.Filters, s.solr.req.meta.internalFacets, s.pool.config.Global.Availability)
 
 	if s.client.opts.debug == true {
-		solrReq.json.Params.DebugQuery = "on"
+		s.solr.req.json.Params.DebugQuery = "on"
 	}
-
-	s.solr.req = &solrReq
 
 	return searchResponse{status: http.StatusOK}
 }
@@ -202,6 +198,10 @@ func (s *searchContext) solrSearchRequest() searchResponse {
 	if s.virgo.solrQuery == "" {
 		if p, err = s.virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
 			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
+		}
+
+		if p.containsUnsupportedFilters == true {
+			s.virgo.skipQuery = true
 		}
 
 		s.virgo.solrQuery = p.query

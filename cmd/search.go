@@ -26,14 +26,15 @@ type virgoDialog struct {
 	recordRes  *v4api.Record
 	solrQuery  string          // holds the solr query (either parsed or specified)
 	parserInfo *solrParserInfo // holds the information for parsed queries
+	skipQuery  bool            // should we skip Solr communcation and just return empty results?
 	flags      virgoFlags
 	endpoint   string
 	body       string
 }
 
 type solrDialog struct {
-	req *solrRequest
-	res *solrResponse
+	req solrRequest
+	res solrResponse
 }
 
 type searchContext struct {

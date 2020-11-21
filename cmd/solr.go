@@ -97,6 +97,12 @@ func (s *searchContext) populateMetaFields() {
 }
 
 func (s *searchContext) solrQuery() error {
+	if s.virgo.skipQuery == true {
+		s.log("SOLR: skipping query")
+		s.populateMetaFields()
+		return nil
+	}
+
 	ctx := s.pool.solr.service
 
 	jsonBytes, jsonErr := json.Marshal(s.solr.req.json)
@@ -155,13 +161,11 @@ func (s *searchContext) solrQuery() error {
 
 	defer res.Body.Close()
 
-	var solrRes solrResponse
-
 	decoder := json.NewDecoder(res.Body)
 
 	// external service failure logging (scenario 2)
 
-	if decErr := decoder.Decode(&solrRes); decErr != nil {
+	if decErr := decoder.Decode(&s.solr.res); decErr != nil {
 		s.log("SOLR: Decode() failed: %s", decErr.Error())
 		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("failed to decode Solr response")
@@ -171,25 +175,23 @@ func (s *searchContext) solrQuery() error {
 
 	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, ctx.url, elapsedMS)
 
-	s.log("SOLR: endpoint: %-8s  qtime: %5d  elapsed: %5d  overhead: %5d", s.virgo.endpoint, solrRes.ResponseHeader.QTime, elapsedMS, elapsedMS-int64(solrRes.ResponseHeader.QTime))
-
-	s.solr.res = &solrRes
+	s.log("SOLR: endpoint: %-8s  qtime: %5d  elapsed: %5d  overhead: %5d", s.virgo.endpoint, s.solr.res.ResponseHeader.QTime, elapsedMS, elapsedMS-int64(s.solr.res.ResponseHeader.QTime))
 
 	s.convertFacets()
 
 	// log abbreviated results
 
-	logHeader := fmt.Sprintf("SOLR: res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
+	logHeader := fmt.Sprintf("SOLR: res: header: { status = %d, QTime = %d }", s.solr.res.ResponseHeader.Status, s.solr.res.ResponseHeader.QTime)
 
 	// quick validation
-	if solrRes.ResponseHeader.Status != 0 {
-		s.log("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
-		return fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
+	if s.solr.res.ResponseHeader.Status != 0 {
+		s.log("%s, error: { code = %d, msg = %s }", logHeader, s.solr.res.Error.Code, s.solr.res.Error.Msg)
+		return fmt.Errorf("%d - %s", s.solr.res.Error.Code, s.solr.res.Error.Msg)
 	}
 
 	s.populateMetaFields()
 
-	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, solrRes.meta.numGroups, solrRes.meta.numRecords, solrRes.meta.start, solrRes.meta.numRows, solrRes.meta.totalRows, solrRes.meta.maxScore)
+	s.log("%s, meta: { groups = %d, records = %d }, body: { start = %d, rows = %d, total = %d, maxScore = %0.2f }", logHeader, s.solr.res.meta.numGroups, s.solr.res.meta.numRecords, s.solr.res.meta.start, s.solr.res.meta.numRows, s.solr.res.meta.totalRows, s.solr.res.meta.maxScore)
 
 	return nil
 }
@@ -227,13 +229,11 @@ func (s *searchContext) solrPing() error {
 
 	defer res.Body.Close()
 
-	var solrRes solrResponse
-
 	decoder := json.NewDecoder(res.Body)
 
 	// external service failure logging (scenario 2)
 
-	if decErr := decoder.Decode(&solrRes); decErr != nil {
+	if decErr := decoder.Decode(&s.solr.res); decErr != nil {
 		s.log("SOLR: Decode() failed: %s", decErr.Error())
 		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
 		return fmt.Errorf("failed to decode Solr response")
@@ -243,17 +243,17 @@ func (s *searchContext) solrPing() error {
 
 	s.log("Successful Solr response from %s %s. Elapsed Time: %d (ms)", req.Method, ctx.url, elapsedMS)
 
-	logHeader := fmt.Sprintf("SOLR: res: header: { status = %d, QTime = %d }", solrRes.ResponseHeader.Status, solrRes.ResponseHeader.QTime)
+	logHeader := fmt.Sprintf("SOLR: res: header: { status = %d, QTime = %d }", s.solr.res.ResponseHeader.Status, s.solr.res.ResponseHeader.QTime)
 
 	// quick validation
-	if solrRes.ResponseHeader.Status != 0 {
-		s.log("%s, error: { code = %d, msg = %s }", logHeader, solrRes.Error.Code, solrRes.Error.Msg)
-		return fmt.Errorf("%d - %s", solrRes.Error.Code, solrRes.Error.Msg)
+	if s.solr.res.ResponseHeader.Status != 0 {
+		s.log("%s, error: { code = %d, msg = %s }", logHeader, s.solr.res.Error.Code, s.solr.res.Error.Msg)
+		return fmt.Errorf("%d - %s", s.solr.res.Error.Code, s.solr.res.Error.Msg)
 	}
 
-	s.log("%s, ping status: %s", logHeader, solrRes.Status)
+	s.log("%s, ping status: %s", logHeader, s.solr.res.Status)
 
-	if solrRes.Status != "OK" {
+	if s.solr.res.Status != "OK" {
 		return fmt.Errorf("ping status was not OK")
 	}
 
