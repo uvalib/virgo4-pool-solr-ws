@@ -222,9 +222,14 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 }
 
 func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
+	type summaryTextNote struct {
+		Text string `json:"text"`
+		Note string `json:"note,omitempty"`
+	}
+
 	type summaryCallNumber struct {
-		CallNumber string   `json:"call_number"`
-		Texts      []string `json:"text,omitempty"`
+		CallNumber string            `json:"call_number"`
+		TextNotes  []summaryTextNote `json:"text_notes,omitempty"`
 	}
 
 	type summaryLocation struct {
@@ -249,7 +254,7 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 
 	// maps, from which the final structure will be made
 
-	libraries := make(map[string]map[string]map[string][]string)
+	libraries := make(map[string]map[string]map[string][]summaryTextNote)
 
 	lastCallNumber := ""
 
@@ -263,16 +268,16 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 		library := parts[0]
 		location := parts[1]
 		text := parts[2]
-		//note := parts[3]
+		note := parts[3]
 		//label := parts[4]
 		callNumber := parts[5]
 
 		if library != "" && libraries[library] == nil {
-			libraries[library] = make(map[string]map[string][]string)
+			libraries[library] = make(map[string]map[string][]summaryTextNote)
 		}
 
 		if library != "" && location != "" && libraries[library][location] == nil {
-			libraries[library][location] = make(map[string][]string)
+			libraries[library][location] = make(map[string][]summaryTextNote)
 		}
 
 		if callNumber != "" && callNumber != lastCallNumber {
@@ -280,7 +285,8 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 		}
 
 		if text != "" {
-			libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], text)
+			textNote := summaryTextNote{Text: text, Note: note}
+			libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], textNote)
 		}
 	}
 
@@ -298,7 +304,7 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 			nloc := summaryLocation{Location: kloc}
 
 			for knum, vnum := range vloc {
-				nnum := summaryCallNumber{CallNumber: knum, Texts: vnum}
+				nnum := summaryCallNumber{CallNumber: knum, TextNotes: vnum}
 				nloc.CallNumbers = append(nloc.CallNumbers, nnum)
 			}
 
