@@ -70,6 +70,16 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets m
 
 		default:
 			filterValue = filter.Value
+
+			// if this is a mapped value facet, retrieve the internal solr value for this translated value
+			if len(solrFacet.config.ValueXIDs) > 0 {
+				filterValue = solrFacet.config.xidToValueMap[filter.Value]
+				if filterValue == "" {
+					s.meta.client.warn("FILTER: %s: ignoring unmapped translated value: [%s]", solrFacet.config.XID, filter.Value)
+					continue
+				}
+			}
+
 			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 		}
 

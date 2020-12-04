@@ -436,6 +436,10 @@ func (p *poolContext) validateConfig() {
 			messageIDs.requireValue(q.XID, fmt.Sprintf("facet %d component query xid %d", i, j))
 			miscValues.requireValue(q.Query, fmt.Sprintf("facet %d component query query %d", i, j))
 		}
+
+		for j, v := range val.ValueXIDs {
+			messageIDs.requireValue(v.XID, fmt.Sprintf("facet %d value xid map xid %d", i, j))
+		}
 	}
 
 	for i, val := range p.filters {
@@ -748,8 +752,7 @@ func (p *poolContext) validateConfig() {
 }
 
 func (p *poolContext) initFacets() {
-	// for component query facets, create mappings from any
-	// possible translated value back to the query definition
+	// initialize internal mappings
 
 	tags := p.translations.bundle.LanguageTags()
 
@@ -758,27 +761,52 @@ func (p *poolContext) initFacets() {
 	for i := range p.facets {
 		facet := &p.facets[i]
 
-		if len(facet.ComponentQueries) == 0 {
-			continue
-		}
+		// create forward/reverse value-to-xid/translation maps
 
-		facet.queryMap = make(map[string]*poolConfigFacetQuery)
+		facet.valueToXIDMap = make(map[string]string)
+		facet.xidToValueMap = make(map[string]string)
 
-		for j := range facet.ComponentQueries {
-			q := &facet.ComponentQueries[j]
-
+		for _, vx := range facet.ValueXIDs {
 			for _, tag := range tags {
 				lang := tag.String()
 				localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-				msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
+				msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: vx.XID})
 
 				if err != nil {
-					log.Printf("[FACET] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
+					log.Printf("[FACET] [%s] missing translation for message ID: [%s] (%s)", lang, vx.XID, err.Error())
 					invalid = true
 					continue
 				}
 
-				facet.queryMap[msg] = q
+				facet.xidToValueMap[msg] = vx.Value
+			}
+
+			facet.valueToXIDMap[vx.Value] = vx.XID
+			facet.xidToValueMap[vx.XID] = vx.Value
+		}
+
+		// for component query facets, create mappings from any
+		// possible translated value back to the query definition
+
+		facet.queryMap = make(map[string]*poolConfigFacetQuery)
+
+		if len(facet.ComponentQueries) > 0 {
+			for j := range facet.ComponentQueries {
+				q := &facet.ComponentQueries[j]
+
+				for _, tag := range tags {
+					lang := tag.String()
+					localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+					msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
+
+					if err != nil {
+						log.Printf("[FACET] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
+						invalid = true
+						continue
+					}
+
+					facet.queryMap[msg] = q
+				}
 			}
 		}
 	}

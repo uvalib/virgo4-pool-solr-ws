@@ -64,6 +64,9 @@ other = "Library Catalog"
 [PoolUVALibraryDescription]
 other = "Items from UVA Library."
 
+[PoolUnassignedName]
+other = "Unassigned"
+
 [PoolVideoName]
 other = "Video"
 
@@ -135,6 +138,9 @@ other = "Photographer"
 
 [FacetRegion]
 other = "Geographic Location"
+
+[FacetResourceType]
+other = "Resource Type"
 
 [FacetSeries]
 other = "Series"

@@ -405,10 +405,7 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 	facet.Name = s.client.localize(facet.ID)
 	facet.Type = facetDef.Type
 
-	facet.Sort = facetDef.Solr.Sort
-	if facet.Sort == "index" {
-		facet.Sort = "alpha"
-	}
+	facet.Sort = facetDef.BucketSort
 
 	var buckets []v4api.FacetBucket
 
@@ -424,12 +421,24 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 	default:
 		for _, b := range value.Buckets {
 			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, b.Val, false) {
+				mappedValue := b.Val
+
+				// if this is a mapped value facet, retrieved the translation for its mapping
+				if len(facetDef.ValueXIDs) > 0 {
+					xid := facetDef.valueToXIDMap[b.Val]
+					if xid == "" {
+						s.warn("FACET: %s: ignoring unmapped solr value: [%s]", facetDef.XID, b.Val)
+						continue
+					}
+					mappedValue = s.client.localize(xid)
+				}
+
 				selected := false
 				if s.solr.req.meta.selectionMap[facetDef.XID][b.Val] != "" {
 					selected = true
 				}
 
-				buckets = append(buckets, v4api.FacetBucket{Value: b.Val, Count: b.Count, Selected: selected})
+				buckets = append(buckets, v4api.FacetBucket{Value: mappedValue, Count: b.Count, Selected: selected})
 			}
 		}
 

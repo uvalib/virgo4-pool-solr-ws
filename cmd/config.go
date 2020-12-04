@@ -244,18 +244,26 @@ type poolConfigFacetQuery struct {
 	Query string `json:"query,omitempty"`
 }
 
+type poolConfigFacetValueXID struct {
+	Value string `json:"value,omitempty"`
+	XID   string `json:"xid,omitempty"`
+}
+
 type poolConfigFacet struct {
-	XID                string                 `json:"xid,omitempty"` // translation ID
-	Solr               poolConfigFacetSolr    `json:"solr,omitempty"`
-	Type               string                 `json:"type,omitempty"`
-	Format             string                 `json:"format,omitempty"`
-	ExposedValues      []string               `json:"exposed_values,omitempty"`
-	DependentFacetXIDs []string               `json:"dependent_facet_xids,omitempty"`
-	ComponentQueries   []poolConfigFacetQuery `json:"component_queries,omitempty"`
-	IsAvailability     bool                   `json:"is_availability,omitempty"`
-	BucketSort         string                 `json:"bucket_sort,omitempty"`
-	Index              int                    `json:"-"`
+	XID                string                    `json:"xid,omitempty"` // translation ID
+	Solr               poolConfigFacetSolr       `json:"solr,omitempty"`
+	Type               string                    `json:"type,omitempty"`
+	Format             string                    `json:"format,omitempty"`
+	ExposedValues      []string                  `json:"exposed_values,omitempty"`
+	DependentFacetXIDs []string                  `json:"dependent_facet_xids,omitempty"`
+	ComponentQueries   []poolConfigFacetQuery    `json:"component_queries,omitempty"`
+	IsAvailability     bool                      `json:"is_availability,omitempty"`
+	BucketSort         string                    `json:"bucket_sort,omitempty"`
+	ValueXIDs          []poolConfigFacetValueXID `json:"value_xids,omitempty"`
+	Index              int                       `json:"-"`
 	queryMap           map[string]*poolConfigFacetQuery
+	valueToXIDMap      map[string]string
+	xidToValueMap      map[string]string
 }
 
 type poolConfigSort struct {

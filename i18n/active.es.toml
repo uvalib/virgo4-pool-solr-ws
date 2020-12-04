@@ -64,6 +64,9 @@ other = "Biblioteca UVA"
 [PoolUVALibraryDescription]
 other = "Artículos de la Biblioteca UVA."
 
+[PoolUnassignedName]
+other = "Sin Asignar"
+
 [PoolVideoName]
 other = "Vídeo"
 
@@ -135,6 +138,9 @@ other = "Fotógrafo"
 
 [FacetRegion]
 other = "Ubicación Geográfica"
+
+[FacetResourceType]
+other = "Tipo de Recurso"
 
 [FacetSeries]
 other = "Serie"
