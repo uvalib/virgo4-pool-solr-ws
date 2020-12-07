@@ -541,6 +541,9 @@ other = "License"
 [FilterPermissions]
 other = "Permissions"
 
+[FilterResourceType]
+other = "Resource Type"
+
 [FilterShelfLocation]
 other = "Shelf Location"
 

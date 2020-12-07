@@ -9,7 +9,7 @@ import (
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
+func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filter, internalFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
 	if len(filterGroups) == 0 {
 		return
 	}
@@ -69,15 +69,12 @@ func (s *solrRequest) buildFilters(filterGroups []v4api.Filter, internalFacets m
 			solrFilter = q.Query
 
 		default:
-			filterValue = filter.Value
+			var err error
 
-			// if this is a mapped value facet, retrieve the internal solr value for this translated value
-			if len(solrFacet.config.ValueXIDs) > 0 {
-				filterValue = solrFacet.config.xidToValueMap[filter.Value]
-				if filterValue == "" {
-					s.meta.client.warn("FILTER: %s: ignoring unmapped translated value: [%s]", solrFacet.config.XID, filter.Value)
-					continue
-				}
+			filterValue, err = ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
+			if err != nil {
+				ctx.warn(err.Error())
+				continue
 			}
 
 			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
@@ -190,7 +187,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		s.solr.req.json.Facets = s.solr.req.meta.requestFacets
 	}
 
-	s.solr.req.buildFilters(s.virgo.req.Filters, s.solr.req.meta.internalFacets, s.pool.config.Global.Availability)
+	s.solr.req.buildFilters(s, s.virgo.req.Filters, s.solr.req.meta.internalFacets, s.pool.config.Global.Availability)
 
 	if s.client.opts.debug == true {
 		s.solr.req.json.Params.DebugQuery = "on"

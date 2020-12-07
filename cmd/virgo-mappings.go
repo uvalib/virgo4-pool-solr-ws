@@ -421,16 +421,11 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 	default:
 		for _, b := range value.Buckets {
 			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, b.Val, false) {
-				mappedValue := b.Val
 
-				// if this is a mapped value facet, retrieved the translation for its mapping
-				if len(facetDef.ValueXIDs) > 0 {
-					xid := facetDef.valueToXIDMap[b.Val]
-					if xid == "" {
-						s.warn("FACET: %s: ignoring unmapped solr value: [%s]", facetDef.XID, b.Val)
-						continue
-					}
-					mappedValue = s.client.localize(xid)
+				mappedValue, err := s.getExternalSolrValue(facetDef.Solr.Field, b.Val)
+				if err != nil {
+					s.warn(err.Error())
+					continue
 				}
 
 				selected := false
@@ -442,7 +437,9 @@ func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrRespon
 			}
 		}
 
-		// sort facet bucket values per configuration
+		// sort facet bucket values per configuration.
+		// this overrides any initial sort order returned by solr.  for instance,
+		// we can re-sort pool_f bucket values based on the mapped displayed value.
 
 		switch facetDef.BucketSort {
 		case "alpha":

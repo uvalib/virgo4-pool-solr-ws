@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -198,4 +199,44 @@ func hasAnySuffix(s string, suffixes []string) bool {
 	}
 
 	return false
+}
+
+func (s *searchContext) getExternalSolrValue(field string, internalValue string) (string, error) {
+	extMap := s.pool.maps.solrExternalValues[field]
+
+	if extMap == nil {
+		return internalValue, nil
+	}
+
+	xid, ok := extMap[internalValue]
+
+	if ok == false {
+		return "", fmt.Errorf("solr field: [%s]  ignoring unmapped internal value: [%s]", field, internalValue)
+	}
+
+	if xid == "" {
+		return "", fmt.Errorf("solr field: [%s]  ignoring empty internal value: [%s]", field, internalValue)
+	}
+
+	return s.client.localize(xid), nil
+}
+
+func (s *searchContext) getInternalSolrValue(field string, externalValue string) (string, error) {
+	intMap := s.pool.maps.solrInternalValues[field]
+
+	if intMap == nil {
+		return externalValue, nil
+	}
+
+	val, ok := intMap[externalValue]
+
+	if ok == false {
+		return externalValue, fmt.Errorf("solr field: [%s]  ignoring unmapped external value: [%s]", field, externalValue)
+	}
+
+	if val == "" {
+		return externalValue, fmt.Errorf("solr field: [%s]  ignoring empty external value: [%s]", field, externalValue)
+	}
+
+	return val, nil
 }

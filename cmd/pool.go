@@ -45,12 +45,14 @@ type poolTranslations struct {
 }
 
 type poolMaps struct {
-	sortFields   map[string]poolConfigSort
-	attributes   map[string]v4api.PoolAttribute
-	facets       map[string]poolConfigFacet
-	filters      map[string]poolConfigFacet // pre-search filters (facets in disguise)
-	relatorTerms map[string]string
-	relatorCodes map[string]string
+	sortFields         map[string]poolConfigSort
+	attributes         map[string]v4api.PoolAttribute
+	facets             map[string]poolConfigFacet
+	filters            map[string]poolConfigFacet // pre-search filters (facets in disguise)
+	relatorTerms       map[string]string
+	relatorCodes       map[string]string
+	solrExternalValues map[string]map[string]string
+	solrInternalValues map[string]map[string]string
 }
 
 type poolFields struct {
@@ -425,6 +427,12 @@ func (p *poolContext) validateConfig() {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("provider %d xid", i))
 	}
 
+	for field, values := range p.maps.solrExternalValues {
+		for _, xid := range values {
+			messageIDs.requireValue(xid, fmt.Sprintf("solr field [%s] value mapped xid", field))
+		}
+	}
+
 	for i, val := range p.facets {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
 
@@ -435,10 +443,6 @@ func (p *poolContext) validateConfig() {
 		for j, q := range val.ComponentQueries {
 			messageIDs.requireValue(q.XID, fmt.Sprintf("facet %d component query xid %d", i, j))
 			miscValues.requireValue(q.Query, fmt.Sprintf("facet %d component query query %d", i, j))
-		}
-
-		for j, v := range val.ValueXIDs {
-			messageIDs.requireValue(v.XID, fmt.Sprintf("facet %d value xid map xid %d", i, j))
 		}
 	}
 
@@ -720,9 +724,8 @@ func (p *poolContext) validateConfig() {
 	// validate xids can actually be translated
 
 	langs := []string{}
-	tags := p.translations.bundle.LanguageTags()
 
-	for _, tag := range tags {
+	for _, tag := range p.translations.bundle.LanguageTags() {
 		lang := tag.String()
 		langs = append(langs, lang)
 		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
@@ -754,36 +757,10 @@ func (p *poolContext) validateConfig() {
 func (p *poolContext) initFacets() {
 	// initialize internal mappings
 
-	tags := p.translations.bundle.LanguageTags()
-
 	invalid := false
 
 	for i := range p.facets {
 		facet := &p.facets[i]
-
-		// create forward/reverse value-to-xid/translation maps
-
-		facet.valueToXIDMap = make(map[string]string)
-		facet.xidToValueMap = make(map[string]string)
-
-		for _, vx := range facet.ValueXIDs {
-			for _, tag := range tags {
-				lang := tag.String()
-				localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-				msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: vx.XID})
-
-				if err != nil {
-					log.Printf("[FACET] [%s] missing translation for message ID: [%s] (%s)", lang, vx.XID, err.Error())
-					invalid = true
-					continue
-				}
-
-				facet.xidToValueMap[msg] = vx.Value
-			}
-
-			facet.valueToXIDMap[vx.Value] = vx.XID
-			facet.xidToValueMap[vx.XID] = vx.Value
-		}
 
 		// for component query facets, create mappings from any
 		// possible translated value back to the query definition
@@ -794,7 +771,7 @@ func (p *poolContext) initFacets() {
 			for j := range facet.ComponentQueries {
 				q := &facet.ComponentQueries[j]
 
-				for _, tag := range tags {
+				for _, tag := range p.translations.bundle.LanguageTags() {
 					lang := tag.String()
 					localizer := i18n.NewLocalizer(p.translations.bundle, lang)
 					msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
@@ -1038,6 +1015,38 @@ func (p *poolContext) initMappings() {
 		p.maps.filters[filter.XID] = filter
 	}
 
+	// solr internal/external field value forward/reverse maps
+
+	p.maps.solrExternalValues = make(map[string]map[string]string)
+	p.maps.solrInternalValues = make(map[string]map[string]string)
+
+	for solrField, valueMap := range p.config.Global.Mappings.Definitions.SolrValueMap {
+		forwardMap := make(map[string]string)
+		reverseMap := make(map[string]string)
+
+		for _, value := range valueMap {
+			for _, tag := range p.translations.bundle.LanguageTags() {
+				lang := tag.String()
+				localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+				msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: value.XID})
+
+				if err != nil {
+					log.Printf("[INIT] [%s] missing translation for message ID: [%s] (%s)", lang, value.XID, err.Error())
+					invalid = true
+					continue
+				}
+
+				reverseMap[msg] = value.Value
+			}
+
+			forwardMap[value.Value] = value.XID
+			reverseMap[value.XID] = value.Value
+		}
+
+		p.maps.solrExternalValues[solrField] = forwardMap
+		p.maps.solrInternalValues[solrField] = reverseMap
+	}
+
 	if invalid == true {
 		log.Printf("[INIT] exiting due to error(s) above")
 		os.Exit(1)
@@ -1065,8 +1074,8 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	p.initMappings()
 	p.initTranslations()
+	p.initMappings()
 	p.initIdentity()
 	p.initProviders()
 	p.initVersion()
