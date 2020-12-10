@@ -291,7 +291,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	sortOpt := s.virgo.req.Sort
 
-	sortDef := s.pool.maps.sortFields[sortOpt.SortID]
+	sortDef := s.pool.maps.sorts[sortOpt.SortID]
 
 	if sortDef.RecordXID != "" {
 		sortOpt.SortID = sortDef.RecordXID
@@ -514,7 +514,7 @@ func (s *searchContext) determineSortOptions() searchResponse {
 
 	if sortReq.SortID != "" || sortReq.Order != "" {
 		// sort was specified; validate it
-		sortDef := s.pool.maps.sortFields[sortReq.SortID]
+		sortDef := s.pool.maps.sorts[sortReq.SortID]
 
 		if sortDef.XID == "" {
 			return searchResponse{status: http.StatusBadRequest, err: errors.New("invalid sort id")}
@@ -554,7 +554,7 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 	}
 
 	// group or not based on sort being applied
-	s.virgo.flags.groupResults = s.pool.maps.sortFields[s.virgo.req.Sort.SortID].GroupResults
+	s.virgo.flags.groupResults = s.pool.maps.sorts[s.virgo.req.Sort.SortID].GroupResults
 
 	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
 		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}

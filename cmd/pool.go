@@ -45,35 +45,30 @@ type poolTranslations struct {
 }
 
 type poolMaps struct {
-	sortFields         map[string]poolConfigSort
 	attributes         map[string]v4api.PoolAttribute
-	facets             map[string]poolConfigFacet
-	filters            map[string]poolConfigFacet // pre-search filters (facets in disguise)
+	sorts              map[string]*poolConfigSort
+	facets             map[string]*poolConfigFacet
+	filters            map[string]*poolConfigFacet // pre-search filters (facets in disguise)
+	fields             map[string]*poolConfigField
+	resourceTypes      map[string]*poolConfigResourceTypeContext
 	relatorTerms       map[string]string
 	relatorCodes       map[string]string
 	solrExternalValues map[string]map[string]string
 	solrInternalValues map[string]map[string]string
 }
 
-type poolFields struct {
-	basic    []poolConfigField
-	detailed []poolConfigField
-}
-
 type poolContext struct {
-	randomSource *rand.Rand
-	config       *poolConfig
-	translations poolTranslations
-	identity     v4api.PoolIdentity
-	providers    v4api.PoolProviders
-	version      poolVersion
-	solr         poolSolr
-	maps         poolMaps
-	fields       poolFields
-	facets       []poolConfigFacet
-	filters      []poolConfigFacet // pre-search filters (facets in disguise)
-	sorts        []poolConfigSort
-	titleizer    *titleizeContext
+	randomSource  *rand.Rand
+	config        *poolConfig
+	translations  poolTranslations
+	identity      v4api.PoolIdentity
+	providers     v4api.PoolProviders
+	version       poolVersion
+	solr          poolSolr
+	maps          poolMaps
+	sorts         []*poolConfigSort
+	resourceTypes []*poolConfigResourceTypeContext
+	titleizer     *titleizeContext
 }
 
 type stringValidator struct {
@@ -124,7 +119,6 @@ func (p *poolContext) initIdentity() {
 	}
 
 	// populate supported attributes
-
 	for _, attribute := range p.config.Global.Attributes {
 		supported := false
 		if sliceContainsString(p.config.Local.Identity.Attributes, attribute, true) {
@@ -134,25 +128,15 @@ func (p *poolContext) initIdentity() {
 		p.identity.Attributes = append(p.identity.Attributes, v4api.PoolAttribute{Name: attribute, Supported: supported})
 	}
 
-	// create sort field map
-	p.maps.sortFields = make(map[string]poolConfigSort)
-	for i := range p.sorts {
-		s := &p.sorts[i]
-
-		// FIXME: needs improvement; should not assume relevance sort XID
-		if s.XID == "SortRelevance" {
-			s.RecordXID = p.config.Local.Solr.RelevanceIntraGroupSort.XID
-			s.RecordOrder = p.config.Local.Solr.RelevanceIntraGroupSort.Order
-		}
-
-		p.maps.sortFields[s.XID] = *s
-		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID, Asc: s.AscXID, Desc: s.DescXID})
-	}
-
 	// create attribute map
 	p.maps.attributes = make(map[string]v4api.PoolAttribute)
 	for _, attribute := range p.identity.Attributes {
 		p.maps.attributes[attribute.Name] = attribute
+	}
+
+	// populate supported sorts
+	for _, s := range p.sorts {
+		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID, Asc: s.AscXID, Desc: s.DescXID})
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
@@ -222,29 +206,6 @@ func (p *poolContext) initSolr() {
 	healthCtx := poolSolrContext{
 		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.HealthCheck.Endpoint),
 		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, p.config.Local.Solr.Clients.HealthCheck.ReadTimeout),
-	}
-
-	// create facet map
-	p.maps.facets = make(map[string]poolConfigFacet)
-
-	p.config.Global.Availability.ExposedValues = []string{}
-	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
-	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
-	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
-
-	for i := range p.facets {
-		f := &p.facets[i]
-
-		f.Index = i
-
-		// configure availability facet while we're here
-		if f.IsAvailability == true {
-			f.Solr.Field = p.config.Global.Availability.Anon.Facet
-			f.Solr.FieldAuth = p.config.Global.Availability.Auth.Facet
-			f.ExposedValues = p.config.Global.Availability.ExposedValues
-		}
-
-		p.maps.facets[f.XID] = *f
 	}
 
 	p.solr = poolSolr{
@@ -347,7 +308,7 @@ func (p *poolContext) validateConfig() {
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.XID, "default sort xid")
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.Order, "default sort order")
 
-	if p.config.Global.Service.DefaultSort.XID != "" && p.maps.sortFields[p.config.Global.Service.DefaultSort.XID].XID == "" {
+	if p.config.Global.Service.DefaultSort.XID != "" && p.maps.sorts[p.config.Global.Service.DefaultSort.XID].XID == "" {
 		log.Printf("[VALIDATE] default sort xid not found in sort options list")
 		invalid = true
 	}
@@ -379,13 +340,6 @@ func (p *poolContext) validateConfig() {
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
 
-	for _, val := range p.config.Local.Solr.AuthorFields.Preferred {
-		solrFields.requireValue(val, "preferred author field")
-	}
-	for _, val := range p.config.Local.Solr.AuthorFields.Fallback {
-		solrFields.requireValue(val, "fallback author field")
-	}
-
 	if p.config.Local.Identity.Mode == "image" {
 		if p.config.Local.Related == nil {
 			log.Printf("[VALIDATE] missing related section")
@@ -407,7 +361,7 @@ func (p *poolContext) validateConfig() {
 		messageIDs.addValue(val.DescXID)
 		messageIDs.addValue(val.RecordXID)
 
-		if val.RecordXID != "" && p.maps.sortFields[val.RecordXID].XID == "" {
+		if val.RecordXID != "" && p.maps.sorts[val.RecordXID].XID == "" {
 			log.Printf("[VALIDATE] sort option %d record sort xid not found in sort options list", i)
 			invalid = true
 		}
@@ -433,22 +387,9 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for i, val := range p.facets {
-		messageIDs.requireValue(val.XID, fmt.Sprintf("facet %d xid", i))
-
-		for j, depval := range val.DependentFacetXIDs {
-			messageIDs.requireValue(depval, fmt.Sprintf("facet %d dependent xid %d", i, j))
-		}
-
-		for j, q := range val.ComponentQueries {
-			messageIDs.requireValue(q.XID, fmt.Sprintf("facet %d component query xid %d", i, j))
-			miscValues.requireValue(q.Query, fmt.Sprintf("facet %d component query query %d", i, j))
-		}
-	}
-
-	for i, val := range p.filters {
-		messageIDs.requireValue(val.XID, fmt.Sprintf("filter %d xid", i))
-		solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter %d solr field", i))
+	for xid, val := range p.maps.filters {
+		messageIDs.requireValue(val.XID, fmt.Sprintf("filter [%s] xid", xid))
+		solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter [%s] solr field", xid))
 	}
 
 	for i, val := range p.config.Global.Publishers {
@@ -472,252 +413,278 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
 
-	allFields := append(p.fields.basic, p.fields.detailed...)
+	for i := range p.resourceTypes {
+		rt := p.resourceTypes[i]
 
-	for i, field := range allFields {
-		prefix := fmt.Sprintf("field index %d: ", i)
-		postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
+		for _, val := range rt.AuthorFields.Preferred {
+			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] preferred author field", i, rt.Value))
+		}
+		for _, val := range rt.AuthorFields.Fallback {
+			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] fallback author field", i, rt.Value))
+		}
 
-		solrFields.setPrefix(prefix)
-		messageIDs.setPrefix(prefix)
-		miscValues.setPrefix(prefix)
+		for j, val := range rt.facets {
+			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] facet %d xid", i, rt.Value, j))
 
-		solrFields.setPostfix(postfix)
-		messageIDs.setPostfix(postfix)
-		miscValues.setPostfix(postfix)
-
-		// start validating
-
-		messageIDs.addValue(field.XID)
-		messageIDs.addValue(field.WSLSXID)
-
-		miscValues.requireValue(field.Name, "name")
-
-		if field.Custom == true {
-			if field.Field != "" {
-				solrFields.requireValue(field.Field, "solr field")
+			for k, depval := range val.DependentFacetXIDs {
+				messageIDs.requireValue(depval, fmt.Sprintf("resource type %d [%s] facet %d dependent xid %d", i, rt.Value, j, k))
 			}
 
-			switch field.Name {
-			case "abstract":
-				if field.CustomInfo == nil || field.CustomInfo.Abstract == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.Abstract.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
-
-			case "access_url":
-				if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-				solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
-				solrFields.requireValue(field.CustomInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
-				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-			case "authenticate":
-
-			case "author":
-
-			case "author_list":
-
-			case "availability":
-
-			case "citation_advisor":
-
-			case "citation_author":
-
-			case "citation_compiler":
-
-			case "citation_editor":
-
-			case "citation_format":
-
-			case "citation_is_online_only":
-				if field.CustomInfo == nil || field.CustomInfo.CitationOnlineOnly == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				for j, f := range field.CustomInfo.CitationOnlineOnly.ComparisonFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, j))
-				}
-
-			case "citation_is_virgo_url":
-				if field.CustomInfo == nil || field.CustomInfo.CitationVirgoURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				for j, f := range field.CustomInfo.CitationVirgoURL.ComparisonFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, j))
-				}
-
-			case "citation_subtitle":
-
-			case "citation_title":
-
-			case "citation_translator":
-
-			case "composer_performer":
-
-			case "copyright_and_permissions":
-
-			case "cover_image_url":
-				if field.CustomInfo == nil || field.CustomInfo.CoverImageURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				miscValues.requireValue(field.CustomInfo.CoverImageURL.MusicPool, "%s section music pool")
-
-				solrFields.requireValue(field.CustomInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-				solrFields.requireValue(field.CustomInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Name))
-				solrFields.requireValue(field.CustomInfo.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Name))
-
-				solrFields.addValue(field.CustomInfo.CoverImageURL.ISBNField)
-				solrFields.addValue(field.CustomInfo.CoverImageURL.OCLCField)
-				solrFields.addValue(field.CustomInfo.CoverImageURL.LCCNField)
-				solrFields.addValue(field.CustomInfo.CoverImageURL.UPCField)
-
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Host, "cover images template host")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Path, "cover images template path")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
-
-			case "creator":
-
-			case "digital_content_url":
-				if field.CustomInfo == nil || field.CustomInfo.DigitalContentURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.DigitalContentURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Host, "digital content template host")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
-
-			case "language":
-				if field.CustomInfo == nil || field.CustomInfo.Language == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.Language.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
-
-			case "online_related":
-				if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-				solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
-				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-			case "published_location":
-
-			case "publisher_name":
-				if field.CustomInfo == nil || field.CustomInfo.PublisherName == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.PublisherName.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
-
-			case "related_resources":
-				if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-				solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
-				messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-			case "sirsi_url":
-				if field.CustomInfo == nil || field.CustomInfo.SirsiURL == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-				miscValues.requireValue(field.CustomInfo.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Name))
-
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Host, "sirsi template host")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
-				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
-
-			case "summary_holdings":
-
-			case "title_subtitle_edition":
-				if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
-
-			case "vernacularized_author":
-
-			case "vernacularized_composer_performer":
-
-			case "vernacularized_creator":
-
-			case "vernacularized_title":
-				if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
-
-			case "vernacularized_title_subtitle_edition":
-				if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
-				solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
-
-			case "wsls_collection_description":
-				if field.CustomInfo == nil || field.CustomInfo.WSLSCollectionDescription == nil {
-					log.Printf("[VALIDATE] missing field index %d custom_info/%s section", i, field.Name)
-					invalid = true
-					continue
-				}
-
-				messageIDs.requireValue(field.CustomInfo.WSLSCollectionDescription.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
-
-			default:
-				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", i, field.Name)
-				invalid = true
-				continue
+			for k, q := range val.ComponentQueries {
+				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] facet %d component query xid %d", i, rt.Value, j, k))
+				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] facet %d component query query %d", i, rt.Value, j, k))
 			}
-		} else {
-			solrFields.requireValue(field.Field, "solr field")
+		}
+
+		allFields := append(rt.fields.basic, rt.fields.detailed...)
+
+		for j, field := range allFields {
+			prefix := fmt.Sprintf("resource type %d [%s] field index %d: ", i, rt.Value, j)
+			postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
+
+			solrFields.setPrefix(prefix)
+			messageIDs.setPrefix(prefix)
+			miscValues.setPrefix(prefix)
+
+			solrFields.setPostfix(postfix)
+			messageIDs.setPostfix(postfix)
+			miscValues.setPostfix(postfix)
+
+			// start validating
+
+			messageIDs.addValue(field.XID)
+			messageIDs.addValue(field.WSLSXID)
+
+			miscValues.requireValue(field.Name, "name")
+
+			if field.Custom == true {
+				if field.Field != "" {
+					solrFields.requireValue(field.Field, "solr field")
+				}
+
+				switch field.Name {
+				case "abstract":
+					if field.CustomInfo == nil || field.CustomInfo.Abstract == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.Abstract.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+				case "access_url":
+					if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
+					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
+					solrFields.requireValue(field.CustomInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
+					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+
+				case "authenticate":
+
+				case "author":
+
+				case "author_list":
+
+				case "availability":
+
+				case "citation_advisor":
+
+				case "citation_author":
+
+				case "citation_compiler":
+
+				case "citation_editor":
+
+				case "citation_format":
+
+				case "citation_is_online_only":
+					if field.CustomInfo == nil || field.CustomInfo.CitationOnlineOnly == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					for k, f := range field.CustomInfo.CitationOnlineOnly.ComparisonFields {
+						solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, k))
+					}
+
+				case "citation_is_virgo_url":
+					if field.CustomInfo == nil || field.CustomInfo.CitationVirgoURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					for k, f := range field.CustomInfo.CitationVirgoURL.ComparisonFields {
+						solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, k))
+					}
+
+				case "citation_subtitle":
+
+				case "citation_title":
+
+				case "citation_translator":
+
+				case "composer_performer":
+
+				case "copyright_and_permissions":
+
+				case "cover_image_url":
+					if field.CustomInfo == nil || field.CustomInfo.CoverImageURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					miscValues.requireValue(field.CustomInfo.CoverImageURL.MusicPool, "%s section music pool")
+
+					solrFields.requireValue(field.CustomInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Name))
+					solrFields.requireValue(field.CustomInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Name))
+					solrFields.requireValue(field.CustomInfo.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Name))
+
+					solrFields.addValue(field.CustomInfo.CoverImageURL.ISBNField)
+					solrFields.addValue(field.CustomInfo.CoverImageURL.OCLCField)
+					solrFields.addValue(field.CustomInfo.CoverImageURL.LCCNField)
+					solrFields.addValue(field.CustomInfo.CoverImageURL.UPCField)
+
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Host, "cover images template host")
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Path, "cover images template path")
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
+
+				case "creator":
+
+				case "digital_content_url":
+					if field.CustomInfo == nil || field.CustomInfo.DigitalContentURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.DigitalContentURL.IDField, fmt.Sprintf("%s section id field", field.Name))
+
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Host, "digital content template host")
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
+
+				case "language":
+					if field.CustomInfo == nil || field.CustomInfo.Language == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.Language.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+				case "online_related":
+					if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
+					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
+					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+
+				case "published_location":
+
+				case "publisher_name":
+					if field.CustomInfo == nil || field.CustomInfo.PublisherName == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.PublisherName.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+				case "related_resources":
+					if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
+					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
+					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+
+				case "sirsi_url":
+					if field.CustomInfo == nil || field.CustomInfo.SirsiURL == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Name))
+					miscValues.requireValue(field.CustomInfo.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Name))
+
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Host, "sirsi template host")
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
+					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
+
+				case "summary_holdings":
+
+				case "title_subtitle_edition":
+					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
+
+				case "vernacularized_author":
+
+				case "vernacularized_composer_performer":
+
+				case "vernacularized_creator":
+
+				case "vernacularized_title":
+					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
+
+				case "vernacularized_title_subtitle_edition":
+					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
+					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
+
+				case "wsls_collection_description":
+					if field.CustomInfo == nil || field.CustomInfo.WSLSCollectionDescription == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					messageIDs.requireValue(field.CustomInfo.WSLSCollectionDescription.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
+
+				default:
+					log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", j, field.Name)
+					invalid = true
+					continue
+				}
+			} else {
+				if field.Value == "" {
+					solrFields.requireValue(field.Field, "solr field")
+				}
+			}
 		}
 	}
 
@@ -754,47 +721,7 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
-func (p *poolContext) initFacets() {
-	// initialize internal mappings
-
-	invalid := false
-
-	for i := range p.facets {
-		facet := &p.facets[i]
-
-		// for component query facets, create mappings from any
-		// possible translated value back to the query definition
-
-		facet.queryMap = make(map[string]*poolConfigFacetQuery)
-
-		if len(facet.ComponentQueries) > 0 {
-			for j := range facet.ComponentQueries {
-				q := &facet.ComponentQueries[j]
-
-				for _, tag := range p.translations.bundle.LanguageTags() {
-					lang := tag.String()
-					localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-					msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
-
-					if err != nil {
-						log.Printf("[FACET] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
-						invalid = true
-						continue
-					}
-
-					facet.queryMap[msg] = q
-				}
-			}
-		}
-	}
-
-	if invalid == true {
-		log.Printf("[FACET] exiting due to error(s) above")
-		os.Exit(1)
-	}
-}
-
-func (p *poolContext) populateFieldList(required []string, optional []string, fieldMap map[string]*poolConfigField) ([]poolConfigField, bool) {
+func (p *poolContext) populateFieldList(rt *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
 	var fields []poolConfigField
 
 	invalid := false
@@ -815,7 +742,7 @@ func (p *poolContext) populateFieldList(required []string, optional []string, fi
 			continue
 		}
 
-		fieldDef := fieldMap[fieldName]
+		fieldDef := p.maps.fields[fieldName]
 
 		if fieldDef == nil {
 			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
@@ -826,21 +753,21 @@ func (p *poolContext) populateFieldList(required []string, optional []string, fi
 		if i < requiredFields {
 			// we're working with required fields; check which one and set any overrides
 			switch fieldName {
-			case p.config.Local.Mappings.Configured.FieldNames.Title.Name:
-				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Title.Type
-				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.Title.CitationPart
+			case rt.FieldNames.Title.Name:
+				fieldDef.Properties.Type = rt.FieldNames.Title.Type
+				fieldDef.Properties.CitationPart = rt.FieldNames.Title.CitationPart
 
-			case p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name:
-				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Type
-				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.CitationPart
+			case rt.FieldNames.TitleVernacular.Name:
+				fieldDef.Properties.Type = rt.FieldNames.TitleVernacular.Type
+				fieldDef.Properties.CitationPart = rt.FieldNames.TitleVernacular.CitationPart
 
-			case p.config.Local.Mappings.Configured.FieldNames.Author.Name:
-				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.Author.Type
-				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.Author.CitationPart
+			case rt.FieldNames.Author.Name:
+				fieldDef.Properties.Type = rt.FieldNames.Author.Type
+				fieldDef.Properties.CitationPart = rt.FieldNames.Author.CitationPart
 
-			case p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name:
-				fieldDef.Properties.Type = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Type
-				fieldDef.Properties.CitationPart = p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.CitationPart
+			case rt.FieldNames.AuthorVernacular.Name:
+				fieldDef.Properties.Type = rt.FieldNames.AuthorVernacular.Type
+				fieldDef.Properties.CitationPart = rt.FieldNames.AuthorVernacular.CitationPart
 
 			default:
 				log.Printf("[INIT] unrecognized required field name: [%s]", fieldName)
@@ -858,105 +785,207 @@ func (p *poolContext) populateFieldList(required []string, optional []string, fi
 }
 
 func (p *poolContext) initMappings() {
+	var seen map[string]bool
 	invalid := false
 
-	// create mapping from facet XIDs to facet definitions, allowing local overrides
-	facetList := append(p.config.Global.Mappings.Definitions.Facets, p.config.Local.Mappings.Definitions.Facets...)
-	facetMap := make(map[string]*poolConfigFacet)
-	for i := range facetList {
-		facetDef := &facetList[i]
-		facetMap[facetDef.XID] = facetDef
-	}
+	// map global resource type XIDs to facet definitions, ensuring uniqueness
+	p.maps.resourceTypes = make(map[string]*poolConfigResourceTypeContext)
+	for i := range p.config.Global.ResourceTypes.Contexts {
+		def := &p.config.Global.ResourceTypes.Contexts[i]
 
-	// build list of unique facets by XID
-	facetXIDs := append(p.config.Global.Mappings.Configured.FacetXIDs, p.config.Local.Mappings.Configured.FacetXIDs...)
-	facetsSeen := make(map[string]bool)
-	for _, facetXID := range facetXIDs {
-		if facetsSeen[facetXID] == true {
-			continue
-		}
-
-		facetDef := facetMap[facetXID]
-
-		if facetDef == nil {
-			log.Printf("[INIT] unrecognized facet xid: [%s]", facetXID)
+		if p.maps.resourceTypes[def.Value] != nil {
+			log.Printf("[INIT] duplicate resource type value: [%s]", def.Value)
 			invalid = true
 			continue
 		}
 
-		// this is used to preserve facet order when building facets response
-		facetDef.Index = len(facetsSeen)
+		p.maps.resourceTypes[def.Value] = def
+		p.maps.resourceTypes[def.XID] = def
 
-		p.facets = append(p.facets, *facetDef)
-
-		facetsSeen[facetXID] = true
+		// since this is not a configured value, we can build the definitive list now
+		p.resourceTypes = append(p.resourceTypes, def)
 	}
 
-	// create mapping from field names to field definitions, allowing local overrides
-	fieldList := append(p.config.Global.Mappings.Definitions.Fields, p.config.Local.Mappings.Definitions.Fields...)
-	fieldMap := make(map[string]*poolConfigField)
-	for i := range fieldList {
-		fieldDef := &fieldList[i]
-		fieldMap[fieldDef.Name] = fieldDef
+	// availability facet setup
+	p.config.Global.Availability.ExposedValues = []string{}
+	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
+	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
+	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
+
+	// map global facet XIDs to facet definitions, ensuring uniqueness
+	p.maps.facets = make(map[string]*poolConfigFacet)
+	for i := range p.config.Global.Mappings.Definitions.Facets {
+		def := &p.config.Global.Mappings.Definitions.Facets[i]
+
+		if p.maps.facets[def.XID] != nil {
+			log.Printf("[INIT] duplicate facet xid: [%s]", def.XID)
+			invalid = true
+			continue
+		}
+
+		// configure availability facet
+		if def.IsAvailability == true {
+			def.Solr.Field = p.config.Global.Availability.Anon.Facet
+			def.Solr.FieldAuth = p.config.Global.Availability.Auth.Facet
+			def.ExposedValues = p.config.Global.Availability.ExposedValues
+		}
+
+		// for component query facets, create mappings from any
+		// possible translated value back to the query definition
+
+		if len(def.ComponentQueries) > 0 {
+			def.queryMap = make(map[string]*poolConfigFacetQuery)
+
+			for j := range def.ComponentQueries {
+				q := &def.ComponentQueries[j]
+
+				for _, tag := range p.translations.bundle.LanguageTags() {
+					lang := tag.String()
+					localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+					msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
+
+					if err != nil {
+						log.Printf("[INIT] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
+						invalid = true
+						continue
+					}
+
+					def.queryMap[msg] = q
+				}
+			}
+		}
+
+		p.maps.facets[def.XID] = def
 	}
 
-	// first, add special title/author fields
-	// these will be populated in perhaps the most ugly fashion below
+	// map global field names to field definitions, ensuring uniqueness
+	p.maps.fields = make(map[string]*poolConfigField)
+	for i := range p.config.Global.Mappings.Definitions.Fields {
+		def := &p.config.Global.Mappings.Definitions.Fields[i]
 
-	// these are required
-	requiredFieldNames := []string{
-		p.config.Local.Mappings.Configured.FieldNames.Title.Name,
-		p.config.Local.Mappings.Configured.FieldNames.Author.Name,
+		if p.maps.fields[def.Name] != nil {
+			log.Printf("[INIT] duplicate field name: [%s]", def.Name)
+			invalid = true
+			continue
+		}
+
+		p.maps.fields[def.Name] = def
 	}
 
-	// these are optional
-	if p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name != "" {
-		requiredFieldNames = append(requiredFieldNames, p.config.Local.Mappings.Configured.FieldNames.TitleVernacular.Name)
+	// map global filter XIDs to filter definitions, ensuring uniqueness
+	p.maps.filters = make(map[string]*poolConfigFacet)
+	for i := range p.config.Global.Mappings.Definitions.Filters {
+		def := &p.config.Global.Mappings.Definitions.Filters[i]
+
+		if p.maps.filters[def.XID] != nil {
+			log.Printf("[INIT] duplicate filter xid: [%s]", def.XID)
+			invalid = true
+			continue
+		}
+
+		p.maps.filters[def.XID] = def
 	}
 
-	if p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name != "" {
-		requiredFieldNames = append(requiredFieldNames, p.config.Local.Mappings.Configured.FieldNames.AuthorVernacular.Name)
-	}
+	// create sort field map
+	p.maps.sorts = make(map[string]*poolConfigSort)
+	for i := range p.config.Global.Mappings.Definitions.Sorts {
+		def := &p.config.Global.Mappings.Definitions.Sorts[i]
 
-	var fieldListInvalid bool
+		if p.maps.sorts[def.XID] != nil {
+			log.Printf("[INIT] duplicate sort xid: [%s]", def.XID)
+			invalid = true
+			continue
+		}
 
-	// build list of unique basic fields by name
-	basicFieldNames := append(p.config.Local.Mappings.Configured.FieldNames.Basic, p.config.Global.Mappings.Configured.FieldNames.Basic...)
-	p.fields.basic, fieldListInvalid = p.populateFieldList(requiredFieldNames, basicFieldNames, fieldMap)
-	invalid = invalid || fieldListInvalid
-
-	// build list of unique detailed fields by name
-	detailedFieldNames := append(p.config.Local.Mappings.Configured.FieldNames.Detailed, p.config.Global.Mappings.Configured.FieldNames.Detailed...)
-	p.fields.detailed, fieldListInvalid = p.populateFieldList(requiredFieldNames, detailedFieldNames, fieldMap)
-	invalid = invalid || fieldListInvalid
-
-	// create mapping from sort XIDs to sort definitions, allowing local overrides
-	sortList := append(p.config.Global.Mappings.Definitions.Sorts, p.config.Local.Mappings.Definitions.Sorts...)
-	sortMap := make(map[string]*poolConfigSort)
-	for i := range sortList {
-		sortDef := &sortList[i]
-		sortMap[sortDef.XID] = sortDef
+		p.maps.sorts[def.XID] = def
 	}
 
 	// build list of unique sorts by XID
-	sortXIDs := append(p.config.Global.Mappings.Configured.SortXIDs, p.config.Local.Mappings.Configured.SortXIDs...)
-	sortsSeen := make(map[string]bool)
-	for _, sortXID := range sortXIDs {
-		if sortsSeen[sortXID] == true {
+	seen = make(map[string]bool)
+	for _, xid := range p.config.Global.Mappings.Configured.SortXIDs {
+		if seen[xid] == true {
 			continue
 		}
 
-		sortDef := sortMap[sortXID]
-
-		if sortDef == nil {
-			log.Printf("[INIT] unrecognized sort xid: [%s]", sortXID)
+		def := p.maps.sorts[xid]
+		if def == nil {
+			log.Printf("[INIT] unrecognized sort xid: [%s]", xid)
 			invalid = true
 			continue
 		}
 
-		p.sorts = append(p.sorts, *sortDef)
+		if def.IsRelevance == true {
+			def.RecordXID = p.config.Local.Solr.RelevanceIntraGroupSort.XID
+			def.RecordOrder = p.config.Local.Solr.RelevanceIntraGroupSort.Order
+		}
 
-		sortsSeen[sortXID] = true
+		p.sorts = append(p.sorts, def)
+
+		seen[xid] = true
+	}
+
+	// for each resource type, set up its facets and fields
+
+	for i := range p.resourceTypes {
+		rt := p.resourceTypes[i]
+
+		// create ordered facet list and convenience map
+		rt.facetMap = make(map[string]*poolConfigFacet)
+
+		seen = make(map[string]bool)
+		for _, xid := range rt.FacetXIDs {
+			if seen[xid] == true {
+				continue
+			}
+
+			orig := p.maps.facets[xid]
+			if orig == nil {
+				log.Printf("[INIT] resource type value [%s] contains unrecognized facet xid: [%s]", rt.Value, xid)
+				invalid = true
+				continue
+			}
+
+			// create a copy of the definition as the indices will be unique among resource types
+			def := *orig
+
+			// this is used to preserve facet order when building facets response
+			def.Index = len(seen)
+
+			rt.facets = append(rt.facets, def)
+			rt.facetMap[xid] = &def
+
+			seen[xid] = true
+		}
+
+		// create basic/detailed field lists
+
+		// first, add special title/author fields
+		// these will be populated in perhaps the most ugly fashion below
+
+		// these are required
+		requiredFieldNames := []string{
+			rt.FieldNames.Title.Name,
+			rt.FieldNames.Author.Name,
+		}
+
+		// these are optional
+		if rt.FieldNames.TitleVernacular.Name != "" {
+			requiredFieldNames = append(requiredFieldNames, rt.FieldNames.TitleVernacular.Name)
+		}
+
+		if rt.FieldNames.AuthorVernacular.Name != "" {
+			requiredFieldNames = append(requiredFieldNames, rt.FieldNames.AuthorVernacular.Name)
+		}
+
+		var fieldListInvalid bool
+
+		// build list of unique basic fields by name
+		rt.fields.basic, fieldListInvalid = p.populateFieldList(rt, requiredFieldNames, rt.FieldNames.Basic)
+		invalid = invalid || fieldListInvalid
+
+		// build list of unique detailed fields by name
+		rt.fields.detailed, fieldListInvalid = p.populateFieldList(rt, requiredFieldNames, rt.FieldNames.Detailed)
+		invalid = invalid || fieldListInvalid
 	}
 
 	// relator maps
@@ -974,45 +1003,6 @@ func (p *poolContext) initMappings() {
 
 		p.maps.relatorTerms[r.Code] = r.Term
 		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
-	}
-
-	// create mapping from filter XIDs to filter definitions
-	filterList := p.config.Global.Mappings.Definitions.Filters
-	filterMap := make(map[string]*poolConfigFacet)
-	for i := range filterList {
-		filterDef := &filterList[i]
-		filterMap[filterDef.XID] = filterDef
-	}
-
-	// build list of unique filters by XID
-	filterXIDs := p.config.Global.Mappings.Configured.FilterXIDs
-	filtersSeen := make(map[string]bool)
-	for _, filterXID := range filterXIDs {
-		if filtersSeen[filterXID] == true {
-			continue
-		}
-
-		filterDef := filterMap[filterXID]
-
-		if filterDef == nil {
-			log.Printf("[INIT] unrecognized filter xid: [%s]", filterXID)
-			invalid = true
-			continue
-		}
-
-		// this is used to preserve filter order when building filters response
-		filterDef.Index = len(filtersSeen)
-
-		p.filters = append(p.filters, *filterDef)
-
-		filtersSeen[filterXID] = true
-	}
-
-	// filter map
-	p.maps.filters = make(map[string]poolConfigFacet)
-
-	for _, filter := range p.filters {
-		p.maps.filters[filter.XID] = filter
 	}
 
 	// solr internal/external field value forward/reverse maps
@@ -1074,12 +1064,11 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+	p.initVersion()
 	p.initTranslations()
 	p.initMappings()
 	p.initIdentity()
 	p.initProviders()
-	p.initVersion()
-	p.initFacets()
 	p.initSolr()
 	p.initCitationFormats()
 	p.initTitleizer()

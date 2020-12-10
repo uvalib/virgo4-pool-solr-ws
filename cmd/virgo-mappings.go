@@ -17,6 +17,7 @@ type fieldContext struct {
 
 type recordContext struct {
 	doc                *solrDocument
+	resourceTypeCtx    *poolConfigResourceTypeContext
 	anonOnline         bool
 	authOnline         bool
 	availabilityValues []string
@@ -86,12 +87,19 @@ func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 	var fields []v4api.RecordField
 
-	// non-custom fields just return the raw solr values
+	// non-custom fields just return the explicit or raw solr values
 
 	if rc.fieldCtx.config.Custom == false {
-		for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
-			rc.fieldCtx.field.Value = value
+		if rc.fieldCtx.config.Value != "" {
+			// explicitly configured value
+			rc.fieldCtx.field.Value = rc.fieldCtx.config.Value
 			fields = append(fields, rc.fieldCtx.field)
+		} else {
+			// solr-based value(s)
+			for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+				rc.fieldCtx.field.Value = value
+				fields = append(fields, rc.fieldCtx.field)
+			}
 		}
 
 		return fields
@@ -212,10 +220,22 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 	return fields
 }
 
-func (s *searchContext) initializeRecordContext(doc *solrDocument) recordContext {
+func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordContext, error) {
 	var rc recordContext
 
 	rc.doc = doc
+
+	pool := rc.doc.getFirstString(s.pool.config.Global.ResourceTypes.Field)
+	if pool == "" {
+		pool = s.pool.config.Global.ResourceTypes.DefaultContext
+	}
+
+	s.log("pool = [%s]", pool)
+	rc.resourceTypeCtx = s.pool.maps.resourceTypes[pool]
+
+	if rc.resourceTypeCtx == nil {
+		return nil, fmt.Errorf("unable to map pool [%s] to a resource type context", pool)
+	}
 
 	// availability setup
 
@@ -249,12 +269,12 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) recordContext
 	// build parsed author lists from configured fields
 
 	var preferredAuthorValues []string
-	for _, field := range s.pool.config.Local.Solr.AuthorFields.Preferred {
+	for _, field := range rc.resourceTypeCtx.AuthorFields.Preferred {
 		preferredAuthorValues = append(preferredAuthorValues, doc.getStrings(field)...)
 	}
 
 	var fallbackAuthorValues []string
-	for _, field := range s.pool.config.Local.Solr.AuthorFields.Fallback {
+	for _, field := range rc.resourceTypeCtx.AuthorFields.Fallback {
 		fallbackAuthorValues = append(fallbackAuthorValues, doc.getStrings(field)...)
 	}
 
@@ -265,13 +285,17 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) recordContext
 
 	rc.relations = s.parseRelations(rawAuthorValues)
 
-	return rc
+	return &rc, nil
 }
 
 func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	var record v4api.Record
 
-	rc := s.initializeRecordContext(doc)
+	rc, err := s.initializeRecordContext(doc)
+	if err != nil {
+		s.err(err.Error())
+		return record
+	}
 
 	// determine what fields we are extracting from the document
 
@@ -279,10 +303,10 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	switch {
 	case s.itemDetails == true:
-		fieldCfgs = s.pool.fields.detailed
+		fieldCfgs = rc.resourceTypeCtx.fields.detailed
 
 	default:
-		fieldCfgs = s.pool.fields.basic
+		fieldCfgs = rc.resourceTypeCtx.fields.basic
 	}
 
 	// field loop
@@ -320,7 +344,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 		rc.fieldCtx = fieldContext{config: fieldCfg, field: f}
 
-		fieldValues := s.getFieldValues(&rc)
+		fieldValues := s.getFieldValues(rc)
 
 		if len(fieldValues) == 0 {
 			continue
@@ -398,7 +422,7 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 	return records
 }
 
-func (s *searchContext) populateFacet(facetDef poolConfigFacet, value solrResponseFacet) v4api.Facet {
+func (s *searchContext) populateFacet(facetDef *poolConfigFacet, value solrResponseFacet) v4api.Facet {
 	var facet v4api.Facet
 
 	facet.ID = facetDef.XID
@@ -529,7 +553,7 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 	for key, val := range mergedFacets {
 		if len(val.Buckets) > 0 {
-			var facetDef poolConfigFacet
+			var facetDef *poolConfigFacet
 			if s.virgo.flags.preSearchFilters == true {
 				facetDef = s.pool.maps.filters[key]
 			} else {

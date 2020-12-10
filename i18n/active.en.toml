@@ -151,6 +151,9 @@ other = "Source"
 [FacetSubject]
 other = "Subject"
 
+[FacetSubjectMusicalScores]
+other = "Subject"
+
 [FacetVideoFormat]
 other = "Video Format"
 

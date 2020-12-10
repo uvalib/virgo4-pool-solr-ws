@@ -128,16 +128,15 @@ type poolConfigAuthorFields struct {
 }
 
 type poolConfigSolr struct {
-	Host                    string                 `json:"host,omitempty"`
-	Core                    string                 `json:"core,omitempty"`
-	Clients                 poolConfigSolrClients  `json:"clients,omitempty"`
-	Params                  poolConfigSolrParams   `json:"params,omitempty"`
-	GroupField              string                 `json:"group_field,omitempty"`
-	RelevanceIntraGroupSort poolConfigSort         `json:"relevance_intra_group_sort,omitempty"`
-	ExactMatchTitleField    string                 `json:"exact_match_title_field,omitempty"`
-	ScoreThresholdMedium    float32                `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh      float32                `json:"score_threshold_high,omitempty"`
-	AuthorFields            poolConfigAuthorFields `json:"author_fields,omitempty"`
+	Host                    string                `json:"host,omitempty"`
+	Core                    string                `json:"core,omitempty"`
+	Clients                 poolConfigSolrClients `json:"clients,omitempty"`
+	Params                  poolConfigSolrParams  `json:"params,omitempty"`
+	GroupField              string                `json:"group_field,omitempty"`
+	RelevanceIntraGroupSort poolConfigSort        `json:"relevance_intra_group_sort,omitempty"`
+	ExactMatchTitleField    string                `json:"exact_match_title_field,omitempty"`
+	ScoreThresholdMedium    float32               `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh      float32               `json:"score_threshold_high,omitempty"`
 }
 
 type poolConfigFieldProperties struct {
@@ -206,7 +205,7 @@ type poolConfigField struct {
 	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
 	DigitalContentOnly bool                       `json:"digital_content_only,omitempty"`
 	CitationOnly       bool                       `json:"citation_only,omitempty"`
-	FlatName           string                     `json:"flat_name,omitempty"`
+	Value              string                     `json:"value,omitempty"`
 	Custom             bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
 	CustomInfo         *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
 }
@@ -258,6 +257,8 @@ type poolConfigFacet struct {
 	queryMap           map[string]*poolConfigFacetQuery
 }
 
+type poolConfigFilter poolConfigFacet
+
 type poolConfigSort struct {
 	XID          string `json:"xid,omitempty"`      // translation ID
 	AscXID       string `json:"asc_xid,omitempty"`  // translation ID
@@ -267,6 +268,7 @@ type poolConfigSort struct {
 	RecordXID    string `json:"record_xid,omitempty"` // translation ID
 	RecordOrder  string `json:"record_order,omitempty"`
 	GroupResults bool   `json:"group_results,omitempty"`
+	IsRelevance  bool   `json:"is_relevance,omitempty"`
 }
 
 type poolConfigIdentity struct {
@@ -352,6 +354,28 @@ type poolConfigRecordAttributes struct {
 	WSLS           poolConfigRecordAttribute `json:"wsls,omitempty"`
 }
 
+type resourceTypeFields struct {
+	basic    []poolConfigField
+	detailed []poolConfigField
+}
+
+type poolConfigResourceTypeContext struct {
+	Value        string                             `json:"value,omitempty"`
+	XID          string                             `json:"xid,omitempty"`
+	AuthorFields poolConfigAuthorFields             `json:"author_fields,omitempty"`
+	FieldNames   poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
+	FacetXIDs    []string                           `json:"facet_xids,omitempty"`
+	facets       []poolConfigFacet
+	facetMap     map[string]*poolConfigFacet
+	fields       resourceTypeFields
+}
+
+type poolConfigResourceTypes struct {
+	Field          string                          `json:"field,omitempty"`
+	DefaultContext string                          `json:"default_context,omitempty"`
+	Contexts       []poolConfigResourceTypeContext `json:"contexts,omitempty"`
+}
+
 type poolConfigGlobal struct {
 	Service          poolConfigService          `json:"service,omitempty"`
 	Solr             poolConfigSolr             `json:"solr,omitempty"`
@@ -365,12 +389,12 @@ type poolConfigGlobal struct {
 	Titleization     poolConfigTitleization     `json:"titleization,omitempty"`
 	Copyrights       []poolConfigCopyright      `json:"copyrights,omitempty"`
 	Mappings         poolConfigMappings         `json:"mappings,omitempty"`
+	ResourceTypes    poolConfigResourceTypes    `json:"resource_types,omitempty"`
 }
 
 type poolConfigLocal struct {
 	Identity poolConfigIdentity `json:"identity,omitempty"`
 	Solr     poolConfigSolr     `json:"solr,omitempty"`
-	Mappings poolConfigMappings `json:"mappings,omitempty"`
 	Related  *poolConfigRelated `json:"related,omitempty"`
 }
 

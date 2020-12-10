@@ -107,7 +107,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet
 
 	// should we request facets or pre-search filters?
 
-	var sourceFacets map[string]poolConfigFacet
+	var sourceFacets map[string]*poolConfigFacet
 	if s.virgo.flags.preSearchFilters == true {
 		sourceFacets = s.pool.maps.filters
 	} else {
@@ -124,7 +124,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet
 			Offset: facet.Solr.Offset,
 			Limit:  facet.Solr.Limit,
 			Facet:  solrRequestSubFacet{GroupCount: fmt.Sprintf("unique(%s)", s.pool.config.Local.Solr.GroupField)},
-			config: &facet,
+			config: facet,
 		}
 
 		if facet.Solr.FieldAuth != "" && auth == true {
@@ -171,7 +171,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	}
 
 	if s.virgo.req.Sort.SortID != "" {
-		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sortFields[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
+		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sorts[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
 	if s.virgo.flags.groupResults == true && s.virgo.flags.requestFacets == false {
