@@ -88,6 +88,8 @@ func (s *searchContext) copySearchContext() *searchContext {
 
 	sc.virgo.endpoint = s.virgo.endpoint
 
+	sc.resourceTypeCtx = s.resourceTypeCtx
+
 	return sc
 }
 
