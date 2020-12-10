@@ -38,12 +38,13 @@ type solrDialog struct {
 }
 
 type searchContext struct {
-	pool        *poolContext
-	client      *clientContext
-	virgo       virgoDialog
-	solr        solrDialog
-	confidence  string
-	itemDetails bool
+	pool            *poolContext
+	client          *clientContext
+	virgo           virgoDialog
+	solr            solrDialog
+	resourceTypeCtx *poolConfigResourceTypeContext
+	confidence      string
+	itemDetails     bool
 }
 
 type searchResponse struct {
@@ -410,6 +411,13 @@ func (s *searchContext) validateSearchRequest() error {
 	// ensure we received either zero or one filter group,
 	// and that any filters provided are supported
 
+	// NOTE: we also set the search-level resource type context here.
+	// this primarily controls what facets (if any) are included in the response.
+	// if the request contains a single "resource type" facet, we can use that
+	// resource type's defined facet list; otherwise we fall back to a default list.
+
+	s.resourceTypeCtx = s.pool.maps.resourceTypes[s.pool.config.Global.ResourceTypes.DefaultContext]
+
 	numFilterGroups := len(s.virgo.req.Filters)
 
 	switch {
@@ -423,12 +431,37 @@ func (s *searchContext) validateSearchRequest() error {
 
 		filterGroup := s.virgo.req.Filters[0]
 
+		// first pass: determine resource type context
+
+		resourceTypeFacets := 0
+		resourceType := ""
+
 		for _, filter := range filterGroup.Facets {
-			if _, ok := s.pool.maps.facets[filter.FacetID]; ok == false {
-				return fmt.Errorf("received unrecognized filter: [%s]", filter.FacetID)
+			if filter.FacetID == s.pool.config.Global.ResourceTypes.FacetXID {
+				resourceTypeFacets++
+				resourceType = filter.Value
+			}
+		}
+
+		if resourceTypeFacets == 1 {
+			pool, err := s.getInternalSolrValue(s.pool.config.Global.ResourceTypes.Field, resourceType)
+			if err != nil {
+				s.warn(err.Error())
+			} else {
+				s.resourceTypeCtx = s.pool.maps.resourceTypes[pool]
+			}
+		}
+
+		// second pass: ensure filter(s) are present in the resource type context facet list
+
+		for _, filter := range filterGroup.Facets {
+			if _, ok := s.resourceTypeCtx.facetMap[filter.FacetID]; ok == false {
+				return fmt.Errorf("received unrecognized filter [%s] for resource type context [%s]", filter.FacetID, s.resourceTypeCtx.Value)
 			}
 		}
 	}
+
+	s.log("VALIDATE: using resource type context: [%s]", s.resourceTypeCtx.Value)
 
 	return nil
 }

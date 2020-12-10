@@ -43,8 +43,8 @@ type solrRequestFacet struct {
 }
 
 type solrRequestJSON struct {
-	Params solrRequestParams           `json:"params"`
-	Facets map[string]solrRequestFacet `json:"facet,omitempty"`
+	Params solrRequestParams            `json:"params"`
+	Facets map[string]*solrRequestFacet `json:"facet,omitempty"`
 }
 
 type solrMeta struct {
@@ -61,8 +61,8 @@ type solrMeta struct {
 	numRows        int                          // for client pagination -- numGroups or numRecords
 	totalRows      int                          // for client pagination -- totalGroups or totalRecords
 	selectionMap   map[string]map[string]string // to track what filters have been applied by the client
-	internalFacets map[string]solrRequestFacet  // to track internal facet info for externally-advertised facets
-	requestFacets  map[string]solrRequestFacet  // to track facets sent in the solr request
+	internalFacets map[string]*solrRequestFacet // to track internal facet info for externally-advertised facets
+	requestFacets  map[string]*solrRequestFacet // to track facets sent in the solr request
 }
 
 type solrRequest struct {

@@ -257,8 +257,6 @@ type poolConfigFacet struct {
 	queryMap           map[string]*poolConfigFacetQuery
 }
 
-type poolConfigFilter poolConfigFacet
-
 type poolConfigSort struct {
 	XID          string `json:"xid,omitempty"`      // translation ID
 	AscXID       string `json:"asc_xid,omitempty"`  // translation ID
@@ -372,6 +370,7 @@ type poolConfigResourceTypeContext struct {
 
 type poolConfigResourceTypes struct {
 	Field          string                          `json:"field,omitempty"`
+	FacetXID       string                          `json:"facet_xid,omitempty"`
 	DefaultContext string                          `json:"default_context,omitempty"`
 	Contexts       []poolConfigResourceTypeContext `json:"contexts,omitempty"`
 }

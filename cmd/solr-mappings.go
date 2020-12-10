@@ -9,7 +9,7 @@ import (
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filter, internalFacets map[string]solrRequestFacet, availability poolConfigAvailability) {
+func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filter, internalFacets map[string]*solrRequestFacet, availability poolConfigAvailability) {
 	if len(filterGroups) == 0 {
 		return
 	}
@@ -20,6 +20,11 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 
 	for _, filter := range filterGroup.Facets {
 		solrFacet := internalFacets[filter.FacetID]
+
+		if solrFacet == nil {
+			s.meta.client.warn("FILTER: omitting unknown filter: [%s]", filter.FacetID)
+			continue
+		}
 
 		// remove this selected filter if it depends on other filters, none of which are selected
 
@@ -97,11 +102,11 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 	}
 }
 
-func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet, map[string]solrRequestFacet) {
+func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFacet, map[string]*solrRequestFacet) {
 	// build customized/personalized available facets from facets definition
 
-	internalFacets := make(map[string]solrRequestFacet)
-	requestFacets := make(map[string]solrRequestFacet)
+	internalFacets := make(map[string]*solrRequestFacet)
+	requestFacets := make(map[string]*solrRequestFacet)
 
 	auth := s.client.isAuthenticated()
 
@@ -111,7 +116,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet
 	if s.virgo.flags.preSearchFilters == true {
 		sourceFacets = s.pool.maps.filters
 	} else {
-		sourceFacets = s.pool.maps.facets
+		sourceFacets = s.resourceTypeCtx.facetMap
 	}
 
 	for i := range sourceFacets {
@@ -131,18 +136,18 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]solrRequestFacet
 			f.Field = facet.Solr.FieldAuth
 		}
 
-		internalFacets[facet.XID] = f
+		internalFacets[facet.XID] = &f
 
 		switch facet.Type {
 		case "component":
 			for _, q := range facet.ComponentQueries {
 				qf := f
 				qf.Query = q.Query
-				requestFacets[q.XID] = qf
+				requestFacets[q.XID] = &qf
 			}
 
 		default:
-			requestFacets[facet.XID] = f
+			requestFacets[facet.XID] = &f
 		}
 	}
 

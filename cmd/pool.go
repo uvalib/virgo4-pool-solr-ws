@@ -44,13 +44,12 @@ type poolTranslations struct {
 	bundle *i18n.Bundle
 }
 
+// pool-level maps
 type poolMaps struct {
 	attributes         map[string]v4api.PoolAttribute
 	sorts              map[string]*poolConfigSort
-	facets             map[string]*poolConfigFacet
-	filters            map[string]*poolConfigFacet // pre-search filters (facets in disguise)
-	fields             map[string]*poolConfigField
-	resourceTypes      map[string]*poolConfigResourceTypeContext
+	filters            map[string]*poolConfigFacet               // pre-search filters (facets in disguise)
+	resourceTypes      map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
 	relatorTerms       map[string]string
 	relatorCodes       map[string]string
 	solrExternalValues map[string]map[string]string
@@ -413,6 +412,9 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
 
+	solrFields.requireValue(p.config.Global.ResourceTypes.Field, "resource types: solr field")
+	messageIDs.requireValue(p.config.Global.ResourceTypes.FacetXID, "resource types: facet xid")
+
 	for i := range p.resourceTypes {
 		rt := p.resourceTypes[i]
 
@@ -721,7 +723,7 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
-func (p *poolContext) populateFieldList(rt *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
+func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigField, rt *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
 	var fields []poolConfigField
 
 	invalid := false
@@ -742,7 +744,7 @@ func (p *poolContext) populateFieldList(rt *poolConfigResourceTypeContext, requi
 			continue
 		}
 
-		fieldDef := p.maps.fields[fieldName]
+		fieldDef := definedFields[fieldName]
 
 		if fieldDef == nil {
 			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
@@ -813,11 +815,11 @@ func (p *poolContext) initMappings() {
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
 
 	// map global facet XIDs to facet definitions, ensuring uniqueness
-	p.maps.facets = make(map[string]*poolConfigFacet)
+	definedFacets := make(map[string]*poolConfigFacet)
 	for i := range p.config.Global.Mappings.Definitions.Facets {
 		def := &p.config.Global.Mappings.Definitions.Facets[i]
 
-		if p.maps.facets[def.XID] != nil {
+		if definedFacets[def.XID] != nil {
 			log.Printf("[INIT] duplicate facet xid: [%s]", def.XID)
 			invalid = true
 			continue
@@ -855,21 +857,21 @@ func (p *poolContext) initMappings() {
 			}
 		}
 
-		p.maps.facets[def.XID] = def
+		definedFacets[def.XID] = def
 	}
 
 	// map global field names to field definitions, ensuring uniqueness
-	p.maps.fields = make(map[string]*poolConfigField)
+	definedFields := make(map[string]*poolConfigField)
 	for i := range p.config.Global.Mappings.Definitions.Fields {
 		def := &p.config.Global.Mappings.Definitions.Fields[i]
 
-		if p.maps.fields[def.Name] != nil {
+		if definedFields[def.Name] != nil {
 			log.Printf("[INIT] duplicate field name: [%s]", def.Name)
 			invalid = true
 			continue
 		}
 
-		p.maps.fields[def.Name] = def
+		definedFields[def.Name] = def
 	}
 
 	// map global filter XIDs to filter definitions, ensuring uniqueness
@@ -938,7 +940,7 @@ func (p *poolContext) initMappings() {
 				continue
 			}
 
-			orig := p.maps.facets[xid]
+			orig := definedFacets[xid]
 			if orig == nil {
 				log.Printf("[INIT] resource type value [%s] contains unrecognized facet xid: [%s]", rt.Value, xid)
 				invalid = true
@@ -980,11 +982,11 @@ func (p *poolContext) initMappings() {
 		var fieldListInvalid bool
 
 		// build list of unique basic fields by name
-		rt.fields.basic, fieldListInvalid = p.populateFieldList(rt, requiredFieldNames, rt.FieldNames.Basic)
+		rt.fields.basic, fieldListInvalid = p.populateFieldList(definedFields, rt, requiredFieldNames, rt.FieldNames.Basic)
 		invalid = invalid || fieldListInvalid
 
 		// build list of unique detailed fields by name
-		rt.fields.detailed, fieldListInvalid = p.populateFieldList(rt, requiredFieldNames, rt.FieldNames.Detailed)
+		rt.fields.detailed, fieldListInvalid = p.populateFieldList(definedFields, rt, requiredFieldNames, rt.FieldNames.Detailed)
 		invalid = invalid || fieldListInvalid
 	}
 
