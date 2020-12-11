@@ -295,17 +295,11 @@ type poolConfigRelated struct {
 	Image *poolConfigRelatedImage `json:"image,omitempty"`
 }
 
-type poolConfigSolrValueXID struct {
-	Value string `json:"value,omitempty"`
-	XID   string `json:"xid,omitempty"`
-}
-
 type poolConfigMappingsDefinitions struct {
-	Fields       []poolConfigField                   `json:"fields,omitempty"`
-	Facets       []poolConfigFacet                   `json:"facets,omitempty"`
-	Filters      []poolConfigFacet                   `json:"filters,omitempty"` // pre-search filters (facets in disguise)
-	Sorts        []poolConfigSort                    `json:"sorts,omitempty"`
-	SolrValueMap map[string][]poolConfigSolrValueXID `json:"solr_value_map,omitempty"` // map of per-solr-field translations
+	Fields  []poolConfigField `json:"fields,omitempty"`
+	Facets  []poolConfigFacet `json:"facets,omitempty"`
+	Filters []poolConfigFacet `json:"filters,omitempty"` // pre-search filters (facets in disguise)
+	Sorts   []poolConfigSort  `json:"sorts,omitempty"`
 }
 
 type poolConfigMappingsHeadingField struct {

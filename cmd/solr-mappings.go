@@ -20,13 +20,11 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 
 	for _, filter := range filterGroup.Facets {
 		solrFacet := internalFacets[filter.FacetID]
-
 		if solrFacet == nil {
-			s.meta.client.warn("FILTER: omitting unknown filter: [%s]", filter.FacetID)
 			continue
 		}
 
-		// remove this selected filter if it depends on other filters, none of which are selected
+		// omit this selected filter if it depends on other filters, none of which are selected
 
 		if len(solrFacet.config.DependentFacetXIDs) > 0 {
 			numSelected := 0

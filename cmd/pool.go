@@ -46,28 +46,29 @@ type poolTranslations struct {
 
 // pool-level maps
 type poolMaps struct {
-	attributes         map[string]v4api.PoolAttribute
-	sorts              map[string]*poolConfigSort
-	filters            map[string]*poolConfigFacet               // pre-search filters (facets in disguise)
-	resourceTypes      map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
-	relatorTerms       map[string]string
-	relatorCodes       map[string]string
-	solrExternalValues map[string]map[string]string
-	solrInternalValues map[string]map[string]string
+	attributes           map[string]v4api.PoolAttribute
+	sorts                map[string]*poolConfigSort
+	facets               map[string]*poolConfigFacet
+	filters              map[string]*poolConfigFacet               // pre-search filters (facets in disguise)
+	resourceTypeContexts map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
+	relatorTerms         map[string]string
+	relatorCodes         map[string]string
+	solrExternalValues   map[string]map[string]string
+	solrInternalValues   map[string]map[string]string
 }
 
 type poolContext struct {
-	randomSource  *rand.Rand
-	config        *poolConfig
-	translations  poolTranslations
-	identity      v4api.PoolIdentity
-	providers     v4api.PoolProviders
-	version       poolVersion
-	solr          poolSolr
-	maps          poolMaps
-	sorts         []*poolConfigSort
-	resourceTypes []*poolConfigResourceTypeContext
-	titleizer     *titleizeContext
+	randomSource         *rand.Rand
+	config               *poolConfig
+	translations         poolTranslations
+	identity             v4api.PoolIdentity
+	providers            v4api.PoolProviders
+	version              poolVersion
+	solr                 poolSolr
+	maps                 poolMaps
+	sorts                []*poolConfigSort
+	resourceTypeContexts []*poolConfigResourceTypeContext
+	titleizer            *titleizeContext
 }
 
 type stringValidator struct {
@@ -415,33 +416,33 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.ResourceTypes.Field, "resource types: solr field")
 	messageIDs.requireValue(p.config.Global.ResourceTypes.FacetXID, "resource types: facet xid")
 
-	for i := range p.resourceTypes {
-		rt := p.resourceTypes[i]
+	for i := range p.resourceTypeContexts {
+		r := p.resourceTypeContexts[i]
 
-		for _, val := range rt.AuthorFields.Preferred {
-			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] preferred author field", i, rt.Value))
+		for _, val := range r.AuthorFields.Preferred {
+			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] preferred author field", i, r.Value))
 		}
-		for _, val := range rt.AuthorFields.Fallback {
-			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] fallback author field", i, rt.Value))
+		for _, val := range r.AuthorFields.Fallback {
+			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] fallback author field", i, r.Value))
 		}
 
-		for j, val := range rt.facets {
-			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] facet %d xid", i, rt.Value, j))
+		for j, val := range r.facets {
+			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] facet %d xid", i, r.Value, j))
 
 			for k, depval := range val.DependentFacetXIDs {
-				messageIDs.requireValue(depval, fmt.Sprintf("resource type %d [%s] facet %d dependent xid %d", i, rt.Value, j, k))
+				messageIDs.requireValue(depval, fmt.Sprintf("resource type %d [%s] facet %d dependent xid %d", i, r.Value, j, k))
 			}
 
 			for k, q := range val.ComponentQueries {
-				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] facet %d component query xid %d", i, rt.Value, j, k))
-				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] facet %d component query query %d", i, rt.Value, j, k))
+				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] facet %d component query xid %d", i, r.Value, j, k))
+				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] facet %d component query query %d", i, r.Value, j, k))
 			}
 		}
 
-		allFields := append(rt.fields.basic, rt.fields.detailed...)
+		allFields := append(r.fields.basic, r.fields.detailed...)
 
 		for j, field := range allFields {
-			prefix := fmt.Sprintf("resource type %d [%s] field index %d: ", i, rt.Value, j)
+			prefix := fmt.Sprintf("resource type %d [%s] field index %d: ", i, r.Value, j)
 			postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
 
 			solrFields.setPrefix(prefix)
@@ -723,7 +724,7 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
-func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigField, rt *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
+func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigField, r *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
 	var fields []poolConfigField
 
 	invalid := false
@@ -755,21 +756,21 @@ func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigFiel
 		if i < requiredFields {
 			// we're working with required fields; check which one and set any overrides
 			switch fieldName {
-			case rt.FieldNames.Title.Name:
-				fieldDef.Properties.Type = rt.FieldNames.Title.Type
-				fieldDef.Properties.CitationPart = rt.FieldNames.Title.CitationPart
+			case r.FieldNames.Title.Name:
+				fieldDef.Properties.Type = r.FieldNames.Title.Type
+				fieldDef.Properties.CitationPart = r.FieldNames.Title.CitationPart
 
-			case rt.FieldNames.TitleVernacular.Name:
-				fieldDef.Properties.Type = rt.FieldNames.TitleVernacular.Type
-				fieldDef.Properties.CitationPart = rt.FieldNames.TitleVernacular.CitationPart
+			case r.FieldNames.TitleVernacular.Name:
+				fieldDef.Properties.Type = r.FieldNames.TitleVernacular.Type
+				fieldDef.Properties.CitationPart = r.FieldNames.TitleVernacular.CitationPart
 
-			case rt.FieldNames.Author.Name:
-				fieldDef.Properties.Type = rt.FieldNames.Author.Type
-				fieldDef.Properties.CitationPart = rt.FieldNames.Author.CitationPart
+			case r.FieldNames.Author.Name:
+				fieldDef.Properties.Type = r.FieldNames.Author.Type
+				fieldDef.Properties.CitationPart = r.FieldNames.Author.CitationPart
 
-			case rt.FieldNames.AuthorVernacular.Name:
-				fieldDef.Properties.Type = rt.FieldNames.AuthorVernacular.Type
-				fieldDef.Properties.CitationPart = rt.FieldNames.AuthorVernacular.CitationPart
+			case r.FieldNames.AuthorVernacular.Name:
+				fieldDef.Properties.Type = r.FieldNames.AuthorVernacular.Type
+				fieldDef.Properties.CitationPart = r.FieldNames.AuthorVernacular.CitationPart
 
 			default:
 				log.Printf("[INIT] unrecognized required field name: [%s]", fieldName)
@@ -791,21 +792,21 @@ func (p *poolContext) initMappings() {
 	invalid := false
 
 	// map global resource type XIDs to facet definitions, ensuring uniqueness
-	p.maps.resourceTypes = make(map[string]*poolConfigResourceTypeContext)
+	p.maps.resourceTypeContexts = make(map[string]*poolConfigResourceTypeContext)
 	for i := range p.config.Global.ResourceTypes.Contexts {
 		def := &p.config.Global.ResourceTypes.Contexts[i]
 
-		if p.maps.resourceTypes[def.Value] != nil {
+		if p.maps.resourceTypeContexts[def.Value] != nil {
 			log.Printf("[INIT] duplicate resource type value: [%s]", def.Value)
 			invalid = true
 			continue
 		}
 
-		p.maps.resourceTypes[def.Value] = def
-		p.maps.resourceTypes[def.XID] = def
+		p.maps.resourceTypeContexts[def.Value] = def
+		p.maps.resourceTypeContexts[def.XID] = def
 
 		// since this is not a configured value, we can build the definitive list now
-		p.resourceTypes = append(p.resourceTypes, def)
+		p.resourceTypeContexts = append(p.resourceTypeContexts, def)
 	}
 
 	// availability facet setup
@@ -815,11 +816,11 @@ func (p *poolContext) initMappings() {
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
 
 	// map global facet XIDs to facet definitions, ensuring uniqueness
-	definedFacets := make(map[string]*poolConfigFacet)
+	p.maps.facets = make(map[string]*poolConfigFacet)
 	for i := range p.config.Global.Mappings.Definitions.Facets {
 		def := &p.config.Global.Mappings.Definitions.Facets[i]
 
-		if definedFacets[def.XID] != nil {
+		if p.maps.facets[def.XID] != nil {
 			log.Printf("[INIT] duplicate facet xid: [%s]", def.XID)
 			invalid = true
 			continue
@@ -857,7 +858,7 @@ func (p *poolContext) initMappings() {
 			}
 		}
 
-		definedFacets[def.XID] = def
+		p.maps.facets[def.XID] = def
 	}
 
 	// map global field names to field definitions, ensuring uniqueness
@@ -926,23 +927,25 @@ func (p *poolContext) initMappings() {
 		seen[xid] = true
 	}
 
-	// for each resource type, set up its facets and fields
+	// the following resource type setup loops are broken out for readability
 
-	for i := range p.resourceTypes {
-		rt := p.resourceTypes[i]
+	// for each resource type, set up its facets and facet map
+
+	for i := range p.resourceTypeContexts {
+		r := p.resourceTypeContexts[i]
 
 		// create ordered facet list and convenience map
-		rt.facetMap = make(map[string]*poolConfigFacet)
+		r.facetMap = make(map[string]*poolConfigFacet)
 
 		seen = make(map[string]bool)
-		for _, xid := range rt.FacetXIDs {
+		for _, xid := range r.FacetXIDs {
 			if seen[xid] == true {
 				continue
 			}
 
-			orig := definedFacets[xid]
+			orig := p.maps.facets[xid]
 			if orig == nil {
-				log.Printf("[INIT] resource type value [%s] contains unrecognized facet xid: [%s]", rt.Value, xid)
+				log.Printf("[INIT] resource type value [%s] contains unrecognized facet xid: [%s]", r.Value, xid)
 				invalid = true
 				continue
 			}
@@ -953,11 +956,17 @@ func (p *poolContext) initMappings() {
 			// this is used to preserve facet order when building facets response
 			def.Index = len(seen)
 
-			rt.facets = append(rt.facets, def)
-			rt.facetMap[xid] = &def
+			r.facets = append(r.facets, def)
+			r.facetMap[xid] = &def
 
 			seen[xid] = true
 		}
+	}
+
+	// for each resource type, set up its fields and field map
+
+	for i := range p.resourceTypeContexts {
+		r := p.resourceTypeContexts[i]
 
 		// create basic/detailed field lists
 
@@ -966,29 +975,63 @@ func (p *poolContext) initMappings() {
 
 		// these are required
 		requiredFieldNames := []string{
-			rt.FieldNames.Title.Name,
-			rt.FieldNames.Author.Name,
+			r.FieldNames.Title.Name,
+			r.FieldNames.Author.Name,
 		}
 
 		// these are optional
-		if rt.FieldNames.TitleVernacular.Name != "" {
-			requiredFieldNames = append(requiredFieldNames, rt.FieldNames.TitleVernacular.Name)
+		if r.FieldNames.TitleVernacular.Name != "" {
+			requiredFieldNames = append(requiredFieldNames, r.FieldNames.TitleVernacular.Name)
 		}
 
-		if rt.FieldNames.AuthorVernacular.Name != "" {
-			requiredFieldNames = append(requiredFieldNames, rt.FieldNames.AuthorVernacular.Name)
+		if r.FieldNames.AuthorVernacular.Name != "" {
+			requiredFieldNames = append(requiredFieldNames, r.FieldNames.AuthorVernacular.Name)
 		}
 
 		var fieldListInvalid bool
 
 		// build list of unique basic fields by name
-		rt.fields.basic, fieldListInvalid = p.populateFieldList(definedFields, rt, requiredFieldNames, rt.FieldNames.Basic)
+		r.fields.basic, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, r.FieldNames.Basic)
 		invalid = invalid || fieldListInvalid
 
 		// build list of unique detailed fields by name
-		rt.fields.detailed, fieldListInvalid = p.populateFieldList(definedFields, rt, requiredFieldNames, rt.FieldNames.Detailed)
+		r.fields.detailed, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, r.FieldNames.Detailed)
 		invalid = invalid || fieldListInvalid
 	}
+
+	// for each resource type, set up its solr value maps
+
+	p.maps.solrExternalValues = make(map[string]map[string]string)
+	p.maps.solrInternalValues = make(map[string]map[string]string)
+
+	forwardMap := make(map[string]string)
+	reverseMap := make(map[string]string)
+
+	for i := range p.resourceTypeContexts {
+		r := p.resourceTypeContexts[i]
+
+		// solr internal/external field value forward/reverse maps
+
+		for _, tag := range p.translations.bundle.LanguageTags() {
+			lang := tag.String()
+			localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+			msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: r.XID})
+
+			if err != nil {
+				log.Printf("[INIT] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
+				invalid = true
+				continue
+			}
+
+			reverseMap[msg] = r.Value
+		}
+
+		forwardMap[r.Value] = r.XID
+		reverseMap[r.XID] = r.Value
+	}
+
+	p.maps.solrExternalValues[p.config.Global.ResourceTypes.Field] = forwardMap
+	p.maps.solrInternalValues[p.config.Global.ResourceTypes.Field] = reverseMap
 
 	// relator maps
 	p.maps.relatorTerms = make(map[string]string)
@@ -1005,38 +1048,6 @@ func (p *poolContext) initMappings() {
 
 		p.maps.relatorTerms[r.Code] = r.Term
 		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
-	}
-
-	// solr internal/external field value forward/reverse maps
-
-	p.maps.solrExternalValues = make(map[string]map[string]string)
-	p.maps.solrInternalValues = make(map[string]map[string]string)
-
-	for solrField, valueMap := range p.config.Global.Mappings.Definitions.SolrValueMap {
-		forwardMap := make(map[string]string)
-		reverseMap := make(map[string]string)
-
-		for _, value := range valueMap {
-			for _, tag := range p.translations.bundle.LanguageTags() {
-				lang := tag.String()
-				localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-				msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: value.XID})
-
-				if err != nil {
-					log.Printf("[INIT] [%s] missing translation for message ID: [%s] (%s)", lang, value.XID, err.Error())
-					invalid = true
-					continue
-				}
-
-				reverseMap[msg] = value.Value
-			}
-
-			forwardMap[value.Value] = value.XID
-			reverseMap[value.XID] = value.Value
-		}
-
-		p.maps.solrExternalValues[solrField] = forwardMap
-		p.maps.solrInternalValues[solrField] = reverseMap
 	}
 
 	if invalid == true {

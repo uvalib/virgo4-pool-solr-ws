@@ -418,7 +418,7 @@ func (s *searchContext) validateSearchRequest() error {
 	// if the request contains a single "resource type" facet, we can use that
 	// resource type's defined facet list; otherwise we fall back to a default list.
 
-	s.resourceTypeCtx = s.pool.maps.resourceTypes[s.pool.config.Global.ResourceTypes.DefaultContext]
+	s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[s.pool.config.Global.ResourceTypes.DefaultContext]
 
 	numFilterGroups := len(s.virgo.req.Filters)
 
@@ -450,20 +450,29 @@ func (s *searchContext) validateSearchRequest() error {
 			if err != nil {
 				s.warn(err.Error())
 			} else {
-				s.resourceTypeCtx = s.pool.maps.resourceTypes[pool]
+				s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[pool]
 			}
 		}
 
-		// second pass: ensure filter(s) are present in the resource type context facet list
+		s.log("VALIDATE: using resource type context [%s] based on selected facets", s.resourceTypeCtx.Value)
+
+		// second pass: ensure filter(s) are present in the resource type context facet list,
+		// or at least that it's a defined facet (even if the resource type doesn't use it).
+		// if neither, fail this request.
 
 		for _, filter := range filterGroup.Facets {
-			if _, ok := s.resourceTypeCtx.facetMap[filter.FacetID]; ok == false {
-				return fmt.Errorf("received unrecognized filter [%s] for resource type context [%s]", filter.FacetID, s.resourceTypeCtx.Value)
+			if _, rok := s.resourceTypeCtx.facetMap[filter.FacetID]; rok == false {
+				if _, dok := s.pool.maps.facets[filter.FacetID]; dok == false {
+					return fmt.Errorf("received unknown filter: [%s]", filter.FacetID)
+				}
+
+				s.warn("received known filter [%s] that is not present in resource type context [%s]; ignoring.", filter.FacetID, s.resourceTypeCtx.Value)
 			}
 		}
-	}
 
-	s.log("VALIDATE: using resource type context: [%s]", s.resourceTypeCtx.Value)
+	default:
+		s.log("VALIDATE: using resource type context [%s] by default", s.resourceTypeCtx.Value)
+	}
 
 	return nil
 }
