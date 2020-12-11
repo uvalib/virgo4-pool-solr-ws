@@ -67,6 +67,7 @@ func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.pool = p
 	s.client = c
 	s.virgo.flags.groupResults = true
+	s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[s.pool.config.Global.ResourceTypes.DefaultContext]
 }
 
 func (s *searchContext) copySearchContext() *searchContext {
@@ -417,8 +418,6 @@ func (s *searchContext) validateSearchRequest() error {
 	// this primarily controls what facets (if any) are included in the response.
 	// if the request contains a single "resource type" facet, we can use that
 	// resource type's defined facet list; otherwise we fall back to a default list.
-
-	s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[s.pool.config.Global.ResourceTypes.DefaultContext]
 
 	numFilterGroups := len(s.virgo.req.Filters)
 
