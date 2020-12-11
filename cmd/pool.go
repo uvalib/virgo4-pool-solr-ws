@@ -876,17 +876,42 @@ func (p *poolContext) initMappings() {
 	}
 
 	// map global filter XIDs to filter definitions, ensuring uniqueness
-	p.maps.filters = make(map[string]*poolConfigFacet)
+	definedFilters := make(map[string]*poolConfigFacet)
 	for i := range p.config.Global.Mappings.Definitions.Filters {
 		def := &p.config.Global.Mappings.Definitions.Filters[i]
 
-		if p.maps.filters[def.XID] != nil {
+		if definedFilters[def.XID] != nil {
 			log.Printf("[INIT] duplicate filter xid: [%s]", def.XID)
 			invalid = true
 			continue
 		}
 
+		definedFilters[def.XID] = def
+	}
+
+	// create filter map based on configured filters
+
+	p.maps.filters = make(map[string]*poolConfigFacet)
+
+	seen = make(map[string]bool)
+	for _, xid := range p.config.Global.Mappings.Configured.FilterXIDs {
+		if seen[xid] == true {
+			continue
+		}
+
+		def := definedFilters[xid]
+		if def == nil {
+			log.Printf("[INIT] unrecognized filter xid: [%s]", xid)
+			invalid = true
+			continue
+		}
+
+		// this is used to preserve filter order when building filters response
+		def.Index = len(p.maps.filters)
+
 		p.maps.filters[def.XID] = def
+
+		seen[xid] = true
 	}
 
 	// create sort field map
@@ -937,8 +962,10 @@ func (p *poolContext) initMappings() {
 		// create ordered facet list and convenience map
 		r.facetMap = make(map[string]*poolConfigFacet)
 
+		facetXIDs := append(p.config.Global.Mappings.Configured.FacetXIDs, r.FacetXIDs...)
+
 		seen = make(map[string]bool)
-		for _, xid := range r.FacetXIDs {
+		for _, xid := range facetXIDs {
 			if seen[xid] == true {
 				continue
 			}
@@ -991,11 +1018,13 @@ func (p *poolContext) initMappings() {
 		var fieldListInvalid bool
 
 		// build list of unique basic fields by name
-		r.fields.basic, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, r.FieldNames.Basic)
+		basicFieldNames := append(r.FieldNames.Basic, p.config.Global.Mappings.Configured.FieldNames.Basic...)
+		r.fields.basic, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, basicFieldNames)
 		invalid = invalid || fieldListInvalid
 
 		// build list of unique detailed fields by name
-		r.fields.detailed, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, r.FieldNames.Detailed)
+		detailedFieldNames := append(r.FieldNames.Detailed, p.config.Global.Mappings.Configured.FieldNames.Detailed...)
+		r.fields.detailed, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, detailedFieldNames)
 		invalid = invalid || fieldListInvalid
 	}
 
