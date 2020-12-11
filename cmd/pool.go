@@ -1010,6 +1010,13 @@ func (p *poolContext) initMappings() {
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
 
+		// if there is no translation for this field, do not map it.
+		// this effectively hides it from the client.
+
+		if r.XID == "" {
+			continue
+		}
+
 		// solr internal/external field value forward/reverse maps
 
 		for _, tag := range p.translations.bundle.LanguageTags() {
