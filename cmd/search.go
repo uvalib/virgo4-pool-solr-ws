@@ -297,7 +297,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	sortDef := s.pool.maps.sorts[sortOpt.SortID]
 
-	if sortDef.RecordXID != "" {
+	if sortDef != nil && sortDef.RecordXID != "" {
 		sortOpt.SortID = sortDef.RecordXID
 
 		if sortDef.RecordOrder != "" {
