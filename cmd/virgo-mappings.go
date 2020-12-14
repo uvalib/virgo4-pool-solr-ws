@@ -230,9 +230,7 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordConte
 		pool = s.pool.config.Global.ResourceTypes.DefaultContext
 	}
 
-	s.log("pool = [%s]", pool)
 	rc.resourceTypeCtx = s.pool.maps.resourceTypeContexts[pool]
-
 	if rc.resourceTypeCtx == nil {
 		return nil, fmt.Errorf("unable to map pool [%s] to a resource type context", pool)
 	}
