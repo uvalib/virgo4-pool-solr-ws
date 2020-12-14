@@ -11,10 +11,10 @@ other = "Libros"
 other = "Libros físicos y electrónicos de la colección de UVA."
 
 [PoolHathiTrustName]
-other = "HathiTrust"
+other = "Dominio Público de HathiTrust"
 
 [PoolHathiTrustDescription]
-other = "Artículos de HathiTrust."
+other = "El dominio público de HathiTrust incluye elementos sin restricciones de derechos de autor que se proporcionan permanentemente a Virgo a través de la biblioteca digital de HathiTrust."
 
 [PoolImagesName]
 other = "Imágenes"
@@ -59,10 +59,10 @@ other = "Tesis"
 other = "Tesis y disertaciones completadas en la Universidad de Virginia."
 
 [PoolUVALibraryName]
-other = "Biblioteca UVA"
+other = "Catálogo"
 
 [PoolUVALibraryDescription]
-other = "Artículos de la Biblioteca UVA."
+other = "El \"Catálogo\" incluye libros, revistas, manuscritos y material de archivo de la Biblioteca de la UVA, mapas, grabaciones de música y sonido, tesis y disertaciones, y videos."
 
 [PoolUnassignedName]
 other = "Sin Asignar"
