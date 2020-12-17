@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/uvalib/virgo4-api/v4api"
 )
@@ -83,8 +84,6 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 		}
 
-		s.json.Params.Fq = append(s.json.Params.Fq, solrFilter)
-
 		// add this filter to selection map
 		if s.meta.selectionMap[filter.FacetID] == nil {
 			s.meta.selectionMap[filter.FacetID] = make(map[string]string)
@@ -93,11 +92,23 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 		s.meta.selectionMap[filter.FacetID][filterValue] = solrFilter
 	}
 
-	for filterID := range s.meta.selectionMap {
-		for _, solrFilter := range s.meta.selectionMap[filterID] {
-			s.meta.client.log("FILTER: applying filter: %-20s : %s", filterID, solrFilter)
+	// build filter query based on OR'd filter values among AND'd filter types
+
+	var orFilters []string
+
+	for filterID, selectedValues := range s.meta.selectionMap {
+		var idFilters []string
+		for _, solrFilter := range selectedValues {
+			idFilters = append(idFilters, fmt.Sprintf("(%s)", solrFilter))
 		}
+
+		orFilter := strings.Join(idFilters, " OR ")
+		s.meta.client.log("FILTER: applying filter: %-20s : %s", filterID, orFilter)
+
+		orFilters = append(orFilters, orFilter)
 	}
+
+	s.json.Params.Fq = append(s.json.Params.Fq, orFilters...)
 }
 
 func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFacet, map[string]*solrRequestFacet) {
