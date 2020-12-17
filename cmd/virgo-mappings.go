@@ -420,7 +420,7 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 	return records
 }
 
-func (s *searchContext) populateFacet(facetDef *poolConfigFacet, value solrResponseFacet) v4api.Facet {
+func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResponseFacet) v4api.Facet {
 	var facet v4api.Facet
 
 	facet.ID = facetDef.XID
@@ -461,7 +461,8 @@ func (s *searchContext) populateFacet(facetDef *poolConfigFacet, value solrRespo
 
 		// sort facet bucket values per configuration.
 		// this overrides any initial sort order returned by solr.  for instance,
-		// we can re-sort pool_f bucket values based on the mapped displayed value.
+		// we can re-sort pool_f bucket values based on the mapped displayed value,
+		// or sort the most populous entries alphabetically.
 
 		switch facetDef.BucketSort {
 		case "alpha":
@@ -551,19 +552,19 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 	for key, val := range mergedFacets {
 		if len(val.Buckets) > 0 {
-			var facetDef *poolConfigFacet
+			var facetDef *poolConfigFilter
 			if s.virgo.flags.preSearchFilters == true {
-				facetDef = s.pool.maps.filters[key]
+				facetDef = s.pool.maps.preSearchFilters[key]
 			} else {
-				facetDef = s.resourceTypeCtx.facetMap[key]
+				facetDef = s.resourceTypeCtx.filterMap[key]
 			}
 
 			// add this facet to the response as long as one of its dependent facets is selected
 
-			if len(facetDef.DependentFacetXIDs) > 0 {
+			if len(facetDef.DependentFilterXIDs) > 0 {
 				numSelected := 0
 
-				for _, facet := range facetDef.DependentFacetXIDs {
+				for _, facet := range facetDef.DependentFilterXIDs {
 					n := len(s.solr.req.meta.selectionMap[facet])
 					numSelected += n
 				}

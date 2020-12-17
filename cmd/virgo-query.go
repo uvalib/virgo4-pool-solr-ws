@@ -23,7 +23,7 @@ func (s *searchContext) virgoQueryConvertToSolr(virgoQuery string) (*solrParserI
 		// first, verify this is a supported filter
 		filterID := filterParts[0]
 
-		filter, ok := s.pool.maps.filters[filterID]
+		filter, ok := s.pool.maps.definedFilters[filterID]
 
 		if ok == false {
 			s.log("query contains unsupported filter ID: [%s]", filterID)

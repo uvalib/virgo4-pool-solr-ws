@@ -39,7 +39,7 @@ type solrRequestFacet struct {
 	Offset int                 `json:"offset,omitempty"`
 	Limit  int                 `json:"limit,omitempty"`
 	Facet  solrRequestSubFacet `json:"facet,omitempty"`
-	config *poolConfigFacet
+	config *poolConfigFilter
 }
 
 type solrRequestJSON struct {

@@ -73,90 +73,6 @@ other = "Video"
 [PoolVideoDescription]
 other = "Documentaries, films, television shows, and more; for check out or streaming access."
 
-[FacetAuthor]
-other = "Author"
-
-[FacetAvailability]
-other = "Availability"
-
-[FacetCallNumberRange]
-other = "Call Number Range"
-
-[FacetCirculating]
-other = "Hide items limited to in-Library use"
-
-[FacetCollection]
-other = "Collection"
-
-[FacetComposerPerformer]
-other = "Composer/Performer"
-
-[FacetCompositionEra]
-other = "Composition Era"
-
-[FacetDate]
-other = "Date"
-
-[FacetDateThisYear]
-other = "This year"
-
-[FacetDateLast12Months]
-other = "Last 12 months"
-
-[FacetDateLast3Years]
-other = "Last 3 years"
-
-[FacetDateLast10Years]
-other = "Last 10 years"
-
-[FacetDateLast50Years]
-other = "Last 50 years"
-
-[FacetDateMoreThan50YearsAgo]
-other = "More than 50 years ago"
-
-[FacetDepartment]
-other = "Department"
-
-[FacetFormat]
-other = "Format"
-
-[FacetGenre]
-other = "Genre"
-
-[FacetInstrument]
-other = "Instrument"
-
-[FacetLanguage]
-other = "Language"
-
-[FacetLibrary]
-other = "Library"
-
-[FacetPhotographer]
-other = "Photographer"
-
-[FacetRegion]
-other = "Geographic Location"
-
-[FacetResourceType]
-other = "Resource Type"
-
-[FacetSeries]
-other = "Series"
-
-[FacetSource]
-other = "Source"
-
-[FacetSubject]
-other = "Subject"
-
-[FacetSubjectMusicalScores]
-other = "Subject"
-
-[FacetVideoFormat]
-other = "Video Format"
-
 [FieldAbbreviatedTitle]
 other = "Abbreviated Title"
 
@@ -517,11 +433,50 @@ other = "Related Work"
 [FieldWorkType]
 other = "Work Type"
 
+[FilterAuthor]
+other = "Author"
+
+[FilterAvailability]
+other = "Availability"
+
 [FilterCallNumberRange]
 other = "Call Number Range"
 
+[FilterCirculating]
+other = "Hide items limited to in-Library use"
+
 [FilterCollection]
 other = "Collection"
+
+[FilterComposerPerformer]
+other = "Composer/Performer"
+
+[FilterCompositionEra]
+other = "Composition Era"
+
+[FilterDate]
+other = "Date"
+
+[FilterDateThisYear]
+other = "This year"
+
+[FilterDateLast12Months]
+other = "Last 12 months"
+
+[FilterDateLast3Years]
+other = "Last 3 years"
+
+[FilterDateLast10Years]
+other = "Last 10 years"
+
+[FilterDateLast50Years]
+other = "Last 50 years"
+
+[FilterDateMoreThan50YearsAgo]
+other = "More than 50 years ago"
+
+[FilterDepartment]
+other = "Department"
 
 [FilterDigitalCollection]
 other = "Digital Collection"
@@ -531,6 +486,12 @@ other = "Format"
 
 [FilterFundCode]
 other = "Fund Code"
+
+[FilterGenre]
+other = "Genre"
+
+[FilterInstrument]
+other = "Instrument"
 
 [FilterLanguage]
 other = "Language"
@@ -544,14 +505,32 @@ other = "License"
 [FilterPermissions]
 other = "Permissions"
 
+[FilterPhotographer]
+other = "Photographer"
+
 [FilterResourceType]
 other = "Resource Type"
+
+[FilterSeries]
+other = "Series"
 
 [FilterShelfLocation]
 other = "Shelf Location"
 
+[FilterSource]
+other = "Source"
+
+[FilterSubject]
+other = "Subject"
+
 [FilterSubjectGeographic]
 other = "Geographic Location"
+
+[FilterSubjectMusicalScores]
+other = "Subject"
+
+[FilterVideoFormat]
+other = "Video Format"
 
 [ProviderArtstor]
 other = "Artstor"

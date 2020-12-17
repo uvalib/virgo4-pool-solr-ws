@@ -105,10 +105,11 @@ type poolConfigService struct {
 }
 
 type poolConfigSolrParams struct {
-	Qt      string   `json:"qt,omitempty"`
-	DefType string   `json:"deftype,omitempty"`
-	Fq      []string `json:"fq,omitempty"` // pool definition should go here
-	Fl      []string `json:"fl,omitempty"`
+	Qt       string   `json:"qt,omitempty"`
+	DefType  string   `json:"deftype,omitempty"`
+	GlobalFq []string `json:"global_fq,omitempty"` // global filter queries should go here
+	PoolFq   []string `json:"pool_fq,omitempty"`   // pool definition should go here
+	Fl       []string `json:"fl,omitempty"`
 }
 
 type poolConfigSolrClient struct {
@@ -243,18 +244,18 @@ type poolConfigFacetQuery struct {
 	Query string `json:"query,omitempty"`
 }
 
-type poolConfigFacet struct {
-	XID                string                 `json:"xid,omitempty"` // translation ID
-	Solr               poolConfigFacetSolr    `json:"solr,omitempty"`
-	Type               string                 `json:"type,omitempty"`
-	Format             string                 `json:"format,omitempty"`
-	ExposedValues      []string               `json:"exposed_values,omitempty"`
-	DependentFacetXIDs []string               `json:"dependent_facet_xids,omitempty"`
-	ComponentQueries   []poolConfigFacetQuery `json:"component_queries,omitempty"`
-	IsAvailability     bool                   `json:"is_availability,omitempty"`
-	BucketSort         string                 `json:"bucket_sort,omitempty"`
-	Index              int                    `json:"-"`
-	queryMap           map[string]*poolConfigFacetQuery
+type poolConfigFilter struct {
+	XID                 string                 `json:"xid,omitempty"` // translation ID
+	Solr                poolConfigFacetSolr    `json:"solr,omitempty"`
+	Type                string                 `json:"type,omitempty"`
+	Format              string                 `json:"format,omitempty"`
+	ExposedValues       []string               `json:"exposed_values,omitempty"`
+	DependentFilterXIDs []string               `json:"dependent_filter_xids,omitempty"`
+	ComponentQueries    []poolConfigFacetQuery `json:"component_queries,omitempty"`
+	IsAvailability      bool                   `json:"is_availability,omitempty"`
+	BucketSort          string                 `json:"bucket_sort,omitempty"`
+	Index               int                    `json:"-"`
+	queryMap            map[string]*poolConfigFacetQuery
 }
 
 type poolConfigSort struct {
@@ -296,10 +297,9 @@ type poolConfigRelated struct {
 }
 
 type poolConfigMappingsDefinitions struct {
-	Fields  []poolConfigField `json:"fields,omitempty"`
-	Facets  []poolConfigFacet `json:"facets,omitempty"`
-	Filters []poolConfigFacet `json:"filters,omitempty"` // pre-search filters (facets in disguise)
-	Sorts   []poolConfigSort  `json:"sorts,omitempty"`
+	Fields  []poolConfigField  `json:"fields,omitempty"`
+	Filters []poolConfigFilter `json:"filters,omitempty"`
+	Sorts   []poolConfigSort   `json:"sorts,omitempty"`
 }
 
 type poolConfigMappingsHeadingField struct {
@@ -317,11 +317,15 @@ type poolConfigMappingsConfiguredFields struct {
 	Detailed         []string                       `json:"detailed,omitempty"`
 }
 
+type poolConfigMappingsConfiguredFilters struct {
+	PreSearch  []string `json:"pre_search,omitempty"`
+	PostSearch []string `json:"post_search,omitempty"`
+}
+
 type poolConfigMappingsConfigured struct {
-	FieldNames poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
-	FacetXIDs  []string                           `json:"facet_xids,omitempty"`
-	FilterXIDs []string                           `json:"filter_xids,omitempty"`
-	SortXIDs   []string                           `json:"sort_xids,omitempty"`
+	FieldNames poolConfigMappingsConfiguredFields  `json:"field_names,omitempty"`
+	FilterXIDs poolConfigMappingsConfiguredFilters `json:"filter_xids,omitempty"`
+	SortXIDs   []string                            `json:"sort_xids,omitempty"`
 }
 
 type poolConfigMappings struct {
@@ -356,15 +360,15 @@ type poolConfigResourceTypeContext struct {
 	XID          string                             `json:"xid,omitempty"`
 	AuthorFields poolConfigAuthorFields             `json:"author_fields,omitempty"`
 	FieldNames   poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
-	FacetXIDs    []string                           `json:"facet_xids,omitempty"`
-	facets       []poolConfigFacet
-	facetMap     map[string]*poolConfigFacet
+	FilterXIDs   []string                           `json:"filter_xids,omitempty"`
+	filters      []poolConfigFilter
+	filterMap    map[string]*poolConfigFilter
 	fields       resourceTypeFields
 }
 
 type poolConfigResourceTypes struct {
 	Field          string                          `json:"field,omitempty"`
-	FacetXID       string                          `json:"facet_xid,omitempty"`
+	FilterXID      string                          `json:"filter_xid,omitempty"`
 	DefaultContext string                          `json:"default_context,omitempty"`
 	Contexts       []poolConfigResourceTypeContext `json:"contexts,omitempty"`
 }

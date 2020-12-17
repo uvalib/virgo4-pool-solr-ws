@@ -47,9 +47,10 @@ type poolTranslations struct {
 // pool-level maps
 type poolMaps struct {
 	attributes           map[string]v4api.PoolAttribute
-	sorts                map[string]*poolConfigSort
-	facets               map[string]*poolConfigFacet
-	filters              map[string]*poolConfigFacet               // pre-search filters (facets in disguise)
+	definedSorts         map[string]*poolConfigSort
+	definedFields        map[string]*poolConfigField
+	definedFilters       map[string]*poolConfigFilter
+	preSearchFilters     map[string]*poolConfigFilter
 	resourceTypeContexts map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
 	relatorTerms         map[string]string
 	relatorCodes         map[string]string
@@ -308,7 +309,7 @@ func (p *poolContext) validateConfig() {
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.XID, "default sort xid")
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.Order, "default sort order")
 
-	if p.config.Global.Service.DefaultSort.XID != "" && p.maps.sorts[p.config.Global.Service.DefaultSort.XID].XID == "" {
+	if p.config.Global.Service.DefaultSort.XID != "" && p.maps.definedSorts[p.config.Global.Service.DefaultSort.XID].XID == "" {
 		log.Printf("[VALIDATE] default sort xid not found in sort options list")
 		invalid = true
 	}
@@ -327,8 +328,8 @@ func (p *poolContext) validateConfig() {
 	miscValues.requireValue(p.config.Local.Solr.Params.Qt, "solr param qt")
 	miscValues.requireValue(p.config.Local.Solr.Params.DefType, "solr param deftype")
 
-	if len(p.config.Local.Solr.Params.Fq) == 0 {
-		log.Printf("[VALIDATE] solr param fq is empty")
+	if len(p.config.Local.Solr.Params.PoolFq) == 0 {
+		log.Printf("[VALIDATE] solr param pool fq is empty")
 		invalid = true
 	}
 
@@ -361,7 +362,7 @@ func (p *poolContext) validateConfig() {
 		messageIDs.addValue(val.DescXID)
 		messageIDs.addValue(val.RecordXID)
 
-		if val.RecordXID != "" && p.maps.sorts[val.RecordXID].XID == "" {
+		if val.RecordXID != "" && p.maps.definedSorts[val.RecordXID].XID == "" {
 			log.Printf("[VALIDATE] sort option %d record sort xid not found in sort options list", i)
 			invalid = true
 		}
@@ -387,9 +388,11 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for xid, val := range p.maps.filters {
+	for xid, val := range p.maps.definedFilters {
 		messageIDs.requireValue(val.XID, fmt.Sprintf("filter [%s] xid", xid))
-		solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter [%s] solr field", xid))
+		if val.Solr.Type == "terms" {
+			solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter [%s] solr field", xid))
+		}
 	}
 
 	for i, val := range p.config.Global.Publishers {
@@ -414,7 +417,7 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
 
 	solrFields.requireValue(p.config.Global.ResourceTypes.Field, "resource types: solr field")
-	messageIDs.requireValue(p.config.Global.ResourceTypes.FacetXID, "resource types: facet xid")
+	messageIDs.requireValue(p.config.Global.ResourceTypes.FilterXID, "resource types: filter xid")
 
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
@@ -426,16 +429,16 @@ func (p *poolContext) validateConfig() {
 			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] fallback author field", i, r.Value))
 		}
 
-		for j, val := range r.facets {
-			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] facet %d xid", i, r.Value, j))
+		for j, val := range r.filters {
+			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] filter %d xid", i, r.Value, j))
 
-			for k, depval := range val.DependentFacetXIDs {
-				messageIDs.requireValue(depval, fmt.Sprintf("resource type %d [%s] facet %d dependent xid %d", i, r.Value, j, k))
+			for k, depval := range val.DependentFilterXIDs {
+				messageIDs.requireValue(depval, fmt.Sprintf("resource type %d [%s] filter %d dependent xid %d", i, r.Value, j, k))
 			}
 
 			for k, q := range val.ComponentQueries {
-				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] facet %d component query xid %d", i, r.Value, j, k))
-				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] facet %d component query query %d", i, r.Value, j, k))
+				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] filter %d component query xid %d", i, r.Value, j, k))
+				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] filter %d component query query %d", i, r.Value, j, k))
 			}
 		}
 
@@ -724,7 +727,7 @@ func (p *poolContext) validateConfig() {
 	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
-func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigField, r *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
+func (p *poolContext) populateFieldList(r *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
 	var fields []poolConfigField
 
 	invalid := false
@@ -745,7 +748,7 @@ func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigFiel
 			continue
 		}
 
-		fieldDef := definedFields[fieldName]
+		fieldDef := p.maps.definedFields[fieldName]
 
 		if fieldDef == nil {
 			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
@@ -787,46 +790,100 @@ func (p *poolContext) populateFieldList(definedFields map[string]*poolConfigFiel
 	return fields, invalid
 }
 
-func (p *poolContext) initMappings() {
-	var seen map[string]bool
+func (p *poolContext) initSorts() {
 	invalid := false
 
-	// map global resource type XIDs to facet definitions, ensuring uniqueness
-	p.maps.resourceTypeContexts = make(map[string]*poolConfigResourceTypeContext)
-	for i := range p.config.Global.ResourceTypes.Contexts {
-		def := &p.config.Global.ResourceTypes.Contexts[i]
+	// configure globally defined sorts, and map their XIDs to sort definitions.
+	// NOTE: all pools define (and use) the same list since this is a solr-level config.
+	p.maps.definedSorts = make(map[string]*poolConfigSort)
+	for i := range p.config.Global.Mappings.Definitions.Sorts {
+		def := &p.config.Global.Mappings.Definitions.Sorts[i]
 
-		if p.maps.resourceTypeContexts[def.Value] != nil {
-			log.Printf("[INIT] duplicate resource type value: [%s]", def.Value)
+		if p.maps.definedSorts[def.XID] != nil {
+			log.Printf("[SORTS] duplicate sort xid: [%s]", def.XID)
 			invalid = true
 			continue
 		}
 
-		p.maps.resourceTypeContexts[def.Value] = def
-		p.maps.resourceTypeContexts[def.XID] = def
+		if def.IsRelevance == true {
+			def.RecordXID = p.config.Local.Solr.RelevanceIntraGroupSort.XID
+			def.RecordOrder = p.config.Local.Solr.RelevanceIntraGroupSort.Order
+		}
 
-		// since this is not a configured value, we can build the definitive list now
-		p.resourceTypeContexts = append(p.resourceTypeContexts, def)
+		p.maps.definedSorts[def.XID] = def
 	}
 
-	// availability facet setup
+	// create sort list based on defined sorts
+	seen := make(map[string]bool)
+	for _, xid := range p.config.Global.Mappings.Configured.SortXIDs {
+		if seen[xid] == true {
+			continue
+		}
+
+		def := p.maps.definedSorts[xid]
+		if def == nil {
+			log.Printf("[SORTS] unrecognized sort xid: [%s]", xid)
+			invalid = true
+			continue
+		}
+
+		p.sorts = append(p.sorts, def)
+
+		seen[xid] = true
+	}
+
+	if invalid == true {
+		log.Printf("[SORTS] exiting due to error(s) above")
+		os.Exit(1)
+	}
+}
+
+func (p *poolContext) initFields() {
+	invalid := false
+
+	// configure globally defined fields, and map their XIDs to field definitions.
+	// NOTE: all pools define the same list; a given pool may only use a subset of these.
+	p.maps.definedFields = make(map[string]*poolConfigField)
+	for i := range p.config.Global.Mappings.Definitions.Fields {
+		def := &p.config.Global.Mappings.Definitions.Fields[i]
+
+		if p.maps.definedFields[def.Name] != nil {
+			log.Printf("[FIELDS] duplicate field name: [%s]", def.Name)
+			invalid = true
+			continue
+		}
+
+		p.maps.definedFields[def.Name] = def
+	}
+
+	if invalid == true {
+		log.Printf("[FIELDS] exiting due to error(s) above")
+		os.Exit(1)
+	}
+}
+
+func (p *poolContext) initFilters() {
+	invalid := false
+
+	// availability filter setup
 	p.config.Global.Availability.ExposedValues = []string{}
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
 	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
 
-	// map global facet XIDs to facet definitions, ensuring uniqueness
-	p.maps.facets = make(map[string]*poolConfigFacet)
-	for i := range p.config.Global.Mappings.Definitions.Facets {
-		def := &p.config.Global.Mappings.Definitions.Facets[i]
+	// configure globally defined filters, and map their XIDs to filter definitions.
+	// NOTE: all pools define the same list; a given pool may only use a subset of these.
+	p.maps.definedFilters = make(map[string]*poolConfigFilter)
+	for i := range p.config.Global.Mappings.Definitions.Filters {
+		def := &p.config.Global.Mappings.Definitions.Filters[i]
 
-		if p.maps.facets[def.XID] != nil {
-			log.Printf("[INIT] duplicate facet xid: [%s]", def.XID)
+		if p.maps.definedFilters[def.XID] != nil {
+			log.Printf("[FILTERS] duplicate filter xid: [%s]", def.XID)
 			invalid = true
 			continue
 		}
 
-		// configure availability facet
+		// configure availability filter
 		if def.IsAvailability == true {
 			def.Solr.Field = p.config.Global.Availability.Anon.Facet
 			def.Solr.FieldAuth = p.config.Global.Availability.Auth.Facet
@@ -835,7 +892,6 @@ func (p *poolContext) initMappings() {
 
 		// for component query facets, create mappings from any
 		// possible translated value back to the query definition
-
 		if len(def.ComponentQueries) > 0 {
 			def.queryMap = make(map[string]*poolConfigFacetQuery)
 
@@ -848,7 +904,7 @@ func (p *poolContext) initMappings() {
 					msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
 
 					if err != nil {
-						log.Printf("[INIT] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
+						log.Printf("[FILTERS] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
 						invalid = true
 						continue
 					}
@@ -858,133 +914,92 @@ func (p *poolContext) initMappings() {
 			}
 		}
 
-		p.maps.facets[def.XID] = def
+		p.maps.definedFilters[def.XID] = def
 	}
 
-	// map global field names to field definitions, ensuring uniqueness
-	definedFields := make(map[string]*poolConfigField)
-	for i := range p.config.Global.Mappings.Definitions.Fields {
-		def := &p.config.Global.Mappings.Definitions.Fields[i]
+	// create pre-search filter map based on configured pre-search filters
+	p.maps.preSearchFilters = make(map[string]*poolConfigFilter)
+	for _, xid := range p.config.Global.Mappings.Configured.FilterXIDs.PreSearch {
+		if p.maps.preSearchFilters[xid] != nil {
+			continue
+		}
 
-		if definedFields[def.Name] != nil {
-			log.Printf("[INIT] duplicate field name: [%s]", def.Name)
+		orig := p.maps.definedFilters[xid]
+		if orig == nil {
+			log.Printf("[MAPCFG] unrecognized filter xid: [%s]", xid)
 			invalid = true
 			continue
 		}
 
-		definedFields[def.Name] = def
-	}
-
-	// map global filter XIDs to filter definitions, ensuring uniqueness
-	definedFilters := make(map[string]*poolConfigFacet)
-	for i := range p.config.Global.Mappings.Definitions.Filters {
-		def := &p.config.Global.Mappings.Definitions.Filters[i]
-
-		if definedFilters[def.XID] != nil {
-			log.Printf("[INIT] duplicate filter xid: [%s]", def.XID)
-			invalid = true
-			continue
-		}
-
-		definedFilters[def.XID] = def
-	}
-
-	// create filter map based on configured filters
-
-	p.maps.filters = make(map[string]*poolConfigFacet)
-
-	seen = make(map[string]bool)
-	for _, xid := range p.config.Global.Mappings.Configured.FilterXIDs {
-		if seen[xid] == true {
-			continue
-		}
-
-		def := definedFilters[xid]
-		if def == nil {
-			log.Printf("[INIT] unrecognized filter xid: [%s]", xid)
-			invalid = true
-			continue
-		}
+		// create a copy of the definition to avoid index confusion
+		def := *orig
 
 		// this is used to preserve filter order when building filters response
-		def.Index = len(p.maps.filters)
+		def.Index = len(p.maps.preSearchFilters)
 
-		p.maps.filters[def.XID] = def
-
-		seen[xid] = true
+		p.maps.preSearchFilters[def.XID] = &def
 	}
 
-	// create sort field map
-	p.maps.sorts = make(map[string]*poolConfigSort)
-	for i := range p.config.Global.Mappings.Definitions.Sorts {
-		def := &p.config.Global.Mappings.Definitions.Sorts[i]
+	if invalid == true {
+		log.Printf("[FILTERS] exiting due to error(s) above")
+		os.Exit(1)
+	}
+}
 
-		if p.maps.sorts[def.XID] != nil {
-			log.Printf("[INIT] duplicate sort xid: [%s]", def.XID)
+func (p *poolContext) initResourceTypes() {
+	invalid := false
+
+	// configure globally defined resource types, and map their XIDs to resource type definitions.
+	// NOTE: all pools define the same list; a given pool may only use a subset of these.
+	p.maps.resourceTypeContexts = make(map[string]*poolConfigResourceTypeContext)
+	for i := range p.config.Global.ResourceTypes.Contexts {
+		def := &p.config.Global.ResourceTypes.Contexts[i]
+
+		if p.maps.resourceTypeContexts[def.Value] != nil {
+			log.Printf("[RESTYPES] duplicate resource type value: [%s]", def.Value)
 			invalid = true
 			continue
 		}
 
-		p.maps.sorts[def.XID] = def
+		p.maps.resourceTypeContexts[def.Value] = def
+		p.maps.resourceTypeContexts[def.XID] = def
+
+		// since this is not a configured value, we can build the definitive list now
+		p.resourceTypeContexts = append(p.resourceTypeContexts, def)
 	}
 
-	// build list of unique sorts by XID
-	seen = make(map[string]bool)
-	for _, xid := range p.config.Global.Mappings.Configured.SortXIDs {
-		if seen[xid] == true {
-			continue
-		}
-
-		def := p.maps.sorts[xid]
-		if def == nil {
-			log.Printf("[INIT] unrecognized sort xid: [%s]", xid)
-			invalid = true
-			continue
-		}
-
-		if def.IsRelevance == true {
-			def.RecordXID = p.config.Local.Solr.RelevanceIntraGroupSort.XID
-			def.RecordOrder = p.config.Local.Solr.RelevanceIntraGroupSort.Order
-		}
-
-		p.sorts = append(p.sorts, def)
-
-		seen[xid] = true
-	}
-
-	// the following resource type setup loops are broken out for readability
+	// NOTE: the following resource type setup loops are broken out for readability
 
 	// for each resource type, set up its facets and facet map
-
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
 
 		// create ordered facet list and convenience map
-		r.facetMap = make(map[string]*poolConfigFacet)
+		r.filterMap = make(map[string]*poolConfigFilter)
 
-		facetXIDs := append(p.config.Global.Mappings.Configured.FacetXIDs, r.FacetXIDs...)
+		filterXIDs := append(p.config.Global.Mappings.Configured.FilterXIDs.PostSearch, r.FilterXIDs...)
 
-		seen = make(map[string]bool)
-		for _, xid := range facetXIDs {
+		seen := make(map[string]bool)
+		for _, xid := range filterXIDs {
 			if seen[xid] == true {
 				continue
 			}
 
-			orig := p.maps.facets[xid]
+			orig := p.maps.definedFilters[xid]
 			if orig == nil {
-				log.Printf("[INIT] resource type value [%s] contains unrecognized facet xid: [%s]", r.Value, xid)
+				log.Printf("[MAPCFG] resource type value [%s] contains unrecognized filter xid: [%s]", r.Value, xid)
 				invalid = true
 				continue
 			}
 
-			// create a copy of the definition as the indices will be unique among resource types
+			// create a copy of the definition to avoid index confusion
 			def := *orig
 
 			// this is used to preserve facet order when building facets response
 			def.Index = len(seen)
 
-			r.facets = append(r.facets, def)
-			r.facetMap[xid] = &def
+			r.filters = append(r.filters, def)
+			r.filterMap[xid] = &def
 
 			seen[xid] = true
 		}
@@ -1019,12 +1034,12 @@ func (p *poolContext) initMappings() {
 
 		// build list of unique basic fields by name
 		basicFieldNames := append(r.FieldNames.Basic, p.config.Global.Mappings.Configured.FieldNames.Basic...)
-		r.fields.basic, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, basicFieldNames)
+		r.fields.basic, fieldListInvalid = p.populateFieldList(r, requiredFieldNames, basicFieldNames)
 		invalid = invalid || fieldListInvalid
 
 		// build list of unique detailed fields by name
 		detailedFieldNames := append(r.FieldNames.Detailed, p.config.Global.Mappings.Configured.FieldNames.Detailed...)
-		r.fields.detailed, fieldListInvalid = p.populateFieldList(definedFields, r, requiredFieldNames, detailedFieldNames)
+		r.fields.detailed, fieldListInvalid = p.populateFieldList(r, requiredFieldNames, detailedFieldNames)
 		invalid = invalid || fieldListInvalid
 	}
 
@@ -1054,7 +1069,7 @@ func (p *poolContext) initMappings() {
 			msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: r.XID})
 
 			if err != nil {
-				log.Printf("[INIT] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
+				log.Printf("[MAPCFG] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
 				invalid = true
 				continue
 			}
@@ -1069,6 +1084,15 @@ func (p *poolContext) initMappings() {
 	p.maps.solrExternalValues[p.config.Global.ResourceTypes.Field] = forwardMap
 	p.maps.solrInternalValues[p.config.Global.ResourceTypes.Field] = reverseMap
 
+	if invalid == true {
+		log.Printf("[RESTYPES] exiting due to error(s) above")
+		os.Exit(1)
+	}
+}
+
+func (p *poolContext) initRelators() {
+	invalid := false
+
 	// relator maps
 	p.maps.relatorTerms = make(map[string]string)
 	p.maps.relatorCodes = make(map[string]string)
@@ -1077,7 +1101,7 @@ func (p *poolContext) initMappings() {
 		r := &p.config.Global.Relators.Map[i]
 
 		if r.Code == "" || r.Term == "" {
-			log.Printf("[INIT] incomplete relator definition: code = [%s]  term = [%s]", r.Code, r.Term)
+			log.Printf("[RELATORS] incomplete relator definition: code = [%s]  term = [%s]", r.Code, r.Term)
 			invalid = true
 			continue
 		}
@@ -1087,7 +1111,7 @@ func (p *poolContext) initMappings() {
 	}
 
 	if invalid == true {
-		log.Printf("[INIT] exiting due to error(s) above")
+		log.Printf("[RELATORS] exiting due to error(s) above")
 		os.Exit(1)
 	}
 }
@@ -1114,13 +1138,18 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	p.initVersion()
+	p.initSolr()
 	p.initTranslations()
-	p.initMappings()
 	p.initIdentity()
 	p.initProviders()
-	p.initSolr()
 	p.initCitationFormats()
 	p.initTitleizer()
+	p.initRelators()
+
+	p.initSorts()
+	p.initFields()
+	p.initFilters()
+	p.initResourceTypes()
 
 	p.validateConfig()
 

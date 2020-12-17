@@ -295,7 +295,7 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	sortOpt := s.virgo.req.Sort
 
-	sortDef := s.pool.maps.sorts[sortOpt.SortID]
+	sortDef := s.pool.maps.definedSorts[sortOpt.SortID]
 
 	if sortDef != nil && sortDef.RecordXID != "" {
 		sortOpt.SortID = sortDef.RecordXID
@@ -438,7 +438,7 @@ func (s *searchContext) validateSearchRequest() error {
 		resourceType := ""
 
 		for _, filter := range filterGroup.Facets {
-			if filter.FacetID == s.pool.config.Global.ResourceTypes.FacetXID {
+			if filter.FacetID == s.pool.config.Global.ResourceTypes.FilterXID {
 				resourceTypeFacets++
 				resourceType = filter.Value
 			}
@@ -460,8 +460,8 @@ func (s *searchContext) validateSearchRequest() error {
 		// if neither, fail this request.
 
 		for _, filter := range filterGroup.Facets {
-			if _, rok := s.resourceTypeCtx.facetMap[filter.FacetID]; rok == false {
-				if _, dok := s.pool.maps.facets[filter.FacetID]; dok == false {
+			if _, rok := s.resourceTypeCtx.filterMap[filter.FacetID]; rok == false {
+				if _, dok := s.pool.maps.definedFilters[filter.FacetID]; dok == false {
 					return fmt.Errorf("received unknown filter: [%s]", filter.FacetID)
 				}
 
@@ -557,7 +557,7 @@ func (s *searchContext) determineSortOptions() searchResponse {
 
 	if sortReq.SortID != "" || sortReq.Order != "" {
 		// sort was specified; validate it
-		sortDef := s.pool.maps.sorts[sortReq.SortID]
+		sortDef := s.pool.maps.definedSorts[sortReq.SortID]
 
 		if sortDef.XID == "" {
 			return searchResponse{status: http.StatusBadRequest, err: errors.New("invalid sort id")}
@@ -597,7 +597,7 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 	}
 
 	// group or not based on sort being applied
-	s.virgo.flags.groupResults = s.pool.maps.sorts[s.virgo.req.Sort.SortID].GroupResults
+	s.virgo.flags.groupResults = s.pool.maps.definedSorts[s.virgo.req.Sort.SortID].GroupResults
 
 	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
 		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}

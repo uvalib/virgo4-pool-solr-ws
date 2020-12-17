@@ -26,10 +26,10 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 
 		// omit this selected filter if it depends on other filters, none of which are selected
 
-		if len(solrFacet.config.DependentFacetXIDs) > 0 {
+		if len(solrFacet.config.DependentFilterXIDs) > 0 {
 			numSelected := 0
 
-			for _, facet := range solrFacet.config.DependentFacetXIDs {
+			for _, facet := range solrFacet.config.DependentFilterXIDs {
 				n := len(s.meta.selectionMap[facet])
 				numSelected += n
 			}
@@ -110,11 +110,11 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 
 	// should we request facets or pre-search filters?
 
-	var sourceFacets map[string]*poolConfigFacet
+	var sourceFacets map[string]*poolConfigFilter
 	if s.virgo.flags.preSearchFilters == true {
-		sourceFacets = s.pool.maps.filters
+		sourceFacets = s.pool.maps.preSearchFilters
 	} else {
-		sourceFacets = s.resourceTypeCtx.facetMap
+		sourceFacets = s.resourceTypeCtx.filterMap
 	}
 
 	for i := range sourceFacets {
@@ -167,14 +167,15 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	s.solr.req.json.Params.Start = restrictValue("start", s.virgo.req.Pagination.Start, 0, 0)
 	s.solr.req.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
 
-	if s.virgo.flags.preSearchFilters == true {
-		s.solr.req.json.Params.Fq = nonemptyValues(s.pool.config.Global.Solr.Params.Fq)
-	} else {
-		s.solr.req.json.Params.Fq = nonemptyValues(s.pool.config.Local.Solr.Params.Fq)
+	// build fq based on global or pool context
+	fq := s.pool.config.Local.Solr.Params.GlobalFq
+	if s.virgo.flags.preSearchFilters == false {
+		fq = append(fq, s.pool.config.Local.Solr.Params.PoolFq...)
 	}
+	s.solr.req.json.Params.Fq = nonemptyValues(fq)
 
 	if s.virgo.req.Sort.SortID != "" {
-		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.sorts[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
+		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.definedSorts[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
 	if s.virgo.flags.groupResults == true && s.virgo.flags.requestFacets == false {
