@@ -919,7 +919,7 @@ func (p *poolContext) initFilters() {
 
 	// create pre-search filter map based on configured pre-search filters
 	p.maps.preSearchFilters = make(map[string]*poolConfigFilter)
-	for _, xid := range p.config.Global.Mappings.Configured.FilterXIDs.PreSearch {
+	for _, xid := range p.config.Global.Mappings.Configured.FilterXIDs {
 		if p.maps.preSearchFilters[xid] != nil {
 			continue
 		}
@@ -977,7 +977,8 @@ func (p *poolContext) initResourceTypes() {
 		// create ordered facet list and convenience map
 		r.filterMap = make(map[string]*poolConfigFilter)
 
-		filterXIDs := append(p.config.Global.Mappings.Configured.FilterXIDs.PostSearch, r.FilterXIDs...)
+		// append resource-type filters after global pre-search filters
+		filterXIDs := append(p.config.Global.Mappings.Configured.FilterXIDs, r.FilterXIDs...)
 
 		seen := make(map[string]bool)
 		for _, xid := range filterXIDs {

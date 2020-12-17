@@ -317,15 +317,10 @@ type poolConfigMappingsConfiguredFields struct {
 	Detailed         []string                       `json:"detailed,omitempty"`
 }
 
-type poolConfigMappingsConfiguredFilters struct {
-	PreSearch  []string `json:"pre_search,omitempty"`
-	PostSearch []string `json:"post_search,omitempty"`
-}
-
 type poolConfigMappingsConfigured struct {
-	FieldNames poolConfigMappingsConfiguredFields  `json:"field_names,omitempty"`
-	FilterXIDs poolConfigMappingsConfiguredFilters `json:"filter_xids,omitempty"`
-	SortXIDs   []string                            `json:"sort_xids,omitempty"`
+	FieldNames poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
+	FilterXIDs []string                           `json:"filter_xids,omitempty"`
+	SortXIDs   []string                           `json:"sort_xids,omitempty"`
 }
 
 type poolConfigMappings struct {
