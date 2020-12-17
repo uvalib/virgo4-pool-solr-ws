@@ -1138,19 +1138,27 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	p.initVersion()
-	p.initSolr()
-	p.initTranslations()
-	p.initIdentity()
-	p.initProviders()
-	p.initCitationFormats()
-	p.initTitleizer()
-	p.initRelators()
+	// order is important, as some depend on others having been initialized already
 
+	// no dependencies:
+	p.initVersion()
+	p.initTranslations()
+	p.initSolr()
+	p.initRelators()
+	p.initProviders()
+	p.initTitleizer()
+	p.initCitationFormats()
 	p.initSorts()
 	p.initFields()
+
+	// depends on: translations
 	p.initFilters()
+
+	// depends on: translations, filters
 	p.initResourceTypes()
+
+	// depends on: sorts
+	p.initIdentity()
 
 	p.validateConfig()
 
