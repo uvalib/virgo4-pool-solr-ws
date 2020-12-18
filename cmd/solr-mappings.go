@@ -92,6 +92,11 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 		s.meta.selectionMap[filter.FacetID][filterValue] = solrFilter
 	}
 
+	// don't add fq values if requesting facets; we want to see all possible values for the query itself
+	if ctx.virgo.flags.requestFacets == true {
+		return
+	}
+
 	// build filter query based on OR'd filter values among AND'd filter types
 
 	var orFilters []string
