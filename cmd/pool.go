@@ -70,6 +70,7 @@ type poolContext struct {
 	sorts                []*poolConfigSort
 	resourceTypeContexts []*poolConfigResourceTypeContext
 	titleizer            *titleizeContext
+	facetCache           *facetCache
 }
 
 type stringValidator struct {
@@ -883,6 +884,9 @@ func (p *poolContext) initFilters() {
 			continue
 		}
 
+		// this is used to preserve filter order within the filter cache (probably not needed)
+		def.Index = len(p.maps.definedFilters)
+
 		// configure availability filter
 		if def.IsAvailability == true {
 			def.Solr.Field = p.config.Global.Availability.Anon.Facet
@@ -1161,6 +1165,9 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.initIdentity()
 
 	p.validateConfig()
+
+	// start facet cache
+	p.facetCache = newFacetCache(&p, 300)
 
 	return &p
 }

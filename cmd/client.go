@@ -47,6 +47,19 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.ginCtx = ctx
 
 	c.start = time.Now()
+	c.reqID = "internal"
+	c.ip = "internal"
+	c.tokenSnippet = "internal"
+	c.acceptLang = "en-US"
+
+	// if there is no gin context, wrap up and return
+	if ctx == nil {
+		c.localizer = i18n.NewLocalizer(p.translations.bundle, c.acceptLang)
+		return
+	}
+
+	// configure remaining items based on data in the gin context
+
 	c.reqID = fmt.Sprintf("%08x", p.randomSource.Uint32())
 	c.ip = ctx.ClientIP()
 
@@ -64,9 +77,9 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	}
 
 	// determine client preferred language
-	c.acceptLang = strings.Split(ctx.GetHeader("Accept-Language"), ",")[0]
-	if c.acceptLang == "" {
-		c.acceptLang = "en"
+	acceptLang := strings.Split(ctx.GetHeader("Accept-Language"), ",")[0]
+	if acceptLang != "" {
+		c.acceptLang = acceptLang
 	}
 
 	c.localizer = i18n.NewLocalizer(p.translations.bundle, c.acceptLang)

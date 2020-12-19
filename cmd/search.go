@@ -17,6 +17,7 @@ type virgoFlags struct {
 	groupResults     bool
 	requestFacets    bool
 	preSearchFilters bool
+	allSearchFilters bool
 }
 
 type virgoDialog struct {
@@ -645,27 +646,17 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 }
 
 func (s *searchContext) handleFiltersRequest() searchResponse {
-	// for now, this simply returns the preconfigured filters as
-	// a facets response for a keyword:{*} query
+	filters, err := s.pool.facetCache.getPreSearchFilters()
 
-	s.virgo.endpoint = "filters"
-
-	// override these values from the original search query, since we are
-	// only interested in filters (derived from facets), not records
-
-	s.virgo.req.Query = "keyword:{*}"
-	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
-	s.virgo.flags.requestFacets = true
-	s.virgo.flags.preSearchFilters = true
-
-	// now do the search
-	if resp := s.getPoolQueryResults(); resp.err != nil {
+	if err != nil {
+		resp := searchResponse{status: http.StatusServiceUnavailable, err: err}
+		resp.data = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		return resp
 	}
 
 	s.virgo.facetsRes = &v4api.PoolFacets{
-		FacetList:  s.virgo.poolRes.FacetList,
-		ElapsedMS:  s.virgo.poolRes.ElapsedMS,
+		FacetList:  filters,
+		ElapsedMS:  0,
 		StatusCode: http.StatusOK,
 	}
 

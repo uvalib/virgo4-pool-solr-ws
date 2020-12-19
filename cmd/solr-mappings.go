@@ -25,9 +25,10 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			continue
 		}
 
+		// if this is not the facet cache requesting all facets, then
 		// omit this selected filter if it depends on other filters, none of which are selected
 
-		if len(solrFacet.config.DependentFilterXIDs) > 0 {
+		if ctx.virgo.flags.allSearchFilters == false && len(solrFacet.config.DependentFilterXIDs) > 0 {
 			numSelected := 0
 
 			for _, facet := range solrFacet.config.DependentFilterXIDs {
@@ -127,7 +128,9 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 	// should we request facets or pre-search filters?
 
 	var sourceFacets map[string]*poolConfigFilter
-	if s.virgo.flags.preSearchFilters == true {
+	if s.virgo.flags.allSearchFilters == true {
+		sourceFacets = s.pool.maps.definedFilters
+	} else if s.virgo.flags.preSearchFilters == true {
 		sourceFacets = s.pool.maps.preSearchFilters
 	} else {
 		sourceFacets = s.resourceTypeCtx.filterMap

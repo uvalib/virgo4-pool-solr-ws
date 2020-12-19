@@ -553,15 +553,18 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 	for key, val := range mergedFacets {
 		if len(val.Buckets) > 0 {
 			var facetDef *poolConfigFilter
-			if s.virgo.flags.preSearchFilters == true {
+			if s.virgo.flags.allSearchFilters == true {
+				facetDef = s.pool.maps.definedFilters[key]
+			} else if s.virgo.flags.preSearchFilters == true {
 				facetDef = s.pool.maps.preSearchFilters[key]
 			} else {
 				facetDef = s.resourceTypeCtx.filterMap[key]
 			}
 
+			// if this is not the facet cache requesting all facets, then
 			// add this facet to the response as long as one of its dependent facets is selected
 
-			if len(facetDef.DependentFilterXIDs) > 0 {
+			if s.virgo.flags.allSearchFilters == false && len(facetDef.DependentFilterXIDs) > 0 {
 				numSelected := 0
 
 				for _, facet := range facetDef.DependentFilterXIDs {
@@ -598,6 +601,12 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 	var facetList []v4api.Facet
 	for _, f := range orderedFacets {
 		facetList = append(facetList, f.facet)
+	}
+
+	if overlaidFacets, err := s.pool.facetCache.overlayFilters(&facetList); err != nil {
+		s.warn("FACET: error overlaying facets: %s", err.Error())
+	} else {
+		facetList = overlaidFacets
 	}
 
 	return facetList

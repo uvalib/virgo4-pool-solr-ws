@@ -46,9 +46,7 @@ func (p *poolContext) filtersHandler(c *gin.Context) {
 	s := searchContext{}
 	s.init(p, &cl)
 
-	cl.logRequest()
 	resp := s.handleFiltersRequest()
-	cl.logResponse(resp)
 
 	c.JSON(resp.status, resp.data)
 }
