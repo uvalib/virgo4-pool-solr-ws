@@ -21,16 +21,17 @@ type virgoFlags struct {
 }
 
 type virgoDialog struct {
-	req        v4api.SearchRequest
-	poolRes    *v4api.PoolResult
-	facetsRes  *v4api.PoolFacets
-	recordRes  *v4api.Record
-	solrQuery  string          // holds the solr query (either parsed or specified)
-	parserInfo *solrParserInfo // holds the information for parsed queries
-	skipQuery  bool            // should we skip Solr communcation and just return empty results?
-	flags      virgoFlags
-	endpoint   string
-	body       string
+	req          v4api.SearchRequest
+	poolRes      *v4api.PoolResult
+	facetsRes    *v4api.PoolFacets
+	recordRes    *v4api.Record
+	solrQuery    string          // holds the solr query (either parsed or specified)
+	parserInfo   *solrParserInfo // holds the information for parsed queries
+	skipQuery    bool            // should we skip Solr communcation and just return empty results?
+	flags        virgoFlags
+	endpoint     string
+	body         string
+	currentFacet string // which facet to consider when iterating over facets to build response
 }
 
 type solrDialog struct {
@@ -496,7 +497,7 @@ func (s *searchContext) parseRequest(into interface{}) searchResponse {
 	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) handleSearchOrFacetsRequest() searchResponse {
+func (s *searchContext) performSearchRequest() searchResponse {
 	var err error
 	var top *searchContext
 
@@ -538,6 +539,43 @@ func (s *searchContext) handleSearchOrFacetsRequest() searchResponse {
 	// add sort info for these results
 
 	s.virgo.poolRes.Sort = s.virgo.req.Sort
+
+	// finally fill out elapsed time
+
+	s.virgo.poolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
+
+	return searchResponse{status: http.StatusOK}
+}
+
+func (s *searchContext) performFacetsRequest() searchResponse {
+	var err error
+
+	s.log("FACETS: v4 query: [%s]", s.virgo.req.Query)
+
+	if err = s.validateSearchRequest(); err != nil {
+		return searchResponse{status: http.StatusBadRequest, err: err}
+	}
+
+	// for each filter, request solr facets for that filter by applying all current
+	// filters EXCEPT those of its own type.  combine these into full filter response.
+
+	var facetList []v4api.Facet
+
+	for i := range s.resourceTypeCtx.filters {
+		filter := s.resourceTypeCtx.filters[i]
+		s.virgo.currentFacet = filter.XID
+
+		// now do the facet search
+		if resp := s.getPoolQueryResults(); resp.err != nil {
+			return resp
+		}
+
+		facetList = append(facetList, s.virgo.poolRes.FacetList...)
+	}
+
+	// overwrite last result with full list
+
+	s.virgo.poolRes.FacetList = facetList
 
 	// finally fill out elapsed time
 
@@ -600,7 +638,7 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 	// group or not based on sort being applied
 	s.virgo.flags.groupResults = s.pool.maps.definedSorts[s.virgo.req.Sort.SortID].GroupResults
 
-	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
+	if resp := s.performSearchRequest(); resp.err != nil {
 		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		resp.data = errData
 		return resp
@@ -630,7 +668,7 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 	s.virgo.flags.requestFacets = true
 	s.virgo.flags.preSearchFilters = false
 
-	if resp := s.handleSearchOrFacetsRequest(); resp.err != nil {
+	if resp := s.performFacetsRequest(); resp.err != nil {
 		errData = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		resp.data = errData
 		return resp

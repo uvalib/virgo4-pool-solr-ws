@@ -15,13 +15,13 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.1.1
 	github.com/prometheus/client_golang v1.9.0
 	github.com/sirupsen/logrus v1.7.0 // indirect
-	github.com/ugorji/go v1.2.1 // indirect
+	github.com/ugorji/go v1.2.2 // indirect
 	github.com/uvalib/virgo4-api v0.0.0-20201119181753-d6a8af771dcb
 	github.com/uvalib/virgo4-jwt v0.0.0-20200812155832-7443daa580fd
 	github.com/uvalib/virgo4-parser v0.0.0-20201110191926-097433955fee
 	github.com/zsais/go-gin-prometheus v0.1.0
-	golang.org/x/crypto v0.0.0-20201217014255-9d1352758620 // indirect
-	golang.org/x/sys v0.0.0-20201218084310-7d0127a74742 // indirect
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
+	golang.org/x/sys v0.0.0-20210104204734-6f8348627aad // indirect
 	golang.org/x/text v0.3.4
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

@@ -507,8 +507,10 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 	componentQueries := make(map[string]map[string]*solrResponseFacet)
 
 	// add normal facets; track component facets
-	for key := range solrFacets {
-		val := solrFacets[key]
+	for key, val := range solrFacets {
+		if s.solr.req.meta.requestFacets[key] == nil {
+			continue
+		}
 
 		switch s.solr.req.meta.requestFacets[key].config.Type {
 		case "component":
