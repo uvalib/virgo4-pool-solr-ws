@@ -100,7 +100,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 	for filterID, selectedValues := range s.meta.selectionMap {
 		// when iterating over facets, do not include current facet in filter queries
 		// so that all possible matching values for this facet are returned
-		if ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
+		if ctx.virgo.flags.allSearchFilters == false && ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
 			continue
 		}
 
@@ -157,7 +157,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 		internalFacets[facet.XID] = &f
 
 		// when iterating over facets, only include current facet in solr request
-		if s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
+		if s.virgo.flags.allSearchFilters == false && s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
 			continue
 		}
 

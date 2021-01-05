@@ -27,6 +27,7 @@ func newFacetCache(pool *poolContext, interval int) *facetCache {
 
 	c := clientContext{}
 	c.init(pool, nil)
+	//c.opts.verbose = true
 
 	s := searchContext{}
 	s.init(pool, &c)
