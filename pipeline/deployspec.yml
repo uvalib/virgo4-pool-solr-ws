@@ -6,7 +6,7 @@ version: 0.2
 
 env:
   variables:
-    terraform_version:                   0.12.21
+    terraform_version:                   0.13.5
     wait_time:                           300
     pool_solr_archival_endpoint:         https://pool-solr-ws-archival-dev.internal.lib.virginia.edu
     pool_solr_catalog_endpoint:          https://pool-solr-ws-catalog-dev.internal.lib.virginia.edu
