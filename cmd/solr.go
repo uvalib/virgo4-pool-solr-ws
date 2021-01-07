@@ -97,13 +97,15 @@ func (s *searchContext) populateMetaFields() {
 }
 
 func (s *searchContext) solrQuery() error {
+	ctx := s.pool.solr.service
+
+	s.solr.res = solrResponse{}
+
 	if s.virgo.skipQuery == true {
 		s.log("SOLR: skipping query")
 		s.populateMetaFields()
 		return nil
 	}
-
-	ctx := s.pool.solr.service
 
 	jsonBytes, jsonErr := json.Marshal(s.solr.req.json)
 	if jsonErr != nil {
@@ -198,6 +200,8 @@ func (s *searchContext) solrQuery() error {
 
 func (s *searchContext) solrPing() error {
 	ctx := s.pool.solr.healthCheck
+
+	s.solr.res = solrResponse{}
 
 	req, reqErr := http.NewRequest("GET", ctx.url, nil)
 	if reqErr != nil {

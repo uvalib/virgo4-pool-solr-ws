@@ -226,6 +226,8 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 }
 
 func (s *searchContext) solrSearchRequest() searchResponse {
+	s.solr.req = solrRequest{}
+
 	var err error
 
 	var p *solrParserInfo
