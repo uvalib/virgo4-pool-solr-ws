@@ -607,11 +607,13 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 		facetList = append(facetList, f.facet)
 	}
 
-	if overlaidFacets, err := s.pool.facetCache.overlayFilters(&facetList); err != nil {
-		s.warn("FACET: error overlaying facets: %s", err.Error())
-	} else {
-		facetList = overlaidFacets
-	}
+	/*
+		if overlaidFacets, err := s.pool.facetCache.overlayFilters(&facetList); err != nil {
+			s.warn("FACET: error overlaying facets: %s", err.Error())
+		} else {
+			facetList = overlaidFacets
+		}
+	*/
 
 	return facetList
 }
