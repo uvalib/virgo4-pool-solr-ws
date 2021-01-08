@@ -37,7 +37,7 @@ func newFacetCache(pool *poolContext, interval int) *facetCache {
 	s.virgo.req.Query = "keyword:{*}"
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 	s.virgo.flags.requestFacets = true
-	s.virgo.flags.allSearchFilters = true
+	s.virgo.flags.preSearchFilters = true
 
 	f.searchCtx = &s
 

@@ -28,7 +28,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 		// if this is not the facet cache requesting all facets, then
 		// omit this selected filter if it depends on other filters, none of which are selected
 
-		if ctx.virgo.flags.allSearchFilters == false && len(solrFacet.config.DependentFilterXIDs) > 0 {
+		if ctx.virgo.flags.preSearchFilters == false && len(solrFacet.config.DependentFilterXIDs) > 0 {
 			numSelected := 0
 
 			for _, facet := range solrFacet.config.DependentFilterXIDs {
@@ -100,7 +100,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 	for filterID, selectedValues := range s.meta.selectionMap {
 		// when iterating over facets, do not include current facet in filter queries
 		// so that all possible matching values for this facet are returned
-		if ctx.virgo.flags.allSearchFilters == false && ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
+		if ctx.virgo.flags.preSearchFilters == false && ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
 			continue
 		}
 
@@ -129,9 +129,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 	// should we request facets or pre-search filters?
 
 	var sourceFacets map[string]*poolConfigFilter
-	if s.virgo.flags.allSearchFilters == true {
-		sourceFacets = s.pool.maps.definedFilters
-	} else if s.virgo.flags.preSearchFilters == true {
+	if s.virgo.flags.preSearchFilters == true {
 		sourceFacets = s.pool.maps.preSearchFilters
 	} else {
 		sourceFacets = s.resourceTypeCtx.filterMap
@@ -157,7 +155,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 		internalFacets[facet.XID] = &f
 
 		// when iterating over facets, only include current facet in solr request
-		if s.virgo.flags.allSearchFilters == false && s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
+		if s.virgo.flags.preSearchFilters == false && s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
 			continue
 		}
 

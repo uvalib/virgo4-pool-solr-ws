@@ -557,9 +557,7 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 	for key, val := range mergedFacets {
 		if len(val.Buckets) > 0 {
 			var facetDef *poolConfigFilter
-			if s.virgo.flags.allSearchFilters == true {
-				facetDef = s.pool.maps.definedFilters[key]
-			} else if s.virgo.flags.preSearchFilters == true {
+			if s.virgo.flags.preSearchFilters == true {
 				facetDef = s.pool.maps.preSearchFilters[key]
 			} else {
 				facetDef = s.resourceTypeCtx.filterMap[key]
@@ -568,7 +566,7 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 			// if this is not the facet cache requesting all facets, then
 			// add this facet to the response as long as one of its dependent facets is selected
 
-			if s.virgo.flags.allSearchFilters == false && len(facetDef.DependentFilterXIDs) > 0 {
+			if s.virgo.flags.preSearchFilters == false && len(facetDef.DependentFilterXIDs) > 0 {
 				numSelected := 0
 
 				for _, facet := range facetDef.DependentFilterXIDs {

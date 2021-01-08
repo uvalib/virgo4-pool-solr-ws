@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -17,7 +18,6 @@ type virgoFlags struct {
 	groupResults     bool
 	requestFacets    bool
 	preSearchFilters bool
-	allSearchFilters bool
 }
 
 type virgoDialog struct {
@@ -90,6 +90,7 @@ func (s *searchContext) copySearchContext() *searchContext {
 	sc.virgo.req = v
 
 	sc.virgo.endpoint = s.virgo.endpoint
+	sc.virgo.flags = s.virgo.flags
 
 	sc.resourceTypeCtx = s.resourceTypeCtx
 
@@ -248,9 +249,6 @@ func (s *searchContext) newSearchWithRecordCountOnly() (*searchContext, error) {
 	c.virgo.flags.groupResults = false
 	c.virgo.req.Pagination.Rows = 0
 
-	c.virgo.flags.requestFacets = false
-	c.virgo.flags.preSearchFilters = false
-
 	if resp := c.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
 	}
@@ -284,8 +282,6 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	c.virgo.req.Query = ""
 	c.virgo.solrQuery = newQuery
-	c.virgo.flags.requestFacets = false
-	c.virgo.flags.preSearchFilters = false
 
 	// get everything!  even bible (5000+)
 	c.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 100000}
@@ -547,41 +543,80 @@ func (s *searchContext) performSearchRequest() searchResponse {
 	return searchResponse{status: http.StatusOK}
 }
 
-func (s *searchContext) performFacetsRequest() searchResponse {
+type facetResponse struct {
+	index  int
+	facets []v4api.Facet
+	resp   searchResponse
+}
+
+func (s *searchContext) getFacetResults(index int, channel chan *facetResponse) {
+	res := facetResponse{index: index}
+
+	if res.resp = s.getPoolQueryResults(); res.resp.err == nil {
+		res.facets = s.virgo.poolRes.FacetList
+	}
+
+	channel <- &res
+}
+
+func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 	var err error
 
 	s.log("FACETS: v4 query: [%s]", s.virgo.req.Query)
 
 	if err = s.validateSearchRequest(); err != nil {
-		return searchResponse{status: http.StatusBadRequest, err: err}
+		return nil, searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
 	// for each filter, request solr facets for that filter by applying all current
 	// filters EXCEPT those of its own type.  combine these into full filter response.
 
-	var facetList []v4api.Facet
+	// run facet searches in parallel
+
+	channel := make(chan *facetResponse)
+	facetRequests := 0
 
 	for i := range s.resourceTypeCtx.filters {
 		filter := s.resourceTypeCtx.filters[i]
-		s.virgo.currentFacet = filter.XID
 
-		// now do the facet search
-		if resp := s.getPoolQueryResults(); resp.err != nil {
-			return resp
-		}
-
-		facetList = append(facetList, s.virgo.poolRes.FacetList...)
+		f := s.copySearchContext()
+		f.virgo.currentFacet = filter.XID
+		facetRequests++
+		go f.getFacetResults(i, channel)
 	}
 
-	// overwrite last result with full list
+	// collect responses
 
-	s.virgo.poolRes.FacetList = facetList
+	var facetResps []*facetResponse
 
-	// finally fill out elapsed time
+	for facetRequests > 0 {
+		facetResp := <-channel
+		facetResps = append(facetResps, facetResp)
+		facetRequests--
+	}
 
-	s.virgo.poolRes.ElapsedMS = int64(time.Since(s.client.start) / time.Millisecond)
+	// sort responses
 
-	return searchResponse{status: http.StatusOK}
+	sort.Slice(facetResps, func(i, j int) bool {
+		return facetResps[i].index < facetResps[j].index
+	})
+
+	// process responses
+
+	var facetList []v4api.Facet
+
+	for i := range facetResps {
+		facetResp := facetResps[i]
+
+		// just return first error encountered
+		if facetResp.resp.err != nil {
+			return nil, facetResp.resp
+		}
+
+		facetList = append(facetList, facetResp.facets...)
+	}
+
+	return facetList, searchResponse{status: http.StatusOK}
 }
 
 func (s *searchContext) determineSortOptions() searchResponse {
@@ -629,6 +664,8 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 		return resp
 	}
 
+	s.virgo.flags.requestFacets = false
+
 	if resp := s.determineSortOptions(); resp.err != nil {
 		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		resp.data = errData
@@ -666,17 +703,18 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 	s.virgo.flags.requestFacets = true
-	s.virgo.flags.preSearchFilters = false
 
-	if resp := s.performFacetsRequest(); resp.err != nil {
+	facets, resp := s.performFacetsRequest()
+
+	if resp.err != nil {
 		errData = v4api.PoolFacets{StatusCode: resp.status, StatusMessage: resp.err.Error()}
 		resp.data = errData
 		return resp
 	}
 
 	s.virgo.facetsRes = &v4api.PoolFacets{
-		FacetList:  s.virgo.poolRes.FacetList,
-		ElapsedMS:  s.virgo.poolRes.ElapsedMS,
+		FacetList:  facets,
+		ElapsedMS:  int64(time.Since(s.client.start) / time.Millisecond),
 		StatusCode: http.StatusOK,
 	}
 
