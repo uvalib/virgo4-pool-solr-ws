@@ -579,6 +579,23 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 	for i := range s.resourceTypeCtx.filters {
 		filter := s.resourceTypeCtx.filters[i]
 
+		// if this is a hidden filter, only return it if it was part of the request
+		filterDef := s.pool.maps.definedFilters[filter.XID]
+		if filterDef.Hidden == true {
+			filterRequested := false
+			for _, filterGroup := range s.virgo.req.Filters {
+				for _, filterFacet := range filterGroup.Facets {
+					if filterFacet.FacetID == filter.XID {
+						filterRequested = true
+					}
+				}
+			}
+
+			if filterRequested == false {
+				continue
+			}
+		}
+
 		f := s.copySearchContext()
 		f.virgo.currentFacet = filter.XID
 		facetRequests++
