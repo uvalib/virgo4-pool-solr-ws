@@ -613,7 +613,12 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 			return nil, facetResp.resp
 		}
 
-		facetList = append(facetList, facetResp.facets...)
+		// don't return filters if they have no values (there will be at most one filter)
+		if len(facetResp.facets) == 0 || len(facetResp.facets[0].Buckets) == 0 {
+			continue
+		}
+
+		facetList = append(facetList, facetResp.facets[0])
 	}
 
 	return facetList, searchResponse{status: http.StatusOK}
