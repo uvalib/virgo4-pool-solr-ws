@@ -254,6 +254,7 @@ type poolConfigFilter struct {
 	ComponentQueries    []poolConfigFacetQuery `json:"component_queries,omitempty"`
 	IsAvailability      bool                   `json:"is_availability,omitempty"`
 	BucketSort          string                 `json:"bucket_sort,omitempty"`
+	Hidden              bool                   `json:"hidden,omitempty"`
 	Index               int                    `json:"-"`
 	queryMap            map[string]*poolConfigFacetQuery
 }

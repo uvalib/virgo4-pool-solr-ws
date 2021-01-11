@@ -421,13 +421,13 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 }
 
 func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResponseFacet) v4api.Facet {
-	var facet v4api.Facet
-
-	facet.ID = facetDef.XID
-	facet.Name = s.client.localize(facet.ID)
-	facet.Type = facetDef.Type
-
-	facet.Sort = facetDef.BucketSort
+	facet := v4api.Facet{
+		ID:     facetDef.XID,
+		Name:   s.client.localize(facetDef.XID),
+		Type:   facetDef.Type,
+		Sort:   facetDef.BucketSort,
+		Hidden: facetDef.Hidden,
+	}
 
 	var buckets []v4api.FacetBucket
 
@@ -604,14 +604,6 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 	for _, f := range orderedFacets {
 		facetList = append(facetList, f.facet)
 	}
-
-	/*
-		if overlaidFacets, err := s.pool.facetCache.overlayFilters(&facetList); err != nil {
-			s.warn("FACET: error overlaying facets: %s", err.Error())
-		} else {
-			facetList = overlaidFacets
-		}
-	*/
 
 	return facetList
 }
