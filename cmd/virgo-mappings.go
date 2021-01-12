@@ -421,9 +421,14 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 }
 
 func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResponseFacet) v4api.Facet {
+	xid := s.resourceTypeCtx.FilterOverrides[facetDef.XID].XID
+	if xid == "" {
+		xid = facetDef.XID
+	}
+
 	facet := v4api.Facet{
 		ID:     facetDef.XID,
-		Name:   s.client.localize(facetDef.XID),
+		Name:   s.client.localize(xid),
 		Type:   facetDef.Type,
 		Sort:   facetDef.BucketSort,
 		Hidden: facetDef.Hidden,
@@ -565,11 +570,12 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 			// if this is not the facet cache requesting all facets, then
 			// add this facet to the response as long as one of its dependent facets is selected
+			dependentFilterXIDs := s.resourceTypeCtx.FilterOverrides[key].DependentFilterXIDs
 
-			if s.virgo.flags.preSearchFilters == false && len(facetDef.DependentFilterXIDs) > 0 {
+			if s.virgo.flags.preSearchFilters == false && len(dependentFilterXIDs) > 0 {
 				numSelected := 0
 
-				for _, facet := range facetDef.DependentFilterXIDs {
+				for _, facet := range dependentFilterXIDs {
 					n := len(s.solr.req.meta.selectionMap[facet])
 					numSelected += n
 				}

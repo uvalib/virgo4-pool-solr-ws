@@ -27,11 +27,12 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 
 		// if this is not the facet cache requesting all facets, then
 		// omit this selected filter if it depends on other filters, none of which are selected
+		dependentFilterXIDs := ctx.resourceTypeCtx.FilterOverrides[filter.FacetID].DependentFilterXIDs
 
-		if ctx.virgo.flags.preSearchFilters == false && len(solrFacet.config.DependentFilterXIDs) > 0 {
+		if ctx.virgo.flags.preSearchFilters == false && len(dependentFilterXIDs) > 0 {
 			numSelected := 0
 
-			for _, facet := range solrFacet.config.DependentFilterXIDs {
+			for _, facet := range dependentFilterXIDs {
 				n := len(s.meta.selectionMap[facet])
 				numSelected += n
 			}

@@ -433,13 +433,17 @@ func (p *poolContext) validateConfig() {
 		for j, val := range r.filters {
 			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] filter %d xid", i, r.Value, j))
 
-			for k, depval := range val.DependentFilterXIDs {
-				messageIDs.requireValue(depval, fmt.Sprintf("resource type %d [%s] filter %d dependent xid %d", i, r.Value, j, k))
-			}
-
 			for k, q := range val.ComponentQueries {
 				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] filter %d component query xid %d", i, r.Value, j, k))
 				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] filter %d component query query %d", i, r.Value, j, k))
+			}
+		}
+
+		for k, v := range r.FilterOverrides {
+			messageIDs.addValue(k)
+			messageIDs.addValue(v.XID)
+			for _, xid := range v.DependentFilterXIDs {
+				messageIDs.addValue(xid)
 			}
 		}
 
@@ -982,7 +986,7 @@ func (p *poolContext) initResourceTypes() {
 		r.filterMap = make(map[string]*poolConfigFilter)
 
 		// append resource-type filters after global pre-search filters
-		filterXIDs := append(p.config.Global.Mappings.Configured.FilterXIDs, r.FilterXIDs...)
+		filterXIDs := append(p.config.Global.Mappings.Configured.FilterXIDs, r.AdditionalFilterXIDs...)
 
 		seen := make(map[string]bool)
 		for _, xid := range filterXIDs {
