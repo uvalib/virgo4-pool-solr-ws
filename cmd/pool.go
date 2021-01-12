@@ -1009,6 +1009,7 @@ func (p *poolContext) initResourceTypes() {
 
 			r.filters = append(r.filters, def)
 			r.filterMap[xid] = &def
+			r.filterXIDs = append(r.filterXIDs, xid)
 
 			seen[xid] = true
 		}

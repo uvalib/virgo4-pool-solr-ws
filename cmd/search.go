@@ -32,6 +32,7 @@ type virgoDialog struct {
 	endpoint     string
 	body         string
 	currentFacet string // which facet to consider when iterating over facets to build response
+	totalFilters int    // number of filters in the request
 }
 
 type solrDialog struct {
@@ -457,6 +458,8 @@ func (s *searchContext) validateSearchRequest() error {
 		// or at least that it's a defined facet (even if the resource type doesn't use it).
 		// if neither, fail this request.
 
+		totalFilters := 0
+
 		for _, filter := range filterGroup.Facets {
 			if _, rok := s.resourceTypeCtx.filterMap[filter.FacetID]; rok == false {
 				if _, dok := s.pool.maps.definedFilters[filter.FacetID]; dok == false {
@@ -465,7 +468,11 @@ func (s *searchContext) validateSearchRequest() error {
 
 				s.warn("received known filter [%s] that is not present in resource type context [%s]; ignoring.", filter.FacetID, s.resourceTypeCtx.Value)
 			}
+
+			totalFilters++
 		}
+
+		s.virgo.totalFilters = totalFilters
 
 	default:
 		s.log("VALIDATE: using resource type context [%s] by default", s.resourceTypeCtx.Value)
@@ -566,6 +573,25 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 
 	if err = s.validateSearchRequest(); err != nil {
 		return nil, searchResponse{status: http.StatusBadRequest, err: err}
+	}
+
+	// short-circuit: empty/* single-keyword searches with no filters in the request
+	// can simply use cached filters.  if errors encountered, just fall back to lookups.
+
+	if s.virgo.totalFilters == 0 {
+		// parse original query to determine query type
+
+		if parsedQuery, pErr := s.virgoQueryConvertToSolr(s.virgo.req.Query); pErr == nil {
+			if parsedQuery.isSingleKeywordSearch == true {
+				keyword := parsedQuery.keywords[0]
+				if keyword == "" || keyword == "*" {
+					if filters, fErr := s.pool.facetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterXIDs); fErr == nil {
+						s.log("FACETS: keyword * query using facet cache for response")
+						return filters, searchResponse{status: http.StatusOK}
+					}
+				}
+			}
+		}
 	}
 
 	// for each filter, request solr facets for that filter by applying all current
