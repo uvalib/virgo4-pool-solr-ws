@@ -70,7 +70,8 @@ type poolContext struct {
 	sorts                []*poolConfigSort
 	resourceTypeContexts []*poolConfigResourceTypeContext
 	titleizer            *titleizeContext
-	facetCache           *facetCache
+	globalFacetCache     *facetCache // for pre-search filters
+	localFacetCache      *facetCache // for quick loading of facets on empty keyword searches
 }
 
 type stringValidator struct {
@@ -1141,6 +1142,14 @@ func (p *poolContext) initTitleizer() {
 	p.titleizer = newTitleizeContext(&cfg)
 }
 
+func (p *poolContext) initFacetCaches() {
+	// start global facet cache
+	p.globalFacetCache = newFacetCache(p, 0, 300, true)
+
+	// start local facet cache
+	p.localFacetCache = newFacetCache(p, 30, 300, false)
+}
+
 func initializePool(cfg *poolConfig) *poolContext {
 	p := poolContext{}
 
@@ -1171,8 +1180,8 @@ func initializePool(cfg *poolConfig) *poolContext {
 
 	p.validateConfig()
 
-	// start facet cache
-	p.facetCache = newFacetCache(&p, 300)
+	// start facet caches
+	p.initFacetCaches()
 
 	return &p
 }

@@ -10,13 +10,15 @@ import (
 
 type facetCache struct {
 	searchCtx       *searchContext
+	startupDelay    int
 	refreshInterval int
 	currentFacets   *[]v4api.Facet
 	facetMap        map[string]*v4api.Facet
 }
 
-func newFacetCache(pool *poolContext, interval int) *facetCache {
+func newFacetCache(pool *poolContext, delay int, interval int, globalFlag bool) *facetCache {
 	f := facetCache{
+		startupDelay:    delay,
 		refreshInterval: interval,
 		currentFacets:   nil,
 		facetMap:        nil,
@@ -37,6 +39,7 @@ func newFacetCache(pool *poolContext, interval int) *facetCache {
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 	s.virgo.flags.requestFacets = true
 	s.virgo.flags.facetCache = true
+	s.virgo.flags.globalFacetCache = globalFlag
 
 	f.searchCtx = &s
 
@@ -46,6 +49,8 @@ func newFacetCache(pool *poolContext, interval int) *facetCache {
 }
 
 func (f *facetCache) monitorFacets() {
+	time.Sleep(time.Duration(f.startupDelay) * time.Second)
+
 	for {
 		f.refreshFacets()
 		f.searchCtx.log("[CACHE] refresh scheduled in %d seconds", f.refreshInterval)

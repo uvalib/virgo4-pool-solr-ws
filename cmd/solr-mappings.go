@@ -193,7 +193,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	// build fq based on global or pool context
 	fq := s.pool.config.Local.Solr.Params.GlobalFq
-	if s.virgo.flags.facetCache == false {
+	if s.virgo.flags.globalFacetCache == false {
 		fq = append(fq, s.pool.config.Local.Solr.Params.PoolFq...)
 	}
 	s.solr.req.json.Params.Fq = nonemptyValues(fq)

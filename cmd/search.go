@@ -15,9 +15,10 @@ import (
 )
 
 type virgoFlags struct {
-	groupResults  bool
-	requestFacets bool
-	facetCache    bool
+	groupResults     bool
+	requestFacets    bool
+	facetCache       bool
+	globalFacetCache bool
 }
 
 type virgoDialog struct {
@@ -585,7 +586,7 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 			if parsedQuery.isSingleKeywordSearch == true {
 				keyword := parsedQuery.keywords[0]
 				if keyword == "" || keyword == "*" {
-					if filters, fErr := s.pool.facetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterXIDs); fErr == nil {
+					if filters, fErr := s.pool.localFacetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterXIDs); fErr == nil {
 						s.log("FACETS: keyword * query using facet cache for response")
 						return filters, searchResponse{status: http.StatusOK}
 					}
@@ -770,7 +771,7 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 }
 
 func (s *searchContext) handleFiltersRequest() searchResponse {
-	filters, err := s.pool.facetCache.getPreSearchFilters()
+	filters, err := s.pool.globalFacetCache.getPreSearchFilters()
 
 	if err != nil {
 		resp := searchResponse{status: http.StatusServiceUnavailable, err: err}
