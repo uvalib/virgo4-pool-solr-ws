@@ -29,7 +29,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 		// omit this selected filter if it depends on other filters, none of which are selected
 		dependentFilterXIDs := ctx.resourceTypeCtx.FilterOverrides[filter.FacetID].DependentFilterXIDs
 
-		if ctx.virgo.flags.preSearchFilters == false && len(dependentFilterXIDs) > 0 {
+		if ctx.virgo.flags.facetCache == false && len(dependentFilterXIDs) > 0 {
 			numSelected := 0
 
 			for _, facet := range dependentFilterXIDs {
@@ -101,7 +101,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 	for filterID, selectedValues := range s.meta.selectionMap {
 		// when iterating over facets, do not include current facet in filter queries
 		// so that all possible matching values for this facet are returned
-		if ctx.virgo.flags.preSearchFilters == false && ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
+		if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
 			continue
 		}
 
@@ -130,8 +130,8 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 	// should we request facets or pre-search filters?
 
 	var sourceFacets map[string]*poolConfigFilter
-	if s.virgo.flags.preSearchFilters == true {
-		sourceFacets = s.pool.maps.preSearchFilters
+	if s.virgo.flags.facetCache == true {
+		sourceFacets = s.pool.maps.definedFilters
 	} else {
 		sourceFacets = s.resourceTypeCtx.filterMap
 	}
@@ -156,7 +156,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 		internalFacets[facet.XID] = &f
 
 		// when iterating over facets, only include current facet in solr request
-		if s.virgo.flags.preSearchFilters == false && s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
+		if s.virgo.flags.facetCache == false && s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
 			continue
 		}
 
@@ -193,7 +193,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	// build fq based on global or pool context
 	fq := s.pool.config.Local.Solr.Params.GlobalFq
-	if s.virgo.flags.preSearchFilters == false {
+	if s.virgo.flags.facetCache == false {
 		fq = append(fq, s.pool.config.Local.Solr.Params.PoolFq...)
 	}
 	s.solr.req.json.Params.Fq = nonemptyValues(fq)

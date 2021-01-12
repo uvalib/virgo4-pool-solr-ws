@@ -15,9 +15,9 @@ import (
 )
 
 type virgoFlags struct {
-	groupResults     bool
-	requestFacets    bool
-	preSearchFilters bool
+	groupResults  bool
+	requestFacets bool
+	facetCache    bool
 }
 
 type virgoDialog struct {
