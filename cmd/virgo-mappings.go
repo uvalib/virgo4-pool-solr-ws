@@ -420,7 +420,7 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 	return records
 }
 
-func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResponseFacet) v4api.Facet {
+func (s *searchContext) newFacetFromDefinition(facetDef *poolConfigFilter) v4api.Facet {
 	xid := s.resourceTypeCtx.FilterOverrides[facetDef.XID].XID
 	if xid == "" {
 		xid = facetDef.XID
@@ -433,6 +433,13 @@ func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResp
 		Sort:   facetDef.BucketSort,
 		Hidden: facetDef.Hidden,
 	}
+
+	return facet
+}
+
+func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResponseFacet) v4api.Facet {
+
+	facet := s.newFacetFromDefinition(facetDef)
 
 	var buckets []v4api.FacetBucket
 

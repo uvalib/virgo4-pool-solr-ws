@@ -22,18 +22,19 @@ type virgoFlags struct {
 }
 
 type virgoDialog struct {
-	req          v4api.SearchRequest
-	poolRes      *v4api.PoolResult
-	facetsRes    *v4api.PoolFacets
-	recordRes    *v4api.Record
-	solrQuery    string          // holds the solr query (either parsed or specified)
-	parserInfo   *solrParserInfo // holds the information for parsed queries
-	skipQuery    bool            // should we skip Solr communcation and just return empty results?
-	flags        virgoFlags
-	endpoint     string
-	body         string
-	currentFacet string // which facet to consider when iterating over facets to build response
-	totalFilters int    // number of filters in the request
+	req            v4api.SearchRequest
+	poolRes        *v4api.PoolResult
+	facetsRes      *v4api.PoolFacets
+	recordRes      *v4api.Record
+	solrQuery      string          // holds the solr query (either parsed or specified)
+	parserInfo     *solrParserInfo // holds the information for parsed queries
+	skipQuery      bool            // should we skip Solr communcation and just return empty results?
+	flags          virgoFlags
+	endpoint       string
+	body           string
+	currentFacet   string // which facet to consider when iterating over facets to build response
+	totalFilters   int    // number of (valid) filters in the request
+	invalidFilters bool   // whether the request contains an unsupported filter
 }
 
 type solrDialog struct {
@@ -455,25 +456,19 @@ func (s *searchContext) validateSearchRequest() error {
 
 		s.log("VALIDATE: using resource type context [%s] based on selected facets", s.resourceTypeCtx.Value)
 
-		// second pass: ensure filter(s) are present in the resource type context facet list,
-		// or at least that it's a defined facet (even if the resource type doesn't use it).
-		// if neither, fail this request.
+		// second pass: ensure filter(s) are present in the resource type context facet list
 
-		totalFilters := 0
+		s.virgo.invalidFilters = false
+		s.virgo.totalFilters = 0
 
 		for _, filter := range filterGroup.Facets {
 			if _, rok := s.resourceTypeCtx.filterMap[filter.FacetID]; rok == false {
-				if _, dok := s.pool.maps.definedFilters[filter.FacetID]; dok == false {
-					return fmt.Errorf("received unknown filter: [%s]", filter.FacetID)
-				}
-
-				s.warn("received known filter [%s] that is not present in resource type context [%s]; ignoring.", filter.FacetID, s.resourceTypeCtx.Value)
+				s.warn("received known filter [%s] that is not present in resource type context [%s]", filter.FacetID, s.resourceTypeCtx.Value)
+				s.virgo.invalidFilters = true
+			} else {
+				s.virgo.totalFilters++
 			}
-
-			totalFilters++
 		}
-
-		s.virgo.totalFilters = totalFilters
 
 	default:
 		s.log("VALIDATE: using resource type context [%s] by default", s.resourceTypeCtx.Value)
@@ -511,33 +506,38 @@ func (s *searchContext) performSearchRequest() searchResponse {
 		return searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
-	// save original request flags
-	flags := s.virgo.flags
+	// if request contains invalid filters, set up to return 0 results
+	if s.virgo.invalidFilters == true {
+		s.virgo.poolRes = &v4api.PoolResult{Confidence: "low"}
+	} else {
+		// save original request flags
+		flags := s.virgo.flags
 
-	if top, err = s.performSpeculativeSearches(); err != nil {
-		return searchResponse{status: http.StatusInternalServerError, err: err}
-	}
+		if top, err = s.performSpeculativeSearches(); err != nil {
+			return searchResponse{status: http.StatusInternalServerError, err: err}
+		}
 
-	// use query syntax from chosen search
-	s.virgo.req.Query = top.virgo.req.Query
+		// use query syntax from chosen search
+		s.virgo.req.Query = top.virgo.req.Query
 
-	// restore original request flags
-	s.virgo.flags = flags
+		// restore original request flags
+		s.virgo.flags = flags
 
-	// now do the search
-	if resp := s.getPoolQueryResults(); resp.err != nil {
-		return resp
-	}
+		// now do the search
+		if resp := s.getPoolQueryResults(); resp.err != nil {
+			return resp
+		}
 
-	// populate group list, if this is a grouped request
-	if err = s.populateGroups(); err != nil {
-		return searchResponse{status: http.StatusInternalServerError, err: err}
-	}
+		// populate group list, if this is a grouped request
+		if err = s.populateGroups(); err != nil {
+			return searchResponse{status: http.StatusInternalServerError, err: err}
+		}
 
-	// restore actual confidence
-	if confidenceIndex(top.confidence) > confidenceIndex(s.virgo.poolRes.Confidence) {
-		s.log("SEARCH: overriding confidence [%s] with [%s]", s.virgo.poolRes.Confidence, top.confidence)
-		s.virgo.poolRes.Confidence = top.confidence
+		// restore actual confidence
+		if confidenceIndex(top.confidence) > confidenceIndex(s.virgo.poolRes.Confidence) {
+			s.log("SEARCH: overriding confidence [%s] with [%s]", s.virgo.poolRes.Confidence, top.confidence)
+			s.virgo.poolRes.Confidence = top.confidence
+		}
 	}
 
 	// add sort info for these results
@@ -574,6 +574,43 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 
 	if err = s.validateSearchRequest(); err != nil {
 		return nil, searchResponse{status: http.StatusBadRequest, err: err}
+	}
+
+	// if request contains invalid filters, return supported filters with zero-count values
+	if s.virgo.invalidFilters == true {
+		// we know there is exactly one filter group at this point.
+		// iterate over it and create mappings
+
+		reqMap := make(map[string][]string)
+
+		for _, filter := range s.virgo.req.Filters[0].Facets {
+			if _, rok := s.resourceTypeCtx.filterMap[filter.FacetID]; rok == true {
+				reqMap[filter.FacetID] = append(reqMap[filter.FacetID], filter.Value)
+			}
+		}
+
+		// build facet response
+
+		var facetList []v4api.Facet
+
+		for _, xid := range s.resourceTypeCtx.filterXIDs {
+			vals := reqMap[xid]
+
+			if len(vals) == 0 {
+				continue
+			}
+
+			facetDef := s.resourceTypeCtx.filterMap[xid]
+			facet := s.newFacetFromDefinition(facetDef)
+
+			for _, val := range vals {
+				facet.Buckets = append(facet.Buckets, v4api.FacetBucket{Value: val, Count: 0, Selected: true})
+			}
+
+			facetList = append(facetList, facet)
+		}
+
+		return facetList, searchResponse{status: http.StatusOK}
 	}
 
 	// short-circuit: empty/* single-keyword searches with no filters in the request
