@@ -19,6 +19,7 @@ type virgoFlags struct {
 	requestFacets    bool
 	facetCache       bool
 	globalFacetCache bool
+	firstRecordOnly  bool
 }
 
 type virgoDialog struct {
@@ -357,6 +358,13 @@ func (s *searchContext) populateGroups() error {
 		return nil
 	}
 
+	// image pool only presents first result in UI, but we still want counts.
+	// set up to query solr for counts but don't waste time populating anything
+	// beyond the first record for each group.
+	if s.pool.config.Local.Identity.Mode == "image" {
+		s.virgo.flags.firstRecordOnly = true
+	}
+
 	// grouped results need to be populated per group value
 	var groups []v4api.Group
 
@@ -397,6 +405,10 @@ func (s *searchContext) populateGroups() error {
 	for i := range groups {
 		group := &groups[i]
 		group.Count = len(group.Records)
+
+		if s.virgo.flags.firstRecordOnly == true {
+			group.Records = []v4api.Record{group.Records[0]}
+		}
 	}
 
 	s.virgo.poolRes.Groups = groups

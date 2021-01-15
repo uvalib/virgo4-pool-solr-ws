@@ -411,14 +411,24 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []v4api.Record {
 	var records []v4api.Record
 
+	groupsSeen := make(map[string]bool)
+
 	start := time.Now()
 
 	for i := range solrDocuments.Docs {
 		doc := &solrDocuments.Docs[i]
 
-		record := s.populateRecord(doc)
+		group := s.getSolrGroupFieldValue(doc)
+
+		var record v4api.Record
+
+		if s.virgo.flags.firstRecordOnly == false || groupsSeen[group] == false {
+			record = s.populateRecord(doc)
+		}
 
 		records = append(records, record)
+
+		groupsSeen[group] = true
 	}
 
 	elapsed := int64(time.Since(start) / time.Millisecond)
