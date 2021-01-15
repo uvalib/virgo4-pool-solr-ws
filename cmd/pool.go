@@ -50,7 +50,8 @@ type poolMaps struct {
 	definedSorts         map[string]*poolConfigSort
 	definedFields        map[string]*poolConfigField
 	definedFilters       map[string]*poolConfigFilter
-	preSearchFilters     map[string]*poolConfigFilter
+	supportedFilters     map[string]*poolConfigFilter              // any filter this pool instance might support
+	preSearchFilters     map[string]*poolConfigFilter              // global pre-search filters (not restricted to this pool)
 	resourceTypeContexts map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
 	relatorTerms         map[string]string
 	relatorCodes         map[string]string
@@ -408,7 +409,7 @@ func (p *poolContext) validateConfig() {
 		miscValues.requireValue(val.Pattern, fmt.Sprintf("copyright %d pattern", i))
 
 		if val.re, err = regexp.Compile(val.Pattern); err != nil {
-			log.Printf("[INIT] pattern compilation error in copyright entry %d: %s", i, err.Error())
+			log.Printf("[VALIDATE] pattern compilation error in copyright entry %d: %s", i, err.Error())
 			invalid = true
 			continue
 		}
@@ -745,7 +746,7 @@ func (p *poolContext) populateFieldList(r *poolConfigResourceTypeContext, requir
 
 	for i, fieldName := range fieldNames {
 		if fieldName == "" {
-			log.Printf("[INIT] empty field name")
+			log.Printf("[FIELDLIST] empty field name")
 			invalid = true
 			continue
 		}
@@ -757,7 +758,7 @@ func (p *poolContext) populateFieldList(r *poolConfigResourceTypeContext, requir
 		fieldDef := p.maps.definedFields[fieldName]
 
 		if fieldDef == nil {
-			log.Printf("[INIT] unrecognized field name: [%s]", fieldName)
+			log.Printf("[FIELDLIST] unrecognized field name: [%s]", fieldName)
 			invalid = true
 			continue
 		}
@@ -782,7 +783,7 @@ func (p *poolContext) populateFieldList(r *poolConfigResourceTypeContext, requir
 				fieldDef.Properties.CitationPart = r.FieldNames.AuthorVernacular.CitationPart
 
 			default:
-				log.Printf("[INIT] unrecognized required field name: [%s]", fieldName)
+				log.Printf("[FIELDLIST] unrecognized required field name: [%s]", fieldName)
 				invalid = true
 				continue
 			}
@@ -935,7 +936,7 @@ func (p *poolContext) initFilters() {
 
 		orig := p.maps.definedFilters[xid]
 		if orig == nil {
-			log.Printf("[MAPCFG] unrecognized filter xid: [%s]", xid)
+			log.Printf("[FILTERS] unrecognized filter xid: [%s]", xid)
 			invalid = true
 			continue
 		}
@@ -947,6 +948,8 @@ func (p *poolContext) initFilters() {
 		def.Index = len(p.maps.preSearchFilters)
 
 		p.maps.preSearchFilters[def.XID] = &def
+
+		log.Printf("[FILTERS] added pre-search filter: [%s]", def.XID)
 	}
 
 	if invalid == true {
@@ -977,6 +980,39 @@ func (p *poolContext) initResourceTypes() {
 		p.resourceTypeContexts = append(p.resourceTypeContexts, def)
 	}
 
+	// build the list of supported filters, which is the union of supported pre-search filters
+	// and the filters for any of the supported resource types
+
+	poolFilterXIDs := p.config.Global.Mappings.Configured.FilterXIDs
+	for _, val := range p.config.Global.ResourceTypes.SupportedContexts {
+		ctx := p.maps.resourceTypeContexts[val]
+		poolFilterXIDs = append(poolFilterXIDs, ctx.AdditionalFilterXIDs...)
+	}
+
+	p.maps.supportedFilters = make(map[string]*poolConfigFilter)
+	for _, xid := range poolFilterXIDs {
+		if p.maps.supportedFilters[xid] != nil {
+			continue
+		}
+
+		orig := p.maps.definedFilters[xid]
+		if orig == nil {
+			log.Printf("[RESTYPES] unrecognized filter xid: [%s]", xid)
+			invalid = true
+			continue
+		}
+
+		// create a copy of the definition to avoid index confusion
+		def := *orig
+
+		// this is used to preserve filter order when building filters response
+		def.Index = len(p.maps.supportedFilters)
+
+		p.maps.supportedFilters[def.XID] = &def
+
+		log.Printf("[RESTYPES] added pool-supported filter: [%s]", def.XID)
+	}
+
 	// NOTE: the following resource type setup loops are broken out for readability
 
 	// for each resource type, set up its facets and facet map
@@ -997,7 +1033,7 @@ func (p *poolContext) initResourceTypes() {
 
 			orig := p.maps.definedFilters[xid]
 			if orig == nil {
-				log.Printf("[MAPCFG] resource type value [%s] contains unrecognized filter xid: [%s]", r.Value, xid)
+				log.Printf("[RESTYPES] resource type value [%s] contains unrecognized filter xid: [%s]", r.Value, xid)
 				invalid = true
 				continue
 			}
@@ -1080,7 +1116,7 @@ func (p *poolContext) initResourceTypes() {
 			msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: r.XID})
 
 			if err != nil {
-				log.Printf("[MAPCFG] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
+				log.Printf("[RESTYPES] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
 				invalid = true
 				continue
 			}
@@ -1144,10 +1180,10 @@ func (p *poolContext) initTitleizer() {
 
 func (p *poolContext) initFacetCaches() {
 	// start global facet cache
-	p.globalFacetCache = newFacetCache(p, 0, 300, true)
+	p.globalFacetCache = newFacetCache(p, 0, 10*60, true)
 
 	// start local facet cache
-	p.localFacetCache = newFacetCache(p, 30, 300, false)
+	p.localFacetCache = newFacetCache(p, 30, 10*60, false)
 }
 
 func initializePool(cfg *poolConfig) *poolContext {

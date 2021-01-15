@@ -369,10 +369,11 @@ type poolConfigResourceTypeContext struct {
 }
 
 type poolConfigResourceTypes struct {
-	Field          string                          `json:"field,omitempty"`
-	FilterXID      string                          `json:"filter_xid,omitempty"`
-	DefaultContext string                          `json:"default_context,omitempty"`
-	Contexts       []poolConfigResourceTypeContext `json:"contexts,omitempty"`
+	Field             string                          `json:"field,omitempty"`
+	FilterXID         string                          `json:"filter_xid,omitempty"`
+	DefaultContext    string                          `json:"default_context,omitempty"`
+	SupportedContexts []string                        `json:"supported_contexts,omitempty"`
+	Contexts          []poolConfigResourceTypeContext `json:"contexts,omitempty"`
 }
 
 type poolConfigGlobal struct {

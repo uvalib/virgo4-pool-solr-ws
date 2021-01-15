@@ -423,7 +423,7 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 
 	elapsed := int64(time.Since(start) / time.Millisecond)
 
-	s.verbose("populateRecords(): processed %d records in %d ms (%0.2f records/sec)", len(solrDocuments.Docs), elapsed, 1000.0 * (float32(len(solrDocuments.Docs)) / float32(elapsed)))
+	s.verbose("populateRecords(): processed %d records in %d ms (%0.2f records/sec)", len(solrDocuments.Docs), elapsed, 1000.0*(float32(len(solrDocuments.Docs))/float32(elapsed)))
 
 	return records
 }
@@ -578,7 +578,11 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 		if len(val.Buckets) > 0 {
 			var facetDef *poolConfigFilter
 			if s.virgo.flags.facetCache == true {
-				facetDef = s.pool.maps.definedFilters[key]
+				if s.virgo.flags.globalFacetCache == true {
+					facetDef = s.pool.maps.preSearchFilters[key]
+				} else {
+					facetDef = s.pool.maps.supportedFilters[key]
+				}
 			} else {
 				facetDef = s.resourceTypeCtx.filterMap[key]
 			}

@@ -131,7 +131,11 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 
 	var sourceFacets map[string]*poolConfigFilter
 	if s.virgo.flags.facetCache == true {
-		sourceFacets = s.pool.maps.definedFilters
+		if s.virgo.flags.globalFacetCache == true {
+			sourceFacets = s.pool.maps.preSearchFilters
+		} else {
+			sourceFacets = s.pool.maps.supportedFilters
+		}
 	} else {
 		sourceFacets = s.resourceTypeCtx.filterMap
 	}

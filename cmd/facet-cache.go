@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/uvalib/virgo4-api/v4api"
@@ -29,6 +28,11 @@ func newFacetCache(pool *poolContext, delay int, interval int, globalFlag bool) 
 	c := clientContext{}
 	c.init(pool, nil)
 	//c.opts.verbose = true
+	if globalFlag == true {
+		c.reqID = "global-pre-search-cache"
+	} else {
+		c.reqID = "local-star-search-cache" // i give this name five stars
+	}
 
 	s := searchContext{}
 	s.init(pool, &c)
@@ -49,7 +53,10 @@ func newFacetCache(pool *poolContext, delay int, interval int, globalFlag bool) 
 }
 
 func (f *facetCache) monitorFacets() {
-	time.Sleep(time.Duration(f.startupDelay) * time.Second)
+	if f.startupDelay > 0 {
+		f.searchCtx.log("[CACHE] initialization delayed for %d seconds", f.startupDelay)
+		time.Sleep(time.Duration(f.startupDelay) * time.Second)
+	}
 
 	for {
 		f.refreshFacets()
@@ -59,7 +66,7 @@ func (f *facetCache) monitorFacets() {
 }
 
 func (f *facetCache) refreshFacets() {
-	log.Printf("[CACHE] refreshing solr facets...")
+	f.searchCtx.log("[CACHE] refreshing solr facets...")
 
 	if resp := f.searchCtx.getPoolQueryResults(); resp.err != nil {
 		f.searchCtx.err("[CACHE] query error: %s", resp.err.Error())
