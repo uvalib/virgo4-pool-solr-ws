@@ -6,20 +6,11 @@ version: 0.2
 
 env:
   variables:
-    terraform_version:                   0.13.5
-    wait_time:                           300
-    pool_solr_archival_endpoint:         https://pool-solr-ws-archival-dev.internal.lib.virginia.edu
-    pool_solr_catalog_endpoint:          https://pool-solr-ws-catalog-dev.internal.lib.virginia.edu
-    pool_solr_hatitrust_endpoint:        https://pool-solr-ws-hathitrust-dev.internal.lib.virginia.edu
-    pool_solr_images_endpoint:           https://pool-solr-ws-images-dev.internal.lib.virginia.edu
-    pool_solr_maps_endpoint:             https://pool-solr-ws-maps-dev.internal.lib.virginia.edu
-    pool_solr_music_recordings_endpoint: https://pool-solr-ws-music-recordings-dev.internal.lib.virginia.edu
-    pool_solr_musical_scores_endpoint:   https://pool-solr-ws-musical-scores-dev.internal.lib.virginia.edu
-    pool_solr_serials_endpoint:          https://pool-solr-ws-serials-dev.internal.lib.virginia.edu
-    pool_solr_sound_recordings_endpoint: https://pool-solr-ws-sound-recordings-dev.internal.lib.virginia.edu
-    pool_solr_thesis_endpoint:           https://pool-solr-ws-thesis-dev.internal.lib.virginia.edu
-    pool_solr_uva_library_endpoint:      https://pool-solr-ws-uva-library-dev.internal.lib.virginia.edu
-    pool_solr_video_endpoint:            https://pool-solr-ws-video-dev.internal.lib.virginia.edu
+    terraform_version:              0.13.5
+    wait_time:                      300
+    pool_solr_hathitrust_endpoint:  https://pool-solr-ws-hathitrust-dev.internal.lib.virginia.edu
+    pool_solr_images_endpoint:      https://pool-solr-ws-images-dev.internal.lib.virginia.edu
+    pool_solr_uva_library_endpoint: https://pool-solr-ws-uva-library-dev.internal.lib.virginia.edu
 
 phases:
   install:
@@ -40,18 +31,9 @@ phases:
       - cd $CODEBUILD_SRC_DIR/terraform-infrastructure/virgo4.lib.virginia.edu/ecs-tasks/staging/pool-solr-ws
       - terraform init -no-color
       - terraform apply -no-color -auto-approve -var container_tag=$latest_build
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_archival_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_catalog_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_hatitrust_endpoint $latest_build $wait_time
+      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_hathitrust_endpoint $latest_build $wait_time
       - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_images_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_maps_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_music_recordings_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_musical_scores_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_serials_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_sound_recordings_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_thesis_endpoint $latest_build $wait_time
       - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_uva_library_endpoint $latest_build $wait_time
-      - sh $CODEBUILD_SRC_DIR/pipeline/wait_for_version.sh $pool_solr_video_endpoint $latest_build $wait_time
 
 #  post_build:
 #    commands:
