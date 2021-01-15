@@ -112,6 +112,10 @@ func (s *searchContext) err(format string, args ...interface{}) {
 	s.client.err(format, args...)
 }
 
+func (s *searchContext) verbose(format string, args ...interface{}) {
+	s.client.verbose(format, args...)
+}
+
 func (s *searchContext) performQuery() searchResponse {
 	//s.log("**********  START SOLR QUERY  **********")
 

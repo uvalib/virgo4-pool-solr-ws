@@ -297,19 +297,19 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 	// determine what fields we are extracting from the document
 
-	var fieldCfgs []poolConfigField
+	var fieldCfgs *[]poolConfigField
 
 	switch {
 	case s.itemDetails == true:
-		fieldCfgs = rc.resourceTypeCtx.fields.detailed
+		fieldCfgs = &rc.resourceTypeCtx.fields.detailed
 
 	default:
-		fieldCfgs = rc.resourceTypeCtx.fields.basic
+		fieldCfgs = &rc.resourceTypeCtx.fields.basic
 	}
 
 	// field loop
 
-	for _, fieldCfg := range fieldCfgs {
+	for _, fieldCfg := range *fieldCfgs {
 		if fieldCfg.OnShelfOnly == true && rc.isAvailableOnShelf == false {
 			continue
 		}
@@ -411,11 +411,19 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []v4api.Record {
 	var records []v4api.Record
 
-	for _, doc := range solrDocuments.Docs {
-		record := s.populateRecord(&doc)
+	start := time.Now()
+
+	for i := range solrDocuments.Docs {
+		doc := &solrDocuments.Docs[i]
+
+		record := s.populateRecord(doc)
 
 		records = append(records, record)
 	}
+
+	elapsed := int64(time.Since(start) / time.Millisecond)
+
+	s.verbose("populateRecords(): processed %d records in %d ms (%0.2f records/sec)", len(solrDocuments.Docs), elapsed, 1000.0 * (float32(len(solrDocuments.Docs)) / float32(elapsed)))
 
 	return records
 }

@@ -138,6 +138,14 @@ func (c *clientContext) err(format string, args ...interface{}) {
 	c.log("ERROR: "+format, args...)
 }
 
+func (c *clientContext) verbose(format string, args ...interface{}) {
+	if c.opts.verbose == false {
+		return
+	}
+
+	c.log("VERBOSE: "+format, args...)
+}
+
 func (c *clientContext) localize(id string) string {
 	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
 }
