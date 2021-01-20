@@ -629,20 +629,24 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		return facetList, searchResponse{status: http.StatusOK}
 	}
 
+	// pre-populate solr query so that parallel facet requests don't waste time duplicating this work
+
+	if resp := s.populateSolrQuery(); resp.err != nil {
+		return nil, resp
+	}
+
 	// short-circuit: empty/* single-keyword searches with no filters in the request
 	// can simply use cached filters.  if errors encountered, just fall back to lookups.
 
 	if s.virgo.totalFilters == 0 {
 		// parse original query to determine query type
 
-		if parsedQuery, pErr := s.virgoQueryConvertToSolr(s.virgo.req.Query); pErr == nil {
-			if parsedQuery.isSingleKeywordSearch == true {
-				keyword := parsedQuery.keywords[0]
-				if keyword == "" || keyword == "*" {
-					if filters, fErr := s.pool.localFacetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterXIDs); fErr == nil {
-						s.log("FACETS: keyword * query using facet cache for response")
-						return filters, searchResponse{status: http.StatusOK}
-					}
+		if s.virgo.parserInfo.isSingleKeywordSearch == true {
+			keyword := s.virgo.parserInfo.keywords[0]
+			if keyword == "" || keyword == "*" {
+				if filters, fErr := s.pool.localFacetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterXIDs); fErr == nil {
+					s.log("FACETS: keyword * query using facet cache for response")
+					return filters, searchResponse{status: http.StatusOK}
 				}
 			}
 		}
@@ -677,6 +681,8 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		}
 
 		f := s.copySearchContext()
+		f.virgo.solrQuery = s.virgo.solrQuery
+		f.virgo.parserInfo = s.virgo.parserInfo
 		f.virgo.currentFacet = filter.XID
 		facetRequests++
 		go f.getFacetResults(i, channel)

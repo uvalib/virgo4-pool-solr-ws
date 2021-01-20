@@ -228,28 +228,36 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	return searchResponse{status: http.StatusOK}
 }
 
+func (s *searchContext) populateSolrQuery() searchResponse {
+	p, err := s.virgoQueryConvertToSolr(s.virgo.req.Query)
+
+	if err != nil {
+		return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
+	}
+
+	if p.containsUnsupportedFilters == true {
+		s.virgo.skipQuery = true
+	}
+
+	s.virgo.solrQuery = p.query
+	s.virgo.parserInfo = p
+
+	return searchResponse{status: http.StatusOK}
+}
+
 func (s *searchContext) solrSearchRequest() searchResponse {
+	var resp searchResponse
+
 	s.solr.req = solrRequest{}
-
-	var err error
-
-	var p *solrParserInfo
 
 	// caller might have already supplied a Solr query
 	if s.virgo.solrQuery == "" {
-		if p, err = s.virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
-			return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
+		if resp = s.populateSolrQuery(); resp.err != nil {
+			return resp
 		}
-
-		if p.containsUnsupportedFilters == true {
-			s.virgo.skipQuery = true
-		}
-
-		s.virgo.solrQuery = p.query
-		s.virgo.parserInfo = p
 	}
 
-	if resp := s.solrRequestWithDefaults(); resp.err != nil {
+	if resp = s.solrRequestWithDefaults(); resp.err != nil {
 		return resp
 	}
 
