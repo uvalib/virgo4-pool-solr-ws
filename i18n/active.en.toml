@@ -583,6 +583,9 @@ other = "A-Z"
 [SortCallNumberDescending]
 other = "Z-A"
 
+[SortCatalogIntraGroup]
+other = " "
+
 [SortDatePublished]
 other = "Date Published"
 
@@ -591,6 +594,15 @@ other = "oldest first"
 
 [SortDatePublishedDescending]
 other = "newest first"
+
+[SortTitle]
+other = "Title"
+
+[SortTitleAscending]
+other = "A-Z"
+
+[SortTitleDescending]
+other = "Z-A"
 
 [SortRelevance]
 other = "Relevance"
