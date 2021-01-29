@@ -405,10 +405,6 @@ func (s *searchContext) populateGroups() error {
 	for i := range groups {
 		group := &groups[i]
 		group.Count = len(group.Records)
-
-		if s.virgo.flags.firstRecordOnly == true {
-			group.Records = []v4api.Record{group.Records[0]}
-		}
 	}
 
 	s.virgo.poolRes.Groups = groups

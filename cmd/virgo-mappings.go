@@ -420,7 +420,8 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 
 		group := s.getSolrGroupFieldValue(doc)
 
-		var record v4api.Record
+		// default to an empty record with an empty set of fields
+		record := v4api.Record{Fields: []v4api.RecordField{}}
 
 		if s.virgo.flags.firstRecordOnly == false || groupsSeen[group] == false {
 			record = s.populateRecord(doc)
