@@ -232,7 +232,7 @@ func (s *searchContext) populateSolrQuery() searchResponse {
 	p, err := s.virgoQueryConvertToSolr(s.virgo.req.Query)
 
 	if err != nil {
-		return searchResponse{status: http.StatusInternalServerError, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
+		return searchResponse{status: http.StatusBadRequest, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
 	}
 
 	if p.containsUnsupportedFilters == true {
