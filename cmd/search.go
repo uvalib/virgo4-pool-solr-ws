@@ -220,9 +220,6 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 }
 
 func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
-	var err error
-	var parsedQuery *solrParserInfo
-
 	// maybe facet buckets might differ based on speculative search?
 	/*
 		// facet-only requests don't need speculation, as the client is only looking for buckets
@@ -231,15 +228,9 @@ func (s *searchContext) performSpeculativeSearches() (*searchContext, error) {
 		}
 	*/
 
-	// parse original query to determine query type
-
-	if parsedQuery, err = s.virgoQueryConvertToSolr(s.virgo.req.Query); err != nil {
-		return nil, err
-	}
-
 	// single-term title-only search special handling
 
-	if parsedQuery.isSingleTitleSearch == true {
+	if s.virgo.parserInfo.isSingleTitleSearch == true {
 		return s.performSpeculativeTitleSearch()
 	}
 
@@ -423,6 +414,10 @@ func (s *searchContext) populateGroups() error {
 
 func (s *searchContext) validateSearchRequest() error {
 	// quick validations we can do up front
+
+	if resp := s.populateSolrQuery(); resp.err != nil {
+		return resp.err
+	}
 
 	// ensure we received either zero or one filter group,
 	// and that any filters provided are supported
