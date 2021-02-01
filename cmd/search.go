@@ -210,7 +210,7 @@ func (s *searchContext) performSpeculativeTitleSearch() (*searchContext, error) 
 	// otherwise, query the top result so that we can use its potentially better/more
 	// accurate confidence level in the original query's results.
 
-	if s.virgo.req.Pagination.Start != 0 {
+	if s.virgo.req.Pagination.Start != 0 || s.virgo.req.Pagination.Rows == 0 {
 		s.log("SEARCH: determining true confidence level for title search")
 
 		return s.newSearchWithTopResult(s.virgo.req.Query)
