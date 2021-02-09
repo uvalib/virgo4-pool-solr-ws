@@ -357,7 +357,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				fieldValues = []v4api.RecordField{}
 				for _, piece := range splitValues {
 					newField := origField
-					newField.Value = piece
+					newField.Value = strings.TrimSpace(piece)
 					fieldValues = append(fieldValues, newField)
 				}
 			}
