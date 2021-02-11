@@ -1,6 +1,6 @@
 # run application
 
-./bin/virgo4-pool-solr-ws
+GODEBUG=madvdontneed=1 ./bin/virgo4-pool-solr-ws
 
 #
 # end of file
