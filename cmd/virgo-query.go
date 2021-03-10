@@ -11,7 +11,7 @@ func (s *searchContext) virgoQueryConvertToSolr(virgoQuery string) (*solrParserI
 	var err error
 	var query string
 
-	if query, err = v4parser.ConvertToSolrWithParserAndTimeout(&sp.parser, virgoQuery, 10); err != nil {
+	if query, err = v4parser.ConvertToSolrWithParser(&sp.parser, virgoQuery); err != nil {
 		return nil, err
 	}
 
