@@ -415,6 +415,10 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
+	for k, v := range p.config.Global.Titleization.Exclusions {
+		solrFields.requireValue(v.Field, fmt.Sprintf("titleization comparison field %d solr field", k))
+	}
+
 	solrFields.requireValue(p.config.Global.RecordAttributes.DigitalContent.Field, "record attribute: digital content feature field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
@@ -523,7 +527,7 @@ func (p *poolContext) validateConfig() {
 					}
 
 					for k, f := range field.CustomInfo.CitationOnlineOnly.ComparisonFields {
-						solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, k))
+						solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
 					}
 
 				case "citation_is_virgo_url":
@@ -534,7 +538,7 @@ func (p *poolContext) validateConfig() {
 					}
 
 					for k, f := range field.CustomInfo.CitationVirgoURL.ComparisonFields {
-						solrFields.requireValue(f.Field, fmt.Sprintf("%s section online field %d solr field", field.Name, k))
+						solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
 					}
 
 				case "citation_subtitle":

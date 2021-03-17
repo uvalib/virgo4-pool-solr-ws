@@ -65,6 +65,7 @@ type poolConfigTitleizationWordLists struct {
 type poolConfigTitleization struct {
 	CharacterSets poolConfigTitleizationCharacterSets `json:"character_sets,omitempty"`
 	WordLists     poolConfigTitleizationWordLists     `json:"word_lists,omitempty"`
+	Exclusions    []poolConfigFieldComparison         `json:"exclusions,omitempty"`
 }
 
 type poolConfigCopyrightLabel struct {

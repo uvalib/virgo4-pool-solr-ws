@@ -26,6 +26,7 @@ type recordContext struct {
 	hasDigitalContent  bool
 	isSirsi            bool
 	isWSLS             bool
+	titleize           bool
 	relations          categorizedRelations
 	fieldCtx           fieldContext
 }
@@ -282,6 +283,12 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordConte
 	}
 
 	rc.relations = s.parseRelations(rawAuthorValues)
+
+	if s.compareFields(rc.doc, s.pool.config.Global.Titleization.Exclusions) == true {
+		rc.titleize = false
+	} else {
+		rc.titleize = true
+	}
 
 	return &rc, nil
 }

@@ -317,11 +317,17 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 	return resp
 }
 
-func (s *searchContext) buildTitle(title, subtitle, edition, vernacular string) string {
-	fullTitle := s.pool.titleizer.titleize(title)
+func (s *searchContext) buildTitle(rc *recordContext, title, subtitle, edition, vernacular string) string {
+	theTitle := title
+	theSubtitle := subtitle
+	if rc.titleize == true {
+		theTitle = s.pool.titleizer.titleize(title)
+		theSubtitle = s.pool.titleizer.titleize(subtitle)
+	}
 
+	fullTitle := theTitle
 	if subtitle != "" {
-		fullTitle = fmt.Sprintf("%s: %s", fullTitle, s.pool.titleizer.titleize(subtitle))
+		fullTitle = fmt.Sprintf("%s: %s", fullTitle, theSubtitle)
 	}
 
 	if edition != "" {
@@ -512,7 +518,11 @@ func (s *searchContext) getCustomFieldCitationSubtitle(rc *recordContext) []v4ap
 
 	subtitle := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
-	rc.fieldCtx.field.Value = s.pool.titleizer.titleize(subtitle)
+	if rc.titleize == true {
+		subtitle = s.pool.titleizer.titleize(subtitle)
+	}
+
+	rc.fieldCtx.field.Value = subtitle
 
 	fv = append(fv, rc.fieldCtx.field)
 
@@ -524,7 +534,11 @@ func (s *searchContext) getCustomFieldCitationTitle(rc *recordContext) []v4api.R
 
 	title := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
-	rc.fieldCtx.field.Value = s.pool.titleizer.titleize(title)
+	if rc.titleize == true {
+		title = s.pool.titleizer.titleize(title)
+	}
+
+	rc.fieldCtx.field.Value = title
 
 	fv = append(fv, rc.fieldCtx.field)
 
@@ -720,7 +734,7 @@ func (s *searchContext) getCustomFieldTitleSubtitleEdition(rc *recordContext) []
 	editionValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.EditionField)
 	vernacularValue := ""
 
-	rc.fieldCtx.field.Value = s.buildTitle(titleValue, subtitleValue, editionValue, vernacularValue)
+	rc.fieldCtx.field.Value = s.buildTitle(rc, titleValue, subtitleValue, editionValue, vernacularValue)
 
 	fv = append(fv, rc.fieldCtx.field)
 
@@ -789,7 +803,7 @@ func (s *searchContext) getCustomFieldVernacularizedTitle(rc *recordContext) []v
 	editionValue := ""
 	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
-	rc.fieldCtx.field.Value = s.buildTitle(titleValue, subtitleValue, editionValue, vernacularValue)
+	rc.fieldCtx.field.Value = s.buildTitle(rc, titleValue, subtitleValue, editionValue, vernacularValue)
 
 	fv = append(fv, rc.fieldCtx.field)
 
@@ -804,7 +818,7 @@ func (s *searchContext) getCustomFieldVernacularizedTitleSubtitleEdition(rc *rec
 	editionValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.EditionField)
 	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
-	rc.fieldCtx.field.Value = s.buildTitle(titleValue, subtitleValue, editionValue, vernacularValue)
+	rc.fieldCtx.field.Value = s.buildTitle(rc, titleValue, subtitleValue, editionValue, vernacularValue)
 
 	fv = append(fv, rc.fieldCtx.field)
 
