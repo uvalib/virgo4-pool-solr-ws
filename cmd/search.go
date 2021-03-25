@@ -349,12 +349,14 @@ func (s *searchContext) populateGroups() error {
 		return nil
 	}
 
-	// image pool only presents first result in UI, but we still want counts.
-	// set up to query solr for counts but don't waste time populating anything
-	// beyond the first record for each group.
-	if s.pool.config.Local.Identity.Mode == "image" {
-		s.virgo.flags.firstRecordOnly = true
-	}
+	/*
+		// image pool only presents first result in UI, but we still want counts.
+		// set up to query solr for counts but don't waste time populating anything
+		// beyond the first record for each group.
+		if s.pool.config.Local.Identity.Mode == "image" {
+			s.virgo.flags.firstRecordOnly = true
+		}
+	*/
 
 	// grouped results need to be populated per group value
 	var groups []v4api.Group
