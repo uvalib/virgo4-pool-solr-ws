@@ -52,12 +52,12 @@ func main() {
 	router.GET("/identify", pool.identifyHandler)
 	router.GET("/healthcheck", pool.healthCheckHandler)
 
-	if api := router.Group("/api", pool.authenticateHandler); api != nil {
-		api.POST("/search", pool.searchHandler)
-		api.POST("/search/facets", pool.facetsHandler)
-		api.GET("/resource/:id", pool.resourceHandler)
-		api.GET("/providers", pool.providersHandler)
-		api.GET("/filters", pool.filtersHandler)
+	if api := router.Group("/api"); api != nil {
+		api.POST("/search", pool.authenticateHandler, pool.searchHandler)
+		api.POST("/search/facets", pool.authenticateHandler, pool.facetsHandler)
+		api.GET("/resource/:id", pool.authenticateHandler, pool.resourceHandler)
+		api.GET("/providers", pool.providersHandler) // No auth needed here
+		api.GET("/filters", pool.authenticateHandler, pool.filtersHandler)
 	}
 
 	if admin := router.Group("/admin", pool.authenticateHandler, pool.adminHandler); admin != nil {
