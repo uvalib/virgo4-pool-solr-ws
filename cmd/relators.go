@@ -44,22 +44,22 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 	}
 
 	for _, entry := range entries {
-		code := r.getRelatorCode(entry)
+		codes := r.getRelatorCodes(entry)
 
 		switch {
-		case sliceContainsString(s.pool.config.Global.Relators.AuthorCodes, code, true):
+		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AuthorCodes, codes, true):
 			r.addAuthor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Relators.AdvisorCodes, code, true):
+		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AdvisorCodes, codes, true):
 			r.addAdvisor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Relators.EditorCodes, code, true):
+		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.EditorCodes, codes, true):
 			r.addEditor(entry)
 
-		case sliceContainsString(s.pool.config.Global.Relators.CompilerCodes, code, true):
+		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.CompilerCodes, codes, true):
 			r.addCompiler(entry)
 
-		case sliceContainsString(s.pool.config.Global.Relators.TranslatorCodes, code, true):
+		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.TranslatorCodes, codes, true):
 			r.addTranslator(entry)
 
 		default:
@@ -72,19 +72,24 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 	return r.relations
 }
 
-func (r *relationContext) getRelatorCode(entry string) string {
-	// find first matching relator term and return its code
+func (r *relationContext) getRelatorCodes(entry string) []string {
+	// find all matching relator terms and return their codes
+
+	var codes []string
 
 	terms := r.matchTermsRE.FindAllStringSubmatch(entry, -1)
 	for _, term := range terms {
-		code := r.search.pool.maps.relatorCodes[term[2]]
-		if code != "" {
-			return code
+		if code := r.search.pool.maps.relatorCodes[term[2]]; code != "" {
+			codes = append(codes, code)
 		}
 	}
 
-	// no match; assume author
-	return "aut"
+	// no matches; assume author
+	if len(codes) == 0 {
+		codes = append(codes, "aut")
+	}
+
+	return codes
 }
 
 func (r *relationContext) parseEntry(entry string) parsedRelation {
