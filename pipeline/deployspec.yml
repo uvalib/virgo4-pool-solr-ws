@@ -6,7 +6,7 @@ version: 0.2
 
 env:
   variables:
-    terraform_version:              0.14.6
+    terraform_version:              0.15.0
     wait_time:                      300
     pool_solr_hathitrust_endpoint:  https://pool-solr-ws-hathitrust-dev.internal.lib.virginia.edu
     pool_solr_images_endpoint:      https://pool-solr-ws-images-dev.internal.lib.virginia.edu
