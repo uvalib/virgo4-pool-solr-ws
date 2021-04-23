@@ -199,9 +199,6 @@ other = "Encontrar Nota de Ayuda"
 [FieldFormat]
 other = "Formato"
 
-[FieldGenre]
-other = "Género"
-
 [FieldGrantInformation]
 other = "Información de Subvención"
 

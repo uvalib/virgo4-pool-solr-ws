@@ -199,9 +199,6 @@ other = "Finding Aid Note"
 [FieldFormat]
 other = "Format"
 
-[FieldGenre]
-other = "Genre"
-
 [FieldGrantInformation]
 other = "Grant Information"
 
