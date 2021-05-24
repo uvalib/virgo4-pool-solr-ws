@@ -583,6 +583,15 @@ other = "Z-A"
 [SortCatalogIntraGroup]
 other = " "
 
+[SortDateReceived]
+other = "Date Received"
+
+[SortDateReceivedDescending]
+other = "newest first"
+
+[SortDateReceivedAscending]
+other = "oldest first"
+
 [SortDatePublished]
 other = "Date Published"
 
