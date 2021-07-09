@@ -16,19 +16,21 @@ type fieldContext struct {
 }
 
 type recordContext struct {
-	doc                *solrDocument
-	resourceTypeCtx    *poolConfigResourceTypeContext
-	anonOnline         bool
-	authOnline         bool
-	availabilityValues []string
-	isAvailableOnShelf bool
-	anonRequest        bool
-	hasDigitalContent  bool
-	isSirsi            bool
-	isWSLS             bool
-	titleize           bool
-	relations          categorizedRelations
-	fieldCtx           fieldContext
+	doc                 *solrDocument
+	resourceTypeCtx     *poolConfigResourceTypeContext
+	anonOnline          bool
+	authOnline          bool
+	availabilityValues  []string
+	isAvailableOnShelf  bool
+	anonRequest         bool
+	hasDigitalContent   bool
+	hasVernacularTitle  bool
+	hasVernacularAuthor bool
+	isSirsi             bool
+	isWSLS              bool
+	titleize            bool
+	relations           categorizedRelations
+	fieldCtx            fieldContext
 }
 
 // functions that map solr data into virgo data
@@ -121,8 +123,8 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 	case "author":
 		return s.getCustomFieldAuthor(rc)
 
-	case "author_list":
-		return s.getCustomFieldAuthorList(rc)
+	case "author_vernacular":
+		return s.getCustomFieldAuthorVernacular(rc)
 
 	case "availability":
 		return s.getCustomFieldAvailability(rc)
@@ -178,6 +180,9 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 	case "online_related":
 		return s.getCustomFieldOnlineRelated(rc)
 
+	case "published_date":
+		return s.getCustomFieldPublishedDate(rc)
+
 	case "published_location":
 		return s.getCustomFieldPublishedLocation(rc)
 
@@ -187,29 +192,26 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 	case "related_resources":
 		return s.getCustomFieldRelatedResources(rc)
 
+	case "responsibility_statement":
+		return s.getCustomFieldResponsibilityStatement(rc)
+
 	case "sirsi_url":
 		return s.getCustomFieldSirsiURL(rc)
+
+	case "subject_summary":
+		return s.getCustomFieldSubjectSummary(rc)
 
 	case "summary_holdings":
 		return s.getCustomFieldSummaryHoldings(rc)
 
+	case "terms_of_use":
+		return s.getCustomFieldTermsOfUse(rc)
+
 	case "title_subtitle_edition":
 		return s.getCustomFieldTitleSubtitleEdition(rc)
 
-	case "vernacularized_author":
-		return s.getCustomFieldVernacularizedAuthor(rc)
-
-	case "vernacularized_composer_performer":
-		return s.getCustomFieldVernacularizedComposerPerformer(rc)
-
-	case "vernacularized_creator":
-		return s.getCustomFieldVernacularizedCreator(rc)
-
-	case "vernacularized_title":
-		return s.getCustomFieldVernacularizedTitle(rc)
-
-	case "vernacularized_title_subtitle_edition":
-		return s.getCustomFieldVernacularizedTitleSubtitleEdition(rc)
+	case "title_vernacular":
+		return s.getCustomFieldTitleVernacular(rc)
 
 	case "wsls_collection_description":
 		return s.getCustomFieldWSLSCollectionDescription(rc)
@@ -284,6 +286,9 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordConte
 
 	rc.relations = s.parseRelations(rawAuthorValues)
 
+	rc.hasVernacularTitle = doc.getFirstString(s.pool.maps.definedFields[rc.resourceTypeCtx.FieldNames.TitleVernacular.Name].Field) != ""
+	rc.hasVernacularAuthor = doc.getFirstString(s.pool.maps.definedFields[rc.resourceTypeCtx.FieldNames.AuthorVernacular.Name].Field) != ""
+
 	if s.compareFields(rc.doc, s.pool.config.Global.Titleization.Exclusions) == true {
 		rc.titleize = false
 	} else {
@@ -339,14 +344,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 			f.Visibility = "detailed"
 		}
 
-		if fieldCfg.XID != "" {
-			if fieldCfg.WSLSXID != "" && rc.isWSLS == true {
-				f.Label = s.client.localize(fieldCfg.WSLSXID)
-			} else {
-				f.Label = s.client.localize(fieldCfg.XID)
-			}
-		}
-
 		rc.fieldCtx = fieldContext{config: fieldCfg, field: f}
 
 		fieldValues := s.getFieldValues(rc)
@@ -390,6 +387,10 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				if fieldCfg.CitationOnly == false {
 					rf := fieldValue
 					rf.CitationPart = ""
+
+					if rc.fieldCtx.config.XID != "" {
+						rf.Label = s.client.localize(rc.fieldCtx.config.XID)
+					}
 
 					record.Fields = append(record.Fields, rf)
 				}

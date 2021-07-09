@@ -171,9 +171,11 @@ type poolConfigFieldTypeCustom struct {
 	TitleField       string                      `json:"title_field,omitempty"`
 	UPCField         string                      `json:"upc_field,omitempty"`
 	URLField         string                      `json:"url_field,omitempty"`
-	DefaultItemXID   string                      `json:"default_item_xid,omitempty"` // translation ids
+	AlternateXID     string                      `json:"alternate_xid,omitempty"` // translation ids
+	DefaultItemXID   string                      `json:"default_item_xid,omitempty"`
 	ValueXID         string                      `json:"value_xid,omitempty"`
-	IDPrefix         string                      `json:"id_prefix,omitempty"` // misc
+	AlternateType    string                      `json:"alternate_type,omitempty"` // misc
+	IDPrefix         string                      `json:"id_prefix,omitempty"`
 	MusicPool        string                      `json:"music_pool,omitempty"`
 	ProxyPrefix      string                      `json:"proxy_prefix,omitempty"`
 	ProxyDomains     []string                    `json:"proxy_domains,omitempty"`
@@ -185,21 +187,26 @@ type poolConfigFieldTypeCustom struct {
 type poolConfigFieldCustomInfo struct {
 	Abstract                  *poolConfigFieldTypeCustom `json:"abstract,omitempty"`
 	AccessURL                 *poolConfigFieldTypeCustom `json:"access_url,omitempty"`
+	Author                    *poolConfigFieldTypeCustom `json:"author,omitempty"`
+	AuthorVernacular          *poolConfigFieldTypeCustom `json:"author_vernacular,omitempty"`
 	CitationOnlineOnly        *poolConfigFieldTypeCustom `json:"citation_is_online_only,omitempty"`
 	CitationVirgoURL          *poolConfigFieldTypeCustom `json:"citation_is_virgo_url,omitempty"`
 	CoverImageURL             *poolConfigFieldTypeCustom `json:"cover_image_url,omitempty"`
 	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
 	Language                  *poolConfigFieldTypeCustom `json:"language,omitempty"`
+	PublishedDate             *poolConfigFieldTypeCustom `json:"published_date,omitempty"`
 	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
 	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`
+	SubjectSummary            *poolConfigFieldTypeCustom `json:"subject_summary,omitempty"`
+	TermsOfUse                *poolConfigFieldTypeCustom `json:"terms_of_use,omitempty"`
 	TitleSubtitleEdition      *poolConfigFieldTypeCustom `json:"title_subtitle_edition,omitempty"`
+	TitleVernacular           *poolConfigFieldTypeCustom `json:"title_vernacular,omitempty"`
 	WSLSCollectionDescription *poolConfigFieldTypeCustom `json:"wsls_collection_description,omitempty"`
 }
 
 type poolConfigField struct {
 	Name               string                     `json:"name,omitempty"` // required; v4 field name, and key for common fields
 	XID                string                     `json:"xid,omitempty"`
-	WSLSXID            string                     `json:"wsls_xid,omitempty"` // for wsls fields with alternate labels
 	Field              string                     `json:"field,omitempty"`
 	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
 	Limit              int                        `json:"limit,omitempty"`

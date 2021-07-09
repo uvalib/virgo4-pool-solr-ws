@@ -470,7 +470,6 @@ func (p *poolContext) validateConfig() {
 			// start validating
 
 			messageIDs.addValue(field.XID)
-			messageIDs.addValue(field.WSLSXID)
 
 			miscValues.requireValue(field.Name, "name")
 
@@ -504,8 +503,24 @@ func (p *poolContext) validateConfig() {
 				case "authenticate":
 
 				case "author":
+					if field.CustomInfo == nil || field.CustomInfo.Author == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
 
-				case "author_list":
+					miscValues.requireValue(field.CustomInfo.Author.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+					messageIDs.requireValue(field.CustomInfo.Author.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+				case "author_vernacular":
+					if field.CustomInfo == nil || field.CustomInfo.AuthorVernacular == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					miscValues.requireValue(field.CustomInfo.AuthorVernacular.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+					messageIDs.requireValue(field.CustomInfo.AuthorVernacular.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 				case "availability":
 
@@ -608,6 +623,15 @@ func (p *poolContext) validateConfig() {
 					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
 					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 
+				case "published_date":
+					if field.CustomInfo == nil || field.CustomInfo.PublishedDate == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					messageIDs.requireValue(field.CustomInfo.PublishedDate.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
 				case "published_location":
 
 				case "publisher_name":
@@ -630,6 +654,8 @@ func (p *poolContext) validateConfig() {
 					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
 					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 
+				case "responsibility_statement":
+
 				case "sirsi_url":
 					if field.CustomInfo == nil || field.CustomInfo.SirsiURL == nil {
 						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
@@ -644,7 +670,25 @@ func (p *poolContext) validateConfig() {
 					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
 					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
 
+				case "subject_summary":
+					if field.CustomInfo == nil || field.CustomInfo.SubjectSummary == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					messageIDs.requireValue(field.CustomInfo.SubjectSummary.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
 				case "summary_holdings":
+
+				case "terms_of_use":
+					if field.CustomInfo == nil || field.CustomInfo.TermsOfUse == nil {
+						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
+						invalid = true
+						continue
+					}
+
+					messageIDs.requireValue(field.CustomInfo.TermsOfUse.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 				case "title_subtitle_edition":
 					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
@@ -656,32 +700,18 @@ func (p *poolContext) validateConfig() {
 					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
 					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
 					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
+					miscValues.requireValue(field.CustomInfo.TitleSubtitleEdition.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+					messageIDs.requireValue(field.CustomInfo.TitleSubtitleEdition.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
-				case "vernacularized_author":
-
-				case "vernacularized_composer_performer":
-
-				case "vernacularized_creator":
-
-				case "vernacularized_title":
-					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
+				case "title_vernacular":
+					if field.CustomInfo == nil || field.CustomInfo.TitleVernacular == nil {
 						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
 						invalid = true
 						continue
 					}
 
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
-
-				case "vernacularized_title_subtitle_edition":
-					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
+					miscValues.requireValue(field.CustomInfo.TitleVernacular.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+					messageIDs.requireValue(field.CustomInfo.TitleVernacular.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 				case "wsls_collection_description":
 					if field.CustomInfo == nil || field.CustomInfo.WSLSCollectionDescription == nil {

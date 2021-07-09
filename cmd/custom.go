@@ -393,6 +393,11 @@ func (s *searchContext) getCustomFieldAuthor(rc *recordContext) []v4api.RecordFi
 
 	var values []string
 
+	if rc.hasVernacularAuthor == true {
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.Author.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.Author.AlternateXID
+	}
+
 	values = append(values, rc.relations.authors.name...)
 	values = append(values, rc.relations.editors.nameRelation...)
 	values = append(values, rc.relations.advisors.nameRelation...)
@@ -405,10 +410,15 @@ func (s *searchContext) getCustomFieldAuthor(rc *recordContext) []v4api.RecordFi
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAuthorList(rc *recordContext) []v4api.RecordField {
+func (s *searchContext) getCustomFieldAuthorVernacular(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, value := range rc.relations.authors.name {
+	if rc.hasVernacularAuthor == true {
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.AuthorVernacular.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.AuthorVernacular.AlternateXID
+	}
+
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
 		rc.fieldCtx.field.Value = value
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -669,6 +679,21 @@ func (s *searchContext) getCustomFieldPublishedLocation(rc *recordContext) []v4a
 	return fv
 }
 
+func (s *searchContext) getCustomFieldPublishedDate(rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.isWSLS == true {
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.PublishedDate.AlternateXID
+	}
+
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
 func (s *searchContext) getCustomFieldPublisherName(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
@@ -713,6 +738,36 @@ func (s *searchContext) getCustomFieldSirsiURL(rc *recordContext) []v4api.Record
 	return fv
 }
 
+func (s *searchContext) getCustomFieldResponsibilityStatement(rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.hasVernacularAuthor == true {
+		return fv
+	}
+
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
+func (s *searchContext) getCustomFieldSubjectSummary(rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.isWSLS == true {
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.SubjectSummary.AlternateXID
+	}
+
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
 func (s *searchContext) getCustomFieldSummaryHoldings(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
@@ -726,8 +781,28 @@ func (s *searchContext) getCustomFieldSummaryHoldings(rc *recordContext) []v4api
 	return fv
 }
 
+func (s *searchContext) getCustomFieldTermsOfUse(rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.isWSLS == true {
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.TermsOfUse.AlternateXID
+	}
+
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
 func (s *searchContext) getCustomFieldTitleSubtitleEdition(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
+
+	if rc.hasVernacularTitle == true {
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.AlternateXID
+	}
 
 	titleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.TitleField)
 	subtitleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.SubtitleField)
@@ -741,86 +816,18 @@ func (s *searchContext) getCustomFieldTitleSubtitleEdition(rc *recordContext) []
 	return fv
 }
 
-func (s *searchContext) getCustomFieldVernacularizedAuthor(rc *recordContext) []v4api.RecordField {
+func (s *searchContext) getCustomFieldTitleVernacular(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
-
-	authorValues := rc.relations.authors.name
-
-	for _, authorValue := range authorValues {
-		rc.fieldCtx.field.Value = authorValue
-		if vernacularValue != "" {
-			rc.fieldCtx.field.Value += "<p>" + vernacularValue
-		}
-		fv = append(fv, rc.fieldCtx.field)
+	if rc.hasVernacularTitle == true {
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.TitleVernacular.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.TitleVernacular.AlternateXID
 	}
 
-	return fv
-}
-
-func (s *searchContext) getCustomFieldVernacularizedComposerPerformer(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
-
-	authorValues := rc.relations.authors.name
-
-	for _, authorValue := range authorValues {
-		rc.fieldCtx.field.Value = authorValue
-		if vernacularValue != "" {
-			rc.fieldCtx.field.Value += "<p>" + vernacularValue
-		}
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+		rc.fieldCtx.field.Value = value
 		fv = append(fv, rc.fieldCtx.field)
 	}
-
-	return fv
-}
-
-func (s *searchContext) getCustomFieldVernacularizedCreator(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
-
-	authorValues := rc.relations.authors.name
-
-	for _, authorValue := range authorValues {
-		rc.fieldCtx.field.Value = authorValue
-		if vernacularValue != "" {
-			rc.fieldCtx.field.Value += "<p>" + vernacularValue
-		}
-		fv = append(fv, rc.fieldCtx.field)
-	}
-
-	return fv
-}
-
-func (s *searchContext) getCustomFieldVernacularizedTitle(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	titleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.TitleField)
-	subtitleValue := ""
-	editionValue := ""
-	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
-
-	rc.fieldCtx.field.Value = s.buildTitle(rc, titleValue, subtitleValue, editionValue, vernacularValue)
-
-	fv = append(fv, rc.fieldCtx.field)
-
-	return fv
-}
-
-func (s *searchContext) getCustomFieldVernacularizedTitleSubtitleEdition(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	titleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.TitleField)
-	subtitleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.SubtitleField)
-	editionValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.EditionField)
-	vernacularValue := rc.doc.getFirstString(rc.fieldCtx.config.Field)
-
-	rc.fieldCtx.field.Value = s.buildTitle(rc, titleValue, subtitleValue, editionValue, vernacularValue)
-
-	fv = append(fv, rc.fieldCtx.field)
 
 	return fv
 }

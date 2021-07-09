@@ -337,6 +337,12 @@ other = "Rights"
 [FieldRightsStatementURI]
 other = "Rights Statement"
 
+[FieldRomanizedAuthor]
+other = "Romanized Author"
+
+[FieldRomanizedTitle]
+other = "Romanized Title"
+
 [FieldRunTime]
 other = "Run Time"
 

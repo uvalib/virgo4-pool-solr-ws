@@ -337,8 +337,14 @@ other = "Derechos"
 [FieldRightsStatementURI]
 other = "Rights Statement (derechos estandarizadas)"
 
+[FieldRomanizedAuthor]
+other = "Autor Romanizado"
+
+[FieldRomanizedTitle]
+other = "Título Romanizado"
+
 [FieldRunTime]
-other = "tiempo de ejecución"
+other = "Tiempo de Ejecución"
 
 [FieldScriptExcerpt]
 other = "Extracto de Guion"
