@@ -430,7 +430,7 @@ func (s *searchContext) getCustomFieldAvailability(rc *recordContext) []v4api.Re
 	var fv []v4api.RecordField
 
 	for _, value := range rc.availabilityValues {
-		if sliceContainsString(s.pool.config.Global.Availability.ExposedValues, value, true) {
+		if sliceContainsString(s.pool.config.Global.Availability.FieldConfig.ExposedValues.Combined, value, true) {
 			rc.fieldCtx.field.Value = value
 			fv = append(fv, rc.fieldCtx.field)
 		}

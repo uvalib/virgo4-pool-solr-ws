@@ -53,9 +53,9 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			filterValue = solrFacet.config.Solr.Value
 
 			if solrFacet.config.Format == "circulating" {
-				availabilityFacet := availability.Anon.Facet
+				availabilityFacet := availability.FilterConfig.FieldAnon
 				if s.meta.client.isAuthenticated() == true {
-					availabilityFacet = availability.Auth.Facet
+					availabilityFacet = availability.FilterConfig.FieldAuth
 				}
 
 				solrFilter = fmt.Sprintf(`(%s:"%s") OR (%s:"Online")`, solrFacet.Field, filterValue, availabilityFacet)

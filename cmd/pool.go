@@ -338,8 +338,8 @@ func (p *poolContext) validateConfig() {
 
 	solrFields.requireValue(p.config.Local.Solr.GroupField, "solr grouping field")
 	solrFields.requireValue(p.config.Local.Solr.ExactMatchTitleField, "solr exact match title field")
-	solrFields.requireValue(p.config.Global.Availability.Anon.Field, "anon availability field")
-	solrFields.requireValue(p.config.Global.Availability.Auth.Field, "auth availability field")
+	solrFields.requireValue(p.config.Global.Availability.FieldConfig.FieldAnon, "anon availability field")
+	solrFields.requireValue(p.config.Global.Availability.FieldConfig.FieldAuth, "auth availability field")
 
 	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
 	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
@@ -906,11 +906,21 @@ func (p *poolContext) initFields() {
 func (p *poolContext) initFilters() {
 	invalid := false
 
-	// availability filter setup
-	p.config.Global.Availability.ExposedValues = []string{}
-	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.OnShelf...)
-	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Online...)
-	p.config.Global.Availability.ExposedValues = append(p.config.Global.Availability.ExposedValues, p.config.Global.Availability.Values.Other...)
+	// availability setup
+
+	// exposed field values (not filter)
+	values := []string{}
+	values = append(values, p.config.Global.Availability.FieldConfig.ExposedValues.OnShelf...)
+	values = append(values, p.config.Global.Availability.FieldConfig.ExposedValues.Online...)
+	values = append(values, p.config.Global.Availability.FieldConfig.ExposedValues.Other...)
+	p.config.Global.Availability.FieldConfig.ExposedValues.Combined = values
+
+	// exposed filter values (not field)
+	values = []string{}
+	values = append(values, p.config.Global.Availability.FilterConfig.ExposedValues.OnShelf...)
+	values = append(values, p.config.Global.Availability.FilterConfig.ExposedValues.Online...)
+	values = append(values, p.config.Global.Availability.FilterConfig.ExposedValues.Other...)
+	p.config.Global.Availability.FilterConfig.ExposedValues.Combined = values
 
 	// configure globally defined filters, and map their XIDs to filter definitions.
 	// NOTE: all pools define the same list; a given pool may only use a subset of these.
@@ -929,9 +939,9 @@ func (p *poolContext) initFilters() {
 
 		// configure availability filter
 		if def.IsAvailability == true {
-			def.Solr.Field = p.config.Global.Availability.Anon.Facet
-			def.Solr.FieldAuth = p.config.Global.Availability.Auth.Facet
-			def.ExposedValues = p.config.Global.Availability.ExposedValues
+			def.Solr.Field = p.config.Global.Availability.FilterConfig.FieldAnon
+			def.Solr.FieldAuth = p.config.Global.Availability.FilterConfig.FieldAuth
+			def.ExposedValues = p.config.Global.Availability.FilterConfig.ExposedValues.Combined
 		}
 
 		// for component query facets, create mappings from any

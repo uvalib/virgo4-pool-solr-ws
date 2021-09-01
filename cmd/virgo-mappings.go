@@ -240,13 +240,13 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordConte
 
 	// availability setup
 
-	anonValues := doc.getStrings(s.pool.config.Global.Availability.Anon.Field)
-	anonOnShelf := sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.OnShelf, true)
-	rc.anonOnline = sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.Values.Online, true)
+	anonValues := doc.getStrings(s.pool.config.Global.Availability.FieldConfig.FieldAnon)
+	anonOnShelf := sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.FieldConfig.ExposedValues.OnShelf, true)
+	rc.anonOnline = sliceContainsAnyValueFromSlice(anonValues, s.pool.config.Global.Availability.FieldConfig.ExposedValues.Online, true)
 
-	authValues := doc.getStrings(s.pool.config.Global.Availability.Auth.Field)
-	authOnShelf := sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.Values.OnShelf, true)
-	rc.authOnline = sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.Values.Online, true)
+	authValues := doc.getStrings(s.pool.config.Global.Availability.FieldConfig.FieldAuth)
+	authOnShelf := sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.FieldConfig.ExposedValues.OnShelf, true)
+	rc.authOnline = sliceContainsAnyValueFromSlice(authValues, s.pool.config.Global.Availability.FieldConfig.ExposedValues.Online, true)
 
 	// determine which availability field to use
 

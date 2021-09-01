@@ -219,22 +219,22 @@ type poolConfigField struct {
 	CustomInfo         *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
 }
 
-type poolConfigAvailabilityFields struct {
-	Field string `json:"field,omitempty"`
-	Facet string `json:"facet,omitempty"`
+type poolConfigAvailabilityValues struct {
+	OnShelf  []string `json:"onshelf,omitempty"`
+	Online   []string `json:"online,omitempty"`
+	Other    []string `json:"other,omitempty"`
+	Combined []string `json:"-"` // derived from above values
 }
 
-type poolConfigAvailabilityValues struct {
-	OnShelf []string `json:"onshelf,omitempty"`
-	Online  []string `json:"online,omitempty"`
-	Other   []string `json:"other,omitempty"`
+type poolConfigAvailabilityTypeConfig struct {
+	FieldAnon     string                       `json:"anon,omitempty"`
+	FieldAuth     string                       `json:"auth,omitempty"`
+	ExposedValues poolConfigAvailabilityValues `json:"exposed_values,omitempty"`
 }
 
 type poolConfigAvailability struct {
-	Anon          poolConfigAvailabilityFields `json:"anon,omitempty"`
-	Auth          poolConfigAvailabilityFields `json:"auth,omitempty"`
-	Values        poolConfigAvailabilityValues `json:"values,omitempty"`
-	ExposedValues []string                     `json:"-"` // derived from above values
+	FieldConfig  poolConfigAvailabilityTypeConfig `json:"field_config,omitempty"`
+	FilterConfig poolConfigAvailabilityTypeConfig `json:"filter_config,omitempty"`
 }
 
 type poolConfigFacetSolr struct {
