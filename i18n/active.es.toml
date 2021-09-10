@@ -442,6 +442,9 @@ other = "Autor"
 [FilterAvailability]
 other = "Disponibilidad"
 
+[FilterBookplate]
+other = "Ex Libris"
+
 [FilterCallNumberRange]
 other = "Rango de Número de Llamada"
 
