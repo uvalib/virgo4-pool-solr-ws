@@ -367,6 +367,10 @@ func (s *searchContext) getCustomFieldAbstract(rc *recordContext) []v4api.Record
 func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
+	if s.itemDetails == false {
+		return fv
+	}
+
 	issns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISSNField)
 	isbns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISBNField)
 
