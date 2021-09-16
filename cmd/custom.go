@@ -364,11 +364,66 @@ func (s *searchContext) getCustomFieldAbstract(rc *recordContext) []v4api.Record
 	return fv
 }
 
+func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	issns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISSNField)
+	isbns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISBNField)
+
+	genre := ""
+	serialType := ""
+	var serials []string
+
+	switch {
+	case len(issns) > 0:
+		genre = "journal"
+		serialType = "issn"
+		serials = issns
+
+	case len(isbns) > 0:
+		genre = "book"
+		serialType = "isbn"
+		serials = isbns
+
+	default:
+		return fv
+	}
+
+	res, err := s.serialsSolutionsLookup(genre, serialType, serials)
+	if err != nil {
+		s.warn("serials solutions lookup failed: [%s]", err.Error())
+		return fv
+	}
+
+	for _, r := range res.Results {
+		for _, l := range r.LinkGroups {
+			if l.Type != "holding" { //|| l.HoldingData.ProviderID != "PRVEBS" {
+				continue
+			}
+
+			for _, u := range l.URLs {
+				if u.Type != "journal" {
+					continue
+				}
+
+				rc.fieldCtx.field.Provider = "ebscohost"
+				rc.fieldCtx.field.Value = u.URL
+				rc.fieldCtx.field.Item = l.HoldingData.DatabaseName
+
+				fv = append(fv, rc.fieldCtx.field)
+			}
+		}
+	}
+
+	return fv
+}
+
 func (s *searchContext) getCustomFieldAccessURL(rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.anonOnline == false && rc.authOnline == false {
-		return fv
+		// this item is not available online per solr... but maybe we hold electronic subscriptions?
+		return s.getCustomFieldAccessURLSerialsSolutions(rc)
 	}
 
 	rc.fieldCtx.field.Provider = rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.AccessURL.ProviderField)

@@ -1,78 +1,3 @@
-[PoolArchivalName]
-other = "Manuscripts & Archival Material"
-
-[PoolArchivalDescription]
-other = "Published and unpublished manuscripts, business records, maps, correspondence, and more.<br />Request items to have them retrieved for your use in the Reading Room at Special Collections. Most materials are available within a few minutes of your arrival."
-
-[PoolCatalogName]
-other = "Books"
-
-[PoolCatalogDescription]
-other = "Physical and electronic books from UVA’s collection."
-
-[PoolHathiTrustName]
-other = "HathiTrust Public Domain"
-
-[PoolHathiTrustDescription]
-other = "HathiTrust Public Domain includes items without copyright restrictions which are permanently provided to Virgo through the HathiTrust Digital Library."
-
-[PoolImagesName]
-other = "Images"
-
-[PoolImagesDescription]
-other = "Imagery that the UVA Library has curated, collected, and described."
-
-[PoolMapsName]
-other = "Maps"
-
-[PoolMapsDescription]
-other = "Maps, atlases, and other cartographic materials."
-
-[PoolMusicRecordingsName]
-other = "Music Recordings"
-
-[PoolMusicRecordingsDescription]
-other = "Music-based audio available for streaming, download, or in-person use."
-
-[PoolMusicalScoresName]
-other = "Musical Scores"
-
-[PoolMusicalScoresDescription]
-other = "Sheet music and other musical notation."
-
-[PoolSerialsName]
-other = "Journals"
-
-[PoolSerialsDescription]
-other = "Journals, magazines, newspapers, and other periodicals. May be available in print, electronic access journals, bound volumes containing multiple issues, or online. NOTE: Display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
-
-[PoolSoundRecordingsName]
-other = "Sound Recordings"
-
-[PoolSoundRecordingsDescription]
-other = "Non-music audio available for streaming, download, or in-person use."
-
-[PoolThesisName]
-other = "Theses"
-
-[PoolThesisDescription]
-other = "Theses and dissertations completed at the University of Virginia."
-
-[PoolUVALibraryName]
-other = "Catalog"
-
-[PoolUVALibraryDescription]
-other = "\"Catalog\" includes UVA Library books, journals, manuscripts & archival material, maps, music and sound recordings, theses and dissertations, and videos."
-
-[PoolUnassignedName]
-other = "Unassigned"
-
-[PoolVideoName]
-other = "Video"
-
-[PoolVideoDescription]
-other = "Documentaries, films, television shows, and more; for check out or streaming access."
-
 [FieldAbbreviatedTitle]
 other = "Abbreviated Title"
 
@@ -211,6 +136,9 @@ other = "ISSN"
 [FieldIdentifier]
 other = "Identifier"
 
+[FieldLCCN]
+other = "LCCN"
+
 [FieldLabelNumber]
 other = "Label no."
 
@@ -219,9 +147,6 @@ other = "Language"
 
 [FieldLaterTitle]
 other = "Later Title"
-
-[FieldLCCN]
-other = "LCCN"
 
 [FieldLibrary]
 other = "Library"
@@ -253,9 +178,6 @@ other = "Online Related"
 [FieldOnlineVersion]
 other = "Online Version"
 
-[FieldOriginalVersion]
-other = "Original Version"
-
 [FieldOrigCarrierType]
 other = "Carrier Type"
 
@@ -270,6 +192,9 @@ other = "Negative Number"
 
 [FieldOrigPhysicalDetails]
 other = "Physical Details"
+
+[FieldOriginalVersion]
+other = "Original Version"
 
 [FieldOtherArchivalMaterials]
 other = "Other Archival Materials"
@@ -361,6 +286,9 @@ other = "Sound"
 [FieldSponsoringAgency]
 other = "Sponsoring Agency"
 
+[FieldSuDocNumber]
+other = "SuDoc Number"
+
 [FieldSubject]
 other = "Subject"
 
@@ -369,9 +297,6 @@ other = "Summary"
 
 [FieldSubtitle]
 other = "Subtitle"
-
-[FieldSuDocNumber]
-other = "SuDoc Number"
 
 [FieldTargetAudience]
 other = "Target Audience"
@@ -463,8 +388,8 @@ other = "Composition Era"
 [FilterDate]
 other = "Date"
 
-[FilterDateThisYear]
-other = "This year"
+[FilterDateLast10Years]
+other = "Last 10 years"
 
 [FilterDateLast12Months]
 other = "Last 12 months"
@@ -472,14 +397,14 @@ other = "Last 12 months"
 [FilterDateLast3Years]
 other = "Last 3 years"
 
-[FilterDateLast10Years]
-other = "Last 10 years"
-
 [FilterDateLast50Years]
 other = "Last 50 years"
 
 [FilterDateMoreThan50YearsAgo]
 other = "More than 50 years ago"
+
+[FilterDateThisYear]
+other = "This year"
 
 [FilterDepartment]
 other = "Department"
@@ -538,17 +463,95 @@ other = "Subject"
 [FilterVideoFormat]
 other = "Video Format"
 
+[PoolArchivalDescription]
+other = "Published and unpublished manuscripts, business records, maps, correspondence, and more.<br />Request items to have them retrieved for your use in the Reading Room at Special Collections. Most materials are available within a few minutes of your arrival."
+
+[PoolArchivalName]
+other = "Manuscripts & Archival Material"
+
+[PoolCatalogDescription]
+other = "Physical and electronic books from UVA’s collection."
+
+[PoolCatalogName]
+other = "Books"
+
+[PoolHathiTrustDescription]
+other = "HathiTrust Public Domain includes items without copyright restrictions which are permanently provided to Virgo through the HathiTrust Digital Library."
+
+[PoolHathiTrustName]
+other = "HathiTrust Public Domain"
+
+[PoolImagesDescription]
+other = "Imagery that the UVA Library has curated, collected, and described."
+
+[PoolImagesName]
+other = "Images"
+
+[PoolMapsDescription]
+other = "Maps, atlases, and other cartographic materials."
+
+[PoolMapsName]
+other = "Maps"
+
+[PoolMusicRecordingsDescription]
+other = "Music-based audio available for streaming, download, or in-person use."
+
+[PoolMusicRecordingsName]
+other = "Music Recordings"
+
+[PoolMusicalScoresDescription]
+other = "Sheet music and other musical notation."
+
+[PoolMusicalScoresName]
+other = "Musical Scores"
+
+[PoolSerialsDescription]
+other = "Journals, magazines, newspapers, and other periodicals. May be available in print, electronic access journals, bound volumes containing multiple issues, or online. NOTE: Display has not yet been optimized for these types of materials and much of the content isn't yet discoverable."
+
+[PoolSerialsName]
+other = "Journals"
+
+[PoolSoundRecordingsDescription]
+other = "Non-music audio available for streaming, download, or in-person use."
+
+[PoolSoundRecordingsName]
+other = "Sound Recordings"
+
+[PoolThesisDescription]
+other = "Theses and dissertations completed at the University of Virginia."
+
+[PoolThesisName]
+other = "Theses"
+
+[PoolUVALibraryDescription]
+other = "\"Catalog\" includes UVA Library books, journals, manuscripts & archival material, maps, music and sound recordings, theses and dissertations, and videos."
+
+[PoolUVALibraryName]
+other = "Catalog"
+
+[PoolUnassignedName]
+other = "Unassigned"
+
+[PoolVideoDescription]
+other = "Documentaries, films, television shows, and more; for check out or streaming access."
+
+[PoolVideoName]
+other = "Video"
+
 [ProviderArtstor]
 other = "Artstor"
 
 [ProviderAvalon]
 other = "Avalon"
 
-[ProviderEtext]
-other = "Electronic Text Center"
-
 [ProviderDataverse]
 other = "Libra Repository"
+
+[ProviderEBSCOHost]
+other = "EBSCOhost"
+
+[ProviderEtext]
+other = "Electronic Text Center"
 
 [ProviderGetty]
 other = "Getty Publications Virtual Library"
@@ -592,15 +595,6 @@ other = "Z-A"
 [SortCatalogIntraGroup]
 other = " "
 
-[SortDateReceived]
-other = "Date Received"
-
-[SortDateReceivedDescending]
-other = "newest first"
-
-[SortDateReceivedAscending]
-other = "oldest first"
-
 [SortDatePublished]
 other = "Date Published"
 
@@ -610,6 +604,18 @@ other = "oldest first"
 [SortDatePublishedDescending]
 other = "newest first"
 
+[SortDateReceived]
+other = "Date Received"
+
+[SortDateReceivedAscending]
+other = "oldest first"
+
+[SortDateReceivedDescending]
+other = "newest first"
+
+[SortRelevance]
+other = "Relevance"
+
 [SortTitle]
 other = "Title"
 
@@ -618,6 +624,3 @@ other = "A-Z"
 
 [SortTitleDescending]
 other = "Z-A"
-
-[SortRelevance]
-other = "Relevance"

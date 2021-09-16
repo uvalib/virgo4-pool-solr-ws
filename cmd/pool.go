@@ -28,14 +28,14 @@ type poolVersion struct {
 	GitCommit    string `json:"git_commit,omitempty"`
 }
 
-type poolSolrContext struct {
+type httpClientContext struct {
 	client *http.Client
 	url    string
 }
 
 type poolSolr struct {
-	service              poolSolrContext
-	healthCheck          poolSolrContext
+	service              httpClientContext
+	healthCheck          httpClientContext
 	scoreThresholdMedium float32
 	scoreThresholdHigh   float32
 }
@@ -73,6 +73,7 @@ type poolContext struct {
 	titleizer            *titleizeContext
 	globalFacetCache     *facetCache // for pre-search filters
 	localFacetCache      *facetCache // for quick loading of facets on empty keyword searches
+	serialsSolutions     httpClientContext
 }
 
 type stringValidator struct {
@@ -202,12 +203,12 @@ func httpClientWithTimeouts(conn, read string) *http.Client {
 func (p *poolContext) initSolr() {
 	// service client setup
 
-	serviceCtx := poolSolrContext{
+	serviceCtx := httpClientContext{
 		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.Service.Endpoint),
 		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.Service.ConnTimeout, p.config.Local.Solr.Clients.Service.ReadTimeout),
 	}
 
-	healthCtx := poolSolrContext{
+	healthCtx := httpClientContext{
 		url:    fmt.Sprintf("%s/%s/%s", p.config.Local.Solr.Host, p.config.Local.Solr.Core, p.config.Local.Solr.Clients.HealthCheck.Endpoint),
 		client: httpClientWithTimeouts(p.config.Local.Solr.Clients.HealthCheck.ConnTimeout, p.config.Local.Solr.Clients.HealthCheck.ReadTimeout),
 	}
@@ -499,6 +500,8 @@ func (p *poolContext) validateConfig() {
 					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
 					solrFields.requireValue(field.CustomInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
 					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+					solrFields.addValue(field.CustomInfo.AccessURL.ISBNField)
+					solrFields.addValue(field.CustomInfo.AccessURL.ISSNField)
 
 				case "authenticate":
 
@@ -1235,6 +1238,11 @@ func initializePool(cfg *poolConfig) *poolContext {
 
 	p.config = cfg
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	p.serialsSolutions = httpClientContext{
+		url:    p.config.Global.Service.SerialsSolutions.URL,
+		client: httpClientWithTimeouts(p.config.Global.Service.SerialsSolutions.ConnTimeout, p.config.Global.Service.SerialsSolutions.ReadTimeout),
+	}
 
 	// order is important, as some depend on others having been initialized already
 

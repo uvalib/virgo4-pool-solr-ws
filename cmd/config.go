@@ -98,11 +98,19 @@ type poolConfigCopyright struct {
 	re         *regexp.Regexp
 }
 
+type poolConfigHTTPClient struct {
+	URL         string `json:"url,omitempty"`
+	Endpoint    string `json:"endpoint,omitempty"`
+	ConnTimeout string `json:"conn_timeout,omitempty"`
+	ReadTimeout string `json:"read_timeout,omitempty"`
+}
+
 type poolConfigService struct {
-	Port         string                 `json:"port,omitempty"`
-	JWTKey       string                 `json:"jwt_key,omitempty"`
-	DefaultSort  poolConfigSort         `json:"default_sort,omitempty"`
-	URLTemplates poolConfigURLTemplates `json:"url_templates,omitempty"`
+	Port             string                 `json:"port,omitempty"`
+	JWTKey           string                 `json:"jwt_key,omitempty"`
+	DefaultSort      poolConfigSort         `json:"default_sort,omitempty"`
+	URLTemplates     poolConfigURLTemplates `json:"url_templates,omitempty"`
+	SerialsSolutions poolConfigHTTPClient   `json:"serials_solutions,omitempty"`
 }
 
 type poolConfigSolrParams struct {
@@ -113,15 +121,9 @@ type poolConfigSolrParams struct {
 	Fl       []string `json:"fl,omitempty"`
 }
 
-type poolConfigSolrClient struct {
-	Endpoint    string `json:"endpoint,omitempty"`
-	ConnTimeout string `json:"conn_timeout,omitempty"`
-	ReadTimeout string `json:"read_timeout,omitempty"`
-}
-
 type poolConfigSolrClients struct {
-	Service     poolConfigSolrClient `json:"service,omitempty"`
-	HealthCheck poolConfigSolrClient `json:"healthcheck,omitempty"`
+	Service     poolConfigHTTPClient `json:"service,omitempty"`
+	HealthCheck poolConfigHTTPClient `json:"healthcheck,omitempty"`
 }
 
 type poolConfigAuthorFields struct {
@@ -162,6 +164,7 @@ type poolConfigFieldTypeCustom struct {
 	FormatField      string                      `json:"format_field,omitempty"`
 	IDField          string                      `json:"id_field,omitempty"`
 	ISBNField        string                      `json:"isbn_field,omitempty"`
+	ISSNField        string                      `json:"issn_field,omitempty"`
 	LCCNField        string                      `json:"lccn_field,omitempty"`
 	LabelField       string                      `json:"label_field,omitempty"`
 	OCLCField        string                      `json:"oclc_field,omitempty"`

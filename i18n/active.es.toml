@@ -1,78 +1,3 @@
-[PoolArchivalName]
-other = "Manuscritos y Material de Archivo"
-
-[PoolArchivalDescription]
-other = "Manuscritos publicados y no publicados, registros comerciales, mapas, correspondencia y más. <a href='https://virginia.aeon.atlas-sys.com/logon' target='_blank'>Se puede solicitar acceso a los artículos en la sala de lectura Clifton Waller Barrett</a> y no pueden salir de las instalaciones."
-
-[PoolCatalogName]
-other = "Libros"
-
-[PoolCatalogDescription]
-other = "Libros físicos y electrónicos de la colección de UVA."
-
-[PoolHathiTrustName]
-other = "Dominio Público de HathiTrust"
-
-[PoolHathiTrustDescription]
-other = "El dominio público de HathiTrust incluye elementos sin restricciones de derechos de autor que se proporcionan permanentemente a Virgo a través de la biblioteca digital de HathiTrust."
-
-[PoolImagesName]
-other = "Imágenes"
-
-[PoolImagesDescription]
-other = "Imágenes que la Biblioteca UVA ha comisariado, recopilado y descrito."
-
-[PoolMapsName]
-other = "Mapas"
-
-[PoolMapsDescription]
-other = "Mapas, atlas y otros materiales cartográficos."
-
-[PoolMusicRecordingsName]
-other = "Grabaciones Musicales"
-
-[PoolMusicRecordingsDescription]
-other = "Audio basado en música disponible para transmisión, descarga o uso en persona."
-
-[PoolMusicalScoresName]
-other = "Partituras Musicales"
-
-[PoolMusicalScoresDescription]
-other = "Partituras y otra notación musical."
-
-[PoolSerialsName]
-other = "Revistas"
-
-[PoolSerialsDescription]
-other = "Revistas, revistas, periódicos y otras publicaciones periódicas. Puede estar disponible en forma impresa, revistas de acceso electrónico, volúmenes encuadernados que contienen múltiples números o en línea. NOTA: La visualización aún no se ha optimizado para este tipo de materiales y gran parte del contenido aún no se puede descubrir."
-
-[PoolSoundRecordingsName]
-other = "Grabaciones de Sonido"
-
-[PoolSoundRecordingsDescription]
-other = "Audio no musical disponible para transmisión, descarga o uso en persona."
-
-[PoolThesisName]
-other = "Tesis"
-
-[PoolThesisDescription]
-other = "Tesis y disertaciones completadas en la Universidad de Virginia."
-
-[PoolUVALibraryName]
-other = "Catálogo"
-
-[PoolUVALibraryDescription]
-other = "El \"Catálogo\" incluye libros, revistas, manuscritos y material de archivo de la Biblioteca de la UVA, mapas, grabaciones de música y sonido, tesis y disertaciones, y videos."
-
-[PoolUnassignedName]
-other = "Sin Asignar"
-
-[PoolVideoName]
-other = "Vídeo"
-
-[PoolVideoDescription]
-other = "Documentales, películas, programas de televisión y más; para salida o acceso de transmisión."
-
 [FieldAbbreviatedTitle]
 other = "Título abreviado"
 
@@ -211,6 +136,9 @@ other = "ISSN"
 [FieldIdentifier]
 other = "Identificador"
 
+[FieldLCCN]
+other = "LCCN"
+
 [FieldLabelNumber]
 other = "Etiqueta no."
 
@@ -219,9 +147,6 @@ other = "Idioma"
 
 [FieldLaterTitle]
 other = "Título Posterior"
-
-[FieldLCCN]
-other = "LCCN"
 
 [FieldLibrary]
 other = "Biblioteca"
@@ -259,17 +184,17 @@ other = "Tipo de Transportista"
 [FieldOrigDateCreated]
 other = "Fecha de la original"
 
-[FieldOrigPhysicalDetails]
-other = "Detalles Físicos"
-
-[FieldOriginalVersion]
-other = "Versión original"
-
 [FieldOrigIdentifier]
 other = "Identificador de imagen (original)"
 
 [FieldOrigNegativeIdentifier]
 other = "Numero negativo"
+
+[FieldOrigPhysicalDetails]
+other = "Detalles Físicos"
+
+[FieldOriginalVersion]
+other = "Versión original"
 
 [FieldOtherArchivalMaterials]
 other = "Otros Materiales de Archivo"
@@ -361,6 +286,9 @@ other = "Sonido"
 [FieldSponsoringAgency]
 other = "Agencia Patrocinadora"
 
+[FieldSuDocNumber]
+other = "Número de SuDoc"
+
 [FieldSubject]
 other = "Tema"
 
@@ -369,9 +297,6 @@ other = "Resumen"
 
 [FieldSubtitle]
 other = "Subtítulo"
-
-[FieldSuDocNumber]
-other = "Número de SuDoc"
 
 [FieldTargetAudience]
 other = "Público Objetivo"
@@ -463,8 +388,8 @@ other = "Era de Composición"
 [FilterDate]
 other = "Fecha"
 
-[FilterDateThisYear]
-other = "Este año"
+[FilterDateLast10Years]
+other = "Últimos 10 años"
 
 [FilterDateLast12Months]
 other = "Últimos 12 meses"
@@ -472,14 +397,14 @@ other = "Últimos 12 meses"
 [FilterDateLast3Years]
 other = "Últimos 3 años"
 
-[FilterDateLast10Years]
-other = "Últimos 10 años"
-
 [FilterDateLast50Years]
 other = "Últimos 50 años"
 
 [FilterDateMoreThan50YearsAgo]
 other = "Hace más de 50 años"
+
+[FilterDateThisYear]
+other = "Este año"
 
 [FilterDepartment]
 other = "Departamento"
@@ -538,6 +463,81 @@ other = "Sujeto"
 [FilterVideoFormat]
 other = "Formato de Video"
 
+[PoolArchivalDescription]
+other = "Manuscritos publicados y no publicados, registros comerciales, mapas, correspondencia y más. <a href='https://virginia.aeon.atlas-sys.com/logon' target='_blank'>Se puede solicitar acceso a los artículos en la sala de lectura Clifton Waller Barrett</a> y no pueden salir de las instalaciones."
+
+[PoolArchivalName]
+other = "Manuscritos y Material de Archivo"
+
+[PoolCatalogDescription]
+other = "Libros físicos y electrónicos de la colección de UVA."
+
+[PoolCatalogName]
+other = "Libros"
+
+[PoolHathiTrustDescription]
+other = "El dominio público de HathiTrust incluye elementos sin restricciones de derechos de autor que se proporcionan permanentemente a Virgo a través de la biblioteca digital de HathiTrust."
+
+[PoolHathiTrustName]
+other = "Dominio Público de HathiTrust"
+
+[PoolImagesDescription]
+other = "Imágenes que la Biblioteca UVA ha comisariado, recopilado y descrito."
+
+[PoolImagesName]
+other = "Imágenes"
+
+[PoolMapsDescription]
+other = "Mapas, atlas y otros materiales cartográficos."
+
+[PoolMapsName]
+other = "Mapas"
+
+[PoolMusicRecordingsDescription]
+other = "Audio basado en música disponible para transmisión, descarga o uso en persona."
+
+[PoolMusicRecordingsName]
+other = "Grabaciones Musicales"
+
+[PoolMusicalScoresDescription]
+other = "Partituras y otra notación musical."
+
+[PoolMusicalScoresName]
+other = "Partituras Musicales"
+
+[PoolSerialsDescription]
+other = "Revistas, revistas, periódicos y otras publicaciones periódicas. Puede estar disponible en forma impresa, revistas de acceso electrónico, volúmenes encuadernados que contienen múltiples números o en línea. NOTA: La visualización aún no se ha optimizado para este tipo de materiales y gran parte del contenido aún no se puede descubrir."
+
+[PoolSerialsName]
+other = "Revistas"
+
+[PoolSoundRecordingsDescription]
+other = "Audio no musical disponible para transmisión, descarga o uso en persona."
+
+[PoolSoundRecordingsName]
+other = "Grabaciones de Sonido"
+
+[PoolThesisDescription]
+other = "Tesis y disertaciones completadas en la Universidad de Virginia."
+
+[PoolThesisName]
+other = "Tesis"
+
+[PoolUVALibraryDescription]
+other = "El \"Catálogo\" incluye libros, revistas, manuscritos y material de archivo de la Biblioteca de la UVA, mapas, grabaciones de música y sonido, tesis y disertaciones, y videos."
+
+[PoolUVALibraryName]
+other = "Catálogo"
+
+[PoolUnassignedName]
+other = "Sin Asignar"
+
+[PoolVideoDescription]
+other = "Documentales, películas, programas de televisión y más; para salida o acceso de transmisión."
+
+[PoolVideoName]
+other = "Vídeo"
+
 [ProviderArtstor]
 other = "Artstor"
 
@@ -547,11 +547,14 @@ other = "Avalon"
 [ProviderDataverse]
 other = "Libra Repository"
 
-[ProviderGetty]
-other = "Getty Publications Virtual Library"
+[ProviderEBSCOHost]
+other = "EBSCOhost"
 
 [ProviderEtext]
 other = "Electronic Text Center"
+
+[ProviderGetty]
+other = "Getty Publications Virtual Library"
 
 [ProviderHathiTrust]
 other = "HathiTrust Digital Library"
@@ -592,15 +595,6 @@ other = "Z-A"
 [SortCatalogIntraGroup]
 other = " "
 
-[SortDateReceived]
-other = "Fecha de Recepción"
-
-[SortDateReceivedAscending]
-other = "los más viejos primero"
-
-[SortDateReceivedDescending]
-other = "el más nuevo primero"
-
 [SortDatePublished]
 other = "Fecha de Publicación"
 
@@ -610,6 +604,18 @@ other = "los más viejos primero"
 [SortDatePublishedDescending]
 other = "el más nuevo primero"
 
+[SortDateReceived]
+other = "Fecha de Recepción"
+
+[SortDateReceivedAscending]
+other = "los más viejos primero"
+
+[SortDateReceivedDescending]
+other = "el más nuevo primero"
+
+[SortRelevance]
+other = "Relevancia"
+
 [SortTitle]
 other = "Título"
 
@@ -618,6 +624,3 @@ other = "A-Z"
 
 [SortTitleDescending]
 other = "Z-A"
-
-[SortRelevance]
-other = "Relevancia"
