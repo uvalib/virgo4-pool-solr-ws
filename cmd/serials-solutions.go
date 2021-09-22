@@ -10,6 +10,7 @@ import (
 
 type serialsSolutionsHoldingData struct {
 	StartDate    string `xml:"startDate"`
+	EndDate      string `xml:"endDate"`
 	ProviderID   string `xml:"providerId"`
 	ProviderName string `xml:"providerName"`
 	DatabaseID   string `xml:"databaseId"`

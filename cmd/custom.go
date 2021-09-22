@@ -410,9 +410,19 @@ func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContex
 					continue
 				}
 
-				rc.fieldCtx.field.Provider = "ebscohost"
+				startDate := l.HoldingData.StartDate
+				if startDate == "" {
+					startDate = "unknown"
+				}
+
+				endDate := l.HoldingData.EndDate
+				if endDate == "" {
+					endDate = "present"
+				}
+
+				rc.fieldCtx.field.Provider = "exlibris"
 				rc.fieldCtx.field.Value = u.URL
-				rc.fieldCtx.field.Item = l.HoldingData.DatabaseName
+				rc.fieldCtx.field.Item = fmt.Sprintf("%s (%s to %s)", l.HoldingData.DatabaseName, startDate, endDate)
 
 				fv = append(fv, rc.fieldCtx.field)
 			}

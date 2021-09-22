@@ -547,11 +547,11 @@ other = "Avalon"
 [ProviderDataverse]
 other = "Libra Repository"
 
-[ProviderEBSCOHost]
-other = "EBSCOhost"
-
 [ProviderEtext]
 other = "Electronic Text Center"
+
+[ProviderExLibris]
+other = "Ex Libris"
 
 [ProviderGetty]
 other = "Getty Publications Virtual Library"
