@@ -368,7 +368,7 @@ other = "Autor"
 other = "Disponibilidad"
 
 [FilterBookplate]
-other = "Ex Libris"
+other = "Ex Libris 360 Link"
 
 [FilterCallNumberRange]
 other = "Rango de Número de Llamada"
