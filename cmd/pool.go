@@ -29,8 +29,9 @@ type poolVersion struct {
 }
 
 type httpClientContext struct {
-	client *http.Client
-	url    string
+	client  *http.Client
+	url     string
+	enabled bool
 }
 
 type poolSolr struct {
@@ -1240,8 +1241,9 @@ func initializePool(cfg *poolConfig) *poolContext {
 	p.randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	p.serialsSolutions = httpClientContext{
-		url:    p.config.Global.Service.SerialsSolutions.URL,
-		client: httpClientWithTimeouts(p.config.Global.Service.SerialsSolutions.ConnTimeout, p.config.Global.Service.SerialsSolutions.ReadTimeout),
+		url:     p.config.Global.Service.SerialsSolutions.URL,
+		client:  httpClientWithTimeouts(p.config.Global.Service.SerialsSolutions.ConnTimeout, p.config.Global.Service.SerialsSolutions.ReadTimeout),
+		enabled: p.config.Global.Service.SerialsSolutions.Enabled,
 	}
 
 	// order is important, as some depend on others having been initialized already

@@ -371,6 +371,11 @@ func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContex
 		return fv
 	}
 
+	if s.pool.config.Global.Service.SerialsSolutions.Enabled == false {
+		s.log("skipping serials solutions API query per configuration")
+		return fv
+	}
+
 	issns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISSNField)
 	isbns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISBNField)
 

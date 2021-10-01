@@ -99,6 +99,7 @@ type poolConfigCopyright struct {
 }
 
 type poolConfigHTTPClient struct {
+	Enabled     bool   `json:"enabled"` // only used for serials solutions client
 	URL         string `json:"url,omitempty"`
 	Endpoint    string `json:"endpoint,omitempty"`
 	ConnTimeout string `json:"conn_timeout,omitempty"`
