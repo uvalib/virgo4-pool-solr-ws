@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.4.1
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210930093333-01de314d7883 // indirect
+	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210914074925-ce3c483ec505 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.3
@@ -18,7 +18,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.31.1 // indirect
+	github.com/prometheus/common v0.30.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/ugorji/go v1.2.6 // indirect
