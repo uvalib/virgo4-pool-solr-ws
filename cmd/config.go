@@ -186,7 +186,7 @@ type poolConfigFieldCustomConfig struct {
 	NoProxyProviders []string                    `json:"noproxy_providers,omitempty"`
 	ComparisonFields []poolConfigFieldComparison `json:"comparison_fields,omitempty"`
 	MaxSupported     int                         `json:"max_supported,omitempty"`
-	handler          customHandler               // pointer to this field's handler function
+	handler          customFieldHandler          // pointer to this field's handler function
 }
 
 type poolConfigField struct {

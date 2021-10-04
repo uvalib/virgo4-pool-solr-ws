@@ -7,7 +7,7 @@ import (
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
-type customHandler func(*searchContext, *recordContext) []v4api.RecordField
+type customFieldHandler func(*searchContext, *recordContext) []v4api.RecordField
 
 func (s *searchContext) getCitationFormat(formats []string) string {
 	// use configured citation format for pool, if defined
@@ -644,6 +644,19 @@ func getCustomFieldCitationTranslator(s *searchContext, rc *recordContext) []v4a
 
 func getCustomFieldCollectionContext(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
+
+	values := append(rc.doc.getStrings(rc.fieldCtx.config.Field), rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.AlternateField)...)
+
+	if len(values) == 0 {
+		return fv
+	}
+
+	// select an arbitrary entry
+
+	value := values[0]
+
+	rc.fieldCtx.field.Value = value
+	fv = append(fv, rc.fieldCtx.field)
 
 	return fv
 }

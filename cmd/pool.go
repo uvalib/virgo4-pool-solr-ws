@@ -562,6 +562,8 @@ func (p *poolContext) validateConfig() {
 			case "collection_context":
 				field.CustomConfig.handler = getCustomFieldCollectionContext
 
+				solrFields.requireValue(field.CustomConfig.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
 			case "composer_performer":
 				field.CustomConfig.handler = getCustomFieldComposerPerformer
 

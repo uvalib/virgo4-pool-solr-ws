@@ -49,6 +49,9 @@ other = "Citado en"
 [FieldCollectionCallNumber]
 other = "Número de Llamada de Colección"
 
+[FieldCollectionContext]
+other = "Contexto de la Colección"
+
 [FieldCollectionLocation]
 other = "Ubicación de la Colección"
 
