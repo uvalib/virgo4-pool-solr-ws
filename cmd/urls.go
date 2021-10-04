@@ -17,7 +17,7 @@ func (s *searchContext) getSirsiURL(id string) string {
 	return getGenericURL(s.pool.config.Global.Service.URLTemplates.Sirsi, id)
 }
 
-func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldTypeCustom, doc *solrDocument, authorValues []string) string {
+func (s *searchContext) getCoverImageURL(cfg *poolConfigFieldCustomConfig, doc *solrDocument, authorValues []string) string {
 	// compose a url to the cover image service
 
 	id := doc.getFirstString(cfg.IDField)

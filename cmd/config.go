@@ -159,7 +159,7 @@ type poolConfigFieldComparison struct {
 	Matches  [][]string `json:"matches,omitempty"`
 }
 
-type poolConfigFieldTypeCustom struct {
+type poolConfigFieldCustomConfig struct {
 	AlternateField   string                      `json:"alternate_field,omitempty"` // field names
 	EditionField     string                      `json:"edition_field,omitempty"`
 	FormatField      string                      `json:"format_field,omitempty"`
@@ -186,41 +186,22 @@ type poolConfigFieldTypeCustom struct {
 	NoProxyProviders []string                    `json:"noproxy_providers,omitempty"`
 	ComparisonFields []poolConfigFieldComparison `json:"comparison_fields,omitempty"`
 	MaxSupported     int                         `json:"max_supported,omitempty"`
-}
-
-type poolConfigFieldCustomInfo struct {
-	Abstract                  *poolConfigFieldTypeCustom `json:"abstract,omitempty"`
-	AccessURL                 *poolConfigFieldTypeCustom `json:"access_url,omitempty"`
-	Author                    *poolConfigFieldTypeCustom `json:"author,omitempty"`
-	AuthorVernacular          *poolConfigFieldTypeCustom `json:"author_vernacular,omitempty"`
-	CitationOnlineOnly        *poolConfigFieldTypeCustom `json:"citation_is_online_only,omitempty"`
-	CitationVirgoURL          *poolConfigFieldTypeCustom `json:"citation_is_virgo_url,omitempty"`
-	CoverImageURL             *poolConfigFieldTypeCustom `json:"cover_image_url,omitempty"`
-	DigitalContentURL         *poolConfigFieldTypeCustom `json:"digital_content_url,omitempty"`
-	Language                  *poolConfigFieldTypeCustom `json:"language,omitempty"`
-	PublishedDate             *poolConfigFieldTypeCustom `json:"published_date,omitempty"`
-	PublisherName             *poolConfigFieldTypeCustom `json:"publisher_name,omitempty"`
-	SirsiURL                  *poolConfigFieldTypeCustom `json:"sirsi_url,omitempty"`
-	SubjectSummary            *poolConfigFieldTypeCustom `json:"subject_summary,omitempty"`
-	TermsOfUse                *poolConfigFieldTypeCustom `json:"terms_of_use,omitempty"`
-	TitleSubtitleEdition      *poolConfigFieldTypeCustom `json:"title_subtitle_edition,omitempty"`
-	TitleVernacular           *poolConfigFieldTypeCustom `json:"title_vernacular,omitempty"`
-	WSLSCollectionDescription *poolConfigFieldTypeCustom `json:"wsls_collection_description,omitempty"`
+	handler          customHandler               // pointer to this field's handler function
 }
 
 type poolConfigField struct {
-	Name               string                     `json:"name,omitempty"` // required; v4 field name, and key for common fields
-	XID                string                     `json:"xid,omitempty"`
-	Field              string                     `json:"field,omitempty"`
-	Properties         poolConfigFieldProperties  `json:"properties,omitempty"`
-	Limit              int                        `json:"limit,omitempty"`
-	SplitOn            string                     `json:"split_on,omitempty"`
-	OnShelfOnly        bool                       `json:"onshelf_only,omitempty"`
-	DigitalContentOnly bool                       `json:"digital_content_only,omitempty"`
-	CitationOnly       bool                       `json:"citation_only,omitempty"`
-	Value              string                     `json:"value,omitempty"`
-	Custom             bool                       `json:"custom,omitempty"`      // if true, the Name drives custom handling
-	CustomInfo         *poolConfigFieldCustomInfo `json:"custom_info,omitempty"` // extra info for certain custom formats
+	Name               string                       `json:"name,omitempty"` // required; v4 field name, and key for common fields
+	XID                string                       `json:"xid,omitempty"`
+	Field              string                       `json:"field,omitempty"`
+	Properties         poolConfigFieldProperties    `json:"properties,omitempty"`
+	Limit              int                          `json:"limit,omitempty"`
+	SplitOn            string                       `json:"split_on,omitempty"`
+	OnShelfOnly        bool                         `json:"onshelf_only,omitempty"`
+	DigitalContentOnly bool                         `json:"digital_content_only,omitempty"`
+	CitationOnly       bool                         `json:"citation_only,omitempty"`
+	Value              string                       `json:"value,omitempty"`
+	Custom             bool                         `json:"custom,omitempty"`        // if true, the Name drives custom handling
+	CustomConfig       *poolConfigFieldCustomConfig `json:"custom_config,omitempty"` // extra info for certain custom formats
 }
 
 type poolConfigAvailabilityValues struct {

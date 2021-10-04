@@ -92,7 +92,7 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 
 	// non-custom fields just return the explicit or raw solr values
 
-	if rc.fieldCtx.config.Custom == false {
+	if rc.fieldCtx.config.CustomConfig == nil {
 		if rc.fieldCtx.config.Value != "" {
 			// explicitly configured value
 			rc.fieldCtx.field.Value = rc.fieldCtx.config.Value
@@ -108,119 +108,9 @@ func (s *searchContext) getFieldValues(rc *recordContext) []v4api.RecordField {
 		return fields
 	}
 
-	// custom fields have per-field handling
+	// custom fields have dedicated handlers
 
-	switch rc.fieldCtx.config.Name {
-	case "abstract":
-		return s.getCustomFieldAbstract(rc)
-
-	case "access_url":
-		return s.getCustomFieldAccessURL(rc)
-
-	case "authenticate":
-		return s.getCustomFieldAuthenticate(rc)
-
-	case "author":
-		return s.getCustomFieldAuthor(rc)
-
-	case "author_vernacular":
-		return s.getCustomFieldAuthorVernacular(rc)
-
-	case "availability":
-		return s.getCustomFieldAvailability(rc)
-
-	case "citation_advisor":
-		return s.getCustomFieldCitationAdvisor(rc)
-
-	case "citation_author":
-		return s.getCustomFieldCitationAuthor(rc)
-
-	case "citation_compiler":
-		return s.getCustomFieldCitationCompiler(rc)
-
-	case "citation_editor":
-		return s.getCustomFieldCitationEditor(rc)
-
-	case "citation_format":
-		return s.getCustomFieldCitationFormat(rc)
-
-	case "citation_is_online_only":
-		return s.getCustomFieldCitationIsOnlineOnly(rc)
-
-	case "citation_is_virgo_url":
-		return s.getCustomFieldCitationIsVirgoURL(rc)
-
-	case "citation_subtitle":
-		return s.getCustomFieldCitationSubtitle(rc)
-
-	case "citation_title":
-		return s.getCustomFieldCitationTitle(rc)
-
-	case "citation_translator":
-		return s.getCustomFieldCitationTranslator(rc)
-
-	case "composer_performer":
-		return s.getCustomFieldComposerPerformer(rc)
-
-	case "copyright_and_permissions":
-		return s.getCustomFieldCopyrightAndPermissions(rc)
-
-	case "cover_image_url":
-		return s.getCustomFieldCoverImageURL(rc)
-
-	case "creator":
-		return s.getCustomFieldCreator(rc)
-
-	case "digital_content_url":
-		return s.getCustomFieldDigitalContentURL(rc)
-
-	case "language":
-		return s.getCustomFieldLanguage(rc)
-
-	case "online_related":
-		return s.getCustomFieldOnlineRelated(rc)
-
-	case "published_date":
-		return s.getCustomFieldPublishedDate(rc)
-
-	case "published_location":
-		return s.getCustomFieldPublishedLocation(rc)
-
-	case "publisher_name":
-		return s.getCustomFieldPublisherName(rc)
-
-	case "related_resources":
-		return s.getCustomFieldRelatedResources(rc)
-
-	case "responsibility_statement":
-		return s.getCustomFieldResponsibilityStatement(rc)
-
-	case "sirsi_url":
-		return s.getCustomFieldSirsiURL(rc)
-
-	case "subject_summary":
-		return s.getCustomFieldSubjectSummary(rc)
-
-	case "summary_holdings":
-		return s.getCustomFieldSummaryHoldings(rc)
-
-	case "terms_of_use":
-		return s.getCustomFieldTermsOfUse(rc)
-
-	case "title_subtitle_edition":
-		return s.getCustomFieldTitleSubtitleEdition(rc)
-
-	case "title_vernacular":
-		return s.getCustomFieldTitleVernacular(rc)
-
-	case "wsls_collection_description":
-		return s.getCustomFieldWSLSCollectionDescription(rc)
-
-	default:
-		s.warn("unhandled custom field: [%s]", rc.fieldCtx.config.Name)
-	}
-
-	return fields
+	return rc.fieldCtx.config.CustomConfig.handler(s, rc)
 }
 
 func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordContext, error) {
@@ -369,7 +259,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 		i := 0
 		for _, fieldValue := range fieldValues {
-			if fieldCfg.Custom == false && fieldValue.Value == "" {
+			if fieldCfg.CustomConfig == nil && fieldValue.Value == "" {
 				continue
 			}
 

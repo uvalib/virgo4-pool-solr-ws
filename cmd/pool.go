@@ -475,266 +475,217 @@ func (p *poolContext) validateConfig() {
 
 			miscValues.requireValue(field.Name, "name")
 
-			if field.Custom == true {
-				if field.Field != "" {
-					solrFields.requireValue(field.Field, "solr field")
-				}
+			// validate standard solr-mapped fields
 
-				switch field.Name {
-				case "abstract":
-					if field.CustomInfo == nil || field.CustomInfo.Abstract == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.Abstract.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
-
-				case "access_url":
-					if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
-					solrFields.requireValue(field.CustomInfo.AccessURL.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
-					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-					solrFields.addValue(field.CustomInfo.AccessURL.ISBNField)
-					solrFields.addValue(field.CustomInfo.AccessURL.ISSNField)
-
-				case "authenticate":
-
-				case "author":
-					if field.CustomInfo == nil || field.CustomInfo.Author == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					miscValues.requireValue(field.CustomInfo.Author.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-					messageIDs.requireValue(field.CustomInfo.Author.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "author_vernacular":
-					if field.CustomInfo == nil || field.CustomInfo.AuthorVernacular == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					miscValues.requireValue(field.CustomInfo.AuthorVernacular.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-					messageIDs.requireValue(field.CustomInfo.AuthorVernacular.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "availability":
-
-				case "citation_advisor":
-
-				case "citation_author":
-
-				case "citation_compiler":
-
-				case "citation_editor":
-
-				case "citation_format":
-
-				case "citation_is_online_only":
-					if field.CustomInfo == nil || field.CustomInfo.CitationOnlineOnly == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					for k, f := range field.CustomInfo.CitationOnlineOnly.ComparisonFields {
-						solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
-					}
-
-				case "citation_is_virgo_url":
-					if field.CustomInfo == nil || field.CustomInfo.CitationVirgoURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					for k, f := range field.CustomInfo.CitationVirgoURL.ComparisonFields {
-						solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
-					}
-
-				case "citation_subtitle":
-
-				case "citation_title":
-
-				case "citation_translator":
-
-				case "composer_performer":
-
-				case "copyright_and_permissions":
-
-				case "cover_image_url":
-					if field.CustomInfo == nil || field.CustomInfo.CoverImageURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					miscValues.requireValue(field.CustomInfo.CoverImageURL.MusicPool, "%s section music pool")
-
-					solrFields.requireValue(field.CustomInfo.CoverImageURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-					solrFields.requireValue(field.CustomInfo.CoverImageURL.TitleField, fmt.Sprintf("%s section title field", field.Name))
-					solrFields.requireValue(field.CustomInfo.CoverImageURL.PoolField, fmt.Sprintf("%s section pool field", field.Name))
-
-					solrFields.addValue(field.CustomInfo.CoverImageURL.ISBNField)
-					solrFields.addValue(field.CustomInfo.CoverImageURL.OCLCField)
-					solrFields.addValue(field.CustomInfo.CoverImageURL.LCCNField)
-					solrFields.addValue(field.CustomInfo.CoverImageURL.UPCField)
-
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Host, "cover images template host")
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Path, "cover images template path")
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
-
-				case "creator":
-
-				case "digital_content_url":
-					if field.CustomInfo == nil || field.CustomInfo.DigitalContentURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.DigitalContentURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Host, "digital content template host")
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
-
-				case "language":
-					if field.CustomInfo == nil || field.CustomInfo.Language == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.Language.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
-
-				case "online_related":
-					if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
-					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-				case "published_date":
-					if field.CustomInfo == nil || field.CustomInfo.PublishedDate == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					messageIDs.requireValue(field.CustomInfo.PublishedDate.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "published_location":
-
-				case "publisher_name":
-					if field.CustomInfo == nil || field.CustomInfo.PublisherName == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.PublisherName.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
-
-				case "related_resources":
-					if field.CustomInfo == nil || field.CustomInfo.AccessURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.AccessURL.URLField, fmt.Sprintf("%s section url field", field.Name))
-					solrFields.requireValue(field.CustomInfo.AccessURL.LabelField, fmt.Sprintf("%s section label field", field.Name))
-					messageIDs.requireValue(field.CustomInfo.AccessURL.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
-
-				case "responsibility_statement":
-
-				case "sirsi_url":
-					if field.CustomInfo == nil || field.CustomInfo.SirsiURL == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.SirsiURL.IDField, fmt.Sprintf("%s section id field", field.Name))
-					miscValues.requireValue(field.CustomInfo.SirsiURL.IDPrefix, fmt.Sprintf("%s section id prefix", field.Name))
-
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Host, "sirsi template host")
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
-					miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
-
-				case "subject_summary":
-					if field.CustomInfo == nil || field.CustomInfo.SubjectSummary == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					messageIDs.requireValue(field.CustomInfo.SubjectSummary.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "summary_holdings":
-
-				case "terms_of_use":
-					if field.CustomInfo == nil || field.CustomInfo.TermsOfUse == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					messageIDs.requireValue(field.CustomInfo.TermsOfUse.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "title_subtitle_edition":
-					if field.CustomInfo == nil || field.CustomInfo.TitleSubtitleEdition == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.TitleField, fmt.Sprintf("%s section title field", field.Name))
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
-					solrFields.requireValue(field.CustomInfo.TitleSubtitleEdition.EditionField, fmt.Sprintf("%s section edition field", field.Name))
-					miscValues.requireValue(field.CustomInfo.TitleSubtitleEdition.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-					messageIDs.requireValue(field.CustomInfo.TitleSubtitleEdition.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "title_vernacular":
-					if field.CustomInfo == nil || field.CustomInfo.TitleVernacular == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					miscValues.requireValue(field.CustomInfo.TitleVernacular.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-					messageIDs.requireValue(field.CustomInfo.TitleVernacular.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
-				case "wsls_collection_description":
-					if field.CustomInfo == nil || field.CustomInfo.WSLSCollectionDescription == nil {
-						log.Printf("[VALIDATE] missing field index %d custom_info/%s section", j, field.Name)
-						invalid = true
-						continue
-					}
-
-					messageIDs.requireValue(field.CustomInfo.WSLSCollectionDescription.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
-
-				default:
-					log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", j, field.Name)
-					invalid = true
-					continue
-				}
-			} else {
+			if field.CustomConfig == nil {
+				// require a solr field to get values from, unless a value is explicitly defined
 				if field.Value == "" {
 					solrFields.requireValue(field.Field, "solr field")
 				}
+				continue
+			}
+
+			// validate custom fields and set up handlers
+
+			switch field.Name {
+			case "abstract":
+				field.CustomConfig.handler = getCustomFieldAbstract
+
+				solrFields.requireValue(field.CustomConfig.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+			case "access_url":
+				field.CustomConfig.handler = getCustomFieldAccessURL
+
+				solrFields.requireValue(field.CustomConfig.URLField, fmt.Sprintf("%s section url field", field.Name))
+				solrFields.requireValue(field.CustomConfig.LabelField, fmt.Sprintf("%s section label field", field.Name))
+				solrFields.requireValue(field.CustomConfig.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
+				messageIDs.requireValue(field.CustomConfig.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+				solrFields.addValue(field.CustomConfig.ISBNField)
+				solrFields.addValue(field.CustomConfig.ISSNField)
+
+			case "authenticate":
+				field.CustomConfig.handler = getCustomFieldAuthenticate
+
+			case "author":
+				field.CustomConfig.handler = getCustomFieldAuthor
+
+				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "author_vernacular":
+				field.CustomConfig.handler = getCustomFieldAuthorVernacular
+
+				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "availability":
+				field.CustomConfig.handler = getCustomFieldAvailability
+
+			case "citation_advisor":
+				field.CustomConfig.handler = getCustomFieldCitationAdvisor
+
+			case "citation_author":
+				field.CustomConfig.handler = getCustomFieldCitationAuthor
+
+			case "citation_compiler":
+				field.CustomConfig.handler = getCustomFieldCitationCompiler
+
+			case "citation_editor":
+				field.CustomConfig.handler = getCustomFieldCitationEditor
+
+			case "citation_format":
+				field.CustomConfig.handler = getCustomFieldCitationFormat
+
+			case "citation_is_online_only":
+				field.CustomConfig.handler = getCustomFieldCitationIsOnlineOnly
+
+				for k, f := range field.CustomConfig.ComparisonFields {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
+				}
+
+			case "citation_is_virgo_url":
+				field.CustomConfig.handler = getCustomFieldCitationIsVirgoURL
+
+				for k, f := range field.CustomConfig.ComparisonFields {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
+				}
+
+			case "citation_subtitle":
+				field.CustomConfig.handler = getCustomFieldCitationSubtitle
+
+			case "citation_title":
+				field.CustomConfig.handler = getCustomFieldCitationTitle
+
+			case "citation_translator":
+				field.CustomConfig.handler = getCustomFieldCitationTranslator
+
+			case "collection_context":
+				field.CustomConfig.handler = getCustomFieldCollectionContext
+
+			case "composer_performer":
+				field.CustomConfig.handler = getCustomFieldComposerPerformer
+
+			case "copyright_and_permissions":
+				field.CustomConfig.handler = getCustomFieldCopyrightAndPermissions
+
+			case "cover_image_url":
+				field.CustomConfig.handler = getCustomFieldCoverImageURL
+
+				miscValues.requireValue(field.CustomConfig.MusicPool, "%s section music pool")
+
+				solrFields.requireValue(field.CustomConfig.IDField, fmt.Sprintf("%s section id field", field.Name))
+				solrFields.requireValue(field.CustomConfig.TitleField, fmt.Sprintf("%s section title field", field.Name))
+				solrFields.requireValue(field.CustomConfig.PoolField, fmt.Sprintf("%s section pool field", field.Name))
+
+				solrFields.addValue(field.CustomConfig.ISBNField)
+				solrFields.addValue(field.CustomConfig.OCLCField)
+				solrFields.addValue(field.CustomConfig.LCCNField)
+				solrFields.addValue(field.CustomConfig.UPCField)
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Host, "cover images template host")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Path, "cover images template path")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.CoverImages.Pattern, "cover images template pattern")
+
+			case "creator":
+				field.CustomConfig.handler = getCustomFieldCreator
+
+			case "digital_content_url":
+				field.CustomConfig.handler = getCustomFieldDigitalContentURL
+
+				solrFields.requireValue(field.CustomConfig.IDField, fmt.Sprintf("%s section id field", field.Name))
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Host, "digital content template host")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
+
+			case "language":
+				field.CustomConfig.handler = getCustomFieldLanguage
+
+				solrFields.requireValue(field.CustomConfig.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+			case "online_related":
+				field.CustomConfig.handler = getCustomFieldOnlineRelated
+
+				solrFields.requireValue(field.CustomConfig.URLField, fmt.Sprintf("%s section url field", field.Name))
+				solrFields.requireValue(field.CustomConfig.LabelField, fmt.Sprintf("%s section label field", field.Name))
+				messageIDs.requireValue(field.CustomConfig.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+
+			case "published_date":
+				field.CustomConfig.handler = getCustomFieldPublishedDate
+
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "published_location":
+				field.CustomConfig.handler = getCustomFieldPublishedLocation
+
+			case "publisher_name":
+				field.CustomConfig.handler = getCustomFieldPublisherName
+
+				solrFields.requireValue(field.CustomConfig.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
+
+			case "related_resources":
+				field.CustomConfig.handler = getCustomFieldRelatedResources
+
+				solrFields.requireValue(field.CustomConfig.URLField, fmt.Sprintf("%s section url field", field.Name))
+				solrFields.requireValue(field.CustomConfig.LabelField, fmt.Sprintf("%s section label field", field.Name))
+				messageIDs.requireValue(field.CustomConfig.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
+
+			case "responsibility_statement":
+				field.CustomConfig.handler = getCustomFieldResponsibilityStatement
+
+			case "sirsi_url":
+				field.CustomConfig.handler = getCustomFieldSirsiURL
+
+				solrFields.requireValue(field.CustomConfig.IDField, fmt.Sprintf("%s section id field", field.Name))
+				miscValues.requireValue(field.CustomConfig.IDPrefix, fmt.Sprintf("%s section id prefix", field.Name))
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Host, "sirsi template host")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
+
+			case "subject_summary":
+				field.CustomConfig.handler = getCustomFieldSubjectSummary
+
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "summary_holdings":
+				field.CustomConfig.handler = getCustomFieldSummaryHoldings
+
+			case "terms_of_use":
+				field.CustomConfig.handler = getCustomFieldTermsOfUse
+
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "title_subtitle_edition":
+				field.CustomConfig.handler = getCustomFieldTitleSubtitleEdition
+
+				solrFields.requireValue(field.CustomConfig.TitleField, fmt.Sprintf("%s section title field", field.Name))
+				solrFields.requireValue(field.CustomConfig.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
+				solrFields.requireValue(field.CustomConfig.EditionField, fmt.Sprintf("%s section edition field", field.Name))
+				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "title_vernacular":
+				field.CustomConfig.handler = getCustomFieldTitleVernacular
+
+				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
+				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
+
+			case "wsls_collection_description":
+				field.CustomConfig.handler = getCustomFieldWSLSCollectionDescription
+
+				messageIDs.requireValue(field.CustomConfig.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
+
+			default:
+				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", j, field.Name)
+				invalid = true
+				continue
+			}
+
+			if field.CustomConfig.handler == nil {
+				log.Printf("[VALIDATE] field %d: custom field missing handler: [%s]", j, field.Name)
+				invalid = true
+				continue
 			}
 		}
 	}

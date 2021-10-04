@@ -7,6 +7,8 @@ import (
 	"github.com/uvalib/virgo4-api/v4api"
 )
 
+type customHandler func(*searchContext, *recordContext) []v4api.RecordField
+
 func (s *searchContext) getCitationFormat(formats []string) string {
 	// use configured citation format for pool, if defined
 	if s.pool.config.Local.Identity.CitationFormat != "" {
@@ -166,7 +168,7 @@ func (s *searchContext) getCopyrightLabelURLIcon(doc *solrDocument) (string, str
 	return "", "", ""
 }
 
-func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldTypeCustom) []v4api.RecordField {
+func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, cfg *poolConfigFieldCustomConfig) []v4api.RecordField {
 	var values []v4api.RecordField
 
 	urlValues := doc.getStrings(cfg.URLField)
@@ -347,13 +349,13 @@ func (s *searchContext) buildTitle(rc *recordContext, title, subtitle, edition, 
 
 /********************  individual custom field implementations  ********************/
 
-func (s *searchContext) getCustomFieldAbstract(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAbstract(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
 
 	if len(values) == 0 {
-		values = rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.Abstract.AlternateField)
+		values = rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.AlternateField)
 	}
 
 	for _, value := range values {
@@ -364,7 +366,7 @@ func (s *searchContext) getCustomFieldAbstract(rc *recordContext) []v4api.Record
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAccessURLSerialsSolutions(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if s.itemDetails == false {
@@ -376,8 +378,8 @@ func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContex
 		return fv
 	}
 
-	issns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISSNField)
-	isbns := rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.AccessURL.ISBNField)
+	issns := rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.ISSNField)
+	isbns := rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.ISBNField)
 
 	genre := ""
 	serialType := ""
@@ -437,22 +439,22 @@ func (s *searchContext) getCustomFieldAccessURLSerialsSolutions(rc *recordContex
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAccessURL(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAccessURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.anonOnline == false && rc.authOnline == false {
 		// this item is not available online per solr... but maybe we hold electronic subscriptions?
-		return s.getCustomFieldAccessURLSerialsSolutions(rc)
+		return getCustomFieldAccessURLSerialsSolutions(s, rc)
 	}
 
-	rc.fieldCtx.field.Provider = rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.AccessURL.ProviderField)
+	rc.fieldCtx.field.Provider = rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.ProviderField)
 
-	fv = s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomInfo.AccessURL)
+	fv = s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomConfig)
 
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAuthenticate(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAuthenticate(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.anonRequest == true && rc.anonOnline == false && rc.authOnline == true {
@@ -462,14 +464,14 @@ func (s *searchContext) getCustomFieldAuthenticate(rc *recordContext) []v4api.Re
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAuthor(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAuthor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	var values []string
 
 	if rc.hasVernacularAuthor == true {
-		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.Author.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.Author.AlternateXID
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
 	}
 
 	values = append(values, rc.relations.authors.name...)
@@ -484,12 +486,12 @@ func (s *searchContext) getCustomFieldAuthor(rc *recordContext) []v4api.RecordFi
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAuthorVernacular(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAuthorVernacular(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.hasVernacularAuthor == true {
-		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.AuthorVernacular.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.AuthorVernacular.AlternateXID
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -500,7 +502,7 @@ func (s *searchContext) getCustomFieldAuthorVernacular(rc *recordContext) []v4ap
 	return fv
 }
 
-func (s *searchContext) getCustomFieldAvailability(rc *recordContext) []v4api.RecordField {
+func getCustomFieldAvailability(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	for _, value := range rc.availabilityValues {
@@ -513,7 +515,7 @@ func (s *searchContext) getCustomFieldAvailability(rc *recordContext) []v4api.Re
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationAdvisor(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationAdvisor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	for _, value := range rc.relations.advisors.name {
@@ -524,7 +526,7 @@ func (s *searchContext) getCustomFieldCitationAdvisor(rc *recordContext) []v4api
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationAuthor(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationAuthor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	for _, value := range rc.relations.authors.name {
@@ -535,7 +537,7 @@ func (s *searchContext) getCustomFieldCitationAuthor(rc *recordContext) []v4api.
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationCompiler(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationCompiler(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	for _, value := range rc.relations.compilers.name {
@@ -546,7 +548,7 @@ func (s *searchContext) getCustomFieldCitationCompiler(rc *recordContext) []v4ap
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationEditor(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationEditor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	for _, value := range rc.relations.editors.name {
@@ -557,7 +559,7 @@ func (s *searchContext) getCustomFieldCitationEditor(rc *recordContext) []v4api.
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationFormat(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationFormat(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
@@ -569,10 +571,10 @@ func (s *searchContext) getCustomFieldCitationFormat(rc *recordContext) []v4api.
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationIsOnlineOnly(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationIsOnlineOnly(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomInfo.CitationOnlineOnly.ComparisonFields) == true {
+	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
 		rc.fieldCtx.field.Value = "true"
 	} else {
 		rc.fieldCtx.field.Value = "false"
@@ -583,10 +585,10 @@ func (s *searchContext) getCustomFieldCitationIsOnlineOnly(rc *recordContext) []
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationIsVirgoURL(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationIsVirgoURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomInfo.CitationVirgoURL.ComparisonFields) == true {
+	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
 		rc.fieldCtx.field.Value = "true"
 	} else {
 		rc.fieldCtx.field.Value = "false"
@@ -597,7 +599,7 @@ func (s *searchContext) getCustomFieldCitationIsVirgoURL(rc *recordContext) []v4
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationSubtitle(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationSubtitle(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	subtitle := rc.doc.getFirstString(rc.fieldCtx.config.Field)
@@ -613,7 +615,7 @@ func (s *searchContext) getCustomFieldCitationSubtitle(rc *recordContext) []v4ap
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationTitle(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationTitle(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	title := rc.doc.getFirstString(rc.fieldCtx.config.Field)
@@ -629,7 +631,7 @@ func (s *searchContext) getCustomFieldCitationTitle(rc *recordContext) []v4api.R
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCitationTranslator(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCitationTranslator(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	for _, value := range rc.relations.translators.name {
@@ -640,7 +642,13 @@ func (s *searchContext) getCustomFieldCitationTranslator(rc *recordContext) []v4
 	return fv
 }
 
-func (s *searchContext) getCustomFieldComposerPerformer(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCollectionContext(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	return fv
+}
+
+func getCustomFieldComposerPerformer(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	var values []string
@@ -657,7 +665,7 @@ func (s *searchContext) getCustomFieldComposerPerformer(rc *recordContext) []v4a
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCopyrightAndPermissions(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCopyrightAndPermissions(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if label, url, icon := s.getCopyrightLabelURLIcon(rc.doc); label != "" {
@@ -670,13 +678,13 @@ func (s *searchContext) getCustomFieldCopyrightAndPermissions(rc *recordContext)
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCoverImageURL(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCoverImageURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	coverImageURL := rc.doc.getFirstString(rc.fieldCtx.config.Field)
 
 	if coverImageURL == "" {
-		coverImageURL = s.getCoverImageURL(rc.fieldCtx.config.CustomInfo.CoverImageURL, rc.doc, rc.relations.authors.name)
+		coverImageURL = s.getCoverImageURL(rc.fieldCtx.config.CustomConfig, rc.doc, rc.relations.authors.name)
 	}
 
 	if coverImageURL != "" {
@@ -687,7 +695,7 @@ func (s *searchContext) getCustomFieldCoverImageURL(rc *recordContext) []v4api.R
 	return fv
 }
 
-func (s *searchContext) getCustomFieldCreator(rc *recordContext) []v4api.RecordField {
+func getCustomFieldCreator(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	var values []string
@@ -704,10 +712,10 @@ func (s *searchContext) getCustomFieldCreator(rc *recordContext) []v4api.RecordF
 	return fv
 }
 
-func (s *searchContext) getCustomFieldDigitalContentURL(rc *recordContext) []v4api.RecordField {
+func getCustomFieldDigitalContentURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if url := s.getDigitalContentURL(rc.doc, rc.fieldCtx.config.CustomInfo.DigitalContentURL.IDField); url != "" {
+	if url := s.getDigitalContentURL(rc.doc, rc.fieldCtx.config.CustomConfig.IDField); url != "" {
 		rc.fieldCtx.field.Value = url
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -715,13 +723,13 @@ func (s *searchContext) getCustomFieldDigitalContentURL(rc *recordContext) []v4a
 	return fv
 }
 
-func (s *searchContext) getCustomFieldLanguage(rc *recordContext) []v4api.RecordField {
+func getCustomFieldLanguage(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
 
 	if len(values) == 0 {
-		values = rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.Language.AlternateField)
+		values = rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.AlternateField)
 	}
 
 	for _, value := range values {
@@ -732,11 +740,26 @@ func (s *searchContext) getCustomFieldLanguage(rc *recordContext) []v4api.Record
 	return fv
 }
 
-func (s *searchContext) getCustomFieldOnlineRelated(rc *recordContext) []v4api.RecordField {
-	return s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomInfo.AccessURL)
+func getCustomFieldOnlineRelated(s *searchContext, rc *recordContext) []v4api.RecordField {
+	return s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomConfig)
 }
 
-func (s *searchContext) getCustomFieldPublishedLocation(rc *recordContext) []v4api.RecordField {
+func getCustomFieldPublishedDate(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.isWSLS == true {
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+	}
+
+	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
+func getCustomFieldPublishedLocation(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
@@ -753,28 +776,13 @@ func (s *searchContext) getCustomFieldPublishedLocation(rc *recordContext) []v4a
 	return fv
 }
 
-func (s *searchContext) getCustomFieldPublishedDate(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	if rc.isWSLS == true {
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.PublishedDate.AlternateXID
-	}
-
-	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
-		rc.fieldCtx.field.Value = value
-		fv = append(fv, rc.fieldCtx.field)
-	}
-
-	return fv
-}
-
-func (s *searchContext) getCustomFieldPublisherName(rc *recordContext) []v4api.RecordField {
+func getCustomFieldPublisherName(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
 
 	if len(values) == 0 {
-		values = rc.doc.getStrings(rc.fieldCtx.config.CustomInfo.PublisherName.AlternateField)
+		values = rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.AlternateField)
 	}
 
 	if len(values) == 0 {
@@ -789,30 +797,11 @@ func (s *searchContext) getCustomFieldPublisherName(rc *recordContext) []v4api.R
 	return fv
 }
 
-func (s *searchContext) getCustomFieldRelatedResources(rc *recordContext) []v4api.RecordField {
-	return s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomInfo.AccessURL)
+func getCustomFieldRelatedResources(s *searchContext, rc *recordContext) []v4api.RecordField {
+	return s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomConfig)
 }
 
-func (s *searchContext) getCustomFieldSirsiURL(rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	if rc.isSirsi == true {
-		idValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.SirsiURL.IDField)
-		idPrefix := rc.fieldCtx.config.CustomInfo.SirsiURL.IDPrefix
-
-		if strings.HasPrefix(idValue, idPrefix) {
-			sirsiID := idValue[len(idPrefix):]
-			if url := s.getSirsiURL(sirsiID); url != "" {
-				rc.fieldCtx.field.Value = url
-				fv = append(fv, rc.fieldCtx.field)
-			}
-		}
-	}
-
-	return fv
-}
-
-func (s *searchContext) getCustomFieldResponsibilityStatement(rc *recordContext) []v4api.RecordField {
+func getCustomFieldResponsibilityStatement(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.hasVernacularAuthor == true {
@@ -827,11 +816,30 @@ func (s *searchContext) getCustomFieldResponsibilityStatement(rc *recordContext)
 	return fv
 }
 
-func (s *searchContext) getCustomFieldSubjectSummary(rc *recordContext) []v4api.RecordField {
+func getCustomFieldSirsiURL(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.isSirsi == true {
+		idValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.IDField)
+		idPrefix := rc.fieldCtx.config.CustomConfig.IDPrefix
+
+		if strings.HasPrefix(idValue, idPrefix) {
+			sirsiID := idValue[len(idPrefix):]
+			if url := s.getSirsiURL(sirsiID); url != "" {
+				rc.fieldCtx.field.Value = url
+				fv = append(fv, rc.fieldCtx.field)
+			}
+		}
+	}
+
+	return fv
+}
+
+func getCustomFieldSubjectSummary(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.SubjectSummary.AlternateXID
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -842,7 +850,7 @@ func (s *searchContext) getCustomFieldSubjectSummary(rc *recordContext) []v4api.
 	return fv
 }
 
-func (s *searchContext) getCustomFieldSummaryHoldings(rc *recordContext) []v4api.RecordField {
+func getCustomFieldSummaryHoldings(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
@@ -855,11 +863,11 @@ func (s *searchContext) getCustomFieldSummaryHoldings(rc *recordContext) []v4api
 	return fv
 }
 
-func (s *searchContext) getCustomFieldTermsOfUse(rc *recordContext) []v4api.RecordField {
+func getCustomFieldTermsOfUse(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.TermsOfUse.AlternateXID
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -870,17 +878,17 @@ func (s *searchContext) getCustomFieldTermsOfUse(rc *recordContext) []v4api.Reco
 	return fv
 }
 
-func (s *searchContext) getCustomFieldTitleSubtitleEdition(rc *recordContext) []v4api.RecordField {
+func getCustomFieldTitleSubtitleEdition(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.hasVernacularTitle == true {
-		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.AlternateXID
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
 	}
 
-	titleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.TitleField)
-	subtitleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.SubtitleField)
-	editionValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomInfo.TitleSubtitleEdition.EditionField)
+	titleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.TitleField)
+	subtitleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.SubtitleField)
+	editionValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.EditionField)
 	vernacularValue := ""
 
 	rc.fieldCtx.field.Value = s.buildTitle(rc, titleValue, subtitleValue, editionValue, vernacularValue)
@@ -890,12 +898,12 @@ func (s *searchContext) getCustomFieldTitleSubtitleEdition(rc *recordContext) []
 	return fv
 }
 
-func (s *searchContext) getCustomFieldTitleVernacular(rc *recordContext) []v4api.RecordField {
+func getCustomFieldTitleVernacular(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.hasVernacularTitle == true {
-		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomInfo.TitleVernacular.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomInfo.TitleVernacular.AlternateXID
+		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
+		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -906,11 +914,11 @@ func (s *searchContext) getCustomFieldTitleVernacular(rc *recordContext) []v4api
 	return fv
 }
 
-func (s *searchContext) getCustomFieldWSLSCollectionDescription(rc *recordContext) []v4api.RecordField {
+func getCustomFieldWSLSCollectionDescription(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.field.Value = s.client.localize(rc.fieldCtx.config.CustomInfo.WSLSCollectionDescription.ValueXID)
+		rc.fieldCtx.field.Value = s.client.localize(rc.fieldCtx.config.CustomConfig.ValueXID)
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
