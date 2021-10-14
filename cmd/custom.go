@@ -848,6 +848,17 @@ func getCustomFieldSirsiURL(s *searchContext, rc *recordContext) []v4api.RecordF
 	return fv
 }
 
+func getCustomFieldSpecialCollectionsNote(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+		rc.fieldCtx.field.Value = rc.fieldCtx.config.Value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
 func getCustomFieldSubjectSummary(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
