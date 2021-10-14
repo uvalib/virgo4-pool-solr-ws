@@ -258,7 +258,7 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 
 	libraries := make(map[string]map[string]map[string][]summaryTextNote)
 
-	lastCallNumber := ""
+	lastCallNumber := "---"
 
 	for _, fieldValue := range fieldValues {
 		parts := strings.Split(fieldValue, "|")
