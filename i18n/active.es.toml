@@ -55,6 +55,9 @@ other = "Ubicación de la Colección"
 [FieldCollectionNotes]
 other = "Notas de la Colección"
 
+[FieldCollectionPosition]
+other = "Posición de la Colección"
+
 [FieldColor]
 other = "Color"
 
