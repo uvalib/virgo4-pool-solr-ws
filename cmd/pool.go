@@ -1030,8 +1030,20 @@ func (p *poolContext) initResourceTypes() {
 		// create ordered facet list and convenience map
 		r.filterMap = make(map[string]*poolConfigFilter)
 
-		// append resource-type filters after global pre-search filters
-		filterXIDs := append(p.config.Global.Mappings.Configured.FilterXIDs, r.AdditionalFilterXIDs...)
+		// build full resource type filter list by combining global pre-search filters and additional resource-type filters.
+		// pre-search filters will be at the top, UNLESS they appear in the additional resource-type filter list,
+		// in which case they will appear in the position they are defined there.  this allows for defining pre-search
+		// filters that appear lower down in the filter list after a search (e.g. bookplates filter appearing at the bottom).
+
+		var filterXIDs []string
+
+		for _, filterXID := range p.config.Global.Mappings.Configured.FilterXIDs {
+			if sliceContainsString(r.AdditionalFilterXIDs, filterXID, false) == false {
+				filterXIDs = append(filterXIDs, filterXID)
+			}
+		}
+
+		filterXIDs = append(filterXIDs, r.AdditionalFilterXIDs...)
 
 		seen := make(map[string]bool)
 		for _, xid := range filterXIDs {
