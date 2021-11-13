@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -128,7 +129,7 @@ func (s *searchContext) solrQuery() error {
 	req.Header.Set("Content-Type", "application/json")
 
 	if s.client.opts.verbose == true {
-		s.log("SOLR: req: [%s]", string(jsonBytes))
+		s.verbose("SOLR: req: [%s]", string(jsonBytes))
 	} else {
 		// prettify logged query
 		pieces := strings.SplitAfter(s.solr.req.json.Params.Q, fmt.Sprintf(" AND (%s:", s.pool.config.Local.Solr.GroupField))
@@ -163,14 +164,31 @@ func (s *searchContext) solrQuery() error {
 
 	defer res.Body.Close()
 
-	decoder := json.NewDecoder(res.Body)
+	// verbose response logging requires the entire response body to be read in.
+	// this is memory intensive, but acceptable as it is primarily meant for debugging.
 
-	// external service failure logging (scenario 2)
+	if s.client.opts.verbose == true {
+		body, _ := ioutil.ReadAll(res.Body)
 
-	if decErr := decoder.Decode(&s.solr.res); decErr != nil {
-		s.log("SOLR: Decode() failed: %s", decErr.Error())
-		s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
-		return fmt.Errorf("failed to decode Solr response")
+		s.verbose("SOLR: res: [%s]", body)
+
+		// external service failure logging (scenario 2)
+
+		if decErr := json.Unmarshal(body, &s.solr.res); decErr != nil {
+			s.log("SOLR: Unmarshal() failed: %s", decErr.Error())
+			s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
+			return fmt.Errorf("failed to unmarshal Solr response")
+		}
+	} else {
+		decoder := json.NewDecoder(res.Body)
+
+		// external service failure logging (scenario 2)
+
+		if decErr := decoder.Decode(&s.solr.res); decErr != nil {
+			s.log("SOLR: Decode() failed: %s", decErr.Error())
+			s.err("Failed response from %s %s - %d:%s. Elapsed Time: %d (ms)", req.Method, ctx.url, http.StatusInternalServerError, decErr.Error(), elapsedMS)
+			return fmt.Errorf("failed to decode Solr response")
+		}
 	}
 
 	// external service success logging

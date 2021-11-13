@@ -225,6 +225,25 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		s.solr.req.json.Params.DebugQuery = "on"
 	}
 
+	// set up highlighting
+	s.solr.req.json.Params.Hl = "false"
+	if s.virgo.flags.includeSnippets == true {
+		s.solr.req.json.Params.Hl = "true"
+		s.solr.req.json.Params.HlMethod = s.pool.config.Local.Solr.Highlighting.Method
+		s.solr.req.json.Params.HlFl = s.pool.config.Local.Solr.Highlighting.Fl
+		s.solr.req.json.Params.HlSnippets = s.pool.config.Local.Solr.Highlighting.Snippets
+		s.solr.req.json.Params.HlFragsize = s.pool.config.Local.Solr.Highlighting.Fragsize
+		s.solr.req.json.Params.HlFragsizeIsMinimum = s.pool.config.Local.Solr.Highlighting.FragsizeIsMinimum
+		s.solr.req.json.Params.HlFragAlignRatio = s.pool.config.Local.Solr.Highlighting.FragAlignRatio
+		s.solr.req.json.Params.HlMaxAnalyzedChars = s.pool.config.Local.Solr.Highlighting.MaxAnalyzedChars
+		s.solr.req.json.Params.HlMultiTermQuery = s.pool.config.Local.Solr.Highlighting.MultiTermQuery
+		s.solr.req.json.Params.HlTagPre = s.pool.config.Local.Solr.Highlighting.TagPre
+		s.solr.req.json.Params.HlTagPost = s.pool.config.Local.Solr.Highlighting.TagPost
+
+		// don't need all doc fields for highlight searches
+		s.solr.req.json.Params.Fl = []string{s.pool.config.Local.Solr.IdentifierField}
+	}
+
 	return searchResponse{status: http.StatusOK}
 }
 

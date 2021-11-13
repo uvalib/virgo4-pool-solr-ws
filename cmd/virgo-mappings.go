@@ -83,6 +83,10 @@ func (s *solrDocument) getFloat(field string) float32 {
 	}
 }
 
+func (s *searchContext) getSolrIdentifierFieldValue(doc *solrDocument) string {
+	return doc.getFirstString(s.pool.config.Local.Solr.IdentifierField)
+}
+
 func (s *searchContext) getSolrGroupFieldValue(doc *solrDocument) string {
 	return doc.getFirstString(s.pool.config.Local.Solr.GroupField)
 }

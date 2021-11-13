@@ -10,9 +10,11 @@ type solrParserInfo struct {
 	// convenience flags based on parser results
 	isSingleTitleSearch        bool
 	isSingleKeywordSearch      bool
+	isFulltextSearch           bool
 	containsUnsupportedFilters bool
 	titles                     []string
 	keywords                   []string
+	fulltexts                  []string
 }
 
 type solrRequestParams struct {
@@ -25,6 +27,19 @@ type solrRequestParams struct {
 	Fq         []string `json:"fq,omitempty"`
 	Q          string   `json:"q,omitempty"`
 	DebugQuery string   `json:"debugQuery,omitempty"`
+
+	// highlighter options
+	Hl                  string   `json:"hl,omitempty"`
+	HlMethod            string   `json:"hl.method,omitempty"`
+	HlFl                []string `json:"hl.fl,omitempty"`
+	HlSnippets          string   `json:"hl.snippets,omitempty"`
+	HlFragsize          string   `json:"hl.fragsize,omitempty"`
+	HlFragsizeIsMinimum string   `json:"hl.fragsizeIsMinimum,omitempty"`
+	HlFragAlignRatio    string   `json:"hl.fragAlignRatio,omitempty"`
+	HlMaxAnalyzedChars  string   `json:"hl.maxAnalyzedChars,omitempty"`
+	HlMultiTermQuery    string   `json:"hl.multiTermQuery,omitempty"`
+	HlTagPre            string   `json:"hl.tag.pre,omitempty"`
+	HlTagPost           string   `json:"hl.tag.post,omitempty"`
 }
 
 type solrRequestSubFacet struct {
@@ -96,6 +111,8 @@ type solrResponseDocuments struct {
 	Docs     []solrDocument `json:"docs,omitempty"`
 }
 
+type solrResponseHighlighting map[string]map[string][]string
+
 type solrError struct {
 	Metadata []string `json:"metadata,omitempty"`
 	Msg      string   `json:"msg,omitempty"`
@@ -106,6 +123,7 @@ type solrError struct {
 type solrResponse struct {
 	ResponseHeader solrResponseHeader           `json:"responseHeader,omitempty"`
 	Response       solrResponseDocuments        `json:"response,omitempty"`
+	Highlighting   solrResponseHighlighting     `json:"highlighting,omitempty"`
 	Debug          interface{}                  `json:"debug,omitempty"`
 	FacetsRaw      map[string]interface{}       `json:"facets,omitempty"`
 	Facets         map[string]solrResponseFacet // will be parsed from FacetsRaw

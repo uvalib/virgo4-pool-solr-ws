@@ -17,6 +17,7 @@ type clientOpts struct {
 	debug    bool // controls whether debug info is added to pool results
 	verbose  bool // controls whether verbose Solr requests/responses are logged
 	citation bool // controls whether fields are output for client display or citation export
+	snippets bool // controls whether search results are augmented with highlighted search snippets
 }
 
 type clientContext struct {
@@ -93,6 +94,7 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 	c.opts.citation = boolOptionWithFallback(ctx.Query("citation"), false)
+	c.opts.snippets = boolOptionWithFallback(ctx.Query("snippets"), true)
 }
 
 func (c *clientContext) logRequest() {

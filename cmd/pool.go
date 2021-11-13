@@ -354,7 +354,6 @@ func (p *poolContext) validateConfig() {
 			log.Printf("[VALIDATE] missing related image section")
 			invalid = true
 		} else {
-			solrFields.requireValue(p.config.Local.Related.Image.IDField, "iiif id field")
 			solrFields.requireValue(p.config.Local.Related.Image.IIIFManifestField, "iiif manifest field")
 			solrFields.requireValue(p.config.Local.Related.Image.IIIFImageField, "iiif image field")
 		}
@@ -575,7 +574,6 @@ func (p *poolContext) validateConfig() {
 
 				miscValues.requireValue(field.CustomConfig.MusicPool, "%s section music pool")
 
-				solrFields.requireValue(field.CustomConfig.IDField, fmt.Sprintf("%s section id field", field.Name))
 				solrFields.requireValue(field.CustomConfig.TitleField, fmt.Sprintf("%s section title field", field.Name))
 				solrFields.requireValue(field.CustomConfig.PoolField, fmt.Sprintf("%s section pool field", field.Name))
 
@@ -593,8 +591,6 @@ func (p *poolContext) validateConfig() {
 
 			case "digital_content_url":
 				field.CustomConfig.handler = getCustomFieldDigitalContentURL
-
-				solrFields.requireValue(field.CustomConfig.IDField, fmt.Sprintf("%s section id field", field.Name))
 
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Host, "digital content template host")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
@@ -638,7 +634,6 @@ func (p *poolContext) validateConfig() {
 			case "sirsi_url":
 				field.CustomConfig.handler = getCustomFieldSirsiURL
 
-				solrFields.requireValue(field.CustomConfig.IDField, fmt.Sprintf("%s section id field", field.Name))
 				miscValues.requireValue(field.CustomConfig.IDPrefix, fmt.Sprintf("%s section id prefix", field.Name))
 
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Host, "sirsi template host")

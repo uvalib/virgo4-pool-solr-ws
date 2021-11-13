@@ -728,7 +728,7 @@ func getCustomFieldCreator(s *searchContext, rc *recordContext) []v4api.RecordFi
 func getCustomFieldDigitalContentURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if url := s.getDigitalContentURL(rc.doc, rc.fieldCtx.config.CustomConfig.IDField); url != "" {
+	if url := s.getDigitalContentURL(rc.doc, s.pool.config.Local.Solr.IdentifierField); url != "" {
 		rc.fieldCtx.field.Value = url
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -833,7 +833,7 @@ func getCustomFieldSirsiURL(s *searchContext, rc *recordContext) []v4api.RecordF
 	var fv []v4api.RecordField
 
 	if rc.isSirsi == true {
-		idValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.IDField)
+		idValue := s.getSolrIdentifierFieldValue(rc.doc)
 		idPrefix := rc.fieldCtx.config.CustomConfig.IDPrefix
 
 		if strings.HasPrefix(idValue, idPrefix) {

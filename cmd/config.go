@@ -122,6 +122,19 @@ type poolConfigSolrParams struct {
 	Fl       []string `json:"fl,omitempty"`
 }
 
+type poolConfigSolrHighlighting struct {
+	Method            string   `json:"method,omitempty"`
+	Fl                []string `json:"fl,omitempty"`
+	Snippets          string   `json:"snippets,omitempty"`
+	Fragsize          string   `json:"fragsize,omitempty"`
+	FragsizeIsMinimum string   `json:"fragsizeIsMinimum,omitempty"`
+	FragAlignRatio    string   `json:"fragAlignRatio,omitempty"`
+	MaxAnalyzedChars  string   `json:"maxAnalyzedChars,omitempty"`
+	MultiTermQuery    string   `json:"multiTermQuery,omitempty"`
+	TagPre            string   `json:"tag.pre,omitempty"`
+	TagPost           string   `json:"tag.post,omitempty"`
+}
+
 type poolConfigSolrClients struct {
 	Service     poolConfigHTTPClient `json:"service,omitempty"`
 	HealthCheck poolConfigHTTPClient `json:"healthcheck,omitempty"`
@@ -133,15 +146,17 @@ type poolConfigAuthorFields struct {
 }
 
 type poolConfigSolr struct {
-	Host                    string                `json:"host,omitempty"`
-	Core                    string                `json:"core,omitempty"`
-	Clients                 poolConfigSolrClients `json:"clients,omitempty"`
-	Params                  poolConfigSolrParams  `json:"params,omitempty"`
-	GroupField              string                `json:"group_field,omitempty"`
-	RelevanceIntraGroupSort poolConfigSort        `json:"relevance_intra_group_sort,omitempty"`
-	ExactMatchTitleField    string                `json:"exact_match_title_field,omitempty"`
-	ScoreThresholdMedium    float32               `json:"score_threshold_medium,omitempty"`
-	ScoreThresholdHigh      float32               `json:"score_threshold_high,omitempty"`
+	Host                    string                     `json:"host,omitempty"`
+	Core                    string                     `json:"core,omitempty"`
+	Clients                 poolConfigSolrClients      `json:"clients,omitempty"`
+	Params                  poolConfigSolrParams       `json:"params,omitempty"`
+	Highlighting            poolConfigSolrHighlighting `json:"highlighting,omitempty"`
+	IdentifierField         string                     `json:"identifier_field,omitempty"`
+	GroupField              string                     `json:"group_field,omitempty"`
+	RelevanceIntraGroupSort poolConfigSort             `json:"relevance_intra_group_sort,omitempty"`
+	ExactMatchTitleField    string                     `json:"exact_match_title_field,omitempty"`
+	ScoreThresholdMedium    float32                    `json:"score_threshold_medium,omitempty"`
+	ScoreThresholdHigh      float32                    `json:"score_threshold_high,omitempty"`
 }
 
 type poolConfigFieldProperties struct {
@@ -163,7 +178,6 @@ type poolConfigFieldCustomConfig struct {
 	AlternateField   string                      `json:"alternate_field,omitempty"` // field names
 	EditionField     string                      `json:"edition_field,omitempty"`
 	FormatField      string                      `json:"format_field,omitempty"`
-	IDField          string                      `json:"id_field,omitempty"`
 	ISBNField        string                      `json:"isbn_field,omitempty"`
 	ISSNField        string                      `json:"issn_field,omitempty"`
 	LCCNField        string                      `json:"lccn_field,omitempty"`
@@ -280,7 +294,6 @@ type poolConfigProvider struct {
 }
 
 type poolConfigRelatedImage struct {
-	IDField           string `json:"id_field,omitempty"`
 	IIIFManifestField string `json:"iiif_manifest_field,omitempty"`
 	IIIFImageField    string `json:"iiif_image_field,omitempty"`
 }
