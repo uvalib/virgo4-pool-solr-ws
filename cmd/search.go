@@ -1027,6 +1027,7 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 
 		for _, doc := range r.solr.res.Response.Docs {
 			rr := v4api.RelatedRecord{
+				ID:              s.getSolrIdentifierFieldValue(&doc),
 				IIIFManifestURL: doc.getFirstString(s.pool.config.Local.Related.Image.IIIFManifestField),
 				IIIFImageURL:    doc.getFirstString(s.pool.config.Local.Related.Image.IIIFImageField),
 			}
