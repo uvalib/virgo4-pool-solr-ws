@@ -172,6 +172,7 @@ type poolConfigFieldComparison struct {
 	Field    string     `json:"field,omitempty"`
 	Contains [][]string `json:"contains,omitempty"`
 	Matches  [][]string `json:"matches,omitempty"`
+	Value    string     `json:"value,omitempty"`
 }
 
 type poolConfigFieldCustomConfig struct {

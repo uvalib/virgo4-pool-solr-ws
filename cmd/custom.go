@@ -38,20 +38,28 @@ func (s *searchContext) getCitationFormat(formats []string) string {
 	return s.pool.config.Global.CitationFormats[best].Format
 }
 
+func (s *searchContext) compareField(doc *solrDocument, field poolConfigFieldComparison) bool {
+	fieldValues := doc.getStrings(field.Field)
+
+	for _, values := range field.Contains {
+		if sliceContainsAllValuesFromSlice(fieldValues, values, true) == true {
+			return true
+		}
+	}
+
+	for _, values := range field.Matches {
+		if slicesAreEqual(fieldValues, values, true) == true {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *searchContext) compareFields(doc *solrDocument, fields []poolConfigFieldComparison) bool {
 	for _, field := range fields {
-		fieldValues := doc.getStrings(field.Field)
-
-		for _, values := range field.Contains {
-			if sliceContainsAllValuesFromSlice(fieldValues, values, true) == true {
-				return true
-			}
-		}
-
-		for _, values := range field.Matches {
-			if slicesAreEqual(fieldValues, values, true) == true {
-				return true
-			}
+		if s.compareField(doc, field) == true {
+			return true
 		}
 	}
 
@@ -848,12 +856,14 @@ func getCustomFieldSirsiURL(s *searchContext, rc *recordContext) []v4api.RecordF
 	return fv
 }
 
-func getCustomFieldSpecialCollectionsNote(s *searchContext, rc *recordContext) []v4api.RecordField {
+func getCustomFieldLibraryAvailabilityNote(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
-		rc.fieldCtx.field.Value = rc.fieldCtx.config.Value
-		fv = append(fv, rc.fieldCtx.field)
+	for _, comp := range rc.fieldCtx.config.CustomConfig.ComparisonFields {
+		if s.compareField(rc.doc, comp) == true {
+			rc.fieldCtx.field.Value = comp.Value
+			fv = append(fv, rc.fieldCtx.field)
+		}
 	}
 
 	return fv

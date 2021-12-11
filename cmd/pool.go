@@ -601,6 +601,13 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomConfig.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
 
+			case "library_availability_note":
+				field.CustomConfig.handler = getCustomFieldLibraryAvailabilityNote
+
+				for k, f := range field.CustomConfig.ComparisonFields {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
+				}
+
 			case "online_related":
 				field.CustomConfig.handler = getCustomFieldOnlineRelated
 
@@ -639,13 +646,6 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Host, "sirsi template host")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Path, "sirsi template path")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.Sirsi.Pattern, "sirsi template pattern")
-
-			case "special_collections_note":
-				field.CustomConfig.handler = getCustomFieldSpecialCollectionsNote
-
-				for k, f := range field.CustomConfig.ComparisonFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
-				}
 
 			case "subject_summary":
 				field.CustomConfig.handler = getCustomFieldSubjectSummary
