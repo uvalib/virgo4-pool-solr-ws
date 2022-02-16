@@ -218,8 +218,9 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 			itemLabel = strings.TrimSpace(labelValues[i])
 		}
 
-		// if not using labels, or this label is not defined, fall back to generic item label
-		if itemLabel == "" {
+		// if not using supplied labels, or this supplied label is blank, fall back to generic item label
+		// (but only if there are multiple urls that would be distinguished by such labels)
+		if itemLabel == "" && len(urlValues) > 1 {
 			itemLabel = fmt.Sprintf("%s %d", s.client.localize(cfg.DefaultItemXID), i+1)
 		}
 
