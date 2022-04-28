@@ -102,3 +102,9 @@ func (s *searchContext) getDigitalContentURL(doc *solrDocument, idField string) 
 
 	return getGenericURL(s.pool.config.Global.Service.URLTemplates.DigitalContent, id)
 }
+
+func (s *searchContext) getShelfBrowseURL(doc *solrDocument, idField string) string {
+	id := doc.getFirstString(idField)
+
+	return getGenericURL(s.pool.config.Global.Service.URLTemplates.ShelfBrowse, id)
+}

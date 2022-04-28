@@ -24,6 +24,7 @@ type poolConfigURLTemplates struct {
 	Sirsi          poolConfigURLTemplate `json:"sirsi,omitempty"`
 	CoverImages    poolConfigURLTemplate `json:"cover_images,omitempty"`
 	DigitalContent poolConfigURLTemplate `json:"digital_content,omitempty"`
+	ShelfBrowse    poolConfigURLTemplate `json:"shelf_browse,omitempty"`
 }
 
 type poolConfigPublisher struct {

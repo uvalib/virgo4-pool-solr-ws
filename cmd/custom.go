@@ -56,14 +56,22 @@ func (s *searchContext) compareField(doc *solrDocument, field poolConfigFieldCom
 	return false
 }
 
-func (s *searchContext) compareFields(doc *solrDocument, fields []poolConfigFieldComparison) bool {
+func (s *searchContext) compareFields(doc *solrDocument, fields []poolConfigFieldComparison, op bool) bool {
 	for _, field := range fields {
-		if s.compareField(doc, field) == true {
-			return true
+		if s.compareField(doc, field) == op {
+			return op
 		}
 	}
 
-	return false
+	return !op
+}
+
+func (s *searchContext) compareFieldsOr(doc *solrDocument, fields []poolConfigFieldComparison) bool {
+	return s.compareFields(doc, fields, true)
+}
+
+func (s *searchContext) compareFieldsAnd(doc *solrDocument, fields []poolConfigFieldComparison) bool {
+	return s.compareFields(doc, fields, false)
 }
 
 func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
@@ -375,6 +383,21 @@ func getCustomFieldAbstract(s *searchContext, rc *recordContext) []v4api.RecordF
 	return fv
 }
 
+func getCustomFieldAccessURL(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	if rc.anonOnline == false && rc.authOnline == false {
+		// this item is not available online per solr... but maybe we hold electronic subscriptions?
+		return getCustomFieldAccessURLSerialsSolutions(s, rc)
+	}
+
+	rc.fieldCtx.field.Provider = rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.ProviderField)
+
+	fv = s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomConfig)
+
+	return fv
+}
+
 func getCustomFieldAccessURLSerialsSolutions(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
@@ -444,21 +467,6 @@ func getCustomFieldAccessURLSerialsSolutions(s *searchContext, rc *recordContext
 			}
 		}
 	}
-
-	return fv
-}
-
-func getCustomFieldAccessURL(s *searchContext, rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	if rc.anonOnline == false && rc.authOnline == false {
-		// this item is not available online per solr... but maybe we hold electronic subscriptions?
-		return getCustomFieldAccessURLSerialsSolutions(s, rc)
-	}
-
-	rc.fieldCtx.field.Provider = rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.ProviderField)
-
-	fv = s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomConfig)
 
 	return fv
 }
@@ -583,7 +591,7 @@ func getCustomFieldCitationFormat(s *searchContext, rc *recordContext) []v4api.R
 func getCustomFieldCitationIsOnlineOnly(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+	if s.compareFieldsOr(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
 		rc.fieldCtx.field.Value = "true"
 	} else {
 		rc.fieldCtx.field.Value = "false"
@@ -597,7 +605,7 @@ func getCustomFieldCitationIsOnlineOnly(s *searchContext, rc *recordContext) []v
 func getCustomFieldCitationIsVirgoURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFields(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+	if s.compareFieldsOr(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
 		rc.fieldCtx.field.Value = "true"
 	} else {
 		rc.fieldCtx.field.Value = "false"
@@ -762,6 +770,19 @@ func getCustomFieldLanguage(s *searchContext, rc *recordContext) []v4api.RecordF
 	return fv
 }
 
+func getCustomFieldLibraryAvailabilityNote(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	for _, comp := range rc.fieldCtx.config.CustomConfig.ComparisonFields {
+		if s.compareField(rc.doc, comp) == true {
+			rc.fieldCtx.field.Value = comp.Value
+			fv = append(fv, rc.fieldCtx.field)
+		}
+	}
+
+	return fv
+}
+
 func getCustomFieldOnlineRelated(s *searchContext, rc *recordContext) []v4api.RecordField {
 	return s.getLabelledURLs(rc.fieldCtx.field, rc.doc, rc.fieldCtx.config.CustomConfig)
 }
@@ -838,6 +859,23 @@ func getCustomFieldResponsibilityStatement(s *searchContext, rc *recordContext) 
 	return fv
 }
 
+func getCustomFieldShelfBrowseURL(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	// we are checking for the absence of solr values by abusing limitations of the comparison field structure,
+	// so a "match" here means this item is NOT part of the shelf browse list
+	if s.compareFieldsAnd(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+		return fv
+	}
+
+	if url := s.getShelfBrowseURL(rc.doc, s.pool.config.Local.Solr.IdentifierField); url != "" {
+		rc.fieldCtx.field.Value = url
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
 func getCustomFieldSirsiURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
@@ -851,19 +889,6 @@ func getCustomFieldSirsiURL(s *searchContext, rc *recordContext) []v4api.RecordF
 				rc.fieldCtx.field.Value = url
 				fv = append(fv, rc.fieldCtx.field)
 			}
-		}
-	}
-
-	return fv
-}
-
-func getCustomFieldLibraryAvailabilityNote(s *searchContext, rc *recordContext) []v4api.RecordField {
-	var fv []v4api.RecordField
-
-	for _, comp := range rc.fieldCtx.config.CustomConfig.ComparisonFields {
-		if s.compareField(rc.doc, comp) == true {
-			rc.fieldCtx.field.Value = comp.Value
-			fv = append(fv, rc.fieldCtx.field)
 		}
 	}
 

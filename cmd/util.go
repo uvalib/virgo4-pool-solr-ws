@@ -58,7 +58,11 @@ func sliceContainsAnyValueFromSlice(haystack []string, needles []string, insensi
 }
 
 func sliceContainsAllValuesFromSlice(haystack []string, needles []string, insensitive bool) bool {
-	if len(haystack) == 0 || len(needles) == 0 {
+	if len(needles) == 0 {
+		return true
+	}
+
+	if len(haystack) == 0 {
 		return false
 	}
 
@@ -72,11 +76,11 @@ func sliceContainsAllValuesFromSlice(haystack []string, needles []string, insens
 }
 
 func slicesAreEqual(haystack []string, needles []string, insensitive bool) bool {
-	if sliceContainsAllValuesFromSlice(haystack, needles, insensitive) == false {
+	if len(haystack) != len(needles) {
 		return false
 	}
 
-	if len(haystack) != len(needles) {
+	if sliceContainsAllValuesFromSlice(haystack, needles, insensitive) == false {
 		return false
 	}
 

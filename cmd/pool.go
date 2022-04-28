@@ -638,6 +638,13 @@ func (p *poolContext) validateConfig() {
 			case "responsibility_statement":
 				field.CustomConfig.handler = getCustomFieldResponsibilityStatement
 
+			case "shelf_browse_url":
+				field.CustomConfig.handler = getCustomFieldShelfBrowseURL
+
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.ShelfBrowse.Host, "shelf browse template host")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.ShelfBrowse.Path, "shelf browse template path")
+				miscValues.requireValue(p.config.Global.Service.URLTemplates.ShelfBrowse.Pattern, "shelf browse template pattern")
+
 			case "sirsi_url":
 				field.CustomConfig.handler = getCustomFieldSirsiURL
 
