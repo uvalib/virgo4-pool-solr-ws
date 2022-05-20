@@ -236,6 +236,8 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 		if s.itemDetails == true {
 			f.Visibility = "detailed"
+		} else {
+			f.Display = fieldCfg.Properties.SearchDisplay
 		}
 
 		rc.fieldCtx = fieldContext{config: fieldCfg, field: f}

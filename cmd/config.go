@@ -161,12 +161,13 @@ type poolConfigSolr struct {
 }
 
 type poolConfigFieldProperties struct {
-	Type         string `json:"type,omitempty"`
-	Separator    string `json:"separator,omitempty"`
-	Display      string `json:"display,omitempty"`
-	Visibility   string `json:"visibility,omitempty"`
-	Provider     string `json:"provider,omitempty"`
-	CitationPart string `json:"citation_part,omitempty"`
+	Type          string `json:"type,omitempty"`
+	Separator     string `json:"separator,omitempty"`
+	Display       string `json:"display,omitempty"`
+	Visibility    string `json:"visibility,omitempty"`
+	Provider      string `json:"provider,omitempty"`
+	CitationPart  string `json:"citation_part,omitempty"`
+	SearchDisplay string `json:"search_display,omitempty"`
 }
 
 type poolConfigFieldComparison struct {
