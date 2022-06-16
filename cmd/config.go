@@ -179,6 +179,7 @@ type poolConfigFieldComparison struct {
 
 type poolConfigFieldCustomConfig struct {
 	AlternateField   string                      `json:"alternate_field,omitempty"` // field names
+	CallNumberField  string                      `json:"call_number_field,omitempty"`
 	EditionField     string                      `json:"edition_field,omitempty"`
 	FormatField      string                      `json:"format_field,omitempty"`
 	ISBNField        string                      `json:"isbn_field,omitempty"`
@@ -217,7 +218,6 @@ type poolConfigField struct {
 	DigitalContentOnly bool                         `json:"digital_content_only,omitempty"`
 	CitationOnly       bool                         `json:"citation_only,omitempty"`
 	Value              string                       `json:"value,omitempty"`
-	Custom             bool                         `json:"custom,omitempty"`        // if true, the Name drives custom handling
 	CustomConfig       *poolConfigFieldCustomConfig `json:"custom_config,omitempty"` // extra info for certain custom formats
 }
 

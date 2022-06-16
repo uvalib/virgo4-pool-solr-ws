@@ -753,6 +753,40 @@ func getCustomFieldDigitalContentURL(s *searchContext, rc *recordContext) []v4ap
 	return fv
 }
 
+func getCustomFieldExtentOfDigitization(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
+
+	// flag archival pool archival/manuscript records with digital content as partially digitized.
+	// some hardcoding acceptable here since this should eventually go into tracksys-enrich
+
+	if len(values) == 0 && rc.hasDigitalContent == true {
+		// has digital content, and not already marked as partially digitized...
+
+		pools := rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.PoolField)
+		if sliceContainsString(pools, "archival", true) == true {
+			// pool is archival...
+
+			callNumbers := rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.CallNumberField)
+			for _, callNumber := range callNumbers {
+				cn := strings.ToUpper(callNumber)
+				if strings.HasPrefix(cn, "MSS") || strings.HasPrefix(cn, "RG-") {
+					// call number has manuscript (MSS*) or archival (RG-*) prefix...
+					values = []string{"partial"}
+				}
+			}
+		}
+	}
+
+	for _, value := range values {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
+	}
+
+	return fv
+}
+
 func getCustomFieldLanguage(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 

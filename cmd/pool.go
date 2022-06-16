@@ -596,6 +596,12 @@ func (p *poolContext) validateConfig() {
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Path, "digital content template path")
 				miscValues.requireValue(p.config.Global.Service.URLTemplates.DigitalContent.Pattern, "digital content template pattern")
 
+			case "extent_of_digitization":
+				field.CustomConfig.handler = getCustomFieldExtentOfDigitization
+
+				solrFields.requireValue(field.CustomConfig.PoolField, fmt.Sprintf("%s section pool field", field.Name))
+				solrFields.requireValue(field.CustomConfig.CallNumberField, fmt.Sprintf("%s section call number field", field.Name))
+
 			case "language":
 				field.CustomConfig.handler = getCustomFieldLanguage
 
