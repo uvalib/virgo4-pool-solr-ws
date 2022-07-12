@@ -31,6 +31,9 @@ other = "Availability"
 [FieldAwardsNote]
 other = "Awards Note"
 
+[FieldBarcode]
+other = "Barcode"
+
 [FieldBiographicalNote]
 other = "Biographical Note"
 

@@ -31,6 +31,9 @@ other = "Disponibilidad"
 [FieldAwardsNote]
 other = "Nota de Premios"
 
+[FieldBarcode]
+other = "Código de Barras"
+
 [FieldBiographicalNote]
 other = "Nota Biográfica"
 
