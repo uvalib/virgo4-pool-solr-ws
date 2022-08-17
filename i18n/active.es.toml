@@ -448,6 +448,24 @@ other = "Permisos"
 [FilterPhotographer]
 other = "Fotógrafo"
 
+[FilterPredictedClassification]
+other = "Clasificación Prevista"
+
+[FilterPredictedFaceAge]
+other = "Edad Facial Prevista"
+
+[FilterPredictedFaceEmotion]
+other = "Emoción Facial Prevista"
+
+[FilterPredictedFaceGender]
+other = "Sexo Facial Previsto"
+
+[FilterPredictedFaceRace]
+other = "Raza Facial Prevista"
+
+[FilterPredictedObject]
+other = "Objeto Previsto"
+
 [FilterResourceType]
 other = "Tipo de Recurso"
 
