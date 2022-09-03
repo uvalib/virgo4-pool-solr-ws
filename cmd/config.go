@@ -37,8 +37,8 @@ type poolConfigPublisher struct {
 }
 
 type poolConfigRelator struct {
-	Code string `json:"code,omitempty"`
-	Term string `json:"term,omitempty"`
+	Code  string   `json:"code,omitempty"`
+	Terms []string `json:"terms,omitempty"`
 }
 
 type poolConfigRelators struct {

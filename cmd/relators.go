@@ -33,12 +33,12 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 	terms := []string{}
 
 	for _, term := range s.pool.config.Global.Relators.Map {
-		terms = append(terms, term.Term)
+		terms = append(terms, term.Terms...)
 	}
 
 	r := relationContext{
 		search:       s,
-		matchTermsRE: regexp.MustCompile(`([\s(]*)([^\s()]+)([\s)]*)`),
+		matchTermsRE: regexp.MustCompile(`\(([^()]+)\)`),
 		cleanTermsRE: regexp.MustCompile(`(?i)([\s]*\((` + strings.Join(terms, "|") + `)\)[\s]*)`),
 		cleanDatesRE: regexp.MustCompile(`([\s\[,]*)(\d{4}(-)?(\d{4})?)([\s\]]*)`),
 	}
@@ -47,7 +47,7 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 		codes := r.getRelatorCodes(entry)
 
 		switch {
-		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AuthorCodes, codes, true):
+		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AuthorCodes, codes, true) || len(codes) == 0:
 			r.addAuthor(entry)
 
 		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AdvisorCodes, codes, true):
@@ -74,19 +74,16 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 
 func (r *relationContext) getRelatorCodes(entry string) []string {
 	// find all matching relator terms and return their codes
+	// NOTE: this assumes name entries contain parenthesized relator terms, which is
+	//       the case if the preferred author solr field (author_facet_a) is populated.
 
 	var codes []string
 
 	terms := r.matchTermsRE.FindAllStringSubmatch(entry, -1)
 	for _, term := range terms {
-		if code := r.search.pool.maps.relatorCodes[term[2]]; code != "" {
+		if code := r.search.pool.maps.relatorCodes[strings.ToLower(term[1])]; code != "" {
 			codes = append(codes, code)
 		}
-	}
-
-	// no matches; assume author
-	if len(codes) == 0 {
-		codes = append(codes, "aut")
 	}
 
 	return codes

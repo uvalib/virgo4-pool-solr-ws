@@ -54,7 +54,7 @@ type poolMaps struct {
 	supportedFilters     map[string]*poolConfigFilter              // any filter this pool instance might support
 	preSearchFilters     map[string]*poolConfigFilter              // global pre-search filters (not restricted to this pool)
 	resourceTypeContexts map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
-	relatorTerms         map[string]string
+	relatorTerms         map[string][]string
 	relatorCodes         map[string]string
 	solrExternalValues   map[string]map[string]string
 	solrInternalValues   map[string]map[string]string
@@ -1169,20 +1169,22 @@ func (p *poolContext) initRelators() {
 	invalid := false
 
 	// relator maps
-	p.maps.relatorTerms = make(map[string]string)
+	p.maps.relatorTerms = make(map[string][]string)
 	p.maps.relatorCodes = make(map[string]string)
 
 	for i := range p.config.Global.Relators.Map {
 		r := &p.config.Global.Relators.Map[i]
 
-		if r.Code == "" || r.Term == "" {
-			log.Printf("[RELATORS] incomplete relator definition: code = [%s]  term = [%s]", r.Code, r.Term)
+		if r.Code == "" || len(r.Terms) == 0 {
+			log.Printf("[RELATORS] incomplete relator definition: code = [%s]  terms = [%v]", r.Code, r.Terms)
 			invalid = true
 			continue
 		}
 
-		p.maps.relatorTerms[r.Code] = r.Term
-		p.maps.relatorCodes[strings.ToLower(r.Term)] = r.Code
+		p.maps.relatorTerms[r.Code] = r.Terms
+		for _, term := range r.Terms {
+			p.maps.relatorCodes[strings.ToLower(term)] = r.Code
+		}
 	}
 
 	if invalid == true {
