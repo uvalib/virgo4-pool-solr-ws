@@ -535,9 +535,12 @@ func getCustomFieldAvailability(s *searchContext, rc *recordContext) []v4api.Rec
 func getCustomFieldCitationAdvisor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, value := range rc.relations.advisors.name {
-		rc.fieldCtx.field.Value = value
-		fv = append(fv, rc.fieldCtx.field)
+	// only want to include advisors for records NOT in the pre-defined list
+	if s.compareFieldsOr(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == false {
+		for _, value := range rc.relations.advisors.name {
+			rc.fieldCtx.field.Value = value
+			fv = append(fv, rc.fieldCtx.field)
+		}
 	}
 
 	return fv
