@@ -151,6 +151,8 @@ func (p *poolContext) initIdentity() {
 }
 
 func (p *poolContext) initProviders() {
+	invalid := false
+
 	for _, val := range p.config.Global.Providers {
 		provider := v4api.Provider{
 			Provider:    val.Name,
@@ -160,6 +162,27 @@ func (p *poolContext) initProviders() {
 		}
 
 		p.providers.Providers = append(p.providers.Providers, provider)
+	}
+
+	for i := range p.config.Global.Providers {
+		provider := &p.config.Global.Providers[i]
+
+		if provider.Pattern == "" {
+			continue
+		}
+
+		var err error
+
+		if provider.re, err = regexp.Compile(provider.Pattern); err != nil {
+			log.Printf("[INIT] pattern compilation error in provider entry %d (name: %s): %s", i, provider.Name, err.Error())
+			invalid = true
+			continue
+		}
+	}
+
+	if invalid == true {
+		log.Printf("[INIT] exiting due to error(s) above")
+		os.Exit(1)
 	}
 }
 

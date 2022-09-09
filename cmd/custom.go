@@ -215,6 +215,14 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 			}
 		}
 
+		// override any provider supplied by solr, if provider definition has a pattern that matches this url
+		for _, provider := range s.pool.config.Global.Providers {
+			if provider.re != nil && provider.re.MatchString(item) {
+				f.Provider = provider.Name
+				break
+			}
+		}
+
 		if proxify == true {
 			f.Value = cfg.ProxyPrefix + item
 		} else {

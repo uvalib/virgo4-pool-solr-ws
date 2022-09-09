@@ -607,6 +607,9 @@ other = "Library Catalog"
 [ProviderVIVADDA]
 other = "VIVA Demand Driven Acquisition"
 
+[ProviderVirginiaChronicle]
+other = "Virginia Chronicle"
+
 [ProviderVirgoClassic]
 other = "Virgo Classic"
 
