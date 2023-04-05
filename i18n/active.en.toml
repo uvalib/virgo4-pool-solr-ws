@@ -160,6 +160,9 @@ other = "Later Title"
 [FieldLibrary]
 other = "Library"
 
+[FieldLocalNote]
+other = "Local Notes"
+
 [FieldLocalNotes]
 other = "Local Notes"
 
