@@ -218,6 +218,7 @@ type poolConfigField struct {
 	DigitalContentOnly bool                         `json:"digital_content_only,omitempty"`
 	CitationOnly       bool                         `json:"citation_only,omitempty"`
 	Value              string                       `json:"value,omitempty"`
+	MinimalRole        string                       `json:"minimal_role,omitempty"`
 	CustomConfig       *poolConfigFieldCustomConfig `json:"custom_config,omitempty"` // extra info for certain custom formats
 }
 

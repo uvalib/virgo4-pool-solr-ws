@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/uvalib/virgo4-api/v4api"
+	"github.com/uvalib/virgo4-jwt/v4jwt"
 )
 
 type fieldContext struct {
@@ -216,6 +217,22 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 	// field loop
 
 	for _, fieldCfg := range *fieldCfgs {
+		if fieldCfg.MinimalRole != "" {
+			// check that the user token exists and contains a role
+			// at least as privileged as the minimal role specified
+
+			if s.client.claims == nil {
+				continue
+			}
+
+			minimalRole := v4jwt.RoleFromString(fieldCfg.MinimalRole)
+
+			if s.client.claims.Role < minimalRole {
+				s.log("user role %d (%v) is less than minimal role %d (%v); omitting field %v", int(s.client.claims.Role), s.client.claims.Role, int(minimalRole), minimalRole, fieldCfg.Name)
+				continue
+			}
+		}
+
 		if fieldCfg.OnShelfOnly == true && rc.isAvailableOnShelf == false {
 			continue
 		}

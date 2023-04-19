@@ -16,6 +16,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/uvalib/virgo4-api/v4api"
+	"github.com/uvalib/virgo4-jwt/v4jwt"
 	"golang.org/x/text/language"
 )
 
@@ -496,6 +497,18 @@ func (p *poolContext) validateConfig() {
 			messageIDs.addValue(field.XID)
 
 			miscValues.requireValue(field.Name, "name")
+
+			// verify any defined minimal role name is actually valid, since it's a free-form string
+			if field.MinimalRole != "" {
+				// sanity check: v4jwt currently defaults to "guest" for invalid role strings.
+				// so we convert the role back to string to ensure it matches the defined role.
+
+				minimalRole := v4jwt.RoleFromString(field.MinimalRole)
+				if minimalRole.String() != field.MinimalRole {
+					log.Printf("[VALIDATE] %s%s section minimal role value [%s] appears invalid; see v4jwt module for valid values%s", prefix, field.Name, field.MinimalRole, postfix)
+					invalid = true
+				}
+			}
 
 			// validate standard solr-mapped fields
 
