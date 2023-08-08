@@ -21,6 +21,8 @@ type virgoFlags struct {
 	globalFacetCache bool
 	firstRecordOnly  bool
 	includeSnippets  bool
+	includeVisible   bool
+	includeHidden    bool
 }
 
 type virgoDialog struct {
@@ -74,6 +76,8 @@ func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.pool = p
 	s.client = c
 	s.virgo.flags.groupResults = true
+	s.virgo.flags.includeVisible = true
+	s.virgo.flags.includeHidden = false
 	s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[s.pool.config.Global.ResourceTypes.DefaultContext]
 }
 
@@ -990,19 +994,9 @@ func (s *searchContext) handleFiltersRequest() searchResponse {
 	return searchResponse{status: http.StatusOK, data: s.virgo.facetsRes}
 }
 
-func (s *searchContext) handleRecordRequest() searchResponse {
-	s.virgo.endpoint = "resource"
-
-	// fill out Solr query directly, bypassing query syntax parser
-	s.virgo.solrQuery = fmt.Sprintf(`id:"%s"`, s.client.ginCtx.Param("id"))
-	s.virgo.flags.groupResults = false
-
-	// mark this as a resource request
-	s.itemDetails = true
-
-	// override these values from defaults.  specify two rows to catch
-	// the (impossible?) scenario of multiple records with the same id
-	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 2}
+func (s *searchContext) getVisibleRecord() searchResponse {
+	s.virgo.flags.includeVisible = true
+	s.virgo.flags.includeHidden = false
 
 	if resp := s.getRecordQueryResults(); resp.err != nil {
 		return resp
@@ -1039,6 +1033,62 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 	}
 
 	return searchResponse{status: http.StatusOK, data: s.virgo.recordRes}
+}
+
+func (s *searchContext) getHiddenRecord() searchResponse {
+	s.virgo.flags.includeVisible = false
+	s.virgo.flags.includeHidden = true
+
+	if resp := s.getRecordQueryResults(); resp.err != nil {
+		return resp
+	}
+
+	// got a record... is it redirectable?
+
+	var redirect v4api.Record
+
+	for _, field := range s.virgo.recordRes.Fields {
+		if field.Name == "redirect" {
+			redirect.Fields = append(redirect.Fields, field)
+		}
+	}
+
+	if len(redirect.Fields) > 0 {
+		return searchResponse{status: http.StatusOK, data: redirect}
+	}
+
+	return searchResponse{status: http.StatusNotFound, err: fmt.Errorf("record not found")}
+}
+
+func (s *searchContext) handleRecordRequest() searchResponse {
+	s.virgo.endpoint = "resource"
+
+	// fill out Solr query directly, bypassing query syntax parser
+	s.virgo.solrQuery = fmt.Sprintf(`id:"%s"`, s.client.ginCtx.Param("id"))
+	s.virgo.flags.groupResults = false
+
+	// mark this as a resource request
+	s.itemDetails = true
+
+	// override these values from defaults.  specify two rows to catch
+	// the (impossible?) scenario of multiple records with the same id
+	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 2}
+
+	// check for visible (normal) record first
+	visibleResp := s.getVisibleRecord()
+	if visibleResp.err == nil {
+		return visibleResp
+	}
+
+	// check for hidden (possibly redirectable) record last
+	hiddenResp := s.getHiddenRecord()
+	if hiddenResp.err == nil {
+		return hiddenResp
+	}
+
+	// if there was a problem with the hidden record search, return the visible search response
+
+	return visibleResp
 }
 
 func (s *searchContext) handlePingRequest() searchResponse {

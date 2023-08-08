@@ -197,18 +197,29 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 
 	// build fq based on global or pool context
 	fq := s.pool.config.Local.Solr.Params.GlobalFq
+
+	if s.virgo.flags.includeVisible == true {
+		fq = append(fq, s.pool.config.Local.Solr.Params.VisibleFq...)
+	}
+
+	if s.virgo.flags.includeHidden == true {
+		fq = append(fq, s.pool.config.Local.Solr.Params.HiddenFq...)
+	}
+
 	if s.virgo.flags.globalFacetCache == false {
 		fq = append(fq, s.pool.config.Local.Solr.Params.PoolFq...)
-	}
-	s.solr.req.json.Params.Fq = nonemptyValues(fq)
-
-	if s.virgo.req.Sort.SortID != "" {
-		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.definedSorts[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
 	if s.virgo.flags.groupResults == true && s.virgo.flags.requestFacets == false {
 		grouping := fmt.Sprintf("{!collapse field=%s}", s.pool.config.Local.Solr.GroupField)
-		s.solr.req.json.Params.Fq = append(s.solr.req.json.Params.Fq, grouping)
+		fq = append(fq, grouping)
+	}
+
+	s.solr.req.json.Params.Fq = nonemptyValues(fq)
+
+	// set sort options
+	if s.virgo.req.Sort.SortID != "" {
+		s.solr.req.json.Params.Sort = fmt.Sprintf("%s %s", s.pool.maps.definedSorts[s.virgo.req.Sort.SortID].Field, s.virgo.req.Sort.Order)
 	}
 
 	// add facets/filters

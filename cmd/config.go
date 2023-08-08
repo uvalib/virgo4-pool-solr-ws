@@ -116,11 +116,13 @@ type poolConfigService struct {
 }
 
 type poolConfigSolrParams struct {
-	Qt       string   `json:"qt,omitempty"`
-	DefType  string   `json:"deftype,omitempty"`
-	GlobalFq []string `json:"global_fq,omitempty"` // global filter queries should go here
-	PoolFq   []string `json:"pool_fq,omitempty"`   // pool definition should go here
-	Fl       []string `json:"fl,omitempty"`
+	Qt        string   `json:"qt,omitempty"`
+	DefType   string   `json:"deftype,omitempty"`
+	GlobalFq  []string `json:"global_fq,omitempty"`  // global filter queries should go here
+	VisibleFq []string `json:"visible_fq,omitempty"` // visible record filter queries should go here
+	HiddenFq  []string `json:"hidden_fq,omitempty"`  // hidden record filter queries should go here
+	PoolFq    []string `json:"pool_fq,omitempty"`    // pool definition should go here
+	Fl        []string `json:"fl,omitempty"`
 }
 
 type poolConfigSolrHighlighting struct {
