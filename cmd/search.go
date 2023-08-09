@@ -1085,17 +1085,21 @@ func (s *searchContext) getRedirectRecord() (*v4api.Record, error) {
 		return nil, fmt.Errorf("hidden record missing redirect url field")
 	}
 
-	var redirect v4api.Record
+	var record v4api.Record
 
-	field := v4api.RecordField{
+	record.Fields = append(record.Fields, v4api.RecordField{
+		Name:  "identifier",
+		Type:  "identifier",
+		Value: s.getSolrIdentifierFieldValue(s.solr.res.meta.firstDoc),
+	})
+
+	record.Fields = append(record.Fields, v4api.RecordField{
 		Name:  "redirect",
 		Type:  "redirect",
 		Value: url,
-	}
+	})
 
-	redirect.Fields = append(redirect.Fields, field)
-
-	return &redirect, nil
+	return &record, nil
 }
 
 func (s *searchContext) getHiddenRecord() searchResponse {
