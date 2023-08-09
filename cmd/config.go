@@ -115,14 +115,18 @@ type poolConfigService struct {
 	SerialsSolutions poolConfigHTTPClient   `json:"serials_solutions,omitempty"`
 }
 
+type poolConfigSolrParamsFq struct {
+	Global  []string `json:"global,omitempty"`  // global filter queries should go here
+	Pool    []string `json:"pool,omitempty"`    // pool definition should go here
+	Visible []string `json:"visible,omitempty"` // visible record filter queries should go here
+	Hidden  []string `json:"hidden,omitempty"`  // hidden record filter queries should go here
+}
+
 type poolConfigSolrParams struct {
-	Qt        string   `json:"qt,omitempty"`
-	DefType   string   `json:"deftype,omitempty"`
-	GlobalFq  []string `json:"global_fq,omitempty"`  // global filter queries should go here
-	VisibleFq []string `json:"visible_fq,omitempty"` // visible record filter queries should go here
-	HiddenFq  []string `json:"hidden_fq,omitempty"`  // hidden record filter queries should go here
-	PoolFq    []string `json:"pool_fq,omitempty"`    // pool definition should go here
-	Fl        []string `json:"fl,omitempty"`
+	Qt      string                 `json:"qt,omitempty"`
+	DefType string                 `json:"deftype,omitempty"`
+	Fq      poolConfigSolrParamsFq `json:"fq,omitempty"`
+	Fl      []string               `json:"fl,omitempty"`
 }
 
 type poolConfigSolrHighlighting struct {
@@ -156,6 +160,7 @@ type poolConfigSolr struct {
 	Highlighting            poolConfigSolrHighlighting `json:"highlighting,omitempty"`
 	IdentifierField         string                     `json:"identifier_field,omitempty"`
 	GroupField              string                     `json:"group_field,omitempty"`
+	RedirectField           string                     `json:"redirect_field,omitempty"`
 	RelevanceIntraGroupSort poolConfigSort             `json:"relevance_intra_group_sort,omitempty"`
 	ExactMatchTitleField    string                     `json:"exact_match_title_field,omitempty"`
 	ScoreThresholdMedium    float32                    `json:"score_threshold_medium,omitempty"`

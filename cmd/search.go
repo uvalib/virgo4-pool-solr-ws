@@ -930,16 +930,54 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 	// group or not based on sort being applied
 	s.virgo.flags.groupResults = s.pool.maps.definedSorts[s.virgo.req.Sort.SortID].GroupResults
 
-	if resp := s.performSearchRequest(); resp.err != nil {
-		errData = v4api.PoolResult{StatusCode: resp.status, StatusMessage: resp.err.Error()}
-		resp.data = errData
-		return resp
+	// check for visible records first (note that zero results is considered successful)
+	visibleResp := s.performSearchRequest()
+	if visibleResp.err == nil {
+		// fill out the rest of the visible record search results, we may need it later if there were no results
+		s.virgo.poolRes.FacetList = []v4api.Facet{}
+		s.virgo.poolRes.StatusCode = http.StatusOK
+
+		visibleResp = searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
+
+		// if there were results, return them
+		if s.virgo.poolRes.Pagination.Total > 0 {
+			return searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
+		}
+	} else {
+		// fill out the rest of the visible record search error, we may need it later
+		errData = v4api.PoolResult{StatusCode: visibleResp.status, StatusMessage: visibleResp.err.Error()}
+		visibleResp.data = errData
 	}
 
-	s.virgo.poolRes.FacetList = []v4api.Facet{}
-	s.virgo.poolRes.StatusCode = http.StatusOK
+	// if this is a search for a single identifier, then if configured, check for a hidden (possibly redirectable) record
+	if s.virgo.parserInfo.isSingleIdentifierSearch && s.pool.config.Local.Solr.RedirectField != "" {
+		s.virgo.flags.includeVisible = false
+		s.virgo.flags.includeHidden = true
 
-	return searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
+		hiddenResp := s.performSearchRequest()
+		if hiddenResp.err == nil && s.virgo.poolRes.Pagination.Total == 1 {
+
+			// got a single hidden record... is it redirectable?
+
+			redirect, err := s.getRedirectRecord()
+			if err != nil {
+				s.log("error creating redirect record: [%s]", err.Error())
+				return visibleResp
+			}
+
+			var group v4api.Group
+			group.Records = append(group.Records, *redirect)
+
+			s.virgo.poolRes.Groups = []v4api.Group{group}
+			s.virgo.poolRes.FacetList = []v4api.Facet{}
+			s.virgo.poolRes.StatusCode = http.StatusOK
+			return searchResponse{status: http.StatusOK, data: s.virgo.poolRes}
+		}
+	}
+
+	// fall back to whatever the visible record search returned
+
+	return visibleResp
 }
 
 func (s *searchContext) handleFacetsRequest() searchResponse {
@@ -1035,6 +1073,29 @@ func (s *searchContext) getVisibleRecord() searchResponse {
 	return searchResponse{status: http.StatusOK, data: s.virgo.recordRes}
 }
 
+func (s *searchContext) getRedirectRecord() (*v4api.Record, error) {
+	if s.pool.config.Local.Solr.RedirectField == "" {
+		return nil, fmt.Errorf("hidden record redirects disabled")
+	}
+
+	url := s.solr.res.meta.firstDoc.getFirstString(s.pool.config.Local.Solr.RedirectField)
+	if url == "" {
+		return nil, fmt.Errorf("hidden record missing redirect url field")
+	}
+
+	var redirect v4api.Record
+
+	field := v4api.RecordField{
+		Name:  "redirect",
+		Type:  "redirect",
+		Value: url,
+	}
+
+	redirect.Fields = append(redirect.Fields, field)
+
+	return &redirect, nil
+}
+
 func (s *searchContext) getHiddenRecord() searchResponse {
 	s.virgo.flags.includeVisible = false
 	s.virgo.flags.includeHidden = true
@@ -1043,21 +1104,15 @@ func (s *searchContext) getHiddenRecord() searchResponse {
 		return resp
 	}
 
-	// got a record... is it redirectable?
+	// got a hidden record... is it redirectable?
 
-	var redirect v4api.Record
-
-	for _, field := range s.virgo.recordRes.Fields {
-		if field.Name == "redirect" {
-			redirect.Fields = append(redirect.Fields, field)
-		}
+	redirect, err := s.getRedirectRecord()
+	if err != nil {
+		s.log("error creating redirect record: [%s]", err.Error())
+		return searchResponse{status: http.StatusNotFound, err: fmt.Errorf("record not found")}
 	}
 
-	if len(redirect.Fields) > 0 {
-		return searchResponse{status: http.StatusOK, data: redirect}
-	}
-
-	return searchResponse{status: http.StatusNotFound, err: fmt.Errorf("record not found")}
+	return searchResponse{status: http.StatusOK, data: redirect}
 }
 
 func (s *searchContext) handleRecordRequest() searchResponse {
@@ -1080,13 +1135,15 @@ func (s *searchContext) handleRecordRequest() searchResponse {
 		return visibleResp
 	}
 
-	// check for hidden (possibly redirectable) record last
-	hiddenResp := s.getHiddenRecord()
-	if hiddenResp.err == nil {
-		return hiddenResp
+	// if configured, check for hidden (possibly redirectable) record
+	if s.pool.config.Local.Solr.RedirectField != "" {
+		hiddenResp := s.getHiddenRecord()
+		if hiddenResp.err == nil {
+			return hiddenResp
+		}
 	}
 
-	// if there was a problem with the hidden record search, return the visible search response
+	// fall back to whatever the visible record lookup returned
 
 	return visibleResp
 }

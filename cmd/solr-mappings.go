@@ -196,18 +196,18 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 	s.solr.req.json.Params.Rows = restrictValue("rows", s.virgo.req.Pagination.Rows, 0, 0)
 
 	// build fq based on global or pool context
-	fq := s.pool.config.Local.Solr.Params.GlobalFq
+	fq := s.pool.config.Local.Solr.Params.Fq.Global
 
 	if s.virgo.flags.includeVisible == true {
-		fq = append(fq, s.pool.config.Local.Solr.Params.VisibleFq...)
+		fq = append(fq, s.pool.config.Local.Solr.Params.Fq.Visible...)
 	}
 
 	if s.virgo.flags.includeHidden == true {
-		fq = append(fq, s.pool.config.Local.Solr.Params.HiddenFq...)
+		fq = append(fq, s.pool.config.Local.Solr.Params.Fq.Hidden...)
 	}
 
 	if s.virgo.flags.globalFacetCache == false {
-		fq = append(fq, s.pool.config.Local.Solr.Params.PoolFq...)
+		fq = append(fq, s.pool.config.Local.Solr.Params.Fq.Pool...)
 	}
 
 	if s.virgo.flags.groupResults == true && s.virgo.flags.requestFacets == false {

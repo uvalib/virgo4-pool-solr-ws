@@ -10,11 +10,13 @@ type solrParserInfo struct {
 	// convenience flags based on parser results
 	isSingleTitleSearch        bool
 	isSingleKeywordSearch      bool
+	isSingleIdentifierSearch   bool
 	isFulltextSearch           bool
 	containsUnsupportedFilters bool
 	titles                     []string
 	keywords                   []string
 	fulltexts                  []string
+	identifiers                []string
 }
 
 type solrRequestParams struct {

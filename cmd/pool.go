@@ -357,7 +357,7 @@ func (p *poolContext) validateConfig() {
 	miscValues.requireValue(p.config.Local.Solr.Params.Qt, "solr param qt")
 	miscValues.requireValue(p.config.Local.Solr.Params.DefType, "solr param deftype")
 
-	if len(p.config.Local.Solr.Params.PoolFq) == 0 {
+	if len(p.config.Local.Solr.Params.Fq.Pool) == 0 {
 		log.Printf("[VALIDATE] solr param pool fq is empty")
 		invalid = true
 	}
