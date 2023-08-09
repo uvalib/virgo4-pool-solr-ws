@@ -965,8 +965,10 @@ func (s *searchContext) handleSearchRequest() searchResponse {
 				return visibleResp
 			}
 
-			var group v4api.Group
-			group.Records = append(group.Records, *redirect)
+			group := v4api.Group{
+				Records: []v4api.Record{*redirect},
+				Count:   1,
+			}
 
 			s.virgo.poolRes.Groups = []v4api.Group{group}
 			s.virgo.poolRes.FacetList = []v4api.Facet{}
