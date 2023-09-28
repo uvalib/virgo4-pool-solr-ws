@@ -565,9 +565,6 @@ other = "Artstor"
 [ProviderAvalon]
 other = "Avalon"
 
-[ProviderDataverse]
-other = "Libra Repository"
-
 [ProviderEtext]
 other = "Access Online"
 
@@ -582,6 +579,9 @@ other = "HathiTrust Digital Library"
 
 [ProviderKanopy]
 other = "Kanopy Online Video Collection"
+
+[ProviderLibraData]
+other = "LibraData"
 
 [ProviderLibraETD]
 other = "Libra Repository"
