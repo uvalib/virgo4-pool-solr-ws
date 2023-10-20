@@ -559,6 +559,9 @@ other = "Documentaries, films, television shows, and more; for check out or stre
 [PoolVideoName]
 other = "Video"
 
+[ProviderArchivesSpace]
+other = "ArchivesSpace"
+
 [ProviderArtstor]
 other = "Artstor"
 
