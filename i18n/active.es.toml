@@ -559,6 +559,9 @@ other = "Documentales, películas, programas de televisión y más; para salida 
 [PoolVideoName]
 other = "Vídeo"
 
+[ProviderArchivesSpace]
+other = "ArchivesSpace"
+
 [ProviderArtstor]
 other = "Artstor"
 
