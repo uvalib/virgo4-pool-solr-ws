@@ -311,7 +311,7 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 			lastCallNumber = callNumber
 		}
 
-		if text != "" && library != "" && location != "" && lastCallNumber != "" {
+		if (text != "" || note != "") && library != "" && location != "" && lastCallNumber != "" {
 			textNote := summaryTextNote{Text: text, Note: note}
 			libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], textNote)
 		}
