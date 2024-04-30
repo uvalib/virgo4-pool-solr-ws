@@ -1064,6 +1064,7 @@ func (s *searchContext) getVisibleRecord() searchResponse {
 				ID:              s.getSolrIdentifierFieldValue(&doc),
 				IIIFManifestURL: doc.getFirstString(s.pool.config.Local.Related.Image.IIIFManifestField),
 				IIIFImageURL:    doc.getFirstString(s.pool.config.Local.Related.Image.IIIFImageField),
+				ContentAdvisory: doc.getFirstString(s.pool.config.Local.Related.Image.ContentAdvisoryField),
 			}
 
 			related = append(related, rr)

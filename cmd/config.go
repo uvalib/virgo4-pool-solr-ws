@@ -307,8 +307,9 @@ type poolConfigProvider struct {
 }
 
 type poolConfigRelatedImage struct {
-	IIIFManifestField string `json:"iiif_manifest_field,omitempty"`
-	IIIFImageField    string `json:"iiif_image_field,omitempty"`
+	IIIFManifestField    string `json:"iiif_manifest_field,omitempty"`
+	IIIFImageField       string `json:"iiif_image_field,omitempty"`
+	ContentAdvisoryField string `json:"content_advisory_field,omitempty"`
 }
 
 type poolConfigRelated struct {
