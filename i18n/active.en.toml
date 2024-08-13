@@ -8,7 +8,7 @@ other = "Abstract"
 other = "Access Restriction"
 
 [FieldAccessURL]
-other = "Online Access"
+other = "Access Online"
 
 [FieldAccessURLDefaultItemLabelPrefix]
 other = "Copy"
