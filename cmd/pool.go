@@ -158,7 +158,6 @@ func (p *poolContext) initProviders() {
 		provider := v4api.Provider{
 			Provider:    val.Name,
 			Label:       val.XID,
-			LogoURL:     val.Logo,
 			HomepageURL: val.URL,
 		}
 
