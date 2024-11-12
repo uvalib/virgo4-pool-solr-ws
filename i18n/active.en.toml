@@ -422,7 +422,7 @@ other = "This year"
 other = "Department"
 
 [FilterDigitalCollection]
-other = "Digital Collection"
+other = "Collection"
 
 [FilterFormat]
 other = "Format"
