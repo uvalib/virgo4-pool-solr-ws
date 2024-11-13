@@ -110,7 +110,7 @@ other = "Description"
 other = "More"
 
 [FieldDigitalCollection]
-other = "Digital Collection"
+other = "Collection"
 
 [FieldDirector]
 other = "Director"
