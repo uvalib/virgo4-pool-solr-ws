@@ -38,11 +38,11 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			}
 
 			if numSelected == 0 {
-				s.meta.client.log("FILTER: omitting filter [%s] due to lack of selected dependent filters", filter.FacetID)
+				s.meta.client.log("FILTER: %s: omitting filter [%s] due to lack of selected dependent filters", ctx.virgo.currentFacet, filter.FacetID)
 				continue
 			}
 
-			s.meta.client.log("FILTER: including filter [%s] due to %d selected dependent filters", filter.FacetID, numSelected)
+			s.meta.client.log("FILTER: %s: including filter [%s] due to %d selected dependent filters", ctx.virgo.currentFacet, filter.FacetID, numSelected)
 		}
 
 		var solrFilter string
@@ -68,7 +68,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			q := solrFacet.config.queryMap[filterValue]
 
 			if q == nil {
-				s.meta.client.log("FILTER: unable to map component value to a component query: [%s]", filterValue)
+				s.meta.client.log("FILTER: %s: unable to map component value to a component query: [%s]", ctx.virgo.currentFacet, filterValue)
 				continue
 			}
 
@@ -99,19 +99,21 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 	var orFilters []string
 
 	for filterID, selectedValues := range s.meta.selectionMap {
-		// when iterating over facets, do not include current facet in filter queries
-		// so that all possible matching values for this facet are returned
-		if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && filterID == ctx.virgo.currentFacet {
-			continue
-		}
-
 		var idFilters []string
 		for _, solrFilter := range selectedValues {
 			idFilters = append(idFilters, fmt.Sprintf("(%s)", solrFilter))
 		}
 
 		orFilter := strings.Join(idFilters, " OR ")
-		s.meta.client.log("FILTER: applying filter: %-20s : %s", filterID, orFilter)
+
+		// when iterating over facets, do not include current facet in filter queries
+		// so that all possible matching values for this facet are returned
+		if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && ctx.virgo.flags.selectedFacets == false && filterID == ctx.virgo.currentFacet {
+			s.meta.client.log("FILTER: %s: SKIPPING filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
+			continue
+		}
+
+		s.meta.client.log("FILTER: %s: applying filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
 
 		orFilters = append(orFilters, orFilter)
 	}
@@ -160,7 +162,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 		internalFacets[facet.XID] = &f
 
 		// when iterating over facets, only include current facet in solr request
-		if s.virgo.flags.facetCache == false && s.virgo.flags.requestFacets == true && xid != s.virgo.currentFacet {
+		if s.virgo.flags.facetCache == false && s.virgo.flags.requestFacets == true && s.virgo.flags.selectedFacets == false && xid != s.virgo.currentFacet {
 			continue
 		}
 

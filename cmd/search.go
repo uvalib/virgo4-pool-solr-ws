@@ -17,6 +17,7 @@ import (
 type virgoFlags struct {
 	groupResults     bool
 	requestFacets    bool
+	selectedFacets   bool
 	facetCache       bool
 	globalFacetCache bool
 	firstRecordOnly  bool
@@ -720,11 +721,47 @@ type facetResponse struct {
 	resp   searchResponse
 }
 
-func (s *searchContext) getFacetResults(index int, channel chan *facetResponse) {
+func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, selectedFacet v4api.Facet, selectedValues []string) {
 	res := facetResponse{index: index}
 
 	if res.resp = s.getPoolQueryResults(); res.resp.err == nil {
 		res.facets = s.virgo.poolRes.FacetList
+	}
+
+	// ensure any currently selected values for this facet appear in the returned facets list
+
+	// due to limits in the number of entries returned for a facet, in some scenarios,
+	// already-selected facet values that are less popular may not appear in the facet list.
+	// this causes the client to place them in the "Not Applicable" filter list.
+	// to work around this, we ensure all selected facet values appear in the list returned.
+
+	for _, selectedValue := range selectedValues {
+		// check for this value in returned list
+		found := false
+		for _, bucket := range res.facets[0].Buckets {
+			if selectedValue == bucket.Value {
+				found = true
+				break
+			}
+		}
+
+		if found == false {
+			s.warn("FACET: %s: will attempt to find missing bucket value: [%s]", s.virgo.currentFacet, selectedValue)
+
+			// find it in the selected facet search results and append it
+			appended := false
+			for _, selectedBucket := range selectedFacet.Buckets {
+				if selectedBucket.Value == selectedValue {
+					res.facets[0].Buckets = append(res.facets[0].Buckets, selectedBucket)
+					appended = true
+					break
+				}
+
+				if appended == false {
+					s.err("FACET: %s: could not find missing bucket value: [%s]", s.virgo.currentFacet, selectedValue)
+				}
+			}
+		}
 	}
 
 	channel <- &res
@@ -739,7 +776,7 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		return nil, searchResponse{status: http.StatusBadRequest, err: err}
 	}
 
-	// if request contains invalid filters, return supported filters with zero-count values
+	// if request contains invalid filters, return values for supported filters only, with zero-count values
 	if s.virgo.invalidFilters == true {
 		// we know there is exactly one filter group at this point.
 		// iterate over it and create mappings
@@ -799,8 +836,20 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		}
 	}
 
-	// for each filter, request solr facets for that filter by applying all current
+	// first, get counts for all currently selected filter values, so we can populate them later if needed
+
+	s.virgo.flags.selectedFacets = true
+
+	var selectedFacets []v4api.Facet
+	if resp := s.getPoolQueryResults(); resp.err != nil {
+		return nil, resp
+	}
+	selectedFacets = s.virgo.poolRes.FacetList
+
+	// second, for each filter, request solr facets for that filter by applying all current
 	// filters EXCEPT those of its own type.  combine these into full filter response.
+
+	s.virgo.flags.selectedFacets = false
 
 	// run facet searches in parallel
 
@@ -810,20 +859,28 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 	for i := range s.resourceTypeCtx.filters {
 		filter := s.resourceTypeCtx.filters[i]
 
-		// if this is a hidden filter, only return it if it was part of the request
-		filterDef := s.pool.maps.definedFilters[filter.XID]
-		if filterDef.Hidden == true {
-			filterRequested := false
-			for _, filterGroup := range s.virgo.req.Filters {
-				for _, filterFacet := range filterGroup.Facets {
-					if filterFacet.FacetID == filter.XID {
-						filterRequested = true
-					}
+		var selectedValues []string
+		// collect currently selected values for this filter, we may need them later
+		for _, filterGroup := range s.virgo.req.Filters {
+			for _, filterFacet := range filterGroup.Facets {
+				if filterFacet.FacetID == filter.XID {
+					selectedValues = append(selectedValues, filterFacet.Value)
 				}
 			}
+		}
 
-			if filterRequested == false {
-				continue
+		// if this is a hidden filter, only return it if it was part of the request
+		filterDef := s.pool.maps.definedFilters[filter.XID]
+		if filterDef.Hidden == true && len(selectedValues) == 0 {
+			continue
+		}
+
+		// grab the selected facet values for this filter
+		var selectedFacet v4api.Facet
+		for _, facet := range selectedFacets {
+			if facet.ID == filter.XID {
+				selectedFacet = facet
+				break
 			}
 		}
 
@@ -832,7 +889,7 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		f.virgo.parserInfo = s.virgo.parserInfo
 		f.virgo.currentFacet = filter.XID
 		facetRequests++
-		go f.getFacetResults(i, channel)
+		go f.getFacetResults(i, channel, selectedFacet, selectedValues)
 	}
 
 	// collect responses
