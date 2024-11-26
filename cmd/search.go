@@ -1122,6 +1122,7 @@ func (s *searchContext) getVisibleRecord() searchResponse {
 				IIIFManifestURL: doc.getFirstString(s.pool.config.Local.Related.Image.IIIFManifestField),
 				IIIFImageURL:    doc.getFirstString(s.pool.config.Local.Related.Image.IIIFImageField),
 				ContentAdvisory: doc.getFirstString(s.pool.config.Local.Related.Image.ContentAdvisoryField),
+				Title:           doc.getFirstString(s.pool.config.Local.Related.Image.TitleField),
 			}
 
 			related = append(related, rr)

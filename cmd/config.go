@@ -309,6 +309,7 @@ type poolConfigRelatedImage struct {
 	IIIFManifestField    string `json:"iiif_manifest_field,omitempty"`
 	IIIFImageField       string `json:"iiif_image_field,omitempty"`
 	ContentAdvisoryField string `json:"content_advisory_field,omitempty"`
+	TitleField           string `json:"title_field,omitempty"`
 }
 
 type poolConfigRelated struct {
