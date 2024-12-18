@@ -735,32 +735,38 @@ func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, 
 	// this causes the client to place them in the "Not Applicable" filter list.
 	// to work around this, we ensure all selected facet values appear in the list returned.
 
-	for _, selectedValue := range selectedValues {
-		// check for this value in returned list
-		found := false
-		for _, bucket := range res.facets[0].Buckets {
-			if selectedValue == bucket.Value {
-				found = true
-				break
-			}
-		}
-
-		if found == false {
-			s.warn("FACET: %s: will attempt to find missing bucket value: [%s]", s.virgo.currentFacet, selectedValue)
-
-			// find it in the selected facet search results and append it
-			appended := false
-			for _, selectedBucket := range selectedFacet.Buckets {
-				if selectedBucket.Value == selectedValue {
-					res.facets[0].Buckets = append(res.facets[0].Buckets, selectedBucket)
-					appended = true
-					break
+	if len(selectedValues) > 0 {
+		// NOTE: facet results may not exist if the user refined an already-faceted search keyword
+		if res.facets != nil {
+			for _, selectedValue := range selectedValues {
+				// check for this value in returned list
+				found := false
+				for _, bucket := range res.facets[0].Buckets {
+					if selectedValue == bucket.Value {
+						found = true
+						break
+					}
 				}
 
-				if appended == false {
-					s.err("FACET: %s: could not find missing bucket value: [%s]", s.virgo.currentFacet, selectedValue)
+				if found == false {
+					// find it in the selected facet search results and append it
+					appended := false
+					for _, selectedBucket := range selectedFacet.Buckets {
+						if selectedBucket.Value == selectedValue {
+							s.warn("FACET: %s: appending existing value to truncated results: [%s]", s.virgo.currentFacet, selectedValue)
+							res.facets[0].Buckets = append(res.facets[0].Buckets, selectedBucket)
+							appended = true
+							break
+						}
+					}
+
+					if appended == false {
+						s.warn("FACET: %s: search space reduced?  could not find existing value to append to results: [%s]", s.virgo.currentFacet, selectedValue)
+					}
 				}
 			}
+		} else {
+			s.warn("FACET: %s: search space reduced?  no values returned", s.virgo.currentFacet)
 		}
 	}
 
@@ -876,7 +882,9 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		}
 
 		// grab the selected facet values for this filter
-		var selectedFacet v4api.Facet
+		// NOTE: the facet may not be present in search results if the user refines
+		// the keyword of an already-facted search such that it returns no results
+		selectedFacet := v4api.Facet{ID: filter.XID}
 		for _, facet := range selectedFacets {
 			if facet.ID == filter.XID {
 				selectedFacet = facet
