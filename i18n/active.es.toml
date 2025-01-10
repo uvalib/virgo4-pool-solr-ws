@@ -107,7 +107,7 @@ other = "Departamento"
 other = "Descripción"
 
 [FieldDetailsURL]
-other = "Más"
+other = "Ver metadatos completos"
 
 [FieldDigitalCollection]
 other = "Colección"
