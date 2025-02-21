@@ -21,3 +21,9 @@ All endpoints under /api require authentication.
 ### System Requirements
 
 * GO version 1.12.0 or greater
+
+### Setup info
+
+This service has very complex config requirements. See the README in /setup for a utility to
+create a working config based on terraform configuration files.
+
