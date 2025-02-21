@@ -5,7 +5,7 @@ a file named setup_env.sh in the directory the command is run from. That file co
 of the enviroment exports needed to configure the service.
 
 To run from check directory:
-`go run setup/*.go -dir {terrform staging pool env dir} -env {staging | production} -pool {hathitrust | images | uva-library}`
+`go run setup/*.go -dir {terrform staging pool env dir} -env {staging | production} -pool {hathitrust | images | uva-library} -port {service port}`
 
 Note: if not set, env defaults to staging and pool defaults to uva-library
 

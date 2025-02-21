@@ -21,9 +21,11 @@ func main() {
 	var terformBase string
 	var tgtEnv string
 	var poolName string
+	var port string
 	flag.StringVar(&terformBase, "dir", "", "local dirctory for virgo4.lib.virginia.edu/ecs-tasks")
 	flag.StringVar(&tgtEnv, "env", "staging", "production or staging")
-	flag.StringVar(&poolName, "pool", "uva-library", "local dirctory for virgo4.lib.virginia.edu/ecs-tasks")
+	flag.StringVar(&poolName, "pool", "uva-library", "pool name")
+	flag.StringVar(&port, "port", "8080", "port to run the pool on")
 	flag.Parse()
 
 	if terformBase == "" {
@@ -60,6 +62,12 @@ func main() {
 		jsonBytes, err := os.ReadFile(tgtFile)
 		if err != nil {
 			log.Fatal(err.Error())
+		}
+
+		if cf.EnvVar == "VIRGO4_SOLR_POOL_WS_JSON_03" {
+			// this is teh service config where the port is set to "8080" overide
+			updated := strings.Replace(string(jsonBytes), "8080", port, 1)
+			jsonBytes = []byte(updated)
 		}
 		var gzBuf bytes.Buffer
 		gz := gzip.NewWriter(&gzBuf)
