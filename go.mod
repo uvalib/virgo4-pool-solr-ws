@@ -13,7 +13,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.5.1
-	github.com/uvalib/virgo4-api v0.0.0-20241126213111-b647424688f9
+	github.com/uvalib/virgo4-api v1.0.0
 	github.com/uvalib/virgo4-jwt v1.2.1
 	github.com/uvalib/virgo4-parser v0.0.0-20220606190657-5119d778d14a
 	golang.org/x/text v0.22.0
@@ -24,7 +24,6 @@ require (
 	github.com/bytedance/sonic v1.12.9 // indirect
 	github.com/bytedance/sonic/loader v0.2.3 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gin-contrib/sse v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
