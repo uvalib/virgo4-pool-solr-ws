@@ -89,10 +89,7 @@ func (p *poolContext) identifyHandler(c *gin.Context) {
 func (p *poolContext) providersHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)
-
-	localizedProviders := cl.localizedProviders(p)
-
-	c.JSON(http.StatusOK, localizedProviders)
+	c.JSON(http.StatusOK, p.providers)
 }
 
 func (p *poolContext) healthCheckHandler(c *gin.Context) {

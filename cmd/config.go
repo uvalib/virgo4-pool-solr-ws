@@ -301,8 +301,8 @@ type poolConfigIdentity struct {
 }
 
 type poolConfigProvider struct {
-	Name    string `json:"name,omitempty"`
-	XID     string `json:"xid,omitempty"` // translation ID
+	Name    string `json:"name"`
+	Label   string `json:"label"`
 	URL     string `json:"url,omitempty"`
 	Pattern string `json:"pattern,omitempty"`
 	re      *regexp.Regexp

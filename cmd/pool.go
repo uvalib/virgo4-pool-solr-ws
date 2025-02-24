@@ -157,7 +157,7 @@ func (p *poolContext) initProviders() {
 	for _, val := range p.config.Global.Providers {
 		provider := v4api.Provider{
 			Provider:    val.Name,
-			Label:       val.XID,
+			Label:       val.Label,
 			HomepageURL: val.URL,
 		}
 
@@ -404,10 +404,6 @@ func (p *poolContext) validateConfig() {
 			log.Printf("[VALIDATE] sort option %d record sort order invalid", i)
 			invalid = true
 		}
-	}
-
-	for i, val := range p.config.Global.Providers {
-		messageIDs.requireValue(val.XID, fmt.Sprintf("provider %d xid", i))
 	}
 
 	for field, values := range p.maps.solrExternalValues {
