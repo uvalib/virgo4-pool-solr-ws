@@ -83,10 +83,7 @@ func (p *poolContext) versionHandler(c *gin.Context) {
 func (p *poolContext) identifyHandler(c *gin.Context) {
 	cl := clientContext{}
 	cl.init(p, c)
-
-	localizedIdentity := cl.localizedPoolIdentity(p)
-
-	c.JSON(http.StatusOK, localizedIdentity)
+	c.JSON(http.StatusOK, p.identity)
 }
 
 func (p *poolContext) providersHandler(c *gin.Context) {

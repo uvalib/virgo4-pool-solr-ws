@@ -119,8 +119,8 @@ func (v *stringValidator) Invalid() bool {
 
 func (p *poolContext) initIdentity() {
 	p.identity = v4api.PoolIdentity{
-		Name:        p.config.Local.Identity.NameXID,
-		Description: p.config.Local.Identity.DescXID,
+		Name:        p.config.Local.Identity.Name,
+		Description: p.config.Local.Identity.Desc,
 		Mode:        p.config.Local.Identity.Mode,
 		Source:      p.config.Local.Identity.Source,
 	}
@@ -143,7 +143,7 @@ func (p *poolContext) initIdentity() {
 
 	// populate supported sorts
 	for _, s := range p.sorts {
-		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.XID, Asc: s.AscXID, Desc: s.DescXID})
+		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.ID, Label: s.Label, Asc: s.Asc, Desc: s.Desc})
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
@@ -334,10 +334,10 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	miscValues.requireValue(p.config.Global.Service.DefaultSort.XID, "default sort xid")
+	miscValues.requireValue(p.config.Global.Service.DefaultSort.ID, "default sort id")
 	miscValues.requireValue(p.config.Global.Service.DefaultSort.Order, "default sort order")
 
-	if p.config.Global.Service.DefaultSort.XID != "" && p.maps.definedSorts[p.config.Global.Service.DefaultSort.XID].XID == "" {
+	if p.config.Global.Service.DefaultSort.ID != "" && p.maps.definedSorts[p.config.Global.Service.DefaultSort.ID].ID == "" {
 		log.Printf("[VALIDATE] default sort xid not found in sort options list")
 		invalid = true
 	}
@@ -366,8 +366,8 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.Availability.FieldConfig.FieldAnon, "anon availability field")
 	solrFields.requireValue(p.config.Global.Availability.FieldConfig.FieldAuth, "auth availability field")
 
-	messageIDs.requireValue(p.config.Local.Identity.NameXID, "identity name xid")
-	messageIDs.requireValue(p.config.Local.Identity.DescXID, "identity description xid")
+	messageIDs.requireValue(p.config.Local.Identity.Name, "identity name")
+	messageIDs.requireValue(p.config.Local.Identity.Desc, "identity description")
 
 	if p.config.Local.Identity.Mode == "image" {
 		if p.config.Local.Related == nil {
@@ -383,14 +383,15 @@ func (p *poolContext) validateConfig() {
 	}
 
 	for i, val := range p.sorts {
-		messageIDs.requireValue(val.XID, fmt.Sprintf("sort option %d xid", i))
+		messageIDs.requireValue(val.ID, fmt.Sprintf("sort option %d id", i))
+		messageIDs.requireValue(val.Label, fmt.Sprintf("sort option %d label", i))
 		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d group field", i))
-		messageIDs.addValue(val.AscXID)
-		messageIDs.addValue(val.DescXID)
-		messageIDs.addValue(val.RecordXID)
+		messageIDs.addValue(val.Asc)
+		messageIDs.addValue(val.Desc)
+		messageIDs.addValue(val.RecordID)
 
-		if val.RecordXID != "" && p.maps.definedSorts[val.RecordXID].XID == "" {
-			log.Printf("[VALIDATE] sort option %d record sort xid not found in sort options list", i)
+		if val.RecordID != "" && p.maps.definedSorts[val.RecordID].ID == "" {
+			log.Printf("[VALIDATE] sort option %d record sort id not found in sort options list", i)
 			invalid = true
 		}
 
@@ -416,7 +417,7 @@ func (p *poolContext) validateConfig() {
 	}
 
 	for xid, val := range p.maps.definedFilters {
-		messageIDs.requireValue(val.XID, fmt.Sprintf("filter [%s] xid", xid))
+		messageIDs.requireValue(val.ID, fmt.Sprintf("filter [%s] id", xid))
 		if val.Solr.Type == "terms" {
 			solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter [%s] solr field", xid))
 		}
@@ -460,19 +461,20 @@ func (p *poolContext) validateConfig() {
 			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] fallback author field", i, r.Value))
 		}
 
-		for j, val := range r.filters {
-			messageIDs.requireValue(val.XID, fmt.Sprintf("resource type %d [%s] filter %d xid", i, r.Value, j))
+		for j, val := range r.filters { // TODO
+			messageIDs.requireValue(val.ID, fmt.Sprintf("resource type %d [%s] filter %d id", i, r.Value, j))
 
 			for k, q := range val.ComponentQueries {
-				messageIDs.requireValue(q.XID, fmt.Sprintf("resource type %d [%s] filter %d component query xid %d", i, r.Value, j, k))
+				messageIDs.requireValue(q.ID, fmt.Sprintf("resource type %d [%s] filter %d component query id %d", i, r.Value, j, k))
+				messageIDs.requireValue(q.Name, fmt.Sprintf("resource type %d [%s] filter %d component query name %d", i, r.Value, j, k))
 				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] filter %d component query query %d", i, r.Value, j, k))
 			}
 		}
 
 		for k, v := range r.FilterOverrides {
 			messageIDs.addValue(k)
-			messageIDs.addValue(v.XID)
-			for _, xid := range v.DependentFilterXIDs {
+			messageIDs.addValue(v.Name)
+			for _, xid := range v.DependentFilterIDs {
 				messageIDs.addValue(xid)
 			}
 		}
@@ -742,28 +744,28 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	// validate xids can actually be translated
+	// // validate xids can actually be translated
 
-	langs := []string{}
+	// langs := []string{}
 
-	for _, tag := range p.translations.bundle.LanguageTags() {
-		lang := tag.String()
-		langs = append(langs, lang)
-		localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-		for _, id := range messageIDs.Values() {
-			_, xtag, xerr := localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: id})
-			if xerr != nil {
-				log.Printf("[VALIDATE] [%s] [%s] translation error: %s", lang, id, xerr.Error())
-				invalid = true
-				continue
-			}
-			if xtag != tag {
-				log.Printf("[VALIDATE] [%s] [%s] translated message has unexpected language (%s); missing translation?", lang, id, xtag)
-				invalid = true
-				continue
-			}
-		}
-	}
+	// for _, tag := range p.translations.bundle.LanguageTags() {
+	// 	lang := tag.String()
+	// 	langs = append(langs, lang)
+	// 	localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+	// 	for _, id := range messageIDs.Values() {
+	// 		_, xtag, xerr := localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: id})
+	// 		if xerr != nil {
+	// 			log.Printf("[VALIDATE] [%s] [%s] translation error: %s", lang, id, xerr.Error())
+	// 			invalid = true
+	// 			continue
+	// 		}
+	// 		if xtag != tag {
+	// 			log.Printf("[VALIDATE] [%s] [%s] translated message has unexpected language (%s); missing translation?", lang, id, xtag)
+	// 			invalid = true
+	// 			continue
+	// 		}
+	// 	}
+	// }
 
 	// check if anything went wrong anywhere
 
@@ -772,7 +774,7 @@ func (p *poolContext) validateConfig() {
 		os.Exit(1)
 	}
 
-	log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
+	// log.Printf("[POOL] supported languages       = [%s]", strings.Join(langs, ", "))
 }
 
 func (p *poolContext) populateFieldList(r *poolConfigResourceTypeContext, required []string, optional []string) ([]poolConfigField, bool) {
@@ -847,23 +849,23 @@ func (p *poolContext) initSorts() {
 	for i := range p.config.Global.Mappings.Definitions.Sorts {
 		def := &p.config.Global.Mappings.Definitions.Sorts[i]
 
-		if p.maps.definedSorts[def.XID] != nil {
-			log.Printf("[SORTS] duplicate sort xid: [%s]", def.XID)
+		if p.maps.definedSorts[def.ID] != nil {
+			log.Printf("[SORTS] duplicate sort id: [%s]", def.ID)
 			invalid = true
 			continue
 		}
 
 		if def.IsRelevance == true {
-			def.RecordXID = p.config.Local.Solr.RelevanceIntraGroupSort.XID
+			def.RecordID = p.config.Local.Solr.RelevanceIntraGroupSort.ID
 			def.RecordOrder = p.config.Local.Solr.RelevanceIntraGroupSort.Order
 		}
 
-		p.maps.definedSorts[def.XID] = def
+		p.maps.definedSorts[def.ID] = def
 	}
 
 	// create sort list based on defined sorts
 	seen := make(map[string]bool)
-	for _, xid := range p.config.Global.Mappings.Configured.SortXIDs {
+	for _, xid := range p.config.Global.Mappings.Configured.SortIDs {
 		if seen[xid] == true {
 			continue
 		}
@@ -929,14 +931,14 @@ func (p *poolContext) initFilters() {
 	values = append(values, p.config.Global.Availability.FilterConfig.ExposedValues.Other...)
 	p.config.Global.Availability.FilterConfig.ExposedValues.Combined = values
 
-	// configure globally defined filters, and map their XIDs to filter definitions.
+	// configure globally defined filters, and map their IDs to filter definitions.
 	// NOTE: all pools define the same list; a given pool may only use a subset of these.
 	p.maps.definedFilters = make(map[string]*poolConfigFilter)
 	for i := range p.config.Global.Mappings.Definitions.Filters {
 		def := &p.config.Global.Mappings.Definitions.Filters[i]
 
-		if p.maps.definedFilters[def.XID] != nil {
-			log.Printf("[FILTERS] duplicate filter xid: [%s]", def.XID)
+		if p.maps.definedFilters[def.ID] != nil {
+			log.Printf("[FILTERS] duplicate filter id: [%s]", def.ID)
 			invalid = true
 			continue
 		}
@@ -951,6 +953,7 @@ func (p *poolContext) initFilters() {
 			def.ExposedValues = p.config.Global.Availability.FilterConfig.ExposedValues.Combined
 		}
 
+		// TODO this may not be needed
 		// for component query facets, create mappings from any
 		// possible translated value back to the query definition
 		if len(def.ComponentQueries) > 0 {
@@ -959,35 +962,24 @@ func (p *poolContext) initFilters() {
 			for j := range def.ComponentQueries {
 				q := &def.ComponentQueries[j]
 
-				for _, tag := range p.translations.bundle.LanguageTags() {
-					lang := tag.String()
-					localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-					msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: q.XID})
+				def.queryMap[q.Name] = q
 
-					if err != nil {
-						log.Printf("[FILTERS] [%s] missing translation for message ID: [%s] (%s)", lang, q.XID, err.Error())
-						invalid = true
-						continue
-					}
-
-					def.queryMap[msg] = q
-				}
 			}
 		}
 
-		p.maps.definedFilters[def.XID] = def
+		p.maps.definedFilters[def.ID] = def
 	}
 
 	// create pre-search filter map based on configured pre-search filters
 	p.maps.preSearchFilters = make(map[string]*poolConfigFilter)
-	for _, xid := range p.config.Global.Mappings.Configured.FilterXIDs {
-		if p.maps.preSearchFilters[xid] != nil {
+	for _, id := range p.config.Global.Mappings.Configured.FilterIDs {
+		if p.maps.preSearchFilters[id] != nil {
 			continue
 		}
 
-		orig := p.maps.definedFilters[xid]
+		orig := p.maps.definedFilters[id]
 		if orig == nil {
-			log.Printf("[FILTERS] unrecognized filter xid: [%s]", xid)
+			log.Printf("[FILTERS] unrecognized filter id: [%s]", id)
 			invalid = true
 			continue
 		}
@@ -998,9 +990,9 @@ func (p *poolContext) initFilters() {
 		// this is used to preserve filter order when building filters response
 		def.Index = len(p.maps.preSearchFilters)
 
-		p.maps.preSearchFilters[def.XID] = &def
+		p.maps.preSearchFilters[def.ID] = &def
 
-		log.Printf("[FILTERS] added pre-search filter: [%s]", def.XID)
+		log.Printf("[FILTERS] added pre-search filter: [%s]", def.ID)
 	}
 
 	if invalid == true {
@@ -1034,14 +1026,14 @@ func (p *poolContext) initResourceTypes() {
 	// build the list of supported filters, which is the union of supported pre-search filters
 	// and the filters for any of the supported resource types
 
-	poolFilterXIDs := p.config.Global.Mappings.Configured.FilterXIDs
+	poolFilterIDs := p.config.Global.Mappings.Configured.FilterIDs
 	for _, val := range p.config.Global.ResourceTypes.SupportedContexts {
 		ctx := p.maps.resourceTypeContexts[val]
-		poolFilterXIDs = append(poolFilterXIDs, ctx.AdditionalFilterXIDs...)
+		poolFilterIDs = append(poolFilterIDs, ctx.AdditionalFilterIDs...)
 	}
 
 	p.maps.supportedFilters = make(map[string]*poolConfigFilter)
-	for _, xid := range poolFilterXIDs {
+	for _, xid := range poolFilterIDs {
 		if p.maps.supportedFilters[xid] != nil {
 			continue
 		}
@@ -1059,9 +1051,9 @@ func (p *poolContext) initResourceTypes() {
 		// this is used to preserve filter order when building filters response
 		def.Index = len(p.maps.supportedFilters)
 
-		p.maps.supportedFilters[def.XID] = &def
+		p.maps.supportedFilters[def.ID] = &def
 
-		log.Printf("[RESTYPES] added pool-supported filter: [%s]", def.XID)
+		log.Printf("[RESTYPES] added pool-supported filter: [%s]", def.ID)
 	}
 
 	// NOTE: the following resource type setup loops are broken out for readability
@@ -1078,25 +1070,25 @@ func (p *poolContext) initResourceTypes() {
 		// in which case they will appear in the position they are defined there.  this allows for defining pre-search
 		// filters that appear lower down in the filter list after a search (e.g. bookplates filter appearing at the bottom).
 
-		var filterXIDs []string
+		var filterIDs []string
 
-		for _, filterXID := range p.config.Global.Mappings.Configured.FilterXIDs {
-			if sliceContainsString(r.AdditionalFilterXIDs, filterXID, false) == false {
-				filterXIDs = append(filterXIDs, filterXID)
+		for _, filterID := range p.config.Global.Mappings.Configured.FilterIDs {
+			if sliceContainsString(r.AdditionalFilterIDs, filterID, false) == false {
+				filterIDs = append(filterIDs, filterID)
 			}
 		}
 
-		filterXIDs = append(filterXIDs, r.AdditionalFilterXIDs...)
+		filterIDs = append(filterIDs, r.AdditionalFilterIDs...)
 
 		seen := make(map[string]bool)
-		for _, xid := range filterXIDs {
-			if seen[xid] == true {
+		for _, id := range filterIDs {
+			if seen[id] == true {
 				continue
 			}
 
-			orig := p.maps.definedFilters[xid]
+			orig := p.maps.definedFilters[id]
 			if orig == nil {
-				log.Printf("[RESTYPES] resource type value [%s] contains unrecognized filter xid: [%s]", r.Value, xid)
+				log.Printf("[RESTYPES] resource type value [%s] contains unrecognized filter xid: [%s]", r.Value, id)
 				invalid = true
 				continue
 			}
@@ -1108,10 +1100,10 @@ func (p *poolContext) initResourceTypes() {
 			def.Index = len(seen)
 
 			r.filters = append(r.filters, def)
-			r.filterMap[xid] = &def
-			r.filterXIDs = append(r.filterXIDs, xid)
+			r.filterMap[id] = &def
+			r.filterXIDs = append(r.filterXIDs, id)
 
-			seen[xid] = true
+			seen[id] = true
 		}
 	}
 

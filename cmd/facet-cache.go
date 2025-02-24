@@ -82,7 +82,7 @@ func (f *facetCache) refreshFacets() {
 	}
 }
 
-func (f *facetCache) getSpecifiedFilters(filterXIDs []string) ([]v4api.Facet, error) {
+func (f *facetCache) getSpecifiedFilters(filterIDs []string) ([]v4api.Facet, error) {
 	// create copy of memory reference in case lists updates while we are running
 	currentFacetMap := f.facetMap
 
@@ -92,8 +92,8 @@ func (f *facetCache) getSpecifiedFilters(filterXIDs []string) ([]v4api.Facet, er
 
 	var filters []v4api.Facet
 
-	for _, xid := range filterXIDs {
-		filter := currentFacetMap[xid]
+	for _, id := range filterIDs {
+		filter := currentFacetMap[id]
 
 		// assume any missing filters are due to them not existing in solr
 		if filter == nil {
@@ -107,7 +107,7 @@ func (f *facetCache) getSpecifiedFilters(filterXIDs []string) ([]v4api.Facet, er
 }
 
 func (f *facetCache) getPreSearchFilters() ([]v4api.Facet, error) {
-	return f.getSpecifiedFilters(f.searchCtx.pool.config.Global.Mappings.Configured.FilterXIDs)
+	return f.getSpecifiedFilters(f.searchCtx.pool.config.Global.Mappings.Configured.FilterIDs)
 }
 
 func (f *facetCache) getLocalizedFilters(c *clientContext, filterXIDs []string) ([]v4api.Facet, error) {

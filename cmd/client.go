@@ -85,12 +85,6 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 
 	c.localizer = i18n.NewLocalizer(p.translations.bundle, c.acceptLang)
 
-	// kludge to get the response language by checking the tag value returned for a known message ID
-	_, tag, _ := c.localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: p.config.Local.Identity.NameXID})
-	c.contentLang = tag.String()
-
-	ctx.Header("Content-Language", c.contentLang)
-
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 	c.opts.citation = boolOptionWithFallback(ctx.Query("citation"), false)
@@ -150,31 +144,6 @@ func (c *clientContext) verbose(format string, args ...interface{}) {
 
 func (c *clientContext) localize(id string) string {
 	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
-}
-
-func (c *clientContext) localizedPoolIdentity(p *poolContext) v4api.PoolIdentity {
-	id := p.identity
-
-	id.Name = c.localize(id.Name)
-	id.Description = c.localize(id.Description)
-
-	for i := range id.SortOptions {
-		opt := &id.SortOptions[i]
-
-		opt.Label = c.localize(opt.ID)
-
-		cfg := p.maps.definedSorts[opt.ID]
-
-		if cfg.AscXID != "" {
-			opt.Asc = c.localize(cfg.AscXID)
-		}
-
-		if cfg.DescXID != "" {
-			opt.Desc = c.localize(cfg.DescXID)
-		}
-	}
-
-	return id
 }
 
 func (c *clientContext) localizedProviders(p *poolContext) v4api.PoolProviders {

@@ -27,12 +27,12 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 
 		// if this is not the facet cache requesting all facets, then
 		// omit this selected filter if it depends on other filters, none of which are selected
-		dependentFilterXIDs := ctx.resourceTypeCtx.FilterOverrides[filter.FacetID].DependentFilterXIDs
+		dependentFilterIDs := ctx.resourceTypeCtx.FilterOverrides[filter.FacetID].DependentFilterIDs
 
-		if ctx.virgo.flags.facetCache == false && len(dependentFilterXIDs) > 0 {
+		if ctx.virgo.flags.facetCache == false && len(dependentFilterIDs) > 0 {
 			numSelected := 0
 
-			for _, facet := range dependentFilterXIDs {
+			for _, facet := range dependentFilterIDs {
 				n := len(s.meta.selectionMap[facet])
 				numSelected += n
 			}
@@ -159,7 +159,7 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 			f.Field = facet.Solr.FieldAuth
 		}
 
-		internalFacets[facet.XID] = &f
+		internalFacets[facet.ID] = &f
 
 		// when iterating over facets, only include current facet in solr request
 		if s.virgo.flags.facetCache == false && s.virgo.flags.requestFacets == true && s.virgo.flags.selectedFacets == false && xid != s.virgo.currentFacet {
@@ -171,11 +171,11 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 			for _, q := range facet.ComponentQueries {
 				qf := f
 				qf.Query = q.Query
-				requestFacets[q.XID] = &qf
+				requestFacets[q.ID] = &qf
 			}
 
 		default:
-			requestFacets[facet.XID] = &f
+			requestFacets[facet.ID] = &f
 		}
 	}
 

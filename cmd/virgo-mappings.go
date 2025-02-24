@@ -365,14 +365,14 @@ func (s *searchContext) populateRecords(solrDocuments *solrResponseDocuments) []
 }
 
 func (s *searchContext) newFacetFromDefinition(facetDef *poolConfigFilter) v4api.Facet {
-	xid := s.resourceTypeCtx.FilterOverrides[facetDef.XID].XID
-	if xid == "" {
-		xid = facetDef.XID
+	name := facetDef.Name
+	if s.resourceTypeCtx.FilterOverrides[facetDef.ID].Name != "" {
+		name = s.resourceTypeCtx.FilterOverrides[facetDef.ID].Name
 	}
 
 	facet := v4api.Facet{
-		ID:     facetDef.XID,
-		Name:   s.client.localize(xid),
+		ID:     facetDef.ID,
+		Name:   name,
 		Type:   facetDef.Type,
 		Sort:   facetDef.BucketSort,
 		Hidden: facetDef.Hidden,
@@ -390,7 +390,7 @@ func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResp
 	switch facetDef.Type {
 	case "boolean":
 		selected := false
-		if s.solr.req.meta.selectionMap[facetDef.XID][facetDef.Solr.Value] != "" {
+		if s.solr.req.meta.selectionMap[facetDef.ID][facetDef.Solr.Value] != "" {
 			selected = true
 		}
 
@@ -407,7 +407,7 @@ func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResp
 				}
 
 				selected := false
-				if s.solr.req.meta.selectionMap[facetDef.XID][b.Val] != "" {
+				if s.solr.req.meta.selectionMap[facetDef.ID][b.Val] != "" {
 					selected = true
 				}
 
@@ -472,7 +472,7 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 		switch s.solr.req.meta.requestFacets[key].config.Type {
 		case "component":
-			xid := s.solr.req.meta.requestFacets[key].config.XID
+			xid := s.solr.req.meta.requestFacets[key].config.ID
 			if componentQueries[xid] == nil {
 				componentQueries[xid] = make(map[string]*solrResponseFacet)
 			}
@@ -488,13 +488,13 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 		var facet solrResponseFacet
 
 		for _, q := range s.solr.req.meta.internalFacets[key].config.ComponentQueries {
-			qval := val[q.XID]
+			qval := val[q.ID]
 			if qval == nil || qval.Count == 0 {
 				continue
 			}
 
 			bucket := solrBucket{
-				Val:        s.client.localize(q.XID),
+				Val:        q.Name,
 				Count:      qval.Count,
 				GroupCount: qval.GroupCount,
 			}
@@ -525,22 +525,22 @@ func (s *searchContext) populateFacetList(solrFacets map[string]solrResponseFace
 
 			// if this is not the facet cache requesting all facets, then
 			// add this facet to the response as long as one of its dependent facets is selected
-			dependentFilterXIDs := s.resourceTypeCtx.FilterOverrides[key].DependentFilterXIDs
+			dependentFilterIDs := s.resourceTypeCtx.FilterOverrides[key].DependentFilterIDs
 
-			if s.virgo.flags.facetCache == false && len(dependentFilterXIDs) > 0 {
+			if s.virgo.flags.facetCache == false && len(dependentFilterIDs) > 0 {
 				numSelected := 0
 
-				for _, facet := range dependentFilterXIDs {
+				for _, facet := range dependentFilterIDs {
 					n := len(s.solr.req.meta.selectionMap[facet])
 					numSelected += n
 				}
 
 				if numSelected == 0 {
-					s.log("FACET: omitting facet [%s] due to lack of selected dependent filters", facetDef.XID)
+					s.log("FACET: omitting facet [%s] due to lack of selected dependent filters", facetDef.ID)
 					continue
 				}
 
-				s.log("FACET: including facet [%s] due to %d selected dependent filters", facetDef.XID, numSelected)
+				s.log("FACET: including facet [%s] due to %d selected dependent filters", facetDef.ID, numSelected)
 			}
 
 			gotFacet = true
@@ -627,8 +627,6 @@ func (s *searchContext) searchIsExactMatch() bool {
 
 func (s *searchContext) buildPoolSearchResponse() searchResponse {
 	var pr v4api.PoolResult
-
-	//pr.Identity = s.client.localizedPoolIdentity(s.pool)
 
 	pr.Pagination = v4api.Pagination{
 		Start: s.solr.res.meta.start,

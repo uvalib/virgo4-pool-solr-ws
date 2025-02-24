@@ -258,12 +258,14 @@ type poolConfigFacetSolr struct {
 }
 
 type poolConfigFacetQuery struct {
-	XID   string `json:"xid,omitempty"`
+	ID    string `json:"id,omitempty"`
+	Name  string `json:"name,omitempty"`
 	Query string `json:"query,omitempty"`
 }
 
 type poolConfigFilter struct {
-	XID              string                 `json:"xid,omitempty"` // translation ID
+	ID               string                 `json:"id,omitempty"`
+	Name             string                 `json:"name,omitempty"`
 	Solr             poolConfigFacetSolr    `json:"solr,omitempty"`
 	Type             string                 `json:"type,omitempty"`
 	Format           string                 `json:"format,omitempty"`
@@ -277,20 +279,21 @@ type poolConfigFilter struct {
 }
 
 type poolConfigSort struct {
-	XID          string `json:"xid,omitempty"`      // translation ID
-	AscXID       string `json:"asc_xid,omitempty"`  // translation ID
-	DescXID      string `json:"desc_xid,omitempty"` // translation ID
+	ID           string `json:"id,omitempty"`
+	Label        string `json:"label,omitempty"`
+	Asc          string `json:"asc,omitempty"`
+	Desc         string `json:"desc,omitempty"`
 	Field        string `json:"field,omitempty"`
 	Order        string `json:"order,omitempty"`
-	RecordXID    string `json:"record_xid,omitempty"` // translation ID
+	RecordID     string `json:"record_id,omitempty"`
 	RecordOrder  string `json:"record_order,omitempty"`
 	GroupResults bool   `json:"group_results,omitempty"`
 	IsRelevance  bool   `json:"is_relevance,omitempty"`
 }
 
 type poolConfigIdentity struct {
-	NameXID        string   `json:"name_xid,omitempty"`   // translation ID
-	DescXID        string   `json:"desc_xid,omitempty"`   // translation ID
+	Name           string   `json:"name,omitempty"`
+	Desc           string   `json:"desc,omitempty"`
 	Mode           string   `json:"mode,omitempty"`       // pool mode (what it is, e.g. "record" (default), "image", etc.)
 	Source         string   `json:"source,omitempty"`     // pool source (where its data comes from -- probably should be a unique value per core, e.g. "solr" for catalog stuff, "solr-images" for image stuff, etc.)
 	Attributes     []string `json:"attributes,omitempty"` // pool attributes (what it supports)
@@ -339,8 +342,8 @@ type poolConfigMappingsConfiguredFields struct {
 
 type poolConfigMappingsConfigured struct {
 	FieldNames poolConfigMappingsConfiguredFields `json:"field_names,omitempty"`
-	FilterXIDs []string                           `json:"filter_xids,omitempty"`
-	SortXIDs   []string                           `json:"sort_xids,omitempty"`
+	FilterIDs  []string                           `json:"filter_ids,omitempty"`
+	SortIDs    []string                           `json:"sort_ids,omitempty"`
 }
 
 type poolConfigMappings struct {
@@ -371,21 +374,21 @@ type resourceTypeFields struct {
 }
 
 type poolConfigFilterOverride struct {
-	XID                 string   `json:"xid,omitempty"`
-	DependentFilterXIDs []string `json:"dependent_filter_xids,omitempty"`
+	Name               string   `json:"name"`
+	DependentFilterIDs []string `json:"dependent_filter_ids,omitempty"`
 }
 
 type poolConfigResourceTypeContext struct {
-	Value                string                              `json:"value,omitempty"`
-	XID                  string                              `json:"xid,omitempty"`
-	AuthorFields         poolConfigAuthorFields              `json:"author_fields,omitempty"`
-	FieldNames           poolConfigMappingsConfiguredFields  `json:"field_names,omitempty"`
-	AdditionalFilterXIDs []string                            `json:"additional_filter_xids,omitempty"`
-	FilterOverrides      map[string]poolConfigFilterOverride `json:"filter_overrides,omitempty"`
-	filters              []poolConfigFilter
-	filterMap            map[string]*poolConfigFilter
-	filterXIDs           []string
-	fields               resourceTypeFields
+	Value               string                              `json:"value,omitempty"`
+	XID                 string                              `json:"xid,omitempty"`
+	AuthorFields        poolConfigAuthorFields              `json:"author_fields,omitempty"`
+	FieldNames          poolConfigMappingsConfiguredFields  `json:"field_names,omitempty"`
+	AdditionalFilterIDs []string                            `json:"additional_filter_ids,omitempty"`
+	FilterOverrides     map[string]poolConfigFilterOverride `json:"filter_overrides,omitempty"`
+	filters             []poolConfigFilter
+	filterMap           map[string]*poolConfigFilter
+	filterXIDs          []string
+	fields              resourceTypeFields
 }
 
 type poolConfigResourceTypes struct {

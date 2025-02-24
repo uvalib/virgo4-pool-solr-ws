@@ -298,8 +298,8 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 
 	sortDef := s.pool.maps.definedSorts[sortOpt.SortID]
 
-	if sortDef != nil && sortDef.RecordXID != "" {
-		sortOpt.SortID = sortDef.RecordXID
+	if sortDef != nil && sortDef.RecordID != "" {
+		sortOpt.SortID = sortDef.RecordID
 
 		if sortDef.RecordOrder != "" {
 			sortOpt.Order = sortDef.RecordOrder
@@ -869,14 +869,14 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		// collect currently selected values for this filter, we may need them later
 		for _, filterGroup := range s.virgo.req.Filters {
 			for _, filterFacet := range filterGroup.Facets {
-				if filterFacet.FacetID == filter.XID {
+				if filterFacet.FacetID == filter.ID {
 					selectedValues = append(selectedValues, filterFacet.Value)
 				}
 			}
 		}
 
 		// if this is a hidden filter, only return it if it was part of the request
-		filterDef := s.pool.maps.definedFilters[filter.XID]
+		filterDef := s.pool.maps.definedFilters[filter.ID]
 		if filterDef.Hidden == true && len(selectedValues) == 0 {
 			continue
 		}
@@ -884,9 +884,9 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		// grab the selected facet values for this filter
 		// NOTE: the facet may not be present in search results if the user refines
 		// the keyword of an already-facted search such that it returns no results
-		selectedFacet := v4api.Facet{ID: filter.XID}
+		selectedFacet := v4api.Facet{ID: filter.ID}
 		for _, facet := range selectedFacets {
-			if facet.ID == filter.XID {
+			if facet.ID == filter.ID {
 				selectedFacet = facet
 				break
 			}
@@ -895,7 +895,7 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		f := s.copySearchContext()
 		f.virgo.solrQuery = s.virgo.solrQuery
 		f.virgo.parserInfo = s.virgo.parserInfo
-		f.virgo.currentFacet = filter.XID
+		f.virgo.currentFacet = filter.ID
 		facetRequests++
 		go f.getFacetResults(i, channel, selectedFacet, selectedValues)
 	}
@@ -943,7 +943,7 @@ func (s *searchContext) determineSortOptions() searchResponse {
 	// determine if specified sort and order is valid, or if we should use a default
 
 	sortOpt := v4api.SortOrder{
-		SortID: s.pool.config.Global.Service.DefaultSort.XID,
+		SortID: s.pool.config.Global.Service.DefaultSort.ID,
 		Order:  s.pool.config.Global.Service.DefaultSort.Order,
 	}
 
@@ -953,7 +953,7 @@ func (s *searchContext) determineSortOptions() searchResponse {
 		// sort was specified; validate it
 		sortDef := s.pool.maps.definedSorts[sortReq.SortID]
 
-		if sortDef.XID == "" {
+		if sortDef.ID == "" {
 			return searchResponse{status: http.StatusBadRequest, err: errors.New("invalid sort id")}
 		}
 
