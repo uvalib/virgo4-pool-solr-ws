@@ -598,7 +598,7 @@ func (s *searchContext) validateSearchRequest() error {
 		resourceType := ""
 
 		for _, filter := range filterGroup.Facets {
-			if filter.FacetID == s.pool.config.Global.ResourceTypes.FilterXID {
+			if filter.FacetID == s.pool.config.Global.ResourceTypes.FilterID {
 				resourceTypeFacets++
 				resourceType = filter.Value
 			}
@@ -799,14 +799,14 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 
 		var facetList []v4api.Facet
 
-		for _, xid := range s.resourceTypeCtx.filterXIDs {
-			vals := reqMap[xid]
+		for _, id := range s.resourceTypeCtx.filterIDs {
+			vals := reqMap[id]
 
 			if len(vals) == 0 {
 				continue
 			}
 
-			facetDef := s.resourceTypeCtx.filterMap[xid]
+			facetDef := s.resourceTypeCtx.filterMap[id]
 			facet := s.newFacetFromDefinition(facetDef)
 
 			for _, val := range vals {
@@ -834,7 +834,7 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		if s.virgo.parserInfo.isSingleKeywordSearch == true {
 			keyword := s.virgo.parserInfo.keywords[0]
 			if keyword == "" || keyword == "*" {
-				if filters, fErr := s.pool.localFacetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterXIDs); fErr == nil {
+				if filters, fErr := s.pool.localFacetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterIDs); fErr == nil {
 					s.log("FACETS: keyword * query using facet cache for response")
 					return filters, searchResponse{status: http.StatusOK}
 				}

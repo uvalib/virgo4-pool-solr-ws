@@ -387,13 +387,13 @@ type poolConfigResourceTypeContext struct {
 	FilterOverrides     map[string]poolConfigFilterOverride `json:"filter_overrides,omitempty"`
 	filters             []poolConfigFilter
 	filterMap           map[string]*poolConfigFilter
-	filterXIDs          []string
+	filterIDs           []string
 	fields              resourceTypeFields
 }
 
 type poolConfigResourceTypes struct {
 	Field             string                          `json:"field,omitempty"`
-	FilterXID         string                          `json:"filter_xid,omitempty"`
+	FilterID          string                          `json:"filter_id,omitempty"`
 	DefaultContext    string                          `json:"default_context,omitempty"`
 	SupportedContexts []string                        `json:"supported_contexts,omitempty"`
 	Contexts          []poolConfigResourceTypeContext `json:"contexts,omitempty"`

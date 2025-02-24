@@ -449,7 +449,7 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
 
 	solrFields.requireValue(p.config.Global.ResourceTypes.Field, "resource types: solr field")
-	messageIDs.requireValue(p.config.Global.ResourceTypes.FilterXID, "resource types: filter xid")
+	messageIDs.requireValue(p.config.Global.ResourceTypes.FilterID, "resource types: filter id")
 
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
@@ -461,7 +461,7 @@ func (p *poolContext) validateConfig() {
 			solrFields.requireValue(val, fmt.Sprintf("resource type %d [%s] fallback author field", i, r.Value))
 		}
 
-		for j, val := range r.filters { // TODO
+		for j, val := range r.filters {
 			messageIDs.requireValue(val.ID, fmt.Sprintf("resource type %d [%s] filter %d id", i, r.Value, j))
 
 			for k, q := range val.ComponentQueries {
@@ -953,7 +953,6 @@ func (p *poolContext) initFilters() {
 			def.ExposedValues = p.config.Global.Availability.FilterConfig.ExposedValues.Combined
 		}
 
-		// TODO this may not be needed
 		// for component query facets, create mappings from any
 		// possible translated value back to the query definition
 		if len(def.ComponentQueries) > 0 {
@@ -1101,7 +1100,7 @@ func (p *poolContext) initResourceTypes() {
 
 			r.filters = append(r.filters, def)
 			r.filterMap[id] = &def
-			r.filterXIDs = append(r.filterXIDs, id)
+			r.filterIDs = append(r.filterIDs, id)
 
 			seen[id] = true
 		}
