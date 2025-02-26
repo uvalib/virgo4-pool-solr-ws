@@ -22,10 +22,12 @@ func main() {
 	var tgtEnv string
 	var poolName string
 	var port string
+	var outFile string
 	flag.StringVar(&terformBase, "dir", "", "local dirctory for virgo4.lib.virginia.edu/ecs-tasks")
 	flag.StringVar(&tgtEnv, "env", "staging", "production or staging")
 	flag.StringVar(&poolName, "pool", "uva-library", "pool name")
 	flag.StringVar(&port, "port", "8080", "port to run the pool on")
+	flag.StringVar(&outFile, "o", "", "config output file")
 	flag.Parse()
 
 	if terformBase == "" {
@@ -73,6 +75,7 @@ func main() {
 		{File: fmt.Sprintf("pools/%s.json", poolName), EnvVar: "VIRGO4_SOLR_POOL_WS_JSON_99"},
 	}
 
+	fullConfig := ""
 	out := make([]string, 0)
 	for _, cf := range cfgFiles {
 		tgtFile := path.Join(cfgBase, cf.File)
@@ -86,6 +89,9 @@ func main() {
 			updated := strings.Replace(string(jsonBytes), "8080", port, 1)
 			jsonBytes = []byte(updated)
 		}
+
+		fullConfig += string(jsonBytes)
+
 		var gzBuf bytes.Buffer
 		gz := gzip.NewWriter(&gzBuf)
 		_, zErr := gz.Write(jsonBytes)
@@ -108,4 +114,10 @@ func main() {
 	outF.Close()
 	os.Chmod("setup_env.sh", 0777)
 
+	if outFile != "" {
+		log.Printf("dump full config to %s", outFile)
+		cfgF, _ := os.Create(outFile)
+		cfgF.WriteString(fullConfig)
+		outF.Close()
+	}
 }

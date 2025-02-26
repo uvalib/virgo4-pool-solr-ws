@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -17,7 +20,27 @@ import (
 func main() {
 	log.Printf("===> virgo4-pool-solr-ws starting up <===")
 
-	cfg := loadConfig()
+	var cfg *poolConfig
+	var cfgFile string
+	flag.StringVar(&cfgFile, "cfg", "", "local cfg file")
+	flag.Parse()
+	if cfgFile != "" {
+		log.Printf("===> load config from: %s", cfgFile)
+		jsonBytes, err := os.ReadFile(cfgFile)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		var pc poolConfig
+		cErr := json.Unmarshal(jsonBytes, &pc)
+		if cErr != nil {
+			log.Fatal(cErr)
+		}
+		cfg = &pc
+	} else {
+		log.Printf("===> load config from environment")
+		cfg = loadConfig()
+	}
+
 	pool := initializePool(cfg)
 
 	gin.SetMode(gin.ReleaseMode)

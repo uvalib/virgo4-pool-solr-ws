@@ -13,3 +13,5 @@ dist/
 .idea
 environment.dev
 *.sh
+.vscode/
+config.json
