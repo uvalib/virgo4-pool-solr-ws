@@ -324,7 +324,6 @@ func (p *poolContext) validateConfig() {
 	invalid := false
 
 	var solrFields stringValidator
-	var messageIDs stringValidator
 	var miscValues stringValidator
 
 	for _, attribute := range p.config.Local.Identity.Attributes {
@@ -366,9 +365,6 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.Availability.FieldConfig.FieldAnon, "anon availability field")
 	solrFields.requireValue(p.config.Global.Availability.FieldConfig.FieldAuth, "auth availability field")
 
-	messageIDs.requireValue(p.config.Local.Identity.Name, "identity name")
-	messageIDs.requireValue(p.config.Local.Identity.Desc, "identity description")
-
 	if p.config.Local.Identity.Mode == "image" {
 		if p.config.Local.Related == nil {
 			log.Printf("[VALIDATE] missing related section")
@@ -383,12 +379,7 @@ func (p *poolContext) validateConfig() {
 	}
 
 	for i, val := range p.sorts {
-		messageIDs.requireValue(val.ID, fmt.Sprintf("sort option %d id", i))
-		messageIDs.requireValue(val.Label, fmt.Sprintf("sort option %d label", i))
 		solrFields.requireValue(val.Field, fmt.Sprintf("sort option %d group field", i))
-		messageIDs.addValue(val.Asc)
-		messageIDs.addValue(val.Desc)
-		messageIDs.addValue(val.RecordID)
 
 		if val.RecordID != "" && p.maps.definedSorts[val.RecordID].ID == "" {
 			log.Printf("[VALIDATE] sort option %d record sort id not found in sort options list", i)
@@ -406,14 +397,7 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for field, values := range p.maps.solrExternalValues {
-		for _, xid := range values {
-			messageIDs.requireValue(xid, fmt.Sprintf("solr field [%s] value mapped xid", field))
-		}
-	}
-
 	for xid, val := range p.maps.definedFilters {
-		messageIDs.requireValue(val.ID, fmt.Sprintf("filter [%s] id", xid))
 		if val.Solr.Type == "terms" {
 			solrFields.requireValue(val.Solr.Field, fmt.Sprintf("filter [%s] solr field", xid))
 		}
@@ -443,9 +427,7 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.DigitalContent.Field, "record attribute: digital content feature field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
-
 	solrFields.requireValue(p.config.Global.ResourceTypes.Field, "resource types: solr field")
-	messageIDs.requireValue(p.config.Global.ResourceTypes.FilterID, "resource types: filter id")
 
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
@@ -458,20 +440,8 @@ func (p *poolContext) validateConfig() {
 		}
 
 		for j, val := range r.filters {
-			messageIDs.requireValue(val.ID, fmt.Sprintf("resource type %d [%s] filter %d id", i, r.Value, j))
-
 			for k, q := range val.ComponentQueries {
-				messageIDs.requireValue(q.ID, fmt.Sprintf("resource type %d [%s] filter %d component query id %d", i, r.Value, j, k))
-				messageIDs.requireValue(q.Name, fmt.Sprintf("resource type %d [%s] filter %d component query name %d", i, r.Value, j, k))
 				miscValues.requireValue(q.Query, fmt.Sprintf("resource type %d [%s] filter %d component query query %d", i, r.Value, j, k))
-			}
-		}
-
-		for k, v := range r.FilterOverrides {
-			messageIDs.addValue(k)
-			messageIDs.addValue(v.Name)
-			for _, xid := range v.DependentFilterIDs {
-				messageIDs.addValue(xid)
 			}
 		}
 
@@ -479,19 +449,15 @@ func (p *poolContext) validateConfig() {
 
 		for j, field := range allFields {
 			prefix := fmt.Sprintf("resource type %d [%s] field index %d: ", i, r.Value, j)
-			postfix := fmt.Sprintf(` -- {Name:"%s" XID:"%s" Field:"%s"}`, field.Name, field.XID, field.Field)
+			postfix := fmt.Sprintf(` -- {Name:"%s" Field:"%s"}`, field.Name, field.Field)
 
 			solrFields.setPrefix(prefix)
-			messageIDs.setPrefix(prefix)
 			miscValues.setPrefix(prefix)
 
 			solrFields.setPostfix(postfix)
-			messageIDs.setPostfix(postfix)
 			miscValues.setPostfix(postfix)
 
 			// start validating
-
-			messageIDs.addValue(field.XID)
 
 			miscValues.requireValue(field.Name, "name")
 
@@ -531,7 +497,6 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomConfig.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomConfig.LabelField, fmt.Sprintf("%s section label field", field.Name))
 				solrFields.requireValue(field.CustomConfig.ProviderField, fmt.Sprintf("%s section provider field", field.Name))
-				messageIDs.requireValue(field.CustomConfig.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 				solrFields.addValue(field.CustomConfig.ISBNField)
 				solrFields.addValue(field.CustomConfig.ISSNField)
 
@@ -540,15 +505,11 @@ func (p *poolContext) validateConfig() {
 
 			case "author":
 				field.CustomConfig.handler = getCustomFieldAuthor
-
 				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 			case "author_vernacular":
 				field.CustomConfig.handler = getCustomFieldAuthorVernacular
-
 				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 			case "availability":
 				field.CustomConfig.handler = getCustomFieldAvailability
@@ -652,12 +613,9 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomConfig.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomConfig.LabelField, fmt.Sprintf("%s section label field", field.Name))
-				messageIDs.requireValue(field.CustomConfig.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 
 			case "published_date":
 				field.CustomConfig.handler = getCustomFieldPublishedDate
-
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 			case "published_location":
 				field.CustomConfig.handler = getCustomFieldPublishedLocation
@@ -672,7 +630,6 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomConfig.URLField, fmt.Sprintf("%s section url field", field.Name))
 				solrFields.requireValue(field.CustomConfig.LabelField, fmt.Sprintf("%s section label field", field.Name))
-				messageIDs.requireValue(field.CustomConfig.DefaultItemXID, fmt.Sprintf("%s section default item xid", field.Name))
 
 			case "responsibility_statement":
 				field.CustomConfig.handler = getCustomFieldResponsibilityStatement
@@ -696,15 +653,11 @@ func (p *poolContext) validateConfig() {
 			case "subject_summary":
 				field.CustomConfig.handler = getCustomFieldSubjectSummary
 
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
-
 			case "summary_holdings":
 				field.CustomConfig.handler = getCustomFieldSummaryHoldings
 
 			case "terms_of_use":
 				field.CustomConfig.handler = getCustomFieldTermsOfUse
-
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 			case "title_subtitle_edition":
 				field.CustomConfig.handler = getCustomFieldTitleSubtitleEdition
@@ -713,18 +666,14 @@ func (p *poolContext) validateConfig() {
 				solrFields.requireValue(field.CustomConfig.SubtitleField, fmt.Sprintf("%s section subtitle field", field.Name))
 				solrFields.requireValue(field.CustomConfig.EditionField, fmt.Sprintf("%s section edition field", field.Name))
 				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 			case "title_vernacular":
 				field.CustomConfig.handler = getCustomFieldTitleVernacular
 
 				miscValues.requireValue(field.CustomConfig.AlternateType, fmt.Sprintf("%s section alternate type", field.Name))
-				messageIDs.requireValue(field.CustomConfig.AlternateXID, fmt.Sprintf("%s section alternate xid", field.Name))
 
 			case "wsls_collection_description":
 				field.CustomConfig.handler = getCustomFieldWSLSCollectionDescription
-
-				messageIDs.requireValue(field.CustomConfig.ValueXID, fmt.Sprintf("%s section edition field", field.Name))
 
 			default:
 				log.Printf("[VALIDATE] field %d: unhandled custom field: [%s]", j, field.Name)
@@ -740,32 +689,9 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	// // validate xids can actually be translated
-
-	// langs := []string{}
-
-	// for _, tag := range p.translations.bundle.LanguageTags() {
-	// 	lang := tag.String()
-	// 	langs = append(langs, lang)
-	// 	localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-	// 	for _, id := range messageIDs.Values() {
-	// 		_, xtag, xerr := localizer.LocalizeWithTag(&i18n.LocalizeConfig{MessageID: id})
-	// 		if xerr != nil {
-	// 			log.Printf("[VALIDATE] [%s] [%s] translation error: %s", lang, id, xerr.Error())
-	// 			invalid = true
-	// 			continue
-	// 		}
-	// 		if xtag != tag {
-	// 			log.Printf("[VALIDATE] [%s] [%s] translated message has unexpected language (%s); missing translation?", lang, id, xtag)
-	// 			invalid = true
-	// 			continue
-	// 		}
-	// 	}
-	// }
-
 	// check if anything went wrong anywhere
 
-	if invalid || solrFields.Invalid() || messageIDs.Invalid() || miscValues.Invalid() {
+	if invalid || solrFields.Invalid() || miscValues.Invalid() {
 		log.Printf("[VALIDATE] exiting due to error(s) above")
 		os.Exit(1)
 	}
@@ -1012,7 +938,7 @@ func (p *poolContext) initResourceTypes() {
 		}
 
 		p.maps.resourceTypeContexts[def.Value] = def
-		p.maps.resourceTypeContexts[def.XID] = def
+		p.maps.resourceTypeContexts[def.Label] = def // TODO why TWICE?
 
 		// since this is not a configured value, we can build the definitive list now
 		p.resourceTypeContexts = append(p.resourceTypeContexts, def)
@@ -1151,31 +1077,31 @@ func (p *poolContext) initResourceTypes() {
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
 
-		// if there is no translation for this field, do not map it.
+		// if there is no label this field, do not map it.
 		// this effectively hides it from the client.
 
-		if r.XID == "" {
+		if r.Label == "" {
 			continue
 		}
 
 		// solr internal/external field value forward/reverse maps
+		// TODO validate this is correct to omit
+		// for _, tag := range p.translations.bundle.LanguageTags() {
+		// 	lang := tag.String()
+		// 	localizer := i18n.NewLocalizer(p.translations.bundle, lang)
+		// 	msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: r.XID})
 
-		for _, tag := range p.translations.bundle.LanguageTags() {
-			lang := tag.String()
-			localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-			msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: r.XID})
+		// 	if err != nil {
+		// 		log.Printf("[RESTYPES] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
+		// 		invalid = true
+		// 		continue
+		// 	}
 
-			if err != nil {
-				log.Printf("[RESTYPES] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
-				invalid = true
-				continue
-			}
+		// 	reverseMap[msg] = r.Value
+		// }
 
-			reverseMap[msg] = r.Value
-		}
-
-		forwardMap[r.Value] = r.XID
-		reverseMap[r.XID] = r.Value
+		forwardMap[r.Value] = r.Label
+		reverseMap[r.Label] = r.Value
 	}
 
 	p.maps.solrExternalValues[p.config.Global.ResourceTypes.Field] = forwardMap

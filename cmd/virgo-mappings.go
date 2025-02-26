@@ -243,6 +243,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 
 		f := v4api.RecordField{
 			Name:         fieldCfg.Name,
+			Label:        fieldCfg.Label,
 			Type:         fieldCfg.Properties.Type,
 			Separator:    fieldCfg.Properties.Separator,
 			Visibility:   fieldCfg.Properties.Visibility,
@@ -304,11 +305,6 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 				if fieldCfg.CitationOnly == false {
 					rf := fieldValue
 					rf.CitationPart = ""
-
-					if rc.fieldCtx.config.XID != "" {
-						rf.Label = s.client.localize(rc.fieldCtx.config.XID)
-					}
-
 					record.Fields = append(record.Fields, rf)
 				}
 			}

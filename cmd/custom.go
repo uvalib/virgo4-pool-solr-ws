@@ -237,7 +237,7 @@ func (s *searchContext) getLabelledURLs(f v4api.RecordField, doc *solrDocument, 
 		// if not using supplied labels, or this supplied label is blank, fall back to generic item label
 		// (but only if there are multiple urls that would be distinguished by such labels)
 		if itemLabel == "" && len(urlValues) > 1 {
-			itemLabel = fmt.Sprintf("%s %d", s.client.localize(cfg.DefaultItemXID), i+1)
+			itemLabel = fmt.Sprintf("%s %d", cfg.DefaultLabel, i+1)
 		}
 
 		f.Item = strings.TrimSpace(itemLabel)
@@ -496,7 +496,7 @@ func getCustomFieldAuthor(s *searchContext, rc *recordContext) []v4api.RecordFie
 
 	if rc.hasVernacularAuthor == true {
 		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	values = append(values, rc.relations.authors.name...)
@@ -516,7 +516,7 @@ func getCustomFieldAuthorVernacular(s *searchContext, rc *recordContext) []v4api
 
 	if rc.hasVernacularAuthor == true {
 		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -836,7 +836,7 @@ func getCustomFieldPublishedDate(s *searchContext, rc *recordContext) []v4api.Re
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -944,7 +944,7 @@ func getCustomFieldSubjectSummary(s *searchContext, rc *recordContext) []v4api.R
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -972,7 +972,7 @@ func getCustomFieldTermsOfUse(s *searchContext, rc *recordContext) []v4api.Recor
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -988,7 +988,7 @@ func getCustomFieldTitleSubtitleEdition(s *searchContext, rc *recordContext) []v
 
 	if rc.hasVernacularTitle == true {
 		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	titleValue := rc.doc.getFirstString(rc.fieldCtx.config.CustomConfig.TitleField)
@@ -1008,7 +1008,7 @@ func getCustomFieldTitleVernacular(s *searchContext, rc *recordContext) []v4api.
 
 	if rc.hasVernacularTitle == true {
 		rc.fieldCtx.field.Type = rc.fieldCtx.config.CustomConfig.AlternateType
-		rc.fieldCtx.config.XID = rc.fieldCtx.config.CustomConfig.AlternateXID
+		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
 	for _, value := range rc.doc.getStrings(rc.fieldCtx.config.Field) {
@@ -1023,7 +1023,7 @@ func getCustomFieldWSLSCollectionDescription(s *searchContext, rc *recordContext
 	var fv []v4api.RecordField
 
 	if rc.isWSLS == true {
-		rc.fieldCtx.field.Value = s.client.localize(rc.fieldCtx.config.CustomConfig.ValueXID)
+		rc.fieldCtx.field.Value = rc.fieldCtx.config.CustomConfig.AlternateValue
 		fv = append(fv, rc.fieldCtx.field)
 	}
 

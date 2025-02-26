@@ -200,9 +200,9 @@ type poolConfigFieldCustomConfig struct {
 	TitleField       string                      `json:"title_field,omitempty"`
 	UPCField         string                      `json:"upc_field,omitempty"`
 	URLField         string                      `json:"url_field,omitempty"`
-	AlternateXID     string                      `json:"alternate_xid,omitempty"` // translation ids
-	DefaultItemXID   string                      `json:"default_item_xid,omitempty"`
-	ValueXID         string                      `json:"value_xid,omitempty"`
+	AlternateLabel   string                      `json:"alternate_label,omitempty"` // translation ids
+	DefaultLabel     string                      `json:"default_label,omitempty"`
+	AlternateValue   string                      `json:"alternate_value,omitempty"`
 	AlternateType    string                      `json:"alternate_type,omitempty"` // misc
 	IDPrefix         string                      `json:"id_prefix,omitempty"`
 	MusicPool        string                      `json:"music_pool,omitempty"`
@@ -215,9 +215,9 @@ type poolConfigFieldCustomConfig struct {
 }
 
 type poolConfigField struct {
-	Name               string                       `json:"name,omitempty"` // required; v4 field name, and key for common fields
-	XID                string                       `json:"xid,omitempty"`
-	Field              string                       `json:"field,omitempty"`
+	Name               string                       `json:"name"` // required; v4 field name, and key for common fields
+	Label              string                       `json:"label"`
+	Field              string                       `json:"field"`
 	Properties         poolConfigFieldProperties    `json:"properties,omitempty"`
 	Limit              int                          `json:"limit,omitempty"`
 	SplitOn            string                       `json:"split_on,omitempty"`
@@ -380,7 +380,7 @@ type poolConfigFilterOverride struct {
 
 type poolConfigResourceTypeContext struct {
 	Value               string                              `json:"value,omitempty"`
-	XID                 string                              `json:"xid,omitempty"`
+	Label               string                              `json:"label,omitempty"`
 	AuthorFields        poolConfigAuthorFields              `json:"author_fields,omitempty"`
 	FieldNames          poolConfigMappingsConfiguredFields  `json:"field_names,omitempty"`
 	AdditionalFilterIDs []string                            `json:"additional_filter_ids,omitempty"`

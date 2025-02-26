@@ -142,7 +142,11 @@ func (c *clientContext) verbose(format string, args ...interface{}) {
 }
 
 func (c *clientContext) localize(id string) string {
-	return c.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: id})
+	val, err := c.localizer.Localize(&i18n.LocalizeConfig{MessageID: id})
+	if err != nil {
+		return id
+	}
+	return val
 }
 
 func (c *clientContext) isAuthenticated() bool {

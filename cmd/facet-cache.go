@@ -109,19 +109,3 @@ func (f *facetCache) getSpecifiedFilters(filterIDs []string) ([]v4api.Facet, err
 func (f *facetCache) getPreSearchFilters() ([]v4api.Facet, error) {
 	return f.getSpecifiedFilters(f.searchCtx.pool.config.Global.Mappings.Configured.FilterIDs)
 }
-
-func (f *facetCache) getLocalizedFilters(c *clientContext, filterXIDs []string) ([]v4api.Facet, error) {
-	filters, err := f.getSpecifiedFilters(filterXIDs)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range filters {
-		filter := &filters[i]
-
-		filter.Name = c.localize(filter.ID)
-	}
-
-	return filters, nil
-}

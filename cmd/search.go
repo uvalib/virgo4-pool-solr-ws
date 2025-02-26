@@ -834,10 +834,10 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		if s.virgo.parserInfo.isSingleKeywordSearch == true {
 			keyword := s.virgo.parserInfo.keywords[0]
 			if keyword == "" || keyword == "*" {
-				if filters, fErr := s.pool.localFacetCache.getLocalizedFilters(s.client, s.resourceTypeCtx.filterIDs); fErr == nil {
-					s.log("FACETS: keyword * query using facet cache for response")
-					return filters, searchResponse{status: http.StatusOK}
-				}
+				filters, _ := s.pool.localFacetCache.getSpecifiedFilters(s.resourceTypeCtx.filterIDs)
+				s.log("FACETS: keyword * query using facet cache for response")
+				return filters, searchResponse{status: http.StatusOK}
+
 			}
 		}
 	}

@@ -36,6 +36,23 @@ func main() {
 	}
 
 	cfgBase := path.Join(terformBase, tgtEnv, "pool-solr-ws/environment")
+
+	// This was used to bulk replace xid data in the terraform config
+	// pCfg := path.Join(cfgBase, "common/fields.json")
+	// pBytes, err := os.ReadFile(pCfg)
+	// pString := string(pBytes)
+	// mBytes, err := os.ReadFile("f.txt")
+	// for _, row := range strings.Split(string(mBytes), "\n") {
+	// 	id := strings.Split(string(row), "=")[0]
+	// 	label := strings.Split(string(row), "=")[1]
+	// 	pString = strings.ReplaceAll(pString, id, label)
+	// }
+
+	// cfgF, _ := os.Create(pCfg)
+	// cfgF.WriteString(pString)
+	// cfgF.Close()
+	// log.Fatal("STOP")
+
 	log.Printf("Generate pool config for %s %s from %s", tgtEnv, poolName, cfgBase)
 	cfgFiles := []cfgData{
 		{File: "common/availability.json", EnvVar: "VIRGO4_SOLR_POOL_WS_JSON_01"},
