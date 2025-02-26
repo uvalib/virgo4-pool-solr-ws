@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/uvalib/virgo4-jwt/v4jwt"
 )
 
@@ -26,10 +25,7 @@ type clientContext struct {
 	start        time.Time       // internally set
 	opts         clientOpts      // options set by client
 	claims       *v4jwt.V4Claims // information about this user
-	localizer    *i18n.Localizer // per-request localization
 	ginCtx       *gin.Context    // gin context
-	acceptLang   string          // first language requested by client
-	contentLang  string          // actual language we are responding with
 }
 
 func boolOptionWithFallback(opt string, fallback bool) bool {
@@ -50,11 +46,9 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 	c.reqID = "internal"
 	c.ip = "internal"
 	c.tokenSnippet = "internal"
-	c.acceptLang = "en-US"
 
 	// if there is no gin context, wrap up and return
 	if ctx == nil {
-		c.localizer = i18n.NewLocalizer(p.translations.bundle, c.acceptLang)
 		return
 	}
 
@@ -76,14 +70,6 @@ func (c *clientContext) init(p *poolContext, ctx *gin.Context) {
 		c.claims = val.(*v4jwt.V4Claims)
 	}
 
-	// determine client preferred language
-	acceptLang := strings.Split(ctx.GetHeader("Accept-Language"), ",")[0]
-	if acceptLang != "" {
-		c.acceptLang = acceptLang
-	}
-
-	c.localizer = i18n.NewLocalizer(p.translations.bundle, c.acceptLang)
-
 	c.opts.debug = boolOptionWithFallback(ctx.Query("debug"), false)
 	c.opts.verbose = boolOptionWithFallback(ctx.Query("verbose"), false)
 	c.opts.citation = boolOptionWithFallback(ctx.Query("citation"), false)
@@ -101,7 +87,7 @@ func (c *clientContext) logRequest() {
 		claimsStr = fmt.Sprintf("  [%s; %s; %s; %v]", c.claims.UserID, c.claims.Role, c.claims.AuthMethod, c.claims.IsUVA)
 	}
 
-	c.log("REQUEST: %s %s%s  (%s) => (%s)%s", c.ginCtx.Request.Method, c.ginCtx.Request.URL.Path, query, c.acceptLang, c.contentLang, claimsStr)
+	c.log("REQUEST: %s %s%s => %s", c.ginCtx.Request.Method, c.ginCtx.Request.URL.Path, query, claimsStr)
 }
 
 func (c *clientContext) logResponse(resp searchResponse) {
@@ -139,14 +125,6 @@ func (c *clientContext) verbose(format string, args ...interface{}) {
 	}
 
 	c.log("VERBOSE: "+format, args...)
-}
-
-func (c *clientContext) localize(id string) string {
-	val, err := c.localizer.Localize(&i18n.LocalizeConfig{MessageID: id})
-	if err != nil {
-		return id
-	}
-	return val
 }
 
 func (c *clientContext) isAuthenticated() bool {

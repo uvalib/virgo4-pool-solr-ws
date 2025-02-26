@@ -13,11 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BurntSushi/toml"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/uvalib/virgo4-api/v4api"
 	"github.com/uvalib/virgo4-jwt/v4jwt"
-	"golang.org/x/text/language"
 )
 
 // git commit used for this build; supplied at compile time
@@ -42,10 +39,6 @@ type poolSolr struct {
 	scoreThresholdHigh   float32
 }
 
-type poolTranslations struct {
-	bundle *i18n.Bundle
-}
-
 // pool-level maps
 type poolMaps struct {
 	attributes           map[string]v4api.PoolAttribute
@@ -64,7 +57,6 @@ type poolMaps struct {
 type poolContext struct {
 	randomSource         *rand.Rand
 	config               *poolConfig
-	translations         poolTranslations
 	identity             v4api.PoolIdentity
 	providers            v4api.PoolProviders
 	version              poolVersion
@@ -76,45 +68,6 @@ type poolContext struct {
 	globalFacetCache     *facetCache // for pre-search filters
 	localFacetCache      *facetCache // for quick loading of facets on empty keyword searches
 	serialsSolutions     httpClientContext
-}
-
-type stringValidator struct {
-	values  []string
-	invalid bool
-	prefix  string
-	postfix string
-}
-
-func (v *stringValidator) addValue(value string) {
-	if value != "" {
-		v.values = append(v.values, value)
-	}
-}
-
-func (v *stringValidator) setPrefix(prefix string) {
-	v.prefix = prefix
-}
-
-func (v *stringValidator) setPostfix(postfix string) {
-	v.postfix = postfix
-}
-
-func (v *stringValidator) requireValue(value string, label string) {
-	if value == "" {
-		log.Printf("[VALIDATE] %smissing %s%s", v.prefix, label, v.postfix)
-		v.invalid = true
-		return
-	}
-
-	v.addValue(value)
-}
-
-func (v *stringValidator) Values() []string {
-	return v.values
-}
-
-func (v *stringValidator) Invalid() bool {
-	return v.invalid
 }
 
 func (p *poolContext) initIdentity() {
@@ -297,22 +250,6 @@ func (p *poolContext) initCitationFormats() {
 	if invalid == true {
 		log.Printf("[INIT] exiting due to error(s) above")
 		os.Exit(1)
-	}
-}
-
-func (p *poolContext) initTranslations() {
-	defaultLang := language.English
-
-	bundle := i18n.NewBundle(defaultLang)
-	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-
-	toml, _ := filepath.Glob("i18n/*.toml")
-	for _, f := range toml {
-		bundle.MustLoadMessageFile(f)
-	}
-
-	p.translations = poolTranslations{
-		bundle: bundle,
 	}
 }
 
@@ -1079,27 +1016,11 @@ func (p *poolContext) initResourceTypes() {
 
 		// if there is no label this field, do not map it.
 		// this effectively hides it from the client.
-
 		if r.Label == "" {
 			continue
 		}
 
 		// solr internal/external field value forward/reverse maps
-		// TODO validate this is correct to omit
-		// for _, tag := range p.translations.bundle.LanguageTags() {
-		// 	lang := tag.String()
-		// 	localizer := i18n.NewLocalizer(p.translations.bundle, lang)
-		// 	msg, err := localizer.Localize(&i18n.LocalizeConfig{MessageID: r.XID})
-
-		// 	if err != nil {
-		// 		log.Printf("[RESTYPES] [%s] missing translation for message ID: [%s] (%s)", lang, r.XID, err.Error())
-		// 		invalid = true
-		// 		continue
-		// 	}
-
-		// 	reverseMap[msg] = r.Value
-		// }
-
 		forwardMap[r.Value] = r.Label
 		reverseMap[r.Label] = r.Value
 	}
@@ -1180,7 +1101,6 @@ func initializePool(cfg *poolConfig) *poolContext {
 
 	// no dependencies:
 	p.initVersion()
-	p.initTranslations()
 	p.initSolr()
 	p.initRelators()
 	p.initProviders()

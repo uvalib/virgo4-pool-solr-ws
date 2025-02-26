@@ -9,7 +9,6 @@ RUN apk update && apk upgrade && apk add --no-cache make
 WORKDIR /build
 COPY go.mod go.sum Makefile ./
 COPY cmd ./cmd
-COPY i18n ./i18n
 COPY assets ./assets
 ARG GIT_COMMIT
 RUN make rebuild-docker GIT_COMMIT="$GIT_COMMIT"
@@ -29,12 +28,12 @@ RUN addgroup webservice && adduser webservice -G webservice -D
 ENV TZ=UTC
 RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Specify home 
+# Specify home
 ENV APP_HOME=/virgo4-pool-solr-ws
 WORKDIR $APP_HOME
 
 # Create necessary directories
-RUN mkdir -p $APP_HOME $APP_HOME/bin $APP_HOME/i18n $APP_HOME/assets $APP_HOME/scripts
+RUN mkdir -p $APP_HOME $APP_HOME/bin $APP_HOME/assets $APP_HOME/scripts
 RUN chown -R webservice $APP_HOME && chgrp -R webservice $APP_HOME
 
 # port and run command
@@ -45,11 +44,10 @@ CMD ["scripts/entry.sh"]
 COPY package/data/container_bash_profile /home/webservice/.profile
 COPY package/scripts/entry.sh $APP_HOME/scripts/entry.sh
 COPY --from=builder /build/bin/virgo4-pool-solr-ws $APP_HOME/bin/virgo4-pool-solr-ws
-COPY --from=builder /build/i18n/* $APP_HOME/i18n/
 COPY --from=builder /build/assets/. $APP_HOME/assets/
 
 # Ensure permissions are correct
-RUN chown webservice:webservice /home/webservice/.profile $APP_HOME/scripts/entry.sh $APP_HOME/bin/virgo4-pool-solr-ws $APP_HOME/i18n $APP_HOME/assets && chmod 755 /home/webservice/.profile $APP_HOME/scripts/entry.sh $APP_HOME/bin/virgo4-pool-solr-ws $APP_HOME/i18n $APP_HOME/assets
+RUN chown webservice:webservice /home/webservice/.profile $APP_HOME/scripts/entry.sh $APP_HOME/bin/virgo4-pool-solr-ws $APP_HOME/assets && chmod 755 /home/webservice/.profile $APP_HOME/scripts/entry.sh $APP_HOME/bin/virgo4-pool-solr-ws $APP_HOME/assets
 
 # Add the build tag
 ARG BUILD_TAG

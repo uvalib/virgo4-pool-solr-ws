@@ -212,20 +212,23 @@ func (s *searchContext) getExternalSolrValue(field string, internalValue string)
 		return internalValue, nil
 	}
 
-	xid, ok := extMap[internalValue]
+	val, ok := extMap[internalValue]
 
 	if ok == false {
 		return "", fmt.Errorf("solr field: [%s]  ignoring unmapped internal value: [%s]", field, internalValue)
 	}
 
-	if xid == "" {
+	if val == "" {
 		return "", fmt.Errorf("solr field: [%s]  ignoring empty internal value: [%s]", field, internalValue)
 	}
 
-	return s.client.localize(xid), nil
+	log.Printf("TEST: getExternalSolrValue %s - %s = %s", field, internalValue, val)
+
+	return val, nil
 }
 
 func (s *searchContext) getInternalSolrValue(field string, externalValue string) (string, error) {
+	log.Printf("TEST: getInternalSolrValue %s - %s", field, externalValue)
 	intMap := s.pool.maps.solrInternalValues[field]
 
 	if intMap == nil {
