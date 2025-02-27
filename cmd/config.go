@@ -200,7 +200,7 @@ type poolConfigFieldCustomConfig struct {
 	TitleField       string                      `json:"title_field,omitempty"`
 	UPCField         string                      `json:"upc_field,omitempty"`
 	URLField         string                      `json:"url_field,omitempty"`
-	AlternateLabel   string                      `json:"alternate_label,omitempty"` // translation ids
+	AlternateLabel   string                      `json:"alternate_label,omitempty"`
 	DefaultLabel     string                      `json:"default_label,omitempty"`
 	AlternateValue   string                      `json:"alternate_value,omitempty"`
 	AlternateType    string                      `json:"alternate_type,omitempty"` // misc
@@ -392,8 +392,6 @@ type poolConfigResourceTypeContext struct {
 }
 
 type poolConfigResourceTypes struct {
-	Field             string                          `json:"field,omitempty"`
-	FilterID          string                          `json:"filter_id,omitempty"`
 	DefaultContext    string                          `json:"default_context,omitempty"`
 	SupportedContexts []string                        `json:"supported_contexts,omitempty"`
 	Contexts          []poolConfigResourceTypeContext `json:"contexts,omitempty"`

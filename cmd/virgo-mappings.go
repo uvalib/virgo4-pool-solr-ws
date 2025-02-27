@@ -123,7 +123,7 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordConte
 
 	rc.doc = doc
 
-	pool := rc.doc.getFirstString(s.pool.config.Global.ResourceTypes.Field)
+	pool := rc.doc.getFirstString("pool_f")
 	if pool == "" {
 		pool = s.pool.config.Global.ResourceTypes.DefaultContext
 	}

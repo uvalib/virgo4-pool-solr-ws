@@ -253,7 +253,7 @@ func (p *poolContext) initCitationFormats() {
 }
 
 func (p *poolContext) validateConfig() {
-	// ensure the existence and validity of required variables/solr fields/translation ids
+	// ensure the existence and validity of required variables/solr fields
 
 	var err error
 
@@ -363,7 +363,6 @@ func (p *poolContext) validateConfig() {
 	solrFields.requireValue(p.config.Global.RecordAttributes.DigitalContent.Field, "record attribute: digital content feature field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.Sirsi.Field, "record attribute: sirsi data source field")
 	solrFields.requireValue(p.config.Global.RecordAttributes.WSLS.Field, "record attribute: wsls data source field")
-	solrFields.requireValue(p.config.Global.ResourceTypes.Field, "resource types: solr field")
 
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
