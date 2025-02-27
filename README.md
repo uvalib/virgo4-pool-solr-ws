@@ -27,3 +27,11 @@ All endpoints under /api require authentication.
 This service has very complex config requirements. See the README in /setup for a utility to
 create a working config based on terraform configuration files.
 
+Once the setup util has been used and the env has been set, the pool can be launched with:
+`go run cmd/*.go`
+
+It also supports a param that will cause it to dump the complete, merged json config to the specied file and exit.
+`go run cmd/*.go -o config.json`
+
+This file can then be used in a vscode debug configuration, or to launch the pool without env:
+`go run cmd/*.go -cfg config.json`
