@@ -22,7 +22,9 @@ func main() {
 
 	var cfg *poolConfig
 	var cfgFile string
+	var cfgOutFile string
 	flag.StringVar(&cfgFile, "cfg", "", "local cfg file")
+	flag.StringVar(&cfgOutFile, "o", "", "dump config to this file ")
 	flag.Parse()
 	if cfgFile != "" {
 		log.Printf("===> load config from: %s", cfgFile)
@@ -39,6 +41,17 @@ func main() {
 	} else {
 		log.Printf("===> load config from environment")
 		cfg = loadConfig()
+		if cfgOutFile != "" {
+			log.Printf("===> dump config to %s and exit", cfgOutFile)
+			cfgF, _ := os.Create(cfgOutFile)
+			bytes, err := json.MarshalIndent(cfg, "", "   ")
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			cfgF.WriteString(string(bytes))
+			cfgF.Close()
+			os.Exit(0)
+		}
 	}
 
 	pool := initializePool(cfg)

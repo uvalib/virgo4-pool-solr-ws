@@ -22,12 +22,10 @@ func main() {
 	var tgtEnv string
 	var poolName string
 	var port string
-	var outFile string
 	flag.StringVar(&terformBase, "dir", "", "local dirctory for virgo4.lib.virginia.edu/ecs-tasks")
 	flag.StringVar(&tgtEnv, "env", "staging", "production or staging")
 	flag.StringVar(&poolName, "pool", "uva-library", "pool name")
 	flag.StringVar(&port, "port", "8080", "port to run the pool on")
-	flag.StringVar(&outFile, "o", "", "config output file")
 	flag.Parse()
 
 	if terformBase == "" {
@@ -113,11 +111,4 @@ func main() {
 	outF.WriteString(strings.Join(out, "\n"))
 	outF.Close()
 	os.Chmod("setup_env.sh", 0777)
-
-	if outFile != "" {
-		log.Printf("dump full config to %s", outFile)
-		cfgF, _ := os.Create(outFile)
-		cfgF.WriteString(fullConfig)
-		outF.Close()
-	}
 }
