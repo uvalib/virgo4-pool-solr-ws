@@ -58,9 +58,9 @@ type searchContext struct {
 }
 
 type searchResponse struct {
-	status int         // http status code
-	data   interface{} // data to return as JSON
-	err    error       // error, if any
+	status int   // http status code
+	data   any   // data to return as JSON
+	err    error // error, if any
 }
 
 func confidenceIndex(s string) int {
@@ -590,25 +590,10 @@ func (s *searchContext) validateSearchRequest() error {
 		// in our config, so the best we can do is ensure just one filter
 		// group was passed, and that it contains filters that we know about
 
-		filterGroup := s.virgo.req.Filters[0]
-
 		// first pass: determine resource type context
-
-		resourceTypeFacets := 0
-		resourceType := ""
-
-		for _, filter := range filterGroup.Facets {
-			if filter.FacetID == s.pool.config.Global.ResourceTypes.FilterID {
-				resourceTypeFacets++
-				resourceType = filter.Value
-			}
-		}
-
-		if resourceTypeFacets == 1 {
-			pool, err := s.getInternalSolrValue(s.pool.config.Global.ResourceTypes.Field, resourceType)
-			if err != nil {
-				s.warn(err.Error())
-			} else {
+		for _, filter := range s.virgo.req.Filters[0].Facets {
+			if filter.FacetID == "pool_f" {
+				pool := s.getInternalSolrValue("pool_f", filter.Value)
 				s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[pool]
 			}
 		}
@@ -619,8 +604,7 @@ func (s *searchContext) validateSearchRequest() error {
 
 		s.virgo.invalidFilters = false
 		s.virgo.totalFilters = 0
-
-		for _, filter := range filterGroup.Facets {
+		for _, filter := range s.virgo.req.Filters[0].Facets {
 			if _, rok := s.resourceTypeCtx.filterMap[filter.FacetID]; rok == false {
 				s.warn("received known filter [%s] that is not present in resource type context [%s]", filter.FacetID, s.resourceTypeCtx.Value)
 				s.virgo.invalidFilters = true

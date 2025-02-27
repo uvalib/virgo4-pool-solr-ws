@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -205,45 +204,33 @@ func hasAnySuffix(s string, suffixes []string) bool {
 	return false
 }
 
-func (s *searchContext) getExternalSolrValue(field string, internalValue string) (string, error) {
-	extMap := s.pool.maps.solrExternalValues[field]
-
-	if extMap == nil {
-		return internalValue, nil
+func (s *searchContext) getExternalSolrValue(field string, internalValue string) string {
+	if field != "pool_f" {
+		return internalValue
 	}
-
-	val, ok := extMap[internalValue]
-
-	if ok == false {
-		return "", fmt.Errorf("solr field: [%s]  ignoring unmapped internal value: [%s]", field, internalValue)
-	}
-
+	val := s.pool.maps.solrPoolNames[internalValue]
 	if val == "" {
-		return "", fmt.Errorf("solr field: [%s]  ignoring empty internal value: [%s]", field, internalValue)
+		return internalValue
 	}
-
-	log.Printf("TEST: getExternalSolrValue %s - %s = %s", field, internalValue, val)
-
-	return val, nil
+	return val
 }
 
-func (s *searchContext) getInternalSolrValue(field string, externalValue string) (string, error) {
-	log.Printf("TEST: getInternalSolrValue %s - %s", field, externalValue)
-	intMap := s.pool.maps.solrInternalValues[field]
-
-	if intMap == nil {
-		return externalValue, nil
+func (s *searchContext) getInternalSolrValue(field string, externalValue string) string {
+	if field != "pool_f" {
+		return externalValue
 	}
 
-	val, ok := intMap[externalValue]
-
-	if ok == false {
-		return externalValue, fmt.Errorf("solr field: [%s]  ignoring unmapped external value: [%s]", field, externalValue)
+	intVal := ""
+	for k, v := range s.pool.maps.solrPoolNames {
+		if v == externalValue {
+			intVal = k
+			break
+		}
 	}
 
-	if val == "" {
-		return externalValue, fmt.Errorf("solr field: [%s]  ignoring empty external value: [%s]", field, externalValue)
+	if intVal == "" {
+		return externalValue
 	}
 
-	return val, nil
+	return intVal
 }

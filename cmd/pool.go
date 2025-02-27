@@ -50,8 +50,7 @@ type poolMaps struct {
 	resourceTypeContexts map[string]*poolConfigResourceTypeContext // per-resource-type facets and fields
 	relatorTerms         map[string][]string
 	relatorCodes         map[string]string
-	solrExternalValues   map[string]map[string]string
-	solrInternalValues   map[string]map[string]string
+	solrPoolNames        map[string]string
 }
 
 type poolContext struct {
@@ -1005,12 +1004,7 @@ func (p *poolContext) initResourceTypes() {
 
 	// for each resource type, set up its solr value maps
 
-	p.maps.solrExternalValues = make(map[string]map[string]string)
-	p.maps.solrInternalValues = make(map[string]map[string]string)
-
-	forwardMap := make(map[string]string)
-	reverseMap := make(map[string]string)
-
+	p.maps.solrPoolNames = make(map[string]string)
 	for i := range p.resourceTypeContexts {
 		r := p.resourceTypeContexts[i]
 
@@ -1020,13 +1014,8 @@ func (p *poolContext) initResourceTypes() {
 			continue
 		}
 
-		// solr internal/external field value forward/reverse maps
-		forwardMap[r.Value] = r.Label
-		reverseMap[r.Label] = r.Value
+		p.maps.solrPoolNames[r.Value] = r.Label
 	}
-
-	p.maps.solrExternalValues[p.config.Global.ResourceTypes.Field] = forwardMap
-	p.maps.solrInternalValues[p.config.Global.ResourceTypes.Field] = reverseMap
 
 	if invalid == true {
 		log.Printf("[RESTYPES] exiting due to error(s) above")

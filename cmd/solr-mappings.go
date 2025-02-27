@@ -75,14 +75,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			solrFilter = q.Query
 
 		default:
-			var err error
-
-			filterValue, err = ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
-			if err != nil {
-				ctx.warn(err.Error())
-				continue
-			}
-
+			filterValue = ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
 			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 		}
 
@@ -265,10 +258,6 @@ func (s *searchContext) populateSolrQuery() searchResponse {
 
 	if err != nil {
 		return searchResponse{status: http.StatusBadRequest, err: fmt.Errorf("failed to convert Virgo query to Solr query: %s", err.Error())}
-	}
-
-	if p.containsUnsupportedFilters == true {
-		s.virgo.skipQuery = true
 	}
 
 	s.virgo.solrQuery = p.query

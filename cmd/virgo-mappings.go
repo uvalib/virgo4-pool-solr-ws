@@ -396,12 +396,7 @@ func (s *searchContext) populateFacet(facetDef *poolConfigFilter, value solrResp
 		for _, b := range value.Buckets {
 			if len(facetDef.ExposedValues) == 0 || sliceContainsString(facetDef.ExposedValues, b.Val, false) {
 
-				mappedValue, err := s.getExternalSolrValue(facetDef.Solr.Field, b.Val)
-				if err != nil {
-					s.warn(err.Error())
-					continue
-				}
-
+				mappedValue := s.getExternalSolrValue(facetDef.Solr.Field, b.Val)
 				selected := false
 				if s.solr.req.meta.selectionMap[facetDef.ID][b.Val] != "" {
 					selected = true
