@@ -253,6 +253,7 @@ type poolConfigFacetSolr struct {
 	Value     string `json:"value,omitempty"`
 	Type      string `json:"type,omitempty"`
 	Sort      string `json:"sort,omitempty"`
+	MinCount  int    `json:"mincount,omitempty"`
 	Limit     int    `json:"limit,omitempty"`
 	Offset    int    `json:"offset,omitempty"`
 }

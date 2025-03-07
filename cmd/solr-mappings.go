@@ -139,13 +139,14 @@ func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFace
 		facet := sourceFacets[xid]
 
 		f := solrRequestFacet{
-			Type:   facet.Solr.Type,
-			Field:  facet.Solr.Field,
-			Sort:   facet.Solr.Sort,
-			Offset: facet.Solr.Offset,
-			Limit:  facet.Solr.Limit,
-			Facet:  solrRequestSubFacet{GroupCount: fmt.Sprintf("unique(%s)", s.pool.config.Local.Solr.GroupField)},
-			config: facet,
+			Type:     facet.Solr.Type,
+			Field:    facet.Solr.Field,
+			Sort:     facet.Solr.Sort,
+			Offset:   facet.Solr.Offset,
+			Limit:    facet.Solr.Limit,
+			MinCount: facet.Solr.MinCount,
+			Facet:    solrRequestSubFacet{GroupCount: fmt.Sprintf("unique(%s)", s.pool.config.Local.Solr.GroupField)},
+			config:   facet,
 		}
 
 		if facet.Solr.FieldAuth != "" && auth == true {

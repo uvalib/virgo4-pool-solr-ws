@@ -48,14 +48,15 @@ type solrRequestSubFacet struct {
 }
 
 type solrRequestFacet struct {
-	Type   string              `json:"type,omitempty"`
-	Field  string              `json:"field,omitempty"`
-	Query  string              `json:"query,omitempty"`
-	Sort   string              `json:"sort,omitempty"`
-	Offset int                 `json:"offset,omitempty"`
-	Limit  int                 `json:"limit,omitempty"`
-	Facet  solrRequestSubFacet `json:"facet,omitempty"`
-	config *poolConfigFilter
+	Type     string              `json:"type,omitempty"`
+	Field    string              `json:"field,omitempty"`
+	Query    string              `json:"query,omitempty"`
+	Sort     string              `json:"sort,omitempty"`
+	Offset   int                 `json:"offset,omitempty"`
+	Limit    int                 `json:"limit,omitempty"`
+	MinCount int                 `json:"mincount,omitempty"`
+	Facet    solrRequestSubFacet `json:"facet,omitempty"`
+	config   *poolConfigFilter
 }
 
 type solrRequestJSON struct {
