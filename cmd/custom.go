@@ -292,28 +292,35 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 			continue
 		}
 
-		library := parts[0]
-		location := parts[1]
-		text := parts[2]
-		note := parts[3]
-		//label := parts[4]
-		callNumber := parts[5]
-
-		if library != "" && libraries[library] == nil {
-			libraries[library] = make(map[string]map[string][]summaryTextNote)
-		}
-
-		if library != "" && location != "" && libraries[library][location] == nil {
-			libraries[library][location] = make(map[string][]summaryTextNote)
-		}
+		// to be included in the summary holdings data sent to the client:
+		library := parts[0]    // this must exist;
+		location := parts[1]   // this can be empty (otherwise some text/notes get omitted);
+		text := parts[2]       // either this or note must exist;
+		note := parts[3]       // either this or text must exist;
+		label := parts[4]      // this can be empty (if not, it will be one of "Library has", "Index text holdings", or "Suppl text holdings");
+		callNumber := parts[5] // must have previously existed (we track the last call number seen).
 
 		if callNumber != "" && callNumber != lastCallNumber {
 			lastCallNumber = callNumber
 		}
 
-		if (text != "" || note != "") && library != "" && location != "" && lastCallNumber != "" {
-			textNote := summaryTextNote{Text: text, Note: note}
-			libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], textNote)
+		if library != "" {
+			if libraries[library] == nil {
+				libraries[library] = make(map[string]map[string][]summaryTextNote)
+			}
+
+			if libraries[library][location] == nil {
+				libraries[library][location] = make(map[string][]summaryTextNote)
+			}
+
+			if (text != "" || note != "") && lastCallNumber != "" {
+				labelText := text
+				if label != "" {
+					labelText = fmt.Sprintf("%s: %s", label, text)
+				}
+				textNote := summaryTextNote{Text: labelText, Note: note}
+				libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], textNote)
+			}
 		}
 	}
 
