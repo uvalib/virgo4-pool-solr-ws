@@ -293,11 +293,11 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 		}
 
 		// to be included in the summary holdings data sent to the client:
-		library := parts[0]    // this must exist;
-		location := parts[1]   // this can be empty (otherwise some text/notes get omitted);
-		text := parts[2]       // either this or note must exist;
-		note := parts[3]       // either this or text must exist;
-		label := parts[4]      // this can be empty (if not, it will be one of "Library has", "Index text holdings", or "Suppl text holdings");
+		library := parts[0]  // this must exist;
+		location := parts[1] // this can be empty (otherwise some text/notes get omitted);
+		text := parts[2]     // either this or note must exist;
+		note := parts[3]     // either this or text must exist;
+		//label := parts[4]      // this can be empty (if not, it will be one of "Library has", "Index text holdings", or "Suppl text holdings");
 		callNumber := parts[5] // must have previously existed (we track the last call number seen).
 
 		if callNumber != "" && callNumber != lastCallNumber {
@@ -314,11 +314,7 @@ func (s *searchContext) getSummaryHoldings(fieldValues []string) interface{} {
 			}
 
 			if (text != "" || note != "") && lastCallNumber != "" {
-				labelText := text
-				if label != "" {
-					labelText = fmt.Sprintf("%s: %s", label, text)
-				}
-				textNote := summaryTextNote{Text: labelText, Note: note}
+				textNote := summaryTextNote{Text: text, Note: note}
 				libraries[library][location][lastCallNumber] = append(libraries[library][location][lastCallNumber], textNote)
 			}
 		}
