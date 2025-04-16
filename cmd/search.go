@@ -590,15 +590,16 @@ func (s *searchContext) validateSearchRequest() error {
 		// in our config, so the best we can do is ensure just one filter
 		// group was passed, and that it contains filters that we know about
 
+		s.log("VALIDATE: using resource type context [%s] by default", s.resourceTypeCtx.Value)
+
 		// first pass: determine resource type context
 		for _, filter := range s.virgo.req.Filters[0].Facets {
 			if filter.FacetID == "pool_f" {
 				pool := s.getInternalSolrValue("pool_f", filter.Value)
 				s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[pool]
+				s.log("VALIDATE: using resource type context [%s] based on selected facets", s.resourceTypeCtx.Value)
 			}
 		}
-
-		s.log("VALIDATE: using resource type context [%s] based on selected facets", s.resourceTypeCtx.Value)
 
 		// second pass: ensure filter(s) are present in the resource type context facet list
 
@@ -606,7 +607,7 @@ func (s *searchContext) validateSearchRequest() error {
 		s.virgo.totalFilters = 0
 		for _, filter := range s.virgo.req.Filters[0].Facets {
 			if _, rok := s.resourceTypeCtx.filterMap[filter.FacetID]; rok == false {
-				s.warn("received known filter [%s] that is not present in resource type context [%s]", filter.FacetID, s.resourceTypeCtx.Value)
+				s.log("VALIDATE: received known filter [%s] that is not present in resource type context [%s]", filter.FacetID, s.resourceTypeCtx.Value)
 				s.virgo.invalidFilters = true
 			} else {
 				s.virgo.totalFilters++
