@@ -244,6 +244,7 @@ func (s *searchContext) populateRecord(doc *solrDocument) v4api.Record {
 		f := v4api.RecordField{
 			Name:         fieldCfg.Name,
 			Label:        fieldCfg.Label,
+			Filter:       fieldCfg.Filter,
 			Type:         fieldCfg.Properties.Type,
 			Separator:    fieldCfg.Properties.Separator,
 			Visibility:   fieldCfg.Properties.Visibility,

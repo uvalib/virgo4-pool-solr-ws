@@ -97,7 +97,7 @@ func (c *clientContext) logResponse(resp searchResponse) {
 		msg = msg + fmt.Sprintf(", error: %s", resp.err.Error())
 	}
 
-	c.log(msg)
+	c.log("%s", msg)
 }
 
 func (c *clientContext) log(format string, args ...interface{}) {

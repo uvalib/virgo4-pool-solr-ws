@@ -218,6 +218,7 @@ type poolConfigField struct {
 	Name               string                       `json:"name"` // required; v4 field name, and key for common fields
 	Label              string                       `json:"label"`
 	Field              string                       `json:"field"`
+	Filter             string                       `json:"filter"` // name of filter this field can be used in
 	Properties         poolConfigFieldProperties    `json:"properties,omitempty"`
 	Limit              int                          `json:"limit,omitempty"`
 	SplitOn            string                       `json:"split_on,omitempty"`
