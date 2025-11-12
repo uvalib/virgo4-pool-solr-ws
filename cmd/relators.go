@@ -40,7 +40,7 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 		search:       s,
 		matchTermsRE: regexp.MustCompile(`\(([^()]+)\)`),
 		cleanTermsRE: regexp.MustCompile(`(?i)([\s]*\((` + strings.Join(terms, "|") + `)\)[\s]*)`),
-		cleanDatesRE: regexp.MustCompile(`([\s\[,]*)(\d{4}(-)?(\d{4})?)([\s\]]*)`),
+		cleanDatesRE: regexp.MustCompile(`([\s\[,]*)((approximately )?\d{4}(-)?((approximately )?\d{4})?)([\s\]]*)`),
 	}
 
 	for _, entry := range entries {
