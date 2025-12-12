@@ -66,7 +66,7 @@ type poolConfigTitleizationWordLists struct {
 type poolConfigTitleization struct {
 	CharacterSets poolConfigTitleizationCharacterSets `json:"character_sets,omitempty"`
 	WordLists     poolConfigTitleizationWordLists     `json:"word_lists,omitempty"`
-	Exclusions    []poolConfigFieldComparison         `json:"exclusions,omitempty"`
+	Exclusions    poolConfigFieldConditions           `json:"exclusions,omitempty"`
 }
 
 type poolConfigCopyrightLabel struct {
@@ -178,40 +178,54 @@ type poolConfigFieldProperties struct {
 }
 
 type poolConfigFieldComparison struct {
-	Field    string     `json:"field,omitempty"`
-	Contains [][]string `json:"contains,omitempty"`
-	Matches  [][]string `json:"matches,omitempty"`
-	Value    string     `json:"value,omitempty"`
+	Comment  string     `json:"_comment,omitempty"` // for adding comments to config json
+	Field    string     `json:"field,omitempty"`    // the solr field to query
+	Contains [][]string `json:"contains,omitempty"` // list is a subset of solr field values
+	Matches  [][]string `json:"matches,omitempty"`  // list has exactly the same elements as solr field values
+	Negate   bool       `json:"negate,omitempty"`   // set to true for "does not contain/does not match"
+}
+
+type poolConfigFieldConditions struct {
+	Comment     string                      `json:"_comment,omitempty"`    // for adding comments to config json
+	Operator    string                      `json:"operator,omitempty"`    // "and" xor "or"
+	Comparisons []poolConfigFieldComparison `json:"comparisons,omitempty"` // field comparisons to perform
+}
+
+type poolConfigFieldOverride struct {
+	Comment    string                    `json:"_comment,omitempty"`   // for adding comments to config json
+	Conditions poolConfigFieldConditions `json:"conditions,omitempty"` // set of conditions to check
+	Value      string                    `json:"value,omitempty"`      // value to override with if conditions are met
 }
 
 type poolConfigFieldCustomConfig struct {
-	AlternateField   string                      `json:"alternate_field,omitempty"` // field names
-	CallNumberField  string                      `json:"call_number_field,omitempty"`
-	EditionField     string                      `json:"edition_field,omitempty"`
-	FormatField      string                      `json:"format_field,omitempty"`
-	ISBNField        string                      `json:"isbn_field,omitempty"`
-	ISSNField        string                      `json:"issn_field,omitempty"`
-	LCCNField        string                      `json:"lccn_field,omitempty"`
-	LabelField       string                      `json:"label_field,omitempty"`
-	OCLCField        string                      `json:"oclc_field,omitempty"`
-	PoolField        string                      `json:"pool_field,omitempty"`
-	ProviderField    string                      `json:"provider_field,omitempty"`
-	SubtitleField    string                      `json:"subtitle_field,omitempty"`
-	TitleField       string                      `json:"title_field,omitempty"`
-	UPCField         string                      `json:"upc_field,omitempty"`
-	URLField         string                      `json:"url_field,omitempty"`
-	AlternateLabel   string                      `json:"alternate_label,omitempty"`
-	DefaultLabel     string                      `json:"default_label,omitempty"`
-	AlternateValue   string                      `json:"alternate_value,omitempty"`
-	AlternateType    string                      `json:"alternate_type,omitempty"` // misc
-	IDPrefix         string                      `json:"id_prefix,omitempty"`
-	MusicPool        string                      `json:"music_pool,omitempty"`
-	ProxyPrefix      string                      `json:"proxy_prefix,omitempty"`
-	ProxyDomains     []string                    `json:"proxy_domains,omitempty"`
-	NoProxyProviders []string                    `json:"noproxy_providers,omitempty"`
-	ComparisonFields []poolConfigFieldComparison `json:"comparison_fields,omitempty"`
-	MaxSupported     int                         `json:"max_supported,omitempty"`
-	handler          customFieldHandler          // pointer to this field's handler function
+	AlternateField   string                    `json:"alternate_field,omitempty"` // field names
+	CallNumberField  string                    `json:"call_number_field,omitempty"`
+	EditionField     string                    `json:"edition_field,omitempty"`
+	FormatField      string                    `json:"format_field,omitempty"`
+	ISBNField        string                    `json:"isbn_field,omitempty"`
+	ISSNField        string                    `json:"issn_field,omitempty"`
+	LCCNField        string                    `json:"lccn_field,omitempty"`
+	LabelField       string                    `json:"label_field,omitempty"`
+	OCLCField        string                    `json:"oclc_field,omitempty"`
+	PoolField        string                    `json:"pool_field,omitempty"`
+	ProviderField    string                    `json:"provider_field,omitempty"`
+	SubtitleField    string                    `json:"subtitle_field,omitempty"`
+	TitleField       string                    `json:"title_field,omitempty"`
+	UPCField         string                    `json:"upc_field,omitempty"`
+	URLField         string                    `json:"url_field,omitempty"`
+	AlternateLabel   string                    `json:"alternate_label,omitempty"`
+	DefaultLabel     string                    `json:"default_label,omitempty"`
+	AlternateValue   string                    `json:"alternate_value,omitempty"`
+	AlternateType    string                    `json:"alternate_type,omitempty"` // misc
+	IDPrefix         string                    `json:"id_prefix,omitempty"`
+	MusicPool        string                    `json:"music_pool,omitempty"`
+	ProxyPrefix      string                    `json:"proxy_prefix,omitempty"`
+	ProxyDomains     []string                  `json:"proxy_domains,omitempty"`
+	NoProxyProviders []string                  `json:"noproxy_providers,omitempty"`
+	Conditions       poolConfigFieldConditions `json:"conditions,omitempty"`
+	Overrides        []poolConfigFieldOverride `json:"overrides,omitempty"`
+	MaxSupported     int                       `json:"max_supported,omitempty"`
+	handler          customFieldHandler        // pointer to this field's handler function
 }
 
 type poolConfigField struct {

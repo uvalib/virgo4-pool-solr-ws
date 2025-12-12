@@ -39,39 +39,41 @@ func (s *searchContext) getCitationFormat(formats []string) string {
 }
 
 func (s *searchContext) compareField(doc *solrDocument, field poolConfigFieldComparison) bool {
+	// set return value based on negate flag (default is false):
+	// op == true --> contains/matches checks return false; otherwise true
+	// op == false --> contains/matches checks return true; otherwise false
+	op := field.Negate
+
 	fieldValues := doc.getStrings(field.Field)
 
 	for _, values := range field.Contains {
 		if sliceContainsAllValuesFromSlice(fieldValues, values, true) == true {
-			return true
+			return !op
 		}
 	}
 
 	for _, values := range field.Matches {
 		if slicesAreEqual(fieldValues, values, true) == true {
-			return true
+			return !op
 		}
 	}
 
-	return false
+	return op
 }
 
-func (s *searchContext) compareFields(doc *solrDocument, fields []poolConfigFieldComparison, op bool) bool {
-	for _, field := range fields {
+func (s *searchContext) evaluateConditions(doc *solrDocument, conditions poolConfigFieldConditions) bool {
+	// determine how to compare fields based on operator (default is AND unless OR is specified):
+	// op == true --> this function acts as an OR operation when comparing fields
+	// op == false --> this function acts as an AND operation when comparing fields
+	op := strings.EqualFold(conditions.Operator, "or")
+
+	for _, field := range conditions.Comparisons {
 		if s.compareField(doc, field) == op {
 			return op
 		}
 	}
 
 	return !op
-}
-
-func (s *searchContext) compareFieldsOr(doc *solrDocument, fields []poolConfigFieldComparison) bool {
-	return s.compareFields(doc, fields, true)
-}
-
-func (s *searchContext) compareFieldsAnd(doc *solrDocument, fields []poolConfigFieldComparison) bool {
-	return s.compareFields(doc, fields, false)
 }
 
 func (s *searchContext) getPublisherEntry(doc *solrDocument) *poolConfigPublisher {
@@ -394,6 +396,20 @@ func getCustomFieldAbstract(s *searchContext, rc *recordContext) []v4api.RecordF
 	return fv
 }
 
+func getCustomFieldAccessNote(s *searchContext, rc *recordContext) []v4api.RecordField {
+	var fv []v4api.RecordField
+
+	for _, override := range rc.fieldCtx.config.CustomConfig.Overrides {
+		if s.evaluateConditions(rc.doc, override.Conditions) == true {
+			rc.fieldCtx.field.Value = override.Value
+			fv = append(fv, rc.fieldCtx.field)
+			return fv
+		}
+	}
+
+	return fv
+}
+
 func getCustomFieldAccessURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
@@ -547,7 +563,7 @@ func getCustomFieldCitationAdvisor(s *searchContext, rc *recordContext) []v4api.
 	var fv []v4api.RecordField
 
 	// only want to include advisors for records NOT in the pre-defined list
-	if s.compareFieldsOr(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == false {
+	if s.evaluateConditions(rc.doc, rc.fieldCtx.config.CustomConfig.Conditions) == false {
 		for _, value := range rc.relations.advisors.name {
 			rc.fieldCtx.field.Value = value
 			fv = append(fv, rc.fieldCtx.field)
@@ -605,7 +621,7 @@ func getCustomFieldCitationFormat(s *searchContext, rc *recordContext) []v4api.R
 func getCustomFieldCitationIsOnlineOnly(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFieldsOr(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+	if s.evaluateConditions(rc.doc, rc.fieldCtx.config.CustomConfig.Conditions) == true {
 		rc.fieldCtx.field.Value = "true"
 	} else {
 		rc.fieldCtx.field.Value = "false"
@@ -619,7 +635,7 @@ func getCustomFieldCitationIsOnlineOnly(s *searchContext, rc *recordContext) []v
 func getCustomFieldCitationIsVirgoURL(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	if s.compareFieldsOr(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+	if s.evaluateConditions(rc.doc, rc.fieldCtx.config.CustomConfig.Conditions) == true {
 		rc.fieldCtx.field.Value = "true"
 	} else {
 		rc.fieldCtx.field.Value = "false"
@@ -821,10 +837,11 @@ func getCustomFieldLanguage(s *searchContext, rc *recordContext) []v4api.RecordF
 func getCustomFieldLibraryAvailabilityNote(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, comp := range rc.fieldCtx.config.CustomConfig.ComparisonFields {
-		if s.compareField(rc.doc, comp) == true {
-			rc.fieldCtx.field.Value = comp.Value
+	for _, override := range rc.fieldCtx.config.CustomConfig.Overrides {
+		if s.evaluateConditions(rc.doc, override.Conditions) == true {
+			rc.fieldCtx.field.Value = override.Value
 			fv = append(fv, rc.fieldCtx.field)
+			return fv
 		}
 	}
 
@@ -912,7 +929,7 @@ func getCustomFieldShelfBrowseURL(s *searchContext, rc *recordContext) []v4api.R
 
 	// we are checking for the absence of solr values by abusing limitations of the comparison field structure,
 	// so a "match" here means this item is NOT part of the shelf browse list
-	if s.compareFieldsAnd(rc.doc, rc.fieldCtx.config.CustomConfig.ComparisonFields) == true {
+	if s.evaluateConditions(rc.doc, rc.fieldCtx.config.CustomConfig.Conditions) == true {
 		return fv
 	}
 

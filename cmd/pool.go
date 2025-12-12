@@ -356,7 +356,7 @@ func (p *poolContext) validateConfig() {
 		}
 	}
 
-	for k, v := range p.config.Global.Titleization.Exclusions {
+	for k, v := range p.config.Global.Titleization.Exclusions.Comparisons {
 		solrFields.requireValue(v.Field, fmt.Sprintf("titleization comparison field %d solr field", k))
 	}
 
@@ -426,6 +426,15 @@ func (p *poolContext) validateConfig() {
 
 				solrFields.requireValue(field.CustomConfig.AlternateField, fmt.Sprintf("%s section alternate field", field.Name))
 
+			case "access_note":
+				field.CustomConfig.handler = getCustomFieldAccessNote
+
+				for k, f := range field.CustomConfig.Overrides {
+					for k2, f2 := range f.Conditions.Comparisons {
+						solrFields.requireValue(f2.Field, fmt.Sprintf("%s section override field %d condition field %d solr field", field.Name, k, k2))
+					}
+				}
+
 			case "access_url":
 				field.CustomConfig.handler = getCustomFieldAccessURL
 
@@ -467,15 +476,15 @@ func (p *poolContext) validateConfig() {
 			case "citation_is_online_only":
 				field.CustomConfig.handler = getCustomFieldCitationIsOnlineOnly
 
-				for k, f := range field.CustomConfig.ComparisonFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
+				for k, f := range field.CustomConfig.Conditions.Comparisons {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section condition field %d solr field", field.Name, k))
 				}
 
 			case "citation_is_virgo_url":
 				field.CustomConfig.handler = getCustomFieldCitationIsVirgoURL
 
-				for k, f := range field.CustomConfig.ComparisonFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
+				for k, f := range field.CustomConfig.Conditions.Comparisons {
+					solrFields.requireValue(f.Field, fmt.Sprintf("%s section condition field %d solr field", field.Name, k))
 				}
 
 			case "citation_subtitle":
@@ -539,8 +548,10 @@ func (p *poolContext) validateConfig() {
 			case "library_availability_note":
 				field.CustomConfig.handler = getCustomFieldLibraryAvailabilityNote
 
-				for k, f := range field.CustomConfig.ComparisonFields {
-					solrFields.requireValue(f.Field, fmt.Sprintf("%s section comparison field %d solr field", field.Name, k))
+				for k, f := range field.CustomConfig.Overrides {
+					for k2, f2 := range f.Conditions.Comparisons {
+						solrFields.requireValue(f2.Field, fmt.Sprintf("%s section override field %d condition field %d solr field", field.Name, k, k2))
+					}
 				}
 
 			case "online_related":

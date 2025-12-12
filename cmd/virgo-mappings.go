@@ -184,7 +184,7 @@ func (s *searchContext) initializeRecordContext(doc *solrDocument) (*recordConte
 	rc.hasVernacularTitle = doc.getFirstString(s.pool.maps.definedFields[rc.resourceTypeCtx.FieldNames.TitleVernacular.Name].Field) != ""
 	rc.hasVernacularAuthor = doc.getFirstString(s.pool.maps.definedFields[rc.resourceTypeCtx.FieldNames.AuthorVernacular.Name].Field) != ""
 
-	if s.compareFieldsOr(rc.doc, s.pool.config.Global.Titleization.Exclusions) == true {
+	if s.evaluateConditions(rc.doc, s.pool.config.Global.Titleization.Exclusions) == true {
 		rc.titleize = false
 	} else {
 		rc.titleize = true
