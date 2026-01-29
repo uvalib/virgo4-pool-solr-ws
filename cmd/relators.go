@@ -6,19 +6,19 @@ import (
 )
 
 type parsedRelation struct {
-	nameDateRelation []string // possible date, possible relation
-	nameDate         []string // possible date, no relation
-	nameRelation     []string // no date, possible relation
-	name             []string // no date, no relation
+	NameDateRelation string `json:"name_date_relation,omitempty"` // possible date, possible relation
+	NameDate         string `json:"name_date,omitempty"`          // possible date, no relation
+	NameRelation     string `json:"name_relation,omitempty"`      // no date, possible relation
+	Name             string `json:"name,omitempty"`               // no date, no relation
 }
 
 type categorizedRelations struct {
-	authors     parsedRelation
-	advisors    parsedRelation
-	editors     parsedRelation
-	compilers   parsedRelation
-	translators parsedRelation
-	others      parsedRelation
+	authors     []parsedRelation
+	advisors    []parsedRelation
+	editors     []parsedRelation
+	compilers   []parsedRelation
+	translators []parsedRelation
+	others      []parsedRelation
 }
 
 type relationContext struct {
@@ -103,109 +103,121 @@ func (r *relationContext) parseEntry(entry string) parsedRelation {
 	name := strings.TrimSpace(r.cleanDatesRE.ReplaceAllString(nameDate, " "))
 
 	p := parsedRelation{
-		nameDateRelation: []string{nameDateRelation},
-		nameDate:         []string{nameDate},
-		nameRelation:     []string{nameRelation},
-		name:             []string{name},
+		NameDateRelation: nameDateRelation,
+		NameDate:         nameDate,
+		NameRelation:     nameRelation,
+		Name:             name,
 	}
 
 	return p
 }
 
 func (r *relationContext) addAuthor(entry string) {
-	p := r.parseEntry(entry)
-
-	r.relations.authors.nameDateRelation = append(r.relations.authors.nameDateRelation, p.nameDateRelation...)
-	r.relations.authors.nameDate = append(r.relations.authors.nameDate, p.nameDate...)
-	r.relations.authors.nameRelation = append(r.relations.authors.nameRelation, p.nameRelation...)
-	r.relations.authors.name = append(r.relations.authors.name, p.name...)
+	r.relations.authors = append(r.relations.authors, r.parseEntry(entry))
 }
 
 func (r *relationContext) addAdvisor(entry string) {
-	p := r.parseEntry(entry)
-
-	r.relations.advisors.nameDateRelation = append(r.relations.advisors.nameDateRelation, p.nameDateRelation...)
-	r.relations.advisors.nameDate = append(r.relations.advisors.nameDate, p.nameDate...)
-	r.relations.advisors.nameRelation = append(r.relations.advisors.nameRelation, p.nameRelation...)
-	r.relations.advisors.name = append(r.relations.advisors.name, p.name...)
+	r.relations.advisors = append(r.relations.advisors, r.parseEntry(entry))
 }
 
 func (r *relationContext) addEditor(entry string) {
-	p := r.parseEntry(entry)
-
-	r.relations.editors.nameDateRelation = append(r.relations.editors.nameDateRelation, p.nameDateRelation...)
-	r.relations.editors.nameDate = append(r.relations.editors.nameDate, p.nameDate...)
-	r.relations.editors.nameRelation = append(r.relations.editors.nameRelation, p.nameRelation...)
-	r.relations.editors.name = append(r.relations.editors.name, p.name...)
+	r.relations.editors = append(r.relations.editors, r.parseEntry(entry))
 }
 
 func (r *relationContext) addCompiler(entry string) {
-	p := r.parseEntry(entry)
-
-	r.relations.compilers.nameDateRelation = append(r.relations.compilers.nameDateRelation, p.nameDateRelation...)
-	r.relations.compilers.nameDate = append(r.relations.compilers.nameDate, p.nameDate...)
-	r.relations.compilers.nameRelation = append(r.relations.compilers.nameRelation, p.nameRelation...)
-	r.relations.compilers.name = append(r.relations.compilers.name, p.name...)
+	r.relations.compilers = append(r.relations.compilers, r.parseEntry(entry))
 }
 
 func (r *relationContext) addTranslator(entry string) {
-	p := r.parseEntry(entry)
-
-	r.relations.translators.nameDateRelation = append(r.relations.translators.nameDateRelation, p.nameDateRelation...)
-	r.relations.translators.nameDate = append(r.relations.translators.nameDate, p.nameDate...)
-	r.relations.translators.nameRelation = append(r.relations.translators.nameRelation, p.nameRelation...)
-	r.relations.translators.name = append(r.relations.translators.name, p.name...)
+	r.relations.translators = append(r.relations.translators, r.parseEntry(entry))
 }
 
 func (r *relationContext) addOther(entry string) {
-	p := r.parseEntry(entry)
-
-	r.relations.others.nameDateRelation = append(r.relations.others.nameDateRelation, p.nameDateRelation...)
-	r.relations.others.nameDate = append(r.relations.others.nameDate, p.nameDate...)
-	r.relations.others.nameRelation = append(r.relations.others.nameRelation, p.nameRelation...)
-	r.relations.others.name = append(r.relations.others.name, p.name...)
+	r.relations.others = append(r.relations.others, r.parseEntry(entry))
 }
 
 func (r *relationContext) removeDuplicateAuthors() {
-	r.relations.authors.nameDateRelation = uniqueStrings(r.relations.authors.nameDateRelation)
-	r.relations.authors.nameDate = uniqueStrings(r.relations.authors.nameDate)
-	r.relations.authors.nameRelation = uniqueStrings(r.relations.authors.nameRelation)
-	r.relations.authors.name = uniqueStrings(r.relations.authors.name)
+	/*
+	   	for _, n := range r.relations.authors {
+	   	}
+
+	   /*
+
+	   	r.relations.authors.NameDateRelation = uniqueStrings(r.relations.authors.NameDateRelation)
+	   	r.relations.authors.NameDate = uniqueStrings(r.relations.authors.NameDate)
+	   	r.relations.authors.NameRelation = uniqueStrings(r.relations.authors.NameRelation)
+	   	r.relations.authors.name = uniqueStrings(r.relations.authors.name)
+	*/
 }
 
 func (r *relationContext) removeDuplicateAdvisors() {
-	r.relations.advisors.nameDateRelation = uniqueStrings(r.relations.advisors.nameDateRelation)
-	r.relations.advisors.nameDate = uniqueStrings(r.relations.advisors.nameDate)
-	r.relations.advisors.nameRelation = uniqueStrings(r.relations.advisors.nameRelation)
-	r.relations.advisors.name = uniqueStrings(r.relations.advisors.name)
+	/*
+	   	for _, n := range r.relations.advisors {
+	   	}
+
+	   /*
+
+	   	r.relations.advisors.NameDateRelation = uniqueStrings(r.relations.advisors.NameDateRelation)
+	   	r.relations.advisors.NameDate = uniqueStrings(r.relations.advisors.NameDate)
+	   	r.relations.advisors.NameRelation = uniqueStrings(r.relations.advisors.NameRelation)
+	   	r.relations.advisors.name = uniqueStrings(r.relations.advisors.name)
+	*/
 }
 
 func (r *relationContext) removeDuplicateEditors() {
-	r.relations.editors.nameDateRelation = uniqueStrings(r.relations.editors.nameDateRelation)
-	r.relations.editors.nameDate = uniqueStrings(r.relations.editors.nameDate)
-	r.relations.editors.nameRelation = uniqueStrings(r.relations.editors.nameRelation)
-	r.relations.editors.name = uniqueStrings(r.relations.editors.name)
+	/*
+	   	for _, n := range r.relations.editors {
+	   	}
+
+	   /*
+
+	   	r.relations.editors.NameDateRelation = uniqueStrings(r.relations.editors.NameDateRelation)
+	   	r.relations.editors.NameDate = uniqueStrings(r.relations.editors.NameDate)
+	   	r.relations.editors.NameRelation = uniqueStrings(r.relations.editors.NameRelation)
+	   	r.relations.editors.name = uniqueStrings(r.relations.editors.name)
+	*/
 }
 
 func (r *relationContext) removeDuplicateCompilers() {
-	r.relations.compilers.nameDateRelation = uniqueStrings(r.relations.compilers.nameDateRelation)
-	r.relations.compilers.nameDate = uniqueStrings(r.relations.compilers.nameDate)
-	r.relations.compilers.nameRelation = uniqueStrings(r.relations.compilers.nameRelation)
-	r.relations.compilers.name = uniqueStrings(r.relations.compilers.name)
+	/*
+	   	for _, n := range r.relations.compilers {
+	   	}
+
+	   /*
+
+	   	r.relations.compilers.NameDateRelation = uniqueStrings(r.relations.compilers.NameDateRelation)
+	   	r.relations.compilers.NameDate = uniqueStrings(r.relations.compilers.NameDate)
+	   	r.relations.compilers.NameRelation = uniqueStrings(r.relations.compilers.NameRelation)
+	   	r.relations.compilers.name = uniqueStrings(r.relations.compilers.name)
+	*/
 }
 
 func (r *relationContext) removeDuplicateTranslators() {
-	r.relations.translators.nameDateRelation = uniqueStrings(r.relations.translators.nameDateRelation)
-	r.relations.translators.nameDate = uniqueStrings(r.relations.translators.nameDate)
-	r.relations.translators.nameRelation = uniqueStrings(r.relations.translators.nameRelation)
-	r.relations.translators.name = uniqueStrings(r.relations.translators.name)
+	/*
+	   	for _, n := range r.relations.translators {
+	   	}
+
+	   /*
+
+	   	r.relations.translators.NameDateRelation = uniqueStrings(r.relations.translators.NameDateRelation)
+	   	r.relations.translators.NameDate = uniqueStrings(r.relations.translators.NameDate)
+	   	r.relations.translators.NameRelation = uniqueStrings(r.relations.translators.NameRelation)
+	   	r.relations.translators.name = uniqueStrings(r.relations.translators.name)
+	*/
 }
 
 func (r *relationContext) removeDuplicateOthers() {
-	r.relations.others.nameDateRelation = uniqueStrings(r.relations.others.nameDateRelation)
-	r.relations.others.nameDate = uniqueStrings(r.relations.others.nameDate)
-	r.relations.others.nameRelation = uniqueStrings(r.relations.others.nameRelation)
-	r.relations.others.name = uniqueStrings(r.relations.others.name)
+	/*
+	   	for _, n := range r.relations.others {
+	   	}
+
+	   /*
+
+	   	r.relations.others.NameDateRelation = uniqueStrings(r.relations.others.NameDateRelation)
+	   	r.relations.others.NameDate = uniqueStrings(r.relations.others.NameDate)
+	   	r.relations.others.NameRelation = uniqueStrings(r.relations.others.NameRelation)
+	   	r.relations.others.name = uniqueStrings(r.relations.others.name)
+	*/
 }
 
 func (r *relationContext) removeDuplicateRelations() {
