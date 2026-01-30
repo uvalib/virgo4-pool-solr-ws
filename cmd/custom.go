@@ -516,18 +516,18 @@ func getCustomFieldAuthor(s *searchContext, rc *recordContext) []v4api.RecordFie
 		rc.fieldCtx.config.Label = rc.fieldCtx.config.CustomConfig.AlternateLabel
 	}
 
-	for _, n := range rc.relations.authors {
+	for _, n := range rc.relations.authors.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
-	for _, n := range rc.relations.editors {
+	for _, n := range rc.relations.editors.values {
 		rc.fieldCtx.field.Value = n.NameRelation
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
-	for _, n := range rc.relations.advisors {
+	for _, n := range rc.relations.advisors.values {
 		rc.fieldCtx.field.Value = n.NameRelation
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)
@@ -568,9 +568,9 @@ func getCustomFieldAvailability(s *searchContext, rc *recordContext) []v4api.Rec
 func getCustomFieldCitationAdvisor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	// only want to include advisors for records NOT in the pre-defined list
+	// only want to include advisors.list for records NOT in the pre-defined list
 	if s.evaluateConditions(rc.doc, rc.fieldCtx.config.CustomConfig.Conditions) == false {
-		for _, n := range rc.relations.advisors {
+		for _, n := range rc.relations.advisors.values {
 			rc.fieldCtx.field.Value = n.Name
 			fv = append(fv, rc.fieldCtx.field)
 		}
@@ -582,7 +582,7 @@ func getCustomFieldCitationAdvisor(s *searchContext, rc *recordContext) []v4api.
 func getCustomFieldCitationAuthor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.authors {
+	for _, n := range rc.relations.authors.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -593,7 +593,7 @@ func getCustomFieldCitationAuthor(s *searchContext, rc *recordContext) []v4api.R
 func getCustomFieldCitationCompiler(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.compilers {
+	for _, n := range rc.relations.compilers.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -604,7 +604,7 @@ func getCustomFieldCitationCompiler(s *searchContext, rc *recordContext) []v4api
 func getCustomFieldCitationEditor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.editors {
+	for _, n := range rc.relations.editors.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -687,7 +687,7 @@ func getCustomFieldCitationTitle(s *searchContext, rc *recordContext) []v4api.Re
 func getCustomFieldCitationTranslator(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.translators {
+	for _, n := range rc.relations.translators.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
@@ -717,18 +717,18 @@ func getCustomFieldCollectionContext(s *searchContext, rc *recordContext) []v4ap
 func getCustomFieldComposerPerformer(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.authors {
+	for _, n := range rc.relations.authors.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
-	for _, n := range rc.relations.editors {
+	for _, n := range rc.relations.editors.values {
 		rc.fieldCtx.field.Value = n.NameRelation
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
-	for _, n := range rc.relations.advisors {
+	for _, n := range rc.relations.advisors.values {
 		rc.fieldCtx.field.Value = n.NameRelation
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)
@@ -758,7 +758,7 @@ func getCustomFieldCoverImageURL(s *searchContext, rc *recordContext) []v4api.Re
 	if coverImageURL == "" {
 		var values []string
 
-		for _, n := range rc.relations.authors {
+		for _, n := range rc.relations.authors.values {
 			values = append(values, n.Name)
 		}
 
@@ -776,18 +776,18 @@ func getCustomFieldCoverImageURL(s *searchContext, rc *recordContext) []v4api.Re
 func getCustomFieldCreator(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.authors {
+	for _, n := range rc.relations.authors.values {
 		rc.fieldCtx.field.Value = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
-	for _, n := range rc.relations.editors {
+	for _, n := range rc.relations.editors.values {
 		rc.fieldCtx.field.Value = n.NameRelation
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
-	for _, n := range rc.relations.advisors {
+	for _, n := range rc.relations.advisors.values {
 		rc.fieldCtx.field.Value = n.NameRelation
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)

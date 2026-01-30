@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -12,13 +13,18 @@ type parsedRelation struct {
 	Name             string `json:"name,omitempty"`               // no date, no relation
 }
 
+type relationList struct {
+	values []parsedRelation
+	exist  map[string]bool
+}
+
 type categorizedRelations struct {
-	authors     []parsedRelation
-	advisors    []parsedRelation
-	editors     []parsedRelation
-	compilers   []parsedRelation
-	translators []parsedRelation
-	others      []parsedRelation
+	authors     relationList
+	advisors    relationList
+	editors     relationList
+	compilers   relationList
+	translators relationList
+	others      relationList
 }
 
 type relationContext struct {
@@ -27,6 +33,22 @@ type relationContext struct {
 	matchTermsRE *regexp.Regexp
 	cleanTermsRE *regexp.Regexp
 	cleanDatesRE *regexp.Regexp
+}
+
+func (l *relationList) addRelation(relation parsedRelation) {
+	if l.exist == nil {
+		l.exist = make(map[string]bool)
+	}
+
+	key := fmt.Sprintf("%s|%s|%s|%s", relation.Name, relation.NameRelation, relation.NameDate, relation.NameDateRelation)
+
+	if l.exist[key] == true {
+		return
+	}
+
+	l.values = append(l.values, relation)
+
+	l.exist[key] = true
 }
 
 func (s *searchContext) parseRelations(entries []string) categorizedRelations {
@@ -46,28 +68,28 @@ func (s *searchContext) parseRelations(entries []string) categorizedRelations {
 	for _, entry := range entries {
 		codes := r.getRelatorCodes(entry)
 
+		parsed := r.parseEntry(entry)
+
 		switch {
 		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AuthorCodes, codes, true) || len(codes) == 0:
-			r.addAuthor(entry)
+			r.relations.authors.addRelation(parsed)
 
 		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.AdvisorCodes, codes, true):
-			r.addAdvisor(entry)
+			r.relations.advisors.addRelation(parsed)
 
 		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.EditorCodes, codes, true):
-			r.addEditor(entry)
+			r.relations.editors.addRelation(parsed)
 
 		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.CompilerCodes, codes, true):
-			r.addCompiler(entry)
+			r.relations.compilers.addRelation(parsed)
 
 		case sliceContainsAnyValueFromSlice(s.pool.config.Global.Relators.TranslatorCodes, codes, true):
-			r.addTranslator(entry)
+			r.relations.translators.addRelation(parsed)
 
 		default:
-			r.addOther(entry)
+			r.relations.others.addRelation(parsed)
 		}
 	}
-
-	r.removeDuplicateRelations()
 
 	return r.relations
 }
@@ -110,121 +132,4 @@ func (r *relationContext) parseEntry(entry string) parsedRelation {
 	}
 
 	return p
-}
-
-func (r *relationContext) addAuthor(entry string) {
-	r.relations.authors = append(r.relations.authors, r.parseEntry(entry))
-}
-
-func (r *relationContext) addAdvisor(entry string) {
-	r.relations.advisors = append(r.relations.advisors, r.parseEntry(entry))
-}
-
-func (r *relationContext) addEditor(entry string) {
-	r.relations.editors = append(r.relations.editors, r.parseEntry(entry))
-}
-
-func (r *relationContext) addCompiler(entry string) {
-	r.relations.compilers = append(r.relations.compilers, r.parseEntry(entry))
-}
-
-func (r *relationContext) addTranslator(entry string) {
-	r.relations.translators = append(r.relations.translators, r.parseEntry(entry))
-}
-
-func (r *relationContext) addOther(entry string) {
-	r.relations.others = append(r.relations.others, r.parseEntry(entry))
-}
-
-func (r *relationContext) removeDuplicateAuthors() {
-	/*
-	   	for _, n := range r.relations.authors {
-	   	}
-
-	   /*
-
-	   	r.relations.authors.NameDateRelation = uniqueStrings(r.relations.authors.NameDateRelation)
-	   	r.relations.authors.NameDate = uniqueStrings(r.relations.authors.NameDate)
-	   	r.relations.authors.NameRelation = uniqueStrings(r.relations.authors.NameRelation)
-	   	r.relations.authors.name = uniqueStrings(r.relations.authors.name)
-	*/
-}
-
-func (r *relationContext) removeDuplicateAdvisors() {
-	/*
-	   	for _, n := range r.relations.advisors {
-	   	}
-
-	   /*
-
-	   	r.relations.advisors.NameDateRelation = uniqueStrings(r.relations.advisors.NameDateRelation)
-	   	r.relations.advisors.NameDate = uniqueStrings(r.relations.advisors.NameDate)
-	   	r.relations.advisors.NameRelation = uniqueStrings(r.relations.advisors.NameRelation)
-	   	r.relations.advisors.name = uniqueStrings(r.relations.advisors.name)
-	*/
-}
-
-func (r *relationContext) removeDuplicateEditors() {
-	/*
-	   	for _, n := range r.relations.editors {
-	   	}
-
-	   /*
-
-	   	r.relations.editors.NameDateRelation = uniqueStrings(r.relations.editors.NameDateRelation)
-	   	r.relations.editors.NameDate = uniqueStrings(r.relations.editors.NameDate)
-	   	r.relations.editors.NameRelation = uniqueStrings(r.relations.editors.NameRelation)
-	   	r.relations.editors.name = uniqueStrings(r.relations.editors.name)
-	*/
-}
-
-func (r *relationContext) removeDuplicateCompilers() {
-	/*
-	   	for _, n := range r.relations.compilers {
-	   	}
-
-	   /*
-
-	   	r.relations.compilers.NameDateRelation = uniqueStrings(r.relations.compilers.NameDateRelation)
-	   	r.relations.compilers.NameDate = uniqueStrings(r.relations.compilers.NameDate)
-	   	r.relations.compilers.NameRelation = uniqueStrings(r.relations.compilers.NameRelation)
-	   	r.relations.compilers.name = uniqueStrings(r.relations.compilers.name)
-	*/
-}
-
-func (r *relationContext) removeDuplicateTranslators() {
-	/*
-	   	for _, n := range r.relations.translators {
-	   	}
-
-	   /*
-
-	   	r.relations.translators.NameDateRelation = uniqueStrings(r.relations.translators.NameDateRelation)
-	   	r.relations.translators.NameDate = uniqueStrings(r.relations.translators.NameDate)
-	   	r.relations.translators.NameRelation = uniqueStrings(r.relations.translators.NameRelation)
-	   	r.relations.translators.name = uniqueStrings(r.relations.translators.name)
-	*/
-}
-
-func (r *relationContext) removeDuplicateOthers() {
-	/*
-	   	for _, n := range r.relations.others {
-	   	}
-
-	   /*
-
-	   	r.relations.others.NameDateRelation = uniqueStrings(r.relations.others.NameDateRelation)
-	   	r.relations.others.NameDate = uniqueStrings(r.relations.others.NameDate)
-	   	r.relations.others.NameRelation = uniqueStrings(r.relations.others.NameRelation)
-	   	r.relations.others.name = uniqueStrings(r.relations.others.name)
-	*/
-}
-
-func (r *relationContext) removeDuplicateRelations() {
-	r.removeDuplicateAuthors()
-	r.removeDuplicateAdvisors()
-	r.removeDuplicateEditors()
-	r.removeDuplicateCompilers()
-	r.removeDuplicateTranslators()
-	r.removeDuplicateOthers()
 }
