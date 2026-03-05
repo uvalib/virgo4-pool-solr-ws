@@ -399,12 +399,26 @@ func getCustomFieldAbstract(s *searchContext, rc *recordContext) []v4api.RecordF
 func getCustomFieldAccessNote(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
+	// get current value(s), if any
+	values := rc.doc.getStrings(rc.fieldCtx.config.Field)
+
+	if len(values) == 0 {
+		return fv
+	}
+
+	// check if we should override these values with our custom access note
 	for _, override := range rc.fieldCtx.config.CustomConfig.Overrides {
 		if s.evaluateConditions(rc.doc, override.Conditions) == true {
 			rc.fieldCtx.field.Value = override.Value
 			fv = append(fv, rc.fieldCtx.field)
 			return fv
 		}
+	}
+
+	// no override necessary; use existing values
+	for _, value := range values {
+		rc.fieldCtx.field.Value = value
+		fv = append(fv, rc.fieldCtx.field)
 	}
 
 	return fv
