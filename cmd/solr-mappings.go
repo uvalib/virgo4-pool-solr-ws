@@ -251,6 +251,12 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		s.solr.req.json.Params.Fl = []string{s.pool.config.Local.Solr.IdentifierField}
 	}
 
+	if jsonBytes, jsonErr := json.Marshal(s.solr.req.json); jsonErr != nil {
+		s.log("solr Marshal() failed: %s", jsonErr.Error())
+	} else {
+		s.log("solr req: [%s]", string(jsonBytes))
+	}
+
 	return searchResponse{status: http.StatusOK}
 }
 
