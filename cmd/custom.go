@@ -596,8 +596,17 @@ func getCustomFieldCitationAdvisor(s *searchContext, rc *recordContext) []v4api.
 func getCustomFieldCitationAuthor(s *searchContext, rc *recordContext) []v4api.RecordField {
 	var fv []v4api.RecordField
 
-	for _, n := range rc.relations.authors.values {
-		rc.fieldCtx.field.Value = n.Name
+	// if this record has a work primary author, use that; otherwise fall back to existing logic
+	values := rc.doc.getStrings(rc.fieldCtx.config.CustomConfig.AlternateField)
+
+	if len(values) == 0 {
+		for _, n := range rc.relations.authors.values {
+			values = append(values, n.Name)
+		}
+	}
+
+	for _, value := range values {
+		rc.fieldCtx.field.Value = value
 		fv = append(fv, rc.fieldCtx.field)
 	}
 
