@@ -53,10 +53,19 @@ type poolMaps struct {
 	solrPoolNames        map[string]string
 }
 
+type facetInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+type extendedIdentity struct {
+	v4api.PoolIdentity
+	Facets []facetInfo
+}
+
 type poolContext struct {
 	randomSource         *rand.Rand
 	config               *poolConfig
-	identity             v4api.PoolIdentity
+	identity             extendedIdentity
 	providers            v4api.PoolProviders
 	version              poolVersion
 	solr                 poolSolr
@@ -70,11 +79,13 @@ type poolContext struct {
 }
 
 func (p *poolContext) initIdentity() {
-	p.identity = v4api.PoolIdentity{
-		Name:        p.config.Local.Identity.Name,
-		Description: p.config.Local.Identity.Desc,
-		Mode:        p.config.Local.Identity.Mode,
-		Source:      p.config.Local.Identity.Source,
+	p.identity = extendedIdentity{
+		PoolIdentity: v4api.PoolIdentity{
+			Name:        p.config.Local.Identity.Name,
+			Description: p.config.Local.Identity.Desc,
+			Mode:        p.config.Local.Identity.Mode,
+			Source:      p.config.Local.Identity.Source,
+		},
 	}
 
 	// populate supported attributes
@@ -98,9 +109,14 @@ func (p *poolContext) initIdentity() {
 		p.identity.SortOptions = append(p.identity.SortOptions, v4api.SortOption{ID: s.ID, Label: s.Label, Asc: s.Asc, Desc: s.Desc})
 	}
 
+	for _, f := range p.maps.supportedFilters {
+		p.identity.Facets = append(p.identity.Facets, facetInfo{ID: f.ID, Name: f.Name})
+	}
+
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
 	log.Printf("[POOL] identity.Mode             = [%s]", p.identity.Mode)
+	log.Printf("[POOL] supported facets          = [%s]", p.identity.Facets)
 }
 
 func (p *poolContext) initProviders() {
