@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -708,6 +710,7 @@ type facetResponse struct {
 
 func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, selectedFacet v4api.Facet, selectedValues []string) {
 	res := facetResponse{index: index}
+	start := time.Now()
 
 	if res.resp = s.getPoolQueryResults(); res.resp.err == nil {
 		res.facets = s.virgo.poolRes.FacetList
@@ -754,6 +757,9 @@ func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, 
 			s.warn("FACET: %s: search space reduced?  no values returned", s.virgo.currentFacet)
 		}
 	}
+
+	elapsedMS := int64(time.Since(start) / time.Millisecond)
+	log.Printf("=====> %s facet recieved in %d MS <=====", selectedFacet.ID, elapsedMS)
 
 	channel <- &res
 }
@@ -863,6 +869,12 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		// if this is a hidden filter, only return it if it was part of the request
 		filterDef := s.pool.maps.definedFilters[filter.ID]
 		if filterDef.Hidden == true && len(selectedValues) == 0 {
+			continue
+		}
+
+		// Check preferences for filter exclusion. Skip if found.
+		if slices.Contains(s.virgo.req.Preferences.ExcludeFilters, filter.ID) {
+			log.Printf("INFO: filter %s has been excluded with user preferences; skip it", filter.ID)
 			continue
 		}
 
@@ -1049,6 +1061,7 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 	s.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 0}
 	s.virgo.flags.requestFacets = true
 
+	start := time.Now()
 	facets, resp := s.performFacetsRequest()
 
 	if resp.err != nil {
@@ -1062,6 +1075,9 @@ func (s *searchContext) handleFacetsRequest() searchResponse {
 		ElapsedMS:  int64(time.Since(s.client.start) / time.Millisecond),
 		StatusCode: http.StatusOK,
 	}
+
+	elapsedMS := int64(time.Since(start) / time.Millisecond)
+	log.Printf("=====> TOTAL facets request time %d MS <======", elapsedMS)
 
 	return searchResponse{status: http.StatusOK, data: s.virgo.facetsRes}
 }
