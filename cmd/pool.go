@@ -53,13 +53,13 @@ type poolMaps struct {
 	solrPoolNames        map[string]string
 }
 
-type facetInfo struct {
+type filterInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 type extendedIdentity struct {
 	v4api.PoolIdentity
-	Facets []facetInfo
+	Filters []filterInfo
 }
 
 type poolContext struct {
@@ -110,13 +110,13 @@ func (p *poolContext) initIdentity() {
 	}
 
 	for _, f := range p.maps.supportedFilters {
-		p.identity.Facets = append(p.identity.Facets, facetInfo{ID: f.ID, Name: f.Name})
+		p.identity.Filters = append(p.identity.Filters, filterInfo{ID: f.ID, Name: f.Name})
 	}
 
 	log.Printf("[POOL] identity.Name             = [%s]", p.identity.Name)
 	log.Printf("[POOL] identity.Description      = [%s]", p.identity.Description)
 	log.Printf("[POOL] identity.Mode             = [%s]", p.identity.Mode)
-	log.Printf("[POOL] supported facets          = [%s]", p.identity.Facets)
+	log.Printf("[POOL] supported filters         = [%s]", p.identity.Filters)
 }
 
 func (p *poolContext) initProviders() {
