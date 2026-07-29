@@ -716,47 +716,47 @@ func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, 
 		res.facets = s.virgo.poolRes.FacetList
 	}
 
-	// ensure any currently selected values for this facet appear in the returned facets list
+	// // ensure any currently selected values for this facet appear in the returned facets list
 
-	// due to limits in the number of entries returned for a facet, in some scenarios,
-	// already-selected facet values that are less popular may not appear in the facet list.
-	// this causes the client to place them in the "Not Applicable" filter list.
-	// to work around this, we ensure all selected facet values appear in the list returned.
+	// // due to limits in the number of entries returned for a facet, in some scenarios,
+	// // already-selected facet values that are less popular may not appear in the facet list.
+	// // this causes the client to place them in the "Not Applicable" filter list.
+	// // to work around this, we ensure all selected facet values appear in the list returned.
 
-	if len(selectedValues) > 0 {
-		// NOTE: facet results may not exist if the user refined an already-faceted search keyword
-		if res.facets != nil {
-			for _, selectedValue := range selectedValues {
-				// check for this value in returned list
-				found := false
-				for _, bucket := range res.facets[0].Buckets {
-					if selectedValue == bucket.Value {
-						found = true
-						break
-					}
-				}
+	// if len(selectedValues) > 0 {
+	// 	// NOTE: facet results may not exist if the user refined an already-faceted search keyword
+	// 	if res.facets != nil {
+	// 		for _, selectedValue := range selectedValues {
+	// 			// check for this value in returned list
+	// 			found := false
+	// 			for _, bucket := range res.facets[0].Buckets {
+	// 				if selectedValue == bucket.Value {
+	// 					found = true
+	// 					break
+	// 				}
+	// 			}
 
-				if found == false {
-					// find it in the selected facet search results and append it
-					appended := false
-					for _, selectedBucket := range selectedFacet.Buckets {
-						if selectedBucket.Value == selectedValue {
-							s.warn("FACET: %s: appending existing value to truncated results: [%s]", s.virgo.currentFacet, selectedValue)
-							res.facets[0].Buckets = append(res.facets[0].Buckets, selectedBucket)
-							appended = true
-							break
-						}
-					}
+	// 			if found == false {
+	// 				// find it in the selected facet search results and append it
+	// 				appended := false
+	// 				for _, selectedBucket := range selectedFacet.Buckets {
+	// 					if selectedBucket.Value == selectedValue {
+	// 						s.warn("FACET: %s: appending existing value to truncated results: [%s]", s.virgo.currentFacet, selectedValue)
+	// 						res.facets[0].Buckets = append(res.facets[0].Buckets, selectedBucket)
+	// 						appended = true
+	// 						break
+	// 					}
+	// 				}
 
-					if appended == false {
-						s.warn("FACET: %s: search space reduced?  could not find existing value to append to results: [%s]", s.virgo.currentFacet, selectedValue)
-					}
-				}
-			}
-		} else {
-			s.warn("FACET: %s: search space reduced?  no values returned", s.virgo.currentFacet)
-		}
-	}
+	// 				if appended == false {
+	// 					s.warn("FACET: %s: search space reduced?  could not find existing value to append to results: [%s]", s.virgo.currentFacet, selectedValue)
+	// 				}
+	// 			}
+	// 		}
+	// 	} else {
+	// 		s.warn("FACET: %s: search space reduced?  no values returned", s.virgo.currentFacet)
+	// 	}
+	// }
 
 	elapsedMS := int64(time.Since(start) / time.Millisecond)
 	log.Printf("=====> %s facet recieved in %d MS <=====", selectedFacet.ID, elapsedMS)
@@ -833,20 +833,20 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		}
 	}
 
-	// first, get counts for all currently selected filter values, so we can populate them later if needed
+	// // first, get counts for all currently selected filter values, so we can populate them later if needed
 
-	s.virgo.flags.selectedFacets = true
+	// s.virgo.flags.selectedFacets = true
 
-	var selectedFacets []v4api.Facet
-	if resp := s.getPoolQueryResults(); resp.err != nil {
-		return nil, resp
-	}
-	selectedFacets = s.virgo.poolRes.FacetList
+	// var selectedFacets []v4api.Facet
+	// if resp := s.getPoolQueryResults(); resp.err != nil {
+	// 	return nil, resp
+	// }
+	// selectedFacets = s.virgo.poolRes.FacetList
 
-	// second, for each filter, request solr facets for that filter by applying all current
-	// filters EXCEPT those of its own type.  combine these into full filter response.
+	// // second, for each filter, request solr facets for that filter by applying all current
+	// // filters EXCEPT those of its own type.  combine these into full filter response.
 
-	s.virgo.flags.selectedFacets = false
+	// s.virgo.flags.selectedFacets = false
 
 	// run facet searches in parallel
 
@@ -882,12 +882,12 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		// NOTE: the facet may not be present in search results if the user refines
 		// the keyword of an already-facted search such that it returns no results
 		selectedFacet := v4api.Facet{ID: filter.ID}
-		for _, facet := range selectedFacets {
-			if facet.ID == filter.ID {
-				selectedFacet = facet
-				break
-			}
-		}
+		// for _, facet := range selectedFacets {
+		// 	if facet.ID == filter.ID {
+		// 		selectedFacet = facet
+		// 		break
+		// 	}
+		// }
 
 		f := s.copySearchContext()
 		f.virgo.solrQuery = s.virgo.solrQuery

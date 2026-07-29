@@ -59,7 +59,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 					availabilityFacet = availability.FilterConfig.FieldAuth
 				}
 
-				solrFilter = fmt.Sprintf(`(%s:"%s") OR (%s:"Online")`, solrFacet.Field, filterValue, availabilityFacet)
+				solrFilter = fmt.Sprintf(`(%s:"%s") AND (%s:"Online")`, solrFacet.Field, filterValue, availabilityFacet)
 			} else {
 				solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 			}
@@ -88,7 +88,7 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 		s.meta.selectionMap[filter.FacetID][filterValue] = solrFilter
 	}
 
-	// build filter query based on OR'd filter values among AND'd filter types
+	// build filter query based on AND'd filter values among AND'd filter types
 
 	var orFilters []string
 
@@ -98,14 +98,16 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			idFilters = append(idFilters, fmt.Sprintf("(%s)", solrFilter))
 		}
 
-		orFilter := strings.Join(idFilters, " OR ")
+		orFilter := strings.Join(idFilters, " AND ")
 
-		// when iterating over facets, do not include current facet in filter queries
-		// so that all possible matching values for this facet are returned
-		if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && ctx.virgo.flags.selectedFacets == false && filterID == ctx.virgo.currentFacet {
-			s.meta.client.log("FILTER: %s: SKIPPING filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
-			continue
-		}
+		// THIS CAUSES VALUES IN THIS FILTER NOT TO BE UPDATED. IT WAS DONE BECAUSE SAME FILTER VALUES ARE OR'D. SWITCH TO AND MAKES THIS UNNECESSARY
+		//
+		// // when iterating over facets, do not include current facet in filter queries
+		// // so that all possible matching values for this facet are returned
+		// if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && ctx.virgo.flags.selectedFacets == false && filterID == ctx.virgo.currentFacet {
+		// 	s.meta.client.log("FILTER: %s: SKIPPING filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
+		// 	continue
+		// }
 
 		s.meta.client.log("FILTER: %s: applying filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
 
