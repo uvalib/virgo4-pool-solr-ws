@@ -205,6 +205,7 @@ func (s *searchContext) newSearchWithTopResult(query string) (*searchContext, er
 	top.virgo.solrQuery = ""
 	top.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 1}
 
+	log.Printf("====> TOP RESULT SEARCH")
 	if resp := top.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
 	}
@@ -254,6 +255,7 @@ func (s *searchContext) newSearchWithRecordCountOnly() (*searchContext, error) {
 	c.virgo.flags.groupResults = false
 	c.virgo.req.Pagination.Rows = 0
 
+	log.Printf("====> GET RECORD COUNT")
 	if resp := c.getPoolQueryResults(); resp.err != nil {
 		return nil, resp.err
 	}
@@ -265,6 +267,8 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	// NOTE: groups passed in are quoted strings
 
 	c := s.copySearchContext()
+	log.Printf("====> GROUP SEARCH")
+	log.Printf("%s", groups)
 
 	// just want records
 	c.virgo.flags.groupResults = false
@@ -319,42 +323,44 @@ func (s *searchContext) newSearchWithRecordListForGroups(initialQuery string, gr
 	return c, nil
 }
 
-func (s *searchContext) newSearchWithHighlightedSnippetsForIDs(initialQuery string, ids []string) (*searchContext, error) {
-	c := s.copySearchContext()
+// func (s *searchContext) newSearchWithHighlightedSnippetsForIDs(initialQuery string, ids []string) (*searchContext, error) {
+// 	c := s.copySearchContext()
+// 	log.Printf("newSearchWithHighlightedSnippetsForIDs ================================================================")
+// 	log.Printf("IDS %s", ids)
 
-	// just want records
-	c.virgo.flags.groupResults = false
+// 	// just want records
+// 	c.virgo.flags.groupResults = false
 
-	// wrap ids for safer querying
-	var safeIDs []string
+// 	// wrap ids for safer querying
+// 	var safeIDs []string
 
-	for _, id := range ids {
-		safeIDs = append(safeIDs, strconv.Quote(id))
-	}
+// 	for _, id := range ids {
+// 		safeIDs = append(safeIDs, strconv.Quote(id))
+// 	}
 
-	// build id-restricted query from initial query
-	idClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Local.Solr.IdentifierField, strings.Join(safeIDs, " OR "))
+// 	// build id-restricted query from initial query
+// 	idClause := fmt.Sprintf(`%s:(%s)`, s.pool.config.Local.Solr.IdentifierField, strings.Join(safeIDs, " OR "))
 
-	// prepend existing query, if defined
-	newQuery := idClause
-	if initialQuery != "" {
-		newQuery = fmt.Sprintf(`(%s) AND (%s)`, initialQuery, idClause)
-	}
+// 	// prepend existing query, if defined
+// 	newQuery := idClause
+// 	if initialQuery != "" {
+// 		newQuery = fmt.Sprintf(`(%s) AND (%s)`, initialQuery, idClause)
+// 	}
 
-	c.virgo.req.Query = ""
-	c.virgo.solrQuery = newQuery
+// 	c.virgo.req.Query = ""
+// 	c.virgo.solrQuery = newQuery
 
-	// get "everything"
-	c.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 100000}
+// 	// get "everything"
+// 	c.virgo.req.Pagination = v4api.Pagination{Start: 0, Rows: 100000}
 
-	c.virgo.flags.includeSnippets = true
+// 	c.virgo.flags.includeSnippets = true
 
-	if resp := c.getPoolQueryResults(); resp.err != nil {
-		return nil, resp.err
-	}
+// 	if resp := c.getPoolQueryResults(); resp.err != nil {
+// 		return nil, resp.err
+// 	}
 
-	return c, nil
-}
+// 	return c, nil
+// }
 
 func (s *searchContext) wrapRecordsInGroups() {
 	var groups []v4api.Group
@@ -457,114 +463,114 @@ func (s *searchContext) populateGroups() error {
 	return nil
 }
 
-func (s *searchContext) augmentGroupedRecordsWithHighlightedSnippets() error {
-	// only if requested by client
-	if s.client.opts.snippets == false {
-		return nil
-	}
+// func (s *searchContext) augmentGroupedRecordsWithHighlightedSnippets() error {
+// 	// only if requested by client
+// 	if s.client.opts.snippets == false {
+// 		return nil
+// 	}
 
-	// only for search results
-	if s.itemDetails == true {
-		return nil
-	}
+// 	// only for search results
+// 	if s.itemDetails == true {
+// 		return nil
+// 	}
 
-	// only for full text searches
-	if s.virgo.parserInfo.isFulltextSearch == false {
-		return nil
-	}
+// 	// only for full text searches
+// 	if s.virgo.parserInfo.isFulltextSearch == false {
+// 		return nil
+// 	}
 
-	// collect ids with mappings back to group/record they came from
-	type idEntry struct {
-		group  int
-		record int
-	}
+// 	// collect ids with mappings back to group/record they came from
+// 	type idEntry struct {
+// 		group  int
+// 		record int
+// 	}
 
-	var ids []string
+// 	var ids []string
 
-	idMap := make(map[string]idEntry)
+// 	idMap := make(map[string]idEntry)
 
-	for i := range s.virgo.poolRes.Groups {
-		group := &s.virgo.poolRes.Groups[i]
-		for j := range group.Records {
-			record := &group.Records[j]
-			for _, field := range record.Fields {
-				if field.Name == "id" {
-					id := field.Value
-					ids = append(ids, id)
-					idMap[id] = idEntry{group: i, record: j}
-					break
-				}
-			}
-		}
-	}
+// 	for i := range s.virgo.poolRes.Groups {
+// 		group := &s.virgo.poolRes.Groups[i]
+// 		for j := range group.Records {
+// 			record := &group.Records[j]
+// 			for _, field := range record.Fields {
+// 				if field.Name == "id" {
+// 					id := field.Value
+// 					ids = append(ids, id)
+// 					idMap[id] = idEntry{group: i, record: j}
+// 					break
+// 				}
+// 			}
+// 		}
+// 	}
 
-	// build highlight query
+// 	// build highlight query
 
-	var clauses []string
+// 	var clauses []string
 
-	for _, fulltext := range s.virgo.parserInfo.fulltexts {
-		for _, field := range s.pool.config.Local.Solr.Highlighting.Fl {
-			clauses = append(clauses, fmt.Sprintf(`%s:"%s"`, field, fulltext))
-		}
-	}
+// 	for _, fulltext := range s.virgo.parserInfo.fulltexts {
+// 		for _, field := range s.pool.config.Local.Solr.Highlighting.Fl {
+// 			clauses = append(clauses, fmt.Sprintf(`%s:"%s"`, field, fulltext))
+// 		}
+// 	}
 
-	highlightQuery := strings.Join(clauses, " OR ")
+// 	highlightQuery := strings.Join(clauses, " OR ")
 
-	highlightedMatch := v4api.RecordField{
-		Name:    "highlighted_match",
-		Type:    "highlighted-match",
-		Display: "optional",
-	}
+// 	highlightedMatch := v4api.RecordField{
+// 		Name:    "highlighted_match",
+// 		Type:    "highlighted-match",
+// 		Display: "optional",
+// 	}
 
-	// process ids in batches of 1000 to avoid Solr maxBooleanClause error
+// 	// process ids in batches of 1000 to avoid Solr maxBooleanClause error
 
-	chunks := chunkStrings(ids, 1000)
+// 	chunks := chunkStrings(ids, 1000)
 
-	for _, chunk := range chunks {
-		r, err := s.newSearchWithHighlightedSnippetsForIDs(highlightQuery, chunk)
-		if err != nil {
-			return err
-		}
+// 	for _, chunk := range chunks {
+// 		r, err := s.newSearchWithHighlightedSnippetsForIDs(highlightQuery, chunk)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		// highlighted snippets are arrays of strings keyed by matched field, keyed by id.
-		// for each identifier key, we collect all snippets (ignoring source field names)
-		// and append them as new v4 record fields to the corresponding record in the
-		// existing results.  the solr response being parsed here looks something like:
+// 		// highlighted snippets are arrays of strings keyed by matched field, keyed by id.
+// 		// for each identifier key, we collect all snippets (ignoring source field names)
+// 		// and append them as new v4 record fields to the corresponding record in the
+// 		// existing results.  the solr response being parsed here looks something like:
 
-		/*
-		   "highlighting": {
-		     "id123": {
-		       "field_1": [ "snippet1", "snippet2", ...  ],
-		       ...
-		       "field_n": [ "snippet3", ...  ]
-		     },
-		     "id456": {
-		       ...
-		     },
-		     ...
-		   }
-		*/
+// 		/*
+// 		   "highlighting": {
+// 		     "id123": {
+// 		       "field_1": [ "snippet1", "snippet2", ...  ],
+// 		       ...
+// 		       "field_n": [ "snippet3", ...  ]
+// 		     },
+// 		     "id456": {
+// 		       ...
+// 		     },
+// 		     ...
+// 		   }
+// 		*/
 
-		for id, fields := range r.solr.res.Highlighting {
-			// get existing field list for this identifier
-			entry := idMap[id]
-			fv := s.virgo.poolRes.Groups[entry.group].Records[entry.record].Fields
+// 		for id, fields := range r.solr.res.Highlighting {
+// 			// get existing field list for this identifier
+// 			entry := idMap[id]
+// 			fv := s.virgo.poolRes.Groups[entry.group].Records[entry.record].Fields
 
-			// append each snippet to the existing field list
-			for _, snippets := range fields {
-				for _, snippet := range snippets {
-					highlightedMatch.Value = snippet
-					fv = append(fv, highlightedMatch)
-				}
-			}
+// 			// append each snippet to the existing field list
+// 			for _, snippets := range fields {
+// 				for _, snippet := range snippets {
+// 					highlightedMatch.Value = snippet
+// 					fv = append(fv, highlightedMatch)
+// 				}
+// 			}
 
-			// update field list for this identifier
-			s.virgo.poolRes.Groups[entry.group].Records[entry.record].Fields = fv
-		}
-	}
+// 			// update field list for this identifier
+// 			s.virgo.poolRes.Groups[entry.group].Records[entry.record].Fields = fv
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (s *searchContext) validateSearchRequest() error {
 	// quick validations we can do up front
@@ -670,6 +676,7 @@ func (s *searchContext) performSearchRequest() searchResponse {
 		s.virgo.flags = flags
 
 		// now do the search
+		log.Printf("====> MAIN SEARCH <====")
 		if resp := s.getPoolQueryResults(); resp.err != nil {
 			return resp
 		}
@@ -679,10 +686,11 @@ func (s *searchContext) performSearchRequest() searchResponse {
 			return searchResponse{status: http.StatusInternalServerError, err: err}
 		}
 
-		// augment each record within each group with highlighted snippets, if applicable
-		if err = s.augmentGroupedRecordsWithHighlightedSnippets(); err != nil {
-			return searchResponse{status: http.StatusInternalServerError, err: err}
-		}
+		// FIXME? I do not think this is used
+		// // augment each record within each group with highlighted snippets, if applicable
+		// if err = s.augmentGroupedRecordsWithHighlightedSnippets(); err != nil {
+		// 	return searchResponse{status: http.StatusInternalServerError, err: err}
+		// }
 
 		// restore actual confidence
 		if confidenceIndex(top.confidence) > confidenceIndex(s.virgo.poolRes.Confidence) {
@@ -708,7 +716,7 @@ type facetResponse struct {
 	resp   searchResponse
 }
 
-func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, selectedFacet v4api.Facet, selectedValues []string) {
+func (s *searchContext) getFacetResults(index int, channel chan *facetResponse, selectedFacet v4api.Facet) { // , selectedValues []string) {
 	res := facetResponse{index: index}
 	start := time.Now()
 
@@ -856,19 +864,19 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 	for i := range s.resourceTypeCtx.filters {
 		filter := s.resourceTypeCtx.filters[i]
 
-		var selectedValues []string
-		// collect currently selected values for this filter, we may need them later
-		for _, filterGroup := range s.virgo.req.Filters {
-			for _, filterFacet := range filterGroup.Facets {
-				if filterFacet.FacetID == filter.ID {
-					selectedValues = append(selectedValues, filterFacet.Value)
-				}
-			}
-		}
+		// var selectedValues []string
+		// // collect currently selected values for this filter, we may need them later
+		// for _, filterGroup := range s.virgo.req.Filters {
+		// 	for _, filterFacet := range filterGroup.Facets {
+		// 		if filterFacet.FacetID == filter.ID {
+		// 			selectedValues = append(selectedValues, filterFacet.Value)
+		// 		}
+		// 	}
+		// }
 
 		// if this is a hidden filter, only return it if it was part of the request
 		filterDef := s.pool.maps.definedFilters[filter.ID]
-		if filterDef.Hidden == true && len(selectedValues) == 0 {
+		if filterDef.Hidden == true { // && len(selectedValues) == 0 {
 			continue
 		}
 
@@ -894,7 +902,7 @@ func (s *searchContext) performFacetsRequest() ([]v4api.Facet, searchResponse) {
 		f.virgo.parserInfo = s.virgo.parserInfo
 		f.virgo.currentFacet = filter.ID
 		facetRequests++
-		go f.getFacetResults(i, channel, selectedFacet, selectedValues)
+		go f.getFacetResults(i, channel, selectedFacet) //, selectedValues)
 	}
 
 	// collect responses
