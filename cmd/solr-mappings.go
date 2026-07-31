@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -258,7 +257,6 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 }
 
 func (s *searchContext) populateSolrQuery() searchResponse {
-	log.Printf("===> POPUKLATE SOLR QUERY")
 	p, err := s.virgoQueryConvertToSolr(s.virgo.req.Query)
 
 	if err != nil {
