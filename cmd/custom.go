@@ -546,6 +546,12 @@ func getCustomFieldAuthor(s *searchContext, rc *recordContext) []v4api.RecordFie
 		rc.fieldCtx.field.AlternateValue = n.Name
 		fv = append(fv, rc.fieldCtx.field)
 	}
+	
+	for _, n := range rc.relations.translators.values {
+		rc.fieldCtx.field.Value = n.NameRelation
+		rc.fieldCtx.field.AlternateValue = n.Name
+		fv = append(fv, rc.fieldCtx.field)
+	}
 
 	return fv
 }
