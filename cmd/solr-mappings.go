@@ -4,16 +4,23 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/uvalib/virgo4-api/v4api"
 )
 
 // functions that map virgo data into solr data
 
-func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filter, internalFacets map[string]*solrRequestFacet, availability poolConfigAvailability) {
+func (s *solrRequest) buildFilters(ctx *searchContext) {
+	filterGroups := ctx.virgo.req.Filters
 	if len(filterGroups) == 0 {
 		return
 	}
+	internalFacets := ctx.solr.req.meta.internalFacets
+
+	// pull the boolean filter vaue join mode from search prefs. If not set, default to OR
+	filterJoin := ctx.virgo.req.Preferences.FilterJoin
+	if filterJoin == "" {
+		filterJoin = "OR"
+	}
+	s.meta.client.log("FILTER: filter values will be combined with [%s] ", filterJoin)
 
 	// we are guaranteed to only have one filter group due to up-front validations
 
@@ -45,39 +52,8 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 			s.meta.client.log("FILTER: %s: including filter [%s] due to %d selected dependent filters", ctx.virgo.currentFacet, filter.FacetID, numSelected)
 		}
 
-		var solrFilter string
-		var filterValue string
-
-		switch solrFacet.config.Type {
-		case "boolean":
-			filterValue = solrFacet.config.Solr.Value
-
-			if solrFacet.config.Format == "circulating" {
-				availabilityFacet := availability.FilterConfig.FieldAnon
-				if s.meta.client.isAuthenticated() == true {
-					availabilityFacet = availability.FilterConfig.FieldAuth
-				}
-
-				solrFilter = fmt.Sprintf(`(%s:"%s") AND (%s:"Online")`, solrFacet.Field, filterValue, availabilityFacet)
-			} else {
-				solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
-			}
-
-		case "component":
-			filterValue = filter.Value
-			q := solrFacet.config.queryMap[filterValue]
-
-			if q == nil {
-				s.meta.client.log("FILTER: %s: unable to map component value to a component query: [%s]", ctx.virgo.currentFacet, filterValue)
-				continue
-			}
-
-			solrFilter = q.Query
-
-		default:
-			filterValue = ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
-			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
-		}
+		filterValue := ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
+		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
 
 		// add this filter to selection map
 		if s.meta.selectionMap[filter.FacetID] == nil {
@@ -87,33 +63,32 @@ func (s *solrRequest) buildFilters(ctx *searchContext, filterGroups []v4api.Filt
 		s.meta.selectionMap[filter.FacetID][filterValue] = solrFilter
 	}
 
-	// build filter query based on AND'd filter values among AND'd filter types
+	// build filter query based on the configured boolean join type for filter values among AND'd filter types
 
-	var orFilters []string
-
+	var joinedFilters []string
 	for filterID, selectedValues := range s.meta.selectionMap {
 		var idFilters []string
 		for _, solrFilter := range selectedValues {
 			idFilters = append(idFilters, fmt.Sprintf("(%s)", solrFilter))
 		}
 
-		orFilter := strings.Join(idFilters, " AND ")
+		filterString := strings.Join(idFilters, fmt.Sprintf(" %s ", filterJoin))
 
-		// THIS CAUSES VALUES IN THIS FILTER NOT TO BE UPDATED. IT WAS DONE BECAUSE SAME FILTER VALUES ARE OR'D. SWITCH TO AND MAKES THIS UNNECESSARY
-		//
-		// // when iterating over facets, do not include current facet in filter queries
-		// // so that all possible matching values for this facet are returned
-		// if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && ctx.virgo.flags.selectedFacets == false && filterID == ctx.virgo.currentFacet {
-		// 	s.meta.client.log("FILTER: %s: SKIPPING filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
-		// 	continue
-		// }
+		if filterJoin == "OR" {
+			// when iterating over facets, do not include current facet in filter queries
+			// so that all possible matching values for this facet are returned
+			if ctx.virgo.flags.facetCache == false && ctx.virgo.flags.requestFacets == true && ctx.virgo.flags.selectedFacets == false && filterID == ctx.virgo.currentFacet {
+				s.meta.client.log("FILTER: %s: SKIPPING filter: %s : %s", ctx.virgo.currentFacet, filterID, filterString)
+				continue
+			}
+		}
 
-		s.meta.client.log("FILTER: %s: applying filter: %s : %s", ctx.virgo.currentFacet, filterID, orFilter)
+		s.meta.client.log("FILTER: %s: applying filter: %s : %s", ctx.virgo.currentFacet, filterID, filterString)
 
-		orFilters = append(orFilters, orFilter)
+		joinedFilters = append(joinedFilters, filterString)
 	}
 
-	s.json.Params.Fq = append(s.json.Params.Fq, orFilters...)
+	s.json.Params.Fq = append(s.json.Params.Fq, joinedFilters...)
 }
 
 func (s *searchContext) solrInternalRequestFacets() (map[string]*solrRequestFacet, map[string]*solrRequestFacet) {
@@ -228,7 +203,7 @@ func (s *searchContext) solrRequestWithDefaults() searchResponse {
 		s.solr.req.json.Facets = s.solr.req.meta.requestFacets
 	}
 
-	s.solr.req.buildFilters(s, s.virgo.req.Filters, s.solr.req.meta.internalFacets, s.pool.config.Global.Availability)
+	s.solr.req.buildFilters(s)
 
 	if s.client.opts.debug == true {
 		s.solr.req.json.Params.DebugQuery = "on"

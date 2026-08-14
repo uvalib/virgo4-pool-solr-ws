@@ -29,7 +29,7 @@ type virgoFlags struct {
 }
 
 type virgoDialog struct {
-	req            v4api.SearchRequest
+	req            v4api.SearchRequest // this contains all the initial request settings
 	poolRes        *v4api.PoolResult
 	facetsRes      *v4api.PoolFacets
 	recordRes      *v4api.Record
@@ -52,8 +52,8 @@ type solrDialog struct {
 type searchContext struct {
 	pool            *poolContext
 	client          *clientContext
-	virgo           virgoDialog
-	solr            solrDialog
+	virgo           virgoDialog // this is were the original query request options reside
+	solr            solrDialog  // this is used to build the filters for the request
 	resourceTypeCtx *poolConfigResourceTypeContext
 	confidence      string
 	itemDetails     bool
@@ -82,6 +82,7 @@ func (s *searchContext) init(p *poolContext, c *clientContext) {
 	s.virgo.flags.includeVisible = true
 	s.virgo.flags.includeHidden = false
 	s.resourceTypeCtx = s.pool.maps.resourceTypeContexts[s.pool.config.Global.ResourceTypes.DefaultContext]
+	log.Printf("================> VIRGO: %+v", s.virgo)
 }
 
 func (s *searchContext) copySearchContext() *searchContext {
@@ -109,19 +110,19 @@ func (s *searchContext) copySearchContext() *searchContext {
 	return sc
 }
 
-func (s *searchContext) log(format string, args ...interface{}) {
+func (s *searchContext) log(format string, args ...any) {
 	s.client.log(format, args...)
 }
 
-func (s *searchContext) warn(format string, args ...interface{}) {
+func (s *searchContext) warn(format string, args ...any) {
 	s.client.warn(format, args...)
 }
 
-func (s *searchContext) err(format string, args ...interface{}) {
+func (s *searchContext) err(format string, args ...any) {
 	s.client.err(format, args...)
 }
 
-func (s *searchContext) verbose(format string, args ...interface{}) {
+func (s *searchContext) verbose(format string, args ...any) {
 	s.client.verbose(format, args...)
 }
 

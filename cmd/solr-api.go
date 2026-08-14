@@ -92,7 +92,7 @@ type solrResponseHeader struct {
 	QTime  int `json:"QTime,omitempty"`
 }
 
-type solrDocument map[string]interface{}
+type solrDocument map[string]any
 
 type solrBucket struct {
 	Val        string `json:"val"`
@@ -126,11 +126,11 @@ type solrResponse struct {
 	ResponseHeader solrResponseHeader           `json:"responseHeader,omitempty"`
 	Response       solrResponseDocuments        `json:"response,omitempty"`
 	Highlighting   solrResponseHighlighting     `json:"highlighting,omitempty"`
-	Debug          interface{}                  `json:"debug,omitempty"`
-	FacetsRaw      map[string]interface{}       `json:"facets,omitempty"`
+	Debug          any                          `json:"debug,omitempty"`
+	FacetsRaw      map[string]any               `json:"facets,omitempty"`
 	Facets         map[string]solrResponseFacet // will be parsed from FacetsRaw
-	Terms          map[string][]interface{}     `json:"terms,omitempty"`
-	Error          solrError                    `json:"error,omitempty"`
+	Terms          map[string][]any             `json:"terms,omitempty"`
+	Error          solrError                    `json:"error"`
 	Status         string                       `json:"status,omitempty"`
 	meta           *solrMeta                    // pointer to struct in corresponding solrRequest
 }
