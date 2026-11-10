@@ -52,8 +52,31 @@ func (s *solrRequest) buildFilters(ctx *searchContext) {
 			s.meta.client.log("FILTER: %s: including filter [%s] due to %d selected dependent filters", ctx.virgo.currentFacet, filter.FacetID, numSelected)
 		}
 
-		filterValue := ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
-		solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
+		// SIMPLIFIED LOGIC THAT DOES NOT SUPPORT DATEFILTER
+		// filterValue := ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
+		// solrFilter := fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
+
+		// ORIGINAL LOGIC ==================================================
+		var solrFilter string
+		var filterValue string
+
+		switch solrFacet.config.Type {
+		case "component":
+			filterValue = filter.Value
+			q := solrFacet.config.queryMap[filterValue]
+
+			if q == nil {
+				s.meta.client.log("FILTER: %s: unable to map component value to a component query: [%s]", ctx.virgo.currentFacet, filterValue)
+				continue
+			}
+
+			solrFilter = q.Query
+
+		default:
+			filterValue = ctx.getInternalSolrValue(solrFacet.config.Solr.Field, filter.Value)
+			solrFilter = fmt.Sprintf(`%s:"%s"`, solrFacet.Field, filterValue)
+		}
+		// END ORIGINAL LOGIC =================================================
 
 		// add this filter to selection map
 		if s.meta.selectionMap[filter.FacetID] == nil {
